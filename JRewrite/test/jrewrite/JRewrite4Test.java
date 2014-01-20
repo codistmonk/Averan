@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
 
@@ -29,15 +30,30 @@ public final class JRewrite4Test {
 	
 	@Test
 	public final void test2() {
-		final Rule additionCommutativity = rule(
-				operation(variable("x"), "+", variable("y")),
-				operation(variable("y"), "+", variable("x")));
+		final List<Expression> facts = new ArrayList<Expression>();
+		final Rule commutativity = rule(
+				operation(variable("x"), "=", variable("y")),
+				operation(variable("y"), "=", variable("x")));
+		
+		facts.add(operation(constant("1"), "=", constant("2")));
+		commutativity.apply(facts, facts.get(0));
+		
+		assertEquals("2=1", facts.get(1).toString());
+	}
+	
+	@Test
+	public final void test3() {
 		final List<Expression> facts = new ArrayList<Expression>();
 		
-		facts.add(operation(constant("1"), "+", constant("2")));
-		additionCommutativity.apply(facts, facts.get(0));
+		facts.add(operation(constant("2"), "=", operation(constant("1"), "+", constant("1"))));
+		facts.add(operation(constant("2"), "=", constant("2")));
+		facts.add(operation(constant("2"), "=", constant("2")));
 		
-		assertEquals("2+1", facts.get(1).toString());
+		rewrite(facts, 0, 1, 0);
+		rewrite(facts, 0, 2, 1);
+		
+		assertEquals("1+1=2", facts.get(1).toString());
+		assertEquals("2=1+1", facts.get(2).toString());
 	}
 	
 	public static final Variable variable(final String symbol) {
@@ -56,6 +72,17 @@ public final class JRewrite4Test {
 		return new Rule(array(condition), array(prototype));
 	}
 	
+	public static final void rewrite(final List<Expression> facts, final int equalityIndex, final int targetExpressionIndex, final int subExpressionIndex) {
+		final List<Expression> equality = ((Composite) facts.get(equalityIndex)).getSubexpressions();
+		
+		if (equality.size() != 3 || !"=".equals(equality.get(1).toString())) {
+			throw new IllegalArgumentException(equality.toString());
+		}
+		
+		facts.set(targetExpressionIndex, facts.get(targetExpressionIndex).rewrite(
+				equality.get(0), new AtomicInteger(subExpressionIndex), equality.get(2)));
+	}
+	
 	/**
 	 * @author codistmonk (creation 2013-12-16)
 	 */
@@ -64,6 +91,8 @@ public final class JRewrite4Test {
 		public abstract boolean matches(Expression expression, Map<String, Expression> context);
 		
 		public abstract Expression refine(Map<String, Expression> context);
+		
+		public abstract Expression rewrite(Expression pattern, AtomicInteger index, Expression replacement);
 		
 	}
 	
@@ -76,6 +105,18 @@ public final class JRewrite4Test {
 		
 		public Variable(final String symbol) {
 			this.symbol = symbol;
+		}
+		
+		@Override
+		public final int hashCode() {
+			return this.symbol.hashCode();
+		}
+		
+		@Override
+		public final boolean equals(final Object object) {
+			final Variable that = cast(this.getClass(), object);
+			
+			return that != null && this.symbol.equals(that.symbol);
 		}
 		
 		@Override
@@ -97,6 +138,12 @@ public final class JRewrite4Test {
 			final Expression match = context.get(this.symbol);
 			
 			return match != null ? match : this;
+		}
+		
+		@Override
+		public final Expression rewrite(final Expression pattern, final AtomicInteger index,
+				final Expression replacement) {
+			return this.equals(pattern) && index.decrementAndGet() < 0 ? replacement : this;
 		}
 		
 		@Override
@@ -123,6 +170,18 @@ public final class JRewrite4Test {
 		}
 		
 		@Override
+		public final int hashCode() {
+			return this.symbol.hashCode();
+		}
+		
+		@Override
+		public final boolean equals(final Object object) {
+			final Constant that = cast(this.getClass(), object);
+			
+			return that != null && this.symbol.equals(that.symbol);
+		}
+		
+		@Override
 		public final boolean matches(final Expression expression,
 				final Map<String, Expression> context) {
 			if (expression instanceof Variable) {
@@ -135,6 +194,12 @@ public final class JRewrite4Test {
 		@Override
 		public final Constant refine(final Map<String, Expression> context) {
 			return this;
+		}
+		
+		@Override
+		public final Expression rewrite(final Expression pattern, final AtomicInteger index,
+				final Expression replacement) {
+			return this.equals(pattern) && index.decrementAndGet() < 0 ? replacement : this;
 		}
 		
 		@Override
@@ -164,10 +229,30 @@ public final class JRewrite4Test {
 			}
 		}
 		
+		public Composite(final Iterable<Expression> subexpressions) {
+			this.subexpressions = new ArrayList<Expression>();
+			
+			for (final Expression subexpression : subexpressions) {
+				this.getSubexpressions().add(subexpression);
+			}
+		}
+		
 		public final List<Expression> getSubexpressions() {
 			return this.subexpressions;
 		}
 		
+		@Override
+		public final int hashCode() {
+			return this.getSubexpressions().hashCode();
+		}
+		
+		@Override
+		public final boolean equals(final Object object) {
+			final Composite that = cast(this.getClass(), object);
+			
+			return that != null && this.getSubexpressions().equals(that.getSubexpressions());
+		}
+
 		@Override
 		public final boolean matches(final Expression expression, final Map<String, Expression> context) {
 			if (expression instanceof Variable) {
@@ -204,6 +289,30 @@ public final class JRewrite4Test {
 			}
 			
 			return result;
+		}
+		
+		@Override
+		public final Expression rewrite(final Expression pattern, final AtomicInteger index,
+				final Expression replacement) {
+			if (this.equals(pattern) && index.decrementAndGet() < 0) {
+				return replacement;
+			}
+			
+			final int n = this.getSubexpressions().size();
+			
+			for (int i = 0; i < n; ++i) {
+				final Expression subExpression = this.getSubexpressions().get(i).rewrite(pattern, index, replacement);
+				
+				if (index.get() < 0) {
+					final Composite result = new Composite(this.getSubexpressions());
+					
+					result.getSubexpressions().set(i, subExpression);
+					
+					return result;
+				}
+			}
+			
+			return this;
 		}
 		
 		@Override
