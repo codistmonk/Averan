@@ -1,246 +1,60 @@
 package jrewrite;
 
-import static net.sourceforge.aprog.tools.Tools.cast;
-import static org.junit.Assert.*;
+import static jrewrite.JRewriteTools.constant;
+import static jrewrite.JRewriteTools.operation;
+import static jrewrite.JRewriteTools.rewrite;
+import static jrewrite.JRewriteTools.rule;
+import static jrewrite.JRewriteTools.variable;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import jrewrite.JRewriteTest.Pattern;
-
-import net.sourceforge.aprog.tools.Tools;
 
 import org.junit.Test;
 
 /**
- * @author codistmonk (creation 2013-10-25)
+ * @author codistmonk (creation 2013-12-16)
  */
 public final class JRewriteTest {
 	
 	@Test
 	public final void test1() {
-		final Rule rule = new Rule(new LeafPattern(null, "A"), new LeafPattern(null, "B"));
-		
-		assertEquals(new LeafPattern(null, "B"), rule.apply(new LeafPattern(null, "A")));
+		assertTrue(variable("x").matches(operation(constant("1"), "+", constant("2")), new HashMap<String, Expression>()));
+		assertTrue(operation(constant("1"), "+", constant("2")).matches(operation(constant("1"), "+", constant("2")), new HashMap<String, Expression>()));
+		assertFalse(operation(constant("1"), "+", constant("1")).matches(operation(constant("1"), "+", constant("2")), new HashMap<String, Expression>()));
+		assertFalse(operation(variable("x"), "+", variable("x")).matches(operation(constant("1"), "+", constant("2")), new HashMap<String, Expression>()));
+		assertTrue(operation(variable("x"), "+", variable("x")).matches(operation(constant("1"), "+", constant("1")), new HashMap<String, Expression>()));
 	}
 	
-	/**
-	 * @author codistmonk (creation 2013-10-25)
-	 */
-	public static abstract class Pattern implements Serializable {
+	@Test
+	public final void test2() {
+		final List<Expression> facts = new ArrayList<Expression>();
+		final Rule commutativity = rule(
+				operation(variable("x"), "=", variable("y")),
+				operation(variable("y"), "=", variable("x")));
 		
-		private final Pattern parent;
+		facts.add(operation(constant("1"), "=", constant("2")));
+		commutativity.apply(facts, facts.get(0));
 		
-		protected Pattern(final Pattern parent) {
-			this.parent = parent;
-		}
-		
-		public final Pattern getParent() {
-			return this.parent;
-		}
-		
-//		public abstract boolean verifies(Pattern condition, Map<BindingPattern, Pattern> context);
-		
-		/**
-		 * {@value}.
-		 */
-		private static final long serialVersionUID = -6898079507688381833L;
-		
+		assertEquals("2=1", facts.get(1).toString());
 	}
 	
-	/**
-	 * @author codistmonk (creation 2013-10-25)
-	 */
-	public static abstract class BindingPattern extends Pattern {
+	@Test
+	public final void test3() {
+		final List<Expression> facts = new ArrayList<Expression>();
 		
-		private final String symbol;
+		facts.add(operation(constant("2"), "=", operation(constant("1"), "+", constant("1"))));
+		facts.add(operation(constant("2"), "=", constant("2")));
+		facts.add(operation(constant("2"), "=", constant("2")));
 		
-		private final Pattern scope;
+		rewrite(facts, 0, 1, 0);
+		rewrite(facts, 0, 2, 1);
 		
-		protected BindingPattern(final Pattern parent, final String symbol, final Pattern scope) {
-			super(parent);
-			this.symbol = symbol;
-			this.scope = scope;
-		}
-		
-		public final String getSymbol() {
-			return this.symbol;
-		}
-		
-		public final Pattern getScope() {
-			return this.scope;
-		}
-		
-		@Override
-		public final int hashCode() {
-			return this.getSymbol().hashCode() + this.getScope().hashCode();
-		}
-		
-		@Override
-		public final boolean equals(final Object object) {
-			final BindingPattern that = cast(this.getClass(), object);
-			
-			return that != null && this.getSymbol().equals(that.getSymbol()) && this.getScope().equals(that.getScope());
-		}
-		
-		/**
-		 * {@value}.
-		 */
-		private static final long serialVersionUID = -8666688675483706696L;
-		
-	}
-	
-	/**
-	 * @author codistmonk (creation 2013-10-25)
-	 */
-	public static final class UniversalQuantification extends BindingPattern {
-		
-		public UniversalQuantification(final Pattern parent, final String symbol, final Pattern scope) {
-			super(parent, symbol, scope);
-		}
-		
-		/**
-		 * {@value}.
-		 */
-		private static final long serialVersionUID = -5488810820673090247L;
-		
-	}
-	
-	/**
-	 * @author codistmonk (creation 2013-10-25)
-	 */
-	public static final class ExistentialQuantification extends BindingPattern {
-		
-		public ExistentialQuantification(final Pattern parent, final String symbol, final Pattern scope) {
-			super(parent, symbol, scope);
-		}
-		
-		/**
-		 * {@value}.
-		 */
-		private static final long serialVersionUID = -991908107257362159L;
-		
-	}
-	
-	/**
-	 * @author codistmonk (creation 2013-10-25)
-	 */
-	public static final class SequencePattern extends Pattern {
-		
-		private final List<Pattern> subpatterns;
-		
-		public SequencePattern(final Pattern parent) {
-			super(parent);
-			this.subpatterns = new ArrayList<Pattern>();
-		}
-		
-		public final List<Pattern> getSubpatterns() {
-			return this.subpatterns;
-		}
-		
-		@Override
-		public final int hashCode() {
-			return this.getSubpatterns().hashCode();
-		}
-		
-		@Override
-		public final boolean equals(final Object object) {
-			final SequencePattern that = cast(this.getClass(), object);
-			
-			return that != null && this.getSubpatterns().equals(that.getSubpatterns());
-		}
-		
-		@Override
-		public final String toString() {
-			return this.getSubpatterns().toString();
-		}
-		
-		/**
-		 * {@value}.
-		 */
-		private static final long serialVersionUID = -3961672988993972580L;
-		
-	}
-	
-	/**
-	 * @author codistmonk (creation 2013-10-25)
-	 */
-	public static final class LeafPattern extends Pattern {
-		
-		private final String symbol;
-		
-		public LeafPattern(final Pattern parent, final String symbol) {
-			super(parent);
-			this.symbol = symbol;
-		}
-		
-		public final String getSymbol() {
-			return this.symbol;
-		}
-		
-		public final BindingPattern getBinder() {
-			Pattern ancestor = this.getParent();
-			
-			while (ancestor != null) {
-				final BindingPattern binder = cast(BindingPattern.class, ancestor);
-				
-				if (binder != null && this.getSymbol().equals(binder.getSymbol())) {
-					return binder;
-				}
-				
-				ancestor = ancestor.getParent();
-			}
-			
-			return null;
-		}
-		
-		@Override
-		public final String toString() {
-			return this.getSymbol();
-		}
-		
-		/**
-		 * {@value}.
-		 */
-		private static final long serialVersionUID = -80343323477979009L;
-		
-	}
-	
-	/**
-	 * @author codistmonk (creation 2013-10-25)
-	 */
-	public static final class Rule implements Serializable {
-		
-		private final Pattern condition;
-		
-		private final Pattern consequence;
-		
-		public Rule(final Pattern condition, final Pattern consequence) {
-			this.condition = condition;
-			this.consequence = consequence;
-		}
-		
-		public final Pattern getCondition() {
-			return this.condition;
-		}
-		
-		public final Pattern getConsequence() {
-			return this.consequence;
-		}
-		
-		public final Pattern apply(final Pattern fact) {
-			
-			
-			return null;
-		}
-		
-		/**
-		 * {@value}.
-		 */
-		private static final long serialVersionUID = -149040987214775071L;
-		
+		assertEquals("1+1=2", facts.get(1).toString());
+		assertEquals("2=1+1", facts.get(2).toString());
 	}
 	
 }
