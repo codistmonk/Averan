@@ -1,6 +1,5 @@
 package jrewrite;
 
-import static java.awt.event.KeyEvent.*;
 import static net.sourceforge.aprog.af.AFTools.setupSystemLookAndFeel;
 import static net.sourceforge.aprog.swing.SwingTools.packAndCenter;
 import static net.sourceforge.aprog.swing.SwingTools.scrollable;
@@ -12,9 +11,8 @@ import static net.sourceforge.aprog.tools.Tools.unchecked;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Field;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.JFrame;
@@ -27,14 +25,12 @@ import javax.swing.WindowConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import org.scilab.forge.jlatexmath.ParseException;
+import org.scilab.forge.jlatexmath.Atom;
+import org.scilab.forge.jlatexmath.RowAtom;
 import org.scilab.forge.jlatexmath.TeXConstants;
 import org.scilab.forge.jlatexmath.TeXFormula;
 import org.scilab.forge.jlatexmath.TeXIcon;
-import org.scilab.forge.jlatexmath.TeXFormula.TeXIconBuilder;
 
-import net.sourceforge.aprog.af.AFTools;
-import net.sourceforge.aprog.swing.SwingTools;
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 import net.sourceforge.aprog.tools.Tools;
 
@@ -96,8 +92,8 @@ public final class GUI {
 		
 		public Editor() {
 			super(new BorderLayout());
-			this.changed = new AtomicBoolean();
-			this.formulaEdit = new JTextArea();
+			this.changed = new AtomicBoolean(true);
+			this.formulaEdit = new JTextArea("\\frac{1}{2}\\times2=1");
 			this.formulaView = new JLabel();
 			this.timer = new Timer(1000, new ActionListener() {
 				
@@ -129,6 +125,7 @@ public final class GUI {
 			
 			this.add(scrollable(verticalBox(this.formulaEdit, this.formulaView)), BorderLayout.CENTER);
 			
+			this.renderLatex();
 			this.timer.start();
 		}
 		
@@ -143,7 +140,15 @@ public final class GUI {
 			
 			try {
 				final TeXFormula formula = new TeXFormula(this.formulaEdit.getText());
-				debugPrint(formula);
+				
+				{
+					final RowAtom rowAtom = Tools.cast(RowAtom.class, formula.root);
+					
+					if (rowAtom != null) {
+						debugPrint(getElements(rowAtom));
+					}
+				}
+				
 				final TeXIcon icon = formula.new TeXIconBuilder().setStyle(TeXConstants.STYLE_DISPLAY)
 						.setSize(16)
 						.setWidth(TeXConstants.UNIT_PIXEL, 256f, TeXConstants.ALIGN_CENTER)
@@ -163,6 +168,16 @@ public final class GUI {
 		 * {@value}.
 		 */
 		private static final long serialVersionUID = 1879183829782522150L;
+		
+		public static final List<Atom> getElements(final RowAtom rowAtom) {
+			try {
+				final Field field = rowAtom.getClass().getDeclaredField("elements");
+				field.setAccessible(true);
+				return (List<Atom>) field.get(rowAtom);
+			} catch (final Exception exception) {
+				throw unchecked(exception);
+			}
+		}
 		
 	}
 	
