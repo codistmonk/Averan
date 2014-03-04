@@ -1,6 +1,7 @@
 package jrewrite;
 
 import static net.sourceforge.aprog.af.AFTools.setupSystemLookAndFeel;
+import static net.sourceforge.aprog.swing.SwingTools.horizontalBox;
 import static net.sourceforge.aprog.swing.SwingTools.packAndCenter;
 import static net.sourceforge.aprog.swing.SwingTools.scrollable;
 import static net.sourceforge.aprog.swing.SwingTools.verticalBox;
@@ -15,6 +16,7 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import javax.swing.Box;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -123,7 +125,7 @@ public final class GUI {
 				
 			});
 			
-			this.add(scrollable(verticalBox(this.formulaEdit, this.formulaView)), BorderLayout.CENTER);
+			this.add(scrollable(verticalBox(this.formulaEdit, horizontalBox(this.formulaView, Box.createHorizontalGlue()))), BorderLayout.CENTER);
 			
 			this.renderLatex();
 			this.timer.start();
