@@ -1,12 +1,14 @@
 package jrewrite;
 
 import static net.sourceforge.aprog.tools.Tools.cast;
+import static net.sourceforge.aprog.tools.Tools.join;
 
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -29,6 +31,67 @@ public final class InteractiveRewrite {
 	 * <br>Unused
 	 */
 	public static final void main(final String[] commandLineArguments) {
+		test2();
+	}
+	
+	public static final void test2() {
+		final Context context = new Context();
+		
+		context.assume(nat("0"));
+		context.define(template(v("n"), rule(nat("n"), nat(list("S ", "n")))));
+		
+		System.out.println();
+		context.printTo(System.out);
+		
+		{
+			final Context proofContext1 = context.prove(template(v("n"), rule(nat("n"), nat(list("S ", list("S ", "n"))))));
+			
+			proofContext1.printTo(System.out);
+			
+			{
+				final Context proofContext2 = proofContext1.introduce();
+				
+				System.out.println();
+				proofContext2.printTo(System.out);
+				
+				{
+					final Context proofContext3 = proofContext2.introduce();
+					
+					System.out.println();
+					proofContext3.printTo(System.out);
+					
+					proofContext3.bind("#1", "n", "n");
+					proofContext3.express(-1);
+					
+					System.out.println();
+					proofContext3.printTo(System.out);
+					
+					proofContext3.apply(-1, "#5");
+					
+					System.out.println();
+					proofContext3.printTo(System.out);
+					
+					proofContext3.bind("#1", "n", list("S ", "n"));
+					proofContext3.express(-1);
+					proofContext3.apply(-1, "#9");
+					
+					System.out.println();
+					proofContext3.printTo(System.out);
+				}
+				
+				System.out.println();
+				proofContext2.printTo(System.out);
+			}
+			
+			System.out.println();
+			proofContext1.printTo(System.out);
+		}
+		
+		System.out.println();
+		context.printTo(System.out);
+	}
+	
+	public static final void test1() {
 		final Context context = new Context();
 		
 		for (int i = 0; i <= 9; ++i) {
@@ -300,10 +363,34 @@ public final class InteractiveRewrite {
 		}
 		
 		public final Context introduce() {
-			final Rule goal = (Rule) this.goal;
-			final Context result = new Context(this, goal.getExpression());
+			final Context result;
 			
-			result.assume(goal.getCondition());
+			if (this.goal instanceof Rule) {
+				final Rule goal = (Rule) this.goal;
+				result = new Context(this, goal.getExpression());
+				
+				result.assume(goal.getCondition());
+			} else if (this.goal instanceof Template) {
+				final Template template = (Template) this.goal;
+				
+				if (template.getVariables().isEmpty()) {
+					final Rule goal = (Rule) template.getExpression();
+					result = new Context(this, goal.getExpression());
+					
+					result.assume(goal.getCondition());
+				} else {
+					final String variable = template.getVariables().iterator().next();
+					result = new Context(this, template.bind(variable, variable));
+					
+					result.assume(variable);
+				}
+			} else {
+				throw new IllegalArgumentException();
+			}
+			
+			final String name = this.newName();
+			
+			this.addItem(name, new Item(equality(name, this.goal), result));
 			
 			return result;
 		}
@@ -464,7 +551,13 @@ public final class InteractiveRewrite {
 			return this.getDefinition(name).get(2);
 		}
 		
+		public final int getDepth() {
+			return this.parent == null ? 0 : 1 + this.parent.getDepth();
+		}
+		
 		public final void printTo(final PrintStream output) {
+			final String indent = join("", Collections.nCopies(this.getDepth(), "\t").toArray());
+			
 			for (final Item item : this.items) {
 				final Object proof = item.getProof();
 				final String proofStatus;
@@ -477,13 +570,13 @@ public final class InteractiveRewrite {
 					proofStatus = "??";
 				}
 				
-				output.println(proofStatus + " " + deepToString(item.getDefinition()));
+				output.println(indent + proofStatus + " " + deepToString(item.getDefinition()));
 			}
 			
 			{
 				final String proofStatus = this.isGoalReached() ? "OK" : "??";
 				
-				output.println(proofStatus + " " + deepToString(this.goal) + " (GOAL)");
+				output.println(indent + proofStatus + " " + deepToString(this.goal) + " (GOAL)");
 			}
 			
 		}
