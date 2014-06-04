@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import jrewrite.InteractiveRewrite.Context.Item;
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
@@ -32,10 +33,12 @@ public final class InteractiveRewrite {
 	 * <br>Unused
 	 */
 	public static final void main(final String[] commandLineArguments) {
-		test3();
+		assert test1();
+		assert test2();
+		assert test3();
 	}
 	
-	public static final void test3() {
+	public static final boolean test3() {
 		final Session session = new Session();
 		
 		session.assume("identity", template(v("E"), equality("E", "E")));
@@ -69,6 +72,8 @@ public final class InteractiveRewrite {
 			System.out.println();
 			session.printTo(System.out);
 		}
+		
+		return session.isGoalReached();
 	}
 	
 	public static final List<Object> apply1(final Object function, final Object argument) {
@@ -79,182 +84,7 @@ public final class InteractiveRewrite {
 		return list(expression1, "+", expression2);
 	}
 	
-	/**
-	 * @author codistmonk (creation 2014-06-04)
-	 */
-	public static final class Session implements Serializable {
-		
-		private final Context rootContext = new Context();
-		
-		private Context currentContext = this.rootContext;
-		
-		public final Context introduce() {
-			return this.currentContext.introduce();
-		}
-		
-		public final void express(final int templateRuleIndex) {
-			this.currentContext.express(templateRuleIndex);
-			this.popContext();
-		}
-		
-		public final void express(final String templateRuleName) {
-			this.currentContext.express(templateRuleName);
-			this.popContext();
-		}
-		
-		public final void express(final String name, final String templateRuleName) {
-			this.currentContext.express(name, templateRuleName);
-			this.popContext();
-		}
-		
-		public final void bind(final int templateRuleIndex, final String variable,
-				final Object value) {
-			this.currentContext.bind(templateRuleIndex, variable, value);
-			this.popContext();
-		}
-		
-		public final void bind(final String templateRuleName, final String variable,
-				final Object value) {
-			this.currentContext.bind(templateRuleName, variable, value);
-			this.popContext();
-		}
-		
-		public final void bind(final String name, final int ruleTemplateIndex,
-				final String variable, final Object value) {
-			this.currentContext.bind(name, ruleTemplateIndex, variable, value);
-			this.popContext();
-		}
-		
-		public final void bind(final String name, final String ruleTemplateName,
-				final String variable, final Object value) {
-			this.currentContext.bind(name, ruleTemplateName, variable, value);
-			this.popContext();
-		}
-		
-		public final void apply(final int ruleIndex, final int testIndex) {
-			this.currentContext.apply(ruleIndex, testIndex);
-			this.popContext();
-		}
-		
-		public final void apply(final int ruleIndex, final String testName) {
-			this.currentContext.apply(ruleIndex, testName);
-			this.popContext();
-		}
-		
-		public final void apply(final String ruleName, final int testIndex) {
-			this.currentContext.apply(ruleName, testIndex);
-			this.popContext();
-		}
-		
-		public final void apply(final String ruleName, final String testName) {
-			this.currentContext.apply(ruleName, testName);
-			this.popContext();
-		}
-		
-		public final void apply(final String name, final int ruleIndex, final int testIndex) {
-			this.currentContext.apply(name, ruleIndex, testIndex);
-			this.popContext();
-		}
-		
-		public final void apply(final String name, final int ruleIndex, final String testName) {
-			this.currentContext.apply(name, ruleIndex, testName);
-			this.popContext();
-		}
-		
-		public final void apply(final String name, final String ruleName, final int testIndex) {
-			this.currentContext.apply(name, ruleName, testIndex);
-			this.popContext();
-		}
-		
-		public final void apply(final String name, final String ruleName, final String testName) {
-			this.currentContext.apply(name, ruleName, testName);
-			this.popContext();
-		}
-		
-		public final void assume(final Object expression) {
-			this.currentContext.assume(expression);
-			this.popContext();
-		}
-		
-		public final void assume(final String name, final Object expression) {
-			this.currentContext.assume(name, expression);
-			this.popContext();
-		}
-		
-		public final void prove(final Object goal) {
-			this.currentContext = this.currentContext.prove(goal);
-			this.popContext();
-		}
-		
-		public final void prove(final String name, final Object goal) {
-			this.currentContext = this.currentContext.prove(name, goal);
-			this.popContext();
-		}
-		
-		public final void define(final Template template) {
-			this.currentContext.define(template);
-			this.popContext();
-		}
-		
-		public final void define(final String name, final Template template) {
-			this.currentContext.define(name, template);
-			this.popContext();
-		}
-		
-		public final boolean isGoalReached() {
-			return this.currentContext.isGoalReached();
-		}
-		
-		public final Item getItem(final int index) {
-			return this.currentContext.getItem(index);
-		}
-		
-		public final Item getItem(final String name) {
-			return this.currentContext.getItem(name);
-		}
-		
-		public final List<Object> getDefinition(final int index) {
-			return this.currentContext.getDefinition(index);
-		}
-		
-		public final List<Object> getDefinition(final String name) {
-			return this.currentContext.getDefinition(name);
-		}
-		
-		public final Object getExpression(final int index) {
-			return this.currentContext.getExpression(index);
-		}
-		
-		public final Object getExpression(final String name) {
-			return this.currentContext.getExpression(name);
-		}
-		
-		public final int getDepth() {
-			return this.currentContext.getDepth();
-		}
-		
-		public final void printTo(final PrintStream output) {
-			this.currentContext.printTo(output);
-		}
-		
-		public final int getItemCount() {
-			return this.currentContext.getItemCount();
-		}
-		
-		private final void popContext() {
-			while (this.currentContext.isGoalReached() && this.currentContext.getParent() != null) {
-				this.currentContext = this.currentContext.getParent();
-			}
-		}
-		
-		/**
-		 * {@value}.
-		 */
-		private static final long serialVersionUID = -8755435237357100769L;
-		
-	}
-	
-	public static final void test2() {
+	public static final boolean test2() {
 		final Context context = new Context();
 		
 		context.assume(nat("0"));
@@ -309,9 +139,11 @@ public final class InteractiveRewrite {
 		
 		System.out.println();
 		context.printTo(System.out);
+		
+		return context.isGoalReached();
 	}
 	
-	public static final void test1() {
+	public static final boolean test1() {
 		final Context context = new Context();
 		
 		for (int i = 0; i <= 9; ++i) {
@@ -351,6 +183,8 @@ public final class InteractiveRewrite {
 		}
 		
 		context.printTo(System.out);
+		
+		return context.isGoalReached();
 	}
 	
 	public static final List<Object> s(final Object expression) {
@@ -377,11 +211,12 @@ public final class InteractiveRewrite {
 		return Tools.set(variables);
 	}
 	
+	@SuppressWarnings("unchecked")
 	public static final String deepToString(final Object object) {
 		if (object instanceof List) {
 			final StringBuilder resultBuilder = new StringBuilder();
 			
-			for (final Object element : (List) object) {
+			for (final Object element : (List<Object>) object) {
 				if (element instanceof List) {
 					resultBuilder.append('(').append(deepToString(element)).append(')');
 				} else {
@@ -395,26 +230,53 @@ public final class InteractiveRewrite {
 		return object.toString();
 	}
 	
+	public static final Object deepReplace(final String variable, final Object value, final Object target) {
+		return deepRewrite(new Rewriter() {
+			
+			@Override
+			public final Object rewrite(final Object target) {
+				return value;
+			}
+			
+			@Override
+			public final boolean canRewrite(final Object target) {
+				return target.equals(variable);
+			}
+			
+			@Override
+			public final boolean canRewrite(final Template target) {
+				return !target.getVariables().contains(variable);
+			}
+			
+			/**
+			 * {@value}.
+			 */
+			private static final long serialVersionUID = -670474044151868974L;
+			
+		}, target);
+	}
+	
 	@SuppressWarnings("unchecked")
-	public static final Object replace(final String variable, final Object value, final Object target) {
-		if (target.equals(variable)) {
-			return value;
+	public static final Object deepRewrite(final Rewriter rewriter, final Object target) {
+		if (rewriter.canRewrite(target)) {
+			return rewriter.rewrite(target);
 		}
 		
 		if (target instanceof Rule) {
 			final Rule rule = (Rule) target;
 			
-			return new Rule(replace(variable, value, rule.getCondition()), replace(variable, value, rule.getExpression()));
+			return new Rule(deepRewrite(rewriter, rule.getCondition())
+					, deepRewrite(rewriter, rule.getExpression()));
 		}
 		
 		if (target instanceof Template) {
 			final Template template = (Template) target;
 			
-			if (template.getVariables().contains(variable)) {
+			if (!rewriter.canRewrite(template)) {
 				return template;
 			}
 			
-			return new Template(template.getVariables(), replace(variable, value, template.getExpression()));
+			return new Template(template.getVariables(), deepRewrite(rewriter, template.getExpression()));
 			
 		}
 		
@@ -428,7 +290,7 @@ public final class InteractiveRewrite {
 			}
 			
 			for (final Object subtarget : (Iterable<?>) target) {
-				result.add(replace(variable, value, subtarget));
+				result.add(deepRewrite(rewriter, subtarget));
 			}
 			
 			return result;
@@ -440,10 +302,10 @@ public final class InteractiveRewrite {
 	public static final String EQUALITY_OPERATOR = " = ";
 	
 	public static final boolean isProposition(final Object expression) {
-		if (expression instanceof Rule) {
-			return true;
-		}
-		
+		return expression instanceof Rule || isEquality(expression);
+	}
+	
+	public static final boolean isEquality(final Object expression) {
 		if (expression instanceof List) {
 			@SuppressWarnings("unchecked")
 			final List<Object> list = (List<Object>) expression;
@@ -458,6 +320,17 @@ public final class InteractiveRewrite {
 	
 	public static final List<Object> equality(final Object expression1, final Object expression2) {
 		return list(expression1, EQUALITY_OPERATOR, expression2);
+	}
+	
+	public static final List<Object> castToEquality(final Object expression) {
+		@SuppressWarnings("unchecked")
+		final List<Object> result = (List<Object>) expression;
+		
+		if (!isEquality(expression)) {
+			throw new IllegalArgumentException();
+		}
+		
+		return result;
 	}
 	
 	/**
@@ -534,7 +407,7 @@ public final class InteractiveRewrite {
 				throw new IllegalArgumentException();
 			}
 			
-			final Object resultExpression = replace(variable, value, this.getExpression());
+			final Object resultExpression = deepReplace(variable, value, this.getExpression());
 			final Collection<String> resultVariables = new LinkedHashSet<String>(this.getVariables());
 			
 			resultVariables.remove(variable);
@@ -759,6 +632,14 @@ public final class InteractiveRewrite {
 			this.addItem(name, new Item(equality(name, template) , Special.TEMPLATE));
 		}
 		
+		public final void rewrite(final String name, final int equalityIndex, final int targetIndex, final Object pattern, final Set<Integer> indices) {
+			final List<Object> equality = castToEquality(this.getExpression(equalityIndex));
+			
+			// TODO
+			
+			throw new RuntimeException("TODO");
+		}
+		
 		public final boolean isGoalReached() {
 			return this.goalReached;
 		}
@@ -890,6 +771,194 @@ public final class InteractiveRewrite {
 			TRUE, FALSE, TEMPLATE, AXIOM, DEDUCTION;
 			
 		}
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-06-04)
+	 */
+	public static final class Session implements Serializable {
+		
+		private final Context rootContext = new Context();
+		
+		private Context currentContext = this.rootContext;
+		
+		public final Context introduce() {
+			return this.currentContext.introduce();
+		}
+		
+		public final void express(final int templateRuleIndex) {
+			this.currentContext.express(templateRuleIndex);
+			this.popContext();
+		}
+		
+		public final void express(final String templateRuleName) {
+			this.currentContext.express(templateRuleName);
+			this.popContext();
+		}
+		
+		public final void express(final String name, final String templateRuleName) {
+			this.currentContext.express(name, templateRuleName);
+			this.popContext();
+		}
+		
+		public final void bind(final int templateRuleIndex, final String variable,
+				final Object value) {
+			this.currentContext.bind(templateRuleIndex, variable, value);
+			this.popContext();
+		}
+		
+		public final void bind(final String templateRuleName, final String variable,
+				final Object value) {
+			this.currentContext.bind(templateRuleName, variable, value);
+			this.popContext();
+		}
+		
+		public final void bind(final String name, final int ruleTemplateIndex,
+				final String variable, final Object value) {
+			this.currentContext.bind(name, ruleTemplateIndex, variable, value);
+			this.popContext();
+		}
+		
+		public final void bind(final String name, final String ruleTemplateName,
+				final String variable, final Object value) {
+			this.currentContext.bind(name, ruleTemplateName, variable, value);
+			this.popContext();
+		}
+		
+		public final void apply(final int ruleIndex, final int testIndex) {
+			this.currentContext.apply(ruleIndex, testIndex);
+			this.popContext();
+		}
+		
+		public final void apply(final int ruleIndex, final String testName) {
+			this.currentContext.apply(ruleIndex, testName);
+			this.popContext();
+		}
+		
+		public final void apply(final String ruleName, final int testIndex) {
+			this.currentContext.apply(ruleName, testIndex);
+			this.popContext();
+		}
+		
+		public final void apply(final String ruleName, final String testName) {
+			this.currentContext.apply(ruleName, testName);
+			this.popContext();
+		}
+		
+		public final void apply(final String name, final int ruleIndex, final int testIndex) {
+			this.currentContext.apply(name, ruleIndex, testIndex);
+			this.popContext();
+		}
+		
+		public final void apply(final String name, final int ruleIndex, final String testName) {
+			this.currentContext.apply(name, ruleIndex, testName);
+			this.popContext();
+		}
+		
+		public final void apply(final String name, final String ruleName, final int testIndex) {
+			this.currentContext.apply(name, ruleName, testIndex);
+			this.popContext();
+		}
+		
+		public final void apply(final String name, final String ruleName, final String testName) {
+			this.currentContext.apply(name, ruleName, testName);
+			this.popContext();
+		}
+		
+		public final void assume(final Object expression) {
+			this.currentContext.assume(expression);
+			this.popContext();
+		}
+		
+		public final void assume(final String name, final Object expression) {
+			this.currentContext.assume(name, expression);
+			this.popContext();
+		}
+		
+		public final void prove(final Object goal) {
+			this.currentContext = this.currentContext.prove(goal);
+			this.popContext();
+		}
+		
+		public final void prove(final String name, final Object goal) {
+			this.currentContext = this.currentContext.prove(name, goal);
+			this.popContext();
+		}
+		
+		public final void define(final Template template) {
+			this.currentContext.define(template);
+			this.popContext();
+		}
+		
+		public final void define(final String name, final Template template) {
+			this.currentContext.define(name, template);
+			this.popContext();
+		}
+		
+		public final boolean isGoalReached() {
+			return this.currentContext.isGoalReached();
+		}
+		
+		public final Item getItem(final int index) {
+			return this.currentContext.getItem(index);
+		}
+		
+		public final Item getItem(final String name) {
+			return this.currentContext.getItem(name);
+		}
+		
+		public final List<Object> getDefinition(final int index) {
+			return this.currentContext.getDefinition(index);
+		}
+		
+		public final List<Object> getDefinition(final String name) {
+			return this.currentContext.getDefinition(name);
+		}
+		
+		public final Object getExpression(final int index) {
+			return this.currentContext.getExpression(index);
+		}
+		
+		public final Object getExpression(final String name) {
+			return this.currentContext.getExpression(name);
+		}
+		
+		public final int getDepth() {
+			return this.currentContext.getDepth();
+		}
+		
+		public final void printTo(final PrintStream output) {
+			this.currentContext.printTo(output);
+		}
+		
+		public final int getItemCount() {
+			return this.currentContext.getItemCount();
+		}
+		
+		private final void popContext() {
+			while (this.currentContext.isGoalReached() && this.currentContext.getParent() != null) {
+				this.currentContext = this.currentContext.getParent();
+			}
+		}
+		
+		/**
+		 * {@value}.
+		 */
+		private static final long serialVersionUID = -8755435237357100769L;
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-06-04)
+	 */
+	public static interface Rewriter extends Serializable {
+		
+		public abstract boolean canRewrite(Template target);
+		
+		public abstract boolean canRewrite(Object target);
+		
+		public abstract Object rewrite(Object target);
 		
 	}
 	
