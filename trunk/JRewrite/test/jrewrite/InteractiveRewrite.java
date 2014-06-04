@@ -56,21 +56,18 @@ public final class InteractiveRewrite {
 		session.define("right recursivity of addition", template(v("a", "b")
 				, rule(nat("a"), rule(nat("b"), equality(plus("a", s("b")), s(plus("a", "b")))))));
 		
-		System.out.println();
 		session.printTo(System.out);
 		
 		{
 			session.prove(template(v("a"), rule(nat("a"), equality(plus("a", "1"), plus("1", "a")))));
 			session.define("definition of P", template(v("a"), equality(apply1("P", "a"), equality(plus("a", "1"), plus("1", "a")))));
 			
-			System.out.println();
 			session.printTo(System.out);
 			
 			session.prove(apply1("P", "0"));
 			session.bind("definition of P", "a", "0");
 			session.express(-1);
 			
-			System.out.println();
 			session.printTo(System.out);
 		}
 		
@@ -86,66 +83,51 @@ public final class InteractiveRewrite {
 	}
 	
 	public static final boolean test2() {
-		final Context context = new Context();
+		final Session context = new Session();
 		
 		context.assume(nat("0"));
 		context.define(template(v("n"), rule(nat("n"), nat(s("n")))));
 		
-		System.out.println();
 		context.printTo(System.out);
 		
 		{
-			final Context proofContext1 = context.prove(template(v("n"), rule(nat("n"), nat(s(s("n"))))));
+			context.prove(template(v("n"), rule(nat("n"), nat(s(s("n"))))));
 			
-			proofContext1.printTo(System.out);
+			context.printTo(System.out);
 			
 			{
-				final Context proofContext2 = proofContext1.introduce();
+				context.introduce();
 				
-				System.out.println();
-				proofContext2.printTo(System.out);
+				context.printTo(System.out);
 				
 				{
-					final Context proofContext3 = proofContext2.introduce();
+					context.introduce();
 					
-					System.out.println();
-					proofContext3.printTo(System.out);
+					context.printTo(System.out);
 					
-					proofContext3.bind("#1", "n", "n");
-					proofContext3.express(-1);
+					context.bind("#1", "n", "n");
+					context.express(-1);
 					
-					System.out.println();
-					proofContext3.printTo(System.out);
+					context.printTo(System.out);
 					
-					proofContext3.apply(-1, "#5");
+					context.apply(-1, "#5");
 					
-					System.out.println();
-					proofContext3.printTo(System.out);
+					context.printTo(System.out);
 					
-					proofContext3.bind("#1", "n", s("n"));
-					proofContext3.express(-1);
-					proofContext3.apply(-1, "#9");
+					context.bind("#1", "n", s("n"));
+					context.express(-1);
+					context.apply(-1, "#9");
 					
-					System.out.println();
-					proofContext3.printTo(System.out);
+					context.printTo(System.out);
 				}
-				
-				System.out.println();
-				proofContext2.printTo(System.out);
 			}
-			
-			System.out.println();
-			proofContext1.printTo(System.out);
 		}
-		
-		System.out.println();
-		context.printTo(System.out);
 		
 		return context.isGoalReached();
 	}
 	
 	public static final boolean test1() {
-		final Context context = new Context();
+		final Session context = new Session();
 		
 		for (int i = 0; i <= 9; ++i) {
 			context.assume("digit" + i, list("" + i, ":", "N"));
@@ -155,32 +137,30 @@ public final class InteractiveRewrite {
 		
 		context.printTo(System.out);
 		
-		System.out.println();
-		
 		{
-			final Context proofContext1 = context.prove(nat(list("4", "2")));
+			context.prove(nat(list("4", "2")));
 			
-			proofContext1.printTo(System.out);
+			context.printTo(System.out);
 			
-			proofContext1.bind("concatN", "x", "4");
+			context.bind("concatN", "x", "4");
 			
-			proofContext1.printTo(System.out);
+			context.printTo(System.out);
 			
-			proofContext1.bind(-1, "y", "2");
+			context.bind(-1, "y", "2");
 			
-			proofContext1.printTo(System.out);
+			context.printTo(System.out);
 			
-			proofContext1.express(-1);
+			context.express(-1);
 			
-			proofContext1.printTo(System.out);
+			context.printTo(System.out);
 			
-			proofContext1.apply(-1, "digit4");
+			context.apply(-1, "digit4");
 			
-			proofContext1.printTo(System.out);
+			context.printTo(System.out);
 			
-			proofContext1.apply(-1, "digit2");
+			context.apply(-1, "digit2");
 			
-			proofContext1.printTo(System.out);
+			context.printTo(System.out);
 		}
 		
 		context.printTo(System.out);
@@ -630,7 +610,7 @@ public final class InteractiveRewrite {
 		}
 		
 		public final void define(final String name, final Template template) {
-			this.addItem(name, new Item(equality(name, template) , Special.TEMPLATE));
+			this.addItem(name, new Item(equality(name, template), Special.TEMPLATE));
 		}
 		
 		public final void rewrite(final int equalityIndex, final int targetIndex, final Set<Integer> indices) {
@@ -753,6 +733,8 @@ public final class InteractiveRewrite {
 		}
 		
 		public final void printTo(final PrintStream output) {
+			output.println();
+			
 			final String indent = join("", Collections.nCopies(this.getDepth(), "\t").toArray());
 			
 			for (final Item item : this.items) {
@@ -848,8 +830,9 @@ public final class InteractiveRewrite {
 		
 		private Context currentContext = this.rootContext;
 		
-		public final Context introduce() {
-			return this.currentContext.introduce();
+		public final void introduce() {
+			this.currentContext = this.currentContext.introduce();
+			this.popContext();
 		}
 		
 		public final void express(final int templateRuleIndex) {
