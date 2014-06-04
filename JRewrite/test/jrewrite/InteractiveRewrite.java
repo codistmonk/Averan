@@ -46,21 +46,21 @@ public final class InteractiveRewrite {
 		session.assume("trueness1", template(v("E"), rule(equality("E", "true"), "E")));
 		session.assume("trueness2", template(v("E"), rule("E", equality("E", "true"))));
 		session.assume("definition of 0", nat("0"));
-		session.define("definition of S", template(v("n"), rule(nat("n"), nat(s("n")))));
-		session.define("definition of recursivity", template(v("P"), rule(apply1("P", "0")
+		session.assume("definition of S", template(v("n"), rule(nat("n"), nat(s("n")))));
+		session.assume("definition of recursivity", template(v("P"), rule(apply1("P", "0")
 				, rule(template(v("n"), rule(apply1("P", "n"), apply1("P", s("n"))))
 						, template(v("n"), apply1("P", "n"))))));
 		session.assume("definition of 1", equality("1", s("0")));
-		session.define("right neutrality of 0", template(v("a")
+		session.assume("right neutrality of 0", template(v("a")
 				, rule(nat("a"), equality(plus("a", "0"), "a"))));
-		session.define("right recursivity of addition", template(v("a", "b")
+		session.assume("right recursivity of addition", template(v("a", "b")
 				, rule(nat("a"), rule(nat("b"), equality(plus("a", s("b")), s(plus("a", "b")))))));
 		
 		session.printTo(System.out);
 		
 		{
 			session.prove(template(v("a"), rule(nat("a"), equality(plus("a", "1"), plus("1", "a")))));
-			session.define("definition of P", template(v("a"), equality(apply1("P", "a"), equality(plus("a", "1"), plus("1", "a")))));
+			session.assume("definition of P", template(v("a"), equality(apply1("P", "a"), equality(plus("a", "1"), plus("1", "a")))));
 			
 			session.printTo(System.out);
 			
@@ -86,7 +86,7 @@ public final class InteractiveRewrite {
 		final Session context = new Session();
 		
 		context.assume(nat("0"));
-		context.define(template(v("n"), rule(nat("n"), nat(s("n")))));
+		context.assume(template(v("n"), rule(nat("n"), nat(s("n")))));
 		
 		context.printTo(System.out);
 		
@@ -133,7 +133,7 @@ public final class InteractiveRewrite {
 			context.assume("digit" + i, list("" + i, ":", "N"));
 		}
 		
-		context.define("concatN", template(v("x", "y"), rule(nat("x"), rule(nat("y"), nat(list("x", "y"))))));
+		context.assume("concatN", template(v("x", "y"), rule(nat("x"), rule(nat("y"), nat(list("x", "y"))))));
 		
 		context.printTo(System.out);
 		
@@ -605,14 +605,6 @@ public final class InteractiveRewrite {
 			return result;
 		}
 		
-		public final void define(final Template template) {
-			this.define(this.newName(), template);
-		}
-		
-		public final void define(final String name, final Template template) {
-			this.addItem(name, new Item(equality(name, template), Special.TEMPLATE));
-		}
-		
 		public final void rewrite(final int equalityIndex, final int targetIndex, final Set<Integer> indices) {
 			this.rewrite(this.newName(), equalityIndex, targetIndex, indices);
 		}
@@ -815,7 +807,7 @@ public final class InteractiveRewrite {
 		 */
 		public static enum Special {
 			
-			TRUE, FALSE, TEMPLATE, AXIOM, DEDUCTION;
+			TRUE, FALSE, AXIOM, DEDUCTION;
 			
 		}
 		
@@ -931,16 +923,6 @@ public final class InteractiveRewrite {
 		
 		public final void prove(final String name, final Object goal) {
 			this.currentContext = this.currentContext.prove(name, goal);
-			this.popContext();
-		}
-		
-		public final void define(final Template template) {
-			this.currentContext.define(template);
-			this.popContext();
-		}
-		
-		public final void define(final String name, final Template template) {
-			this.currentContext.define(name, template);
 			this.popContext();
 		}
 		
