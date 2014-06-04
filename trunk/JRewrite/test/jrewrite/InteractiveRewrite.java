@@ -14,6 +14,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import jrewrite.InteractiveRewrite.Context.Item;
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
@@ -632,12 +633,76 @@ public final class InteractiveRewrite {
 			this.addItem(name, new Item(equality(name, template) , Special.TEMPLATE));
 		}
 		
-		public final void rewrite(final String name, final int equalityIndex, final int targetIndex, final Object pattern, final Set<Integer> indices) {
-			final List<Object> equality = castToEquality(this.getExpression(equalityIndex));
+		public final void rewrite(final int equalityIndex, final int targetIndex, final Set<Integer> indices) {
+			this.rewrite(this.newName(), equalityIndex, targetIndex, indices);
+		}
+		
+		public final void rewrite(final String name, final int equalityIndex, final int targetIndex, final Set<Integer> indices) {
+			this.rewrite(name, this.getExpression(equalityIndex), this.getExpression(targetIndex), indices);
+		}
+		
+		public final void rewrite(final String equalityName, final int targetIndex, final Set<Integer> indices) {
+			this.rewrite(this.newName(), equalityName, targetIndex, indices);
+		}
+		
+		public final void rewrite(final String name, final String equalityName, final int targetIndex, final Set<Integer> indices) {
+			this.rewrite(name, this.getExpression(equalityName), this.getExpression(targetIndex), indices);
+		}
+		
+		public final void rewrite(final int equalityIndex, final String targetName, final Set<Integer> indices) {
+			this.rewrite(this.newName(), equalityIndex, targetName, indices);
+		}
+		
+		public final void rewrite(final String name, final int equalityIndex, final String targetName, final Set<Integer> indices) {
+			this.rewrite(name, this.getExpression(equalityIndex), this.getExpression(targetName), indices);
+		}
+		
+		public final void rewrite(final String equalityName, final String targetName, final Set<Integer> indices) {
+			this.rewrite(this.newName(), equalityName, targetName, indices);
+		}
+		
+		public final void rewrite(final String name, final String equalityName, final String targetName, final Set<Integer> indices) {
+			this.rewrite(name, this.getExpression(equalityName), this.getExpression(targetName), indices);
+		}
+		
+		private final void rewrite(final String name, final Object source, final Object target, final Set<Integer> indices) {
+			final List<Object> equality = castToEquality(source);
+			final Object pattern = equality.get(0);
+			final boolean[] rewritten = { false };
+			final Object newFact = deepRewrite(new Rewriter() {
+				
+				private int index;
+				
+				@Override
+				public final Object rewrite(final Object target) {
+					return equality.get(2);
+				}
+				
+				@Override
+				public final boolean canRewrite(final Object target) {
+					final boolean result = pattern.equals(target) && indices.contains(this.index++);
+					
+					rewritten[0] |= result;
+					
+					return result;
+				}
+				
+				@Override
+				public final boolean canRewrite(final Template target) {
+					// TODO Auto-generated method stub
+					return true;
+				}
+				
+				/**
+				 * {@value}.
+				 */
+				private static final long serialVersionUID = 6362319794903172199L;
+				
+			}, target);
 			
-			// TODO
-			
-			throw new RuntimeException("TODO");
+			if (rewritten[0]) {
+				this.addItem(name, new Item(equality(name, newFact), Special.DEDUCTION));
+			}
 		}
 		
 		public final boolean isGoalReached() {
@@ -893,6 +958,54 @@ public final class InteractiveRewrite {
 		
 		public final void define(final String name, final Template template) {
 			this.currentContext.define(name, template);
+			this.popContext();
+		}
+		
+		public final void rewrite(final int equalityIndex, final int targetIndex,
+				final Set<Integer> indices) {
+			this.currentContext.rewrite(equalityIndex, targetIndex, indices);
+			this.popContext();
+		}
+		
+		public final void rewrite(final String name, final int equalityIndex,
+				final int targetIndex, final Set<Integer> indices) {
+			this.currentContext.rewrite(name, equalityIndex, targetIndex, indices);
+			this.popContext();
+		}
+		
+		public final void rewrite(final String equalityName, final int targetIndex,
+				final Set<Integer> indices) {
+			this.currentContext.rewrite(equalityName, targetIndex, indices);
+			this.popContext();
+		}
+		
+		public final void rewrite(final String name, final String equalityName,
+				final int targetIndex, final Set<Integer> indices) {
+			this.currentContext.rewrite(name, equalityName, targetIndex, indices);
+			this.popContext();
+		}
+		
+		public final void rewrite(final int equalityIndex, final String targetName,
+				final Set<Integer> indices) {
+			this.currentContext.rewrite(equalityIndex, targetName, indices);
+			this.popContext();
+		}
+		
+		public final void rewrite(final String name, final int equalityIndex,
+				final String targetName, final Set<Integer> indices) {
+			this.currentContext.rewrite(name, equalityIndex, targetName, indices);
+			this.popContext();
+		}
+		
+		public final void rewrite(final String equalityName, final String targetName,
+				final Set<Integer> indices) {
+			this.currentContext.rewrite(equalityName, targetName, indices);
+			this.popContext();
+		}
+		
+		public final void rewrite(final String name, final String equalityName,
+				final String targetName, final Set<Integer> indices) {
+			this.currentContext.rewrite(name, equalityName, targetName, indices);
 			this.popContext();
 		}
 		
