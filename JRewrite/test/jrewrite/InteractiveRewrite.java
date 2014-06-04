@@ -2,6 +2,7 @@ package jrewrite;
 
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.join;
+import static net.sourceforge.aprog.tools.Tools.set;
 
 import java.io.PrintStream;
 import java.io.Serializable;
@@ -14,9 +15,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import jrewrite.InteractiveRewrite.Context.Item;
+
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 import net.sourceforge.aprog.tools.Tools;
 
@@ -43,6 +44,30 @@ public final class InteractiveRewrite {
 		final Session session = new Session();
 		
 		session.assume("identity", template(v("E"), equality("E", "E")));
+		
+		session.printTo(System.out);
+		
+		{
+			session.prove("symmetry of equality", template(v("a", "b"), rule(equality("a", "b"), equality("b", "a"))));
+			
+			session.printTo(System.out);
+			
+			session.introduce();
+			session.printTo(System.out);
+			session.introduce();
+			session.printTo(System.out);
+			session.introduce();
+			session.printTo(System.out);
+			
+			session.bind("identity", "E", session.getExpression("#2"));
+			session.express(-1);
+			session.printTo(System.out);
+			
+			session.rewrite("#6", -1, set(0));
+			
+			session.printTo(System.out);
+		}
+		
 		session.assume("trueness1", template(v("E"), rule(equality("E", "true"), "E")));
 		session.assume("trueness2", template(v("E"), rule("E", equality("E", "true"))));
 		session.assume("definition of 0", nat("0"));
@@ -51,6 +76,25 @@ public final class InteractiveRewrite {
 				, rule(template(v("n"), rule(apply1("P", "n"), apply1("P", s("n"))))
 						, template(v("n"), apply1("P", "n"))))));
 		session.assume("definition of 1", equality("1", s("0")));
+		
+		session.printTo(System.out);
+		
+		{
+			session.prove("nat1", nat("1"));
+			
+			session.bind("symmetry of equality", "a", "1");
+			session.bind(-1, "b", s("0"));
+			session.express(-1);
+			session.apply("S 0=>1", -1, "definition of 1");
+			
+			session.bind("definition of S", "n", "0");
+			session.express(-1);
+			session.apply(-1, "definition of 0");
+			session.rewrite("S 0=>1", -1, set(0));
+
+			session.printTo(System.out);
+		}
+		
 		session.assume("right neutrality of 0", template(v("a")
 				, rule(nat("a"), equality(plus("a", "0"), "a"))));
 		session.assume("right recursivity of addition", template(v("a", "b")
@@ -66,7 +110,36 @@ public final class InteractiveRewrite {
 			
 			session.prove(apply1("P", "0"));
 			session.bind("definition of P", "a", "0");
+			session.express("expression of P 0 (a)", -1);
+			
+			session.bind("right recursivity of addition", "a", "0");
+			session.bind(-1, "b", "0");
 			session.express(-1);
+			session.apply(-1, "definition of 0");
+			session.apply("S0+0", -1, "definition of 0");
+			session.bind("right neutrality of 0", "a", "0");
+			session.express(-1);
+			session.apply("0+0=>0", -1, "definition of 0");
+			session.bind("symmetry of equality", "a", "1");
+			session.bind(-1, "b", s("0"));
+			session.express(-1);
+			session.apply("S 0=>1", -1, "definition of 1");
+			session.rewrite("0+0=>0", "S0+0", set(0));
+			session.rewrite("S 0=>1", -1, set(0, 1));
+			session.rewrite("expression of P 0 (b)", -1, "expression of P 0 (a)", set(0, 1));
+			session.bind("right neutrality of 0", "a", "1");
+			session.express(-1);
+			session.apply(-1, "nat1");
+			session.rewrite("expression of P 0 (c)", -1, "expression of P 0 (b)", set(0));
+			session.bind("identity", "E", "1");
+			session.express("1=1", -1);
+			session.bind("trueness2", "E", equality("1", "1"));
+			session.express(-1);
+			session.apply(-1, "1=1");
+			session.rewrite("expression of P 0 (d)", -1, "expression of P 0 (c)", set(0));
+			session.bind("trueness1", "E", apply1("P", "0"));
+			session.express(-1);
+			session.apply(-1, "expression of P 0 (d)");
 			
 			session.printTo(System.out);
 		}
@@ -510,6 +583,10 @@ public final class InteractiveRewrite {
 			this.express(this.newName(), (Template) this.getExpression(templateRuleName));
 		}
 		
+		public final void express(final String name, final int templateRuleIndex) {
+			this.express(name, (Template) this.getExpression(templateRuleIndex));
+		}
+		
 		public final void express(final String name, final String templateRuleName) {
 			this.express(name, (Template) this.getExpression(templateRuleName));
 		}
@@ -834,6 +911,11 @@ public final class InteractiveRewrite {
 		
 		public final void express(final String templateRuleName) {
 			this.currentContext.express(templateRuleName);
+			this.popContext();
+		}
+		
+		public final void express(final String name, final int templateRuleIndex) {
+			this.currentContext.express(name, templateRuleIndex);
 			this.popContext();
 		}
 		
