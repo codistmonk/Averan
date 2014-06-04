@@ -14,6 +14,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
+import jrewrite.InteractiveRewrite.Context.Item;
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 import net.sourceforge.aprog.tools.Tools;
 
@@ -31,20 +32,239 @@ public final class InteractiveRewrite {
 	 * <br>Unused
 	 */
 	public static final void main(final String[] commandLineArguments) {
-		test2();
+		test3();
+	}
+	
+	public static final void test3() {
+		final Session session = new Session();
+		
+		session.assume("identity", template(v("E"), equality("E", "E")));
+		session.assume("trueness1", template(v("E"), rule(equality("E", "true"), "E")));
+		session.assume("trueness2", template(v("E"), rule("E", equality("E", "true"))));
+		session.assume("definition of 0", nat("0"));
+		session.define("definition of S", template(v("n"), rule(nat("n"), nat(s("n")))));
+		session.define("definition of recursivity", template(v("P"), rule(apply1("P", "0")
+				, rule(template(v("n"), rule(apply1("P", "n"), apply1("P", s("n"))))
+						, template(v("n"), apply1("P", "n"))))));
+		session.assume("definition of 1", equality("1", s("0")));
+		session.define("right neutrality of 0", template(v("a")
+				, rule(nat("a"), equality(plus("a", "0"), "a"))));
+		session.define("right recursivity of addition", template(v("a", "b")
+				, rule(nat("a"), rule(nat("b"), equality(plus("a", s("b")), s(plus("a", "b")))))));
+		
+		System.out.println();
+		session.printTo(System.out);
+		
+		{
+			session.prove(template(v("a"), rule(nat("a"), equality(plus("a", "1"), plus("1", "a")))));
+			session.define("definition of P", template(v("a"), equality(apply1("P", "a"), equality(plus("a", "1"), plus("1", "a")))));
+			
+			System.out.println();
+			session.printTo(System.out);
+			
+			session.prove(apply1("P", "0"));
+			session.bind("definition of P", "a", "0");
+			session.express(-1);
+			
+			System.out.println();
+			session.printTo(System.out);
+		}
+	}
+	
+	public static final List<Object> apply1(final Object function, final Object argument) {
+		return list(function, " ", argument);
+	}
+	
+	public static final List<Object> plus(final Object expression1, final Object expression2) {
+		return list(expression1, "+", expression2);
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-06-04)
+	 */
+	public static final class Session implements Serializable {
+		
+		private final Context rootContext = new Context();
+		
+		private Context currentContext = this.rootContext;
+		
+		public final Context introduce() {
+			return this.currentContext.introduce();
+		}
+		
+		public final void express(final int templateRuleIndex) {
+			this.currentContext.express(templateRuleIndex);
+			this.popContext();
+		}
+		
+		public final void express(final String templateRuleName) {
+			this.currentContext.express(templateRuleName);
+			this.popContext();
+		}
+		
+		public final void express(final String name, final String templateRuleName) {
+			this.currentContext.express(name, templateRuleName);
+			this.popContext();
+		}
+		
+		public final void bind(final int templateRuleIndex, final String variable,
+				final Object value) {
+			this.currentContext.bind(templateRuleIndex, variable, value);
+			this.popContext();
+		}
+		
+		public final void bind(final String templateRuleName, final String variable,
+				final Object value) {
+			this.currentContext.bind(templateRuleName, variable, value);
+			this.popContext();
+		}
+		
+		public final void bind(final String name, final int ruleTemplateIndex,
+				final String variable, final Object value) {
+			this.currentContext.bind(name, ruleTemplateIndex, variable, value);
+			this.popContext();
+		}
+		
+		public final void bind(final String name, final String ruleTemplateName,
+				final String variable, final Object value) {
+			this.currentContext.bind(name, ruleTemplateName, variable, value);
+			this.popContext();
+		}
+		
+		public final void apply(final int ruleIndex, final int testIndex) {
+			this.currentContext.apply(ruleIndex, testIndex);
+			this.popContext();
+		}
+		
+		public final void apply(final int ruleIndex, final String testName) {
+			this.currentContext.apply(ruleIndex, testName);
+			this.popContext();
+		}
+		
+		public final void apply(final String ruleName, final int testIndex) {
+			this.currentContext.apply(ruleName, testIndex);
+			this.popContext();
+		}
+		
+		public final void apply(final String ruleName, final String testName) {
+			this.currentContext.apply(ruleName, testName);
+			this.popContext();
+		}
+		
+		public final void apply(final String name, final int ruleIndex, final int testIndex) {
+			this.currentContext.apply(name, ruleIndex, testIndex);
+			this.popContext();
+		}
+		
+		public final void apply(final String name, final int ruleIndex, final String testName) {
+			this.currentContext.apply(name, ruleIndex, testName);
+			this.popContext();
+		}
+		
+		public final void apply(final String name, final String ruleName, final int testIndex) {
+			this.currentContext.apply(name, ruleName, testIndex);
+			this.popContext();
+		}
+		
+		public final void apply(final String name, final String ruleName, final String testName) {
+			this.currentContext.apply(name, ruleName, testName);
+			this.popContext();
+		}
+		
+		public final void assume(final Object expression) {
+			this.currentContext.assume(expression);
+			this.popContext();
+		}
+		
+		public final void assume(final String name, final Object expression) {
+			this.currentContext.assume(name, expression);
+			this.popContext();
+		}
+		
+		public final void prove(final Object goal) {
+			this.currentContext = this.currentContext.prove(goal);
+			this.popContext();
+		}
+		
+		public final void prove(final String name, final Object goal) {
+			this.currentContext = this.currentContext.prove(name, goal);
+			this.popContext();
+		}
+		
+		public final void define(final Template template) {
+			this.currentContext.define(template);
+			this.popContext();
+		}
+		
+		public final void define(final String name, final Template template) {
+			this.currentContext.define(name, template);
+			this.popContext();
+		}
+		
+		public final boolean isGoalReached() {
+			return this.currentContext.isGoalReached();
+		}
+		
+		public final Item getItem(final int index) {
+			return this.currentContext.getItem(index);
+		}
+		
+		public final Item getItem(final String name) {
+			return this.currentContext.getItem(name);
+		}
+		
+		public final List<Object> getDefinition(final int index) {
+			return this.currentContext.getDefinition(index);
+		}
+		
+		public final List<Object> getDefinition(final String name) {
+			return this.currentContext.getDefinition(name);
+		}
+		
+		public final Object getExpression(final int index) {
+			return this.currentContext.getExpression(index);
+		}
+		
+		public final Object getExpression(final String name) {
+			return this.currentContext.getExpression(name);
+		}
+		
+		public final int getDepth() {
+			return this.currentContext.getDepth();
+		}
+		
+		public final void printTo(final PrintStream output) {
+			this.currentContext.printTo(output);
+		}
+		
+		public final int getItemCount() {
+			return this.currentContext.getItemCount();
+		}
+		
+		private final void popContext() {
+			while (this.currentContext.isGoalReached() && this.currentContext.getParent() != null) {
+				this.currentContext = this.currentContext.getParent();
+			}
+		}
+		
+		/**
+		 * {@value}.
+		 */
+		private static final long serialVersionUID = -8755435237357100769L;
+		
 	}
 	
 	public static final void test2() {
 		final Context context = new Context();
 		
 		context.assume(nat("0"));
-		context.define(template(v("n"), rule(nat("n"), nat(list("S ", "n")))));
+		context.define(template(v("n"), rule(nat("n"), nat(s("n")))));
 		
 		System.out.println();
 		context.printTo(System.out);
 		
 		{
-			final Context proofContext1 = context.prove(template(v("n"), rule(nat("n"), nat(list("S ", list("S ", "n"))))));
+			final Context proofContext1 = context.prove(template(v("n"), rule(nat("n"), nat(s(s("n"))))));
 			
 			proofContext1.printTo(System.out);
 			
@@ -71,7 +291,7 @@ public final class InteractiveRewrite {
 					System.out.println();
 					proofContext3.printTo(System.out);
 					
-					proofContext3.bind("#1", "n", list("S ", "n"));
+					proofContext3.bind("#1", "n", s("n"));
 					proofContext3.express(-1);
 					proofContext3.apply(-1, "#9");
 					
@@ -133,12 +353,16 @@ public final class InteractiveRewrite {
 		context.printTo(System.out);
 	}
 	
-	public static final List<Object> list(final Object... list) {
-		return Arrays.asList(list);
+	public static final List<Object> s(final Object expression) {
+		return apply1("S", expression);
 	}
 	
 	public static final List<Object> nat(final Object expression) {
 		return list(expression, ":", "N");
+	}
+	
+	public static final List<Object> list(final Object... list) {
+		return Arrays.asList(list);
 	}
 	
 	public static final Rule rule(final Object condition, final Object expression) {
@@ -158,7 +382,11 @@ public final class InteractiveRewrite {
 			final StringBuilder resultBuilder = new StringBuilder();
 			
 			for (final Object element : (List) object) {
-				resultBuilder.append(deepToString(element));
+				if (element instanceof List) {
+					resultBuilder.append('(').append(deepToString(element)).append(')');
+				} else {
+					resultBuilder.append(deepToString(element));
+				}
 			}
 			
 			return resultBuilder.toString();
@@ -209,8 +437,27 @@ public final class InteractiveRewrite {
 		return target;
 	}
 	
-	public static final List<Object> equality(final String name, final Object expression) {
-		return list(name, "=", expression);
+	public static final String EQUALITY_OPERATOR = " = ";
+	
+	public static final boolean isProposition(final Object expression) {
+		if (expression instanceof Rule) {
+			return true;
+		}
+		
+		if (expression instanceof List) {
+			@SuppressWarnings("unchecked")
+			final List<Object> list = (List<Object>) expression;
+			
+			if (list.size() == 3 && EQUALITY_OPERATOR.equals(list.get(1))) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	public static final List<Object> equality(final Object expression1, final Object expression2) {
+		return list(expression1, EQUALITY_OPERATOR, expression2);
 	}
 	
 	/**
@@ -362,6 +609,10 @@ public final class InteractiveRewrite {
 			this.goalReached = Special.TRUE.equals(goal);
 		}
 		
+		public final Context getParent() {
+			return this.parent;
+		}
+		
 		public final Context introduce() {
 			final Context result;
 			
@@ -410,7 +661,7 @@ public final class InteractiveRewrite {
 		}
 		
 		private final void express(final String name, final Template ruleTemplate) {
-			if (!(ruleTemplate.getExpression() instanceof Rule) || !ruleTemplate.getVariables().isEmpty()) {
+			if (!isProposition(ruleTemplate.getExpression()) || !ruleTemplate.getVariables().isEmpty()) {
 				throw new IllegalArgumentException();
 			}
 			
@@ -434,7 +685,7 @@ public final class InteractiveRewrite {
 		}
 		
 		private final void bind(final String name, final Template ruleTemplate, final String variable, final Object value) {
-			if (!(ruleTemplate.getExpression() instanceof Rule)) {
+			if (!isProposition(ruleTemplate.getExpression())) {
 				throw new IllegalArgumentException();
 			}
 			
@@ -516,11 +767,11 @@ public final class InteractiveRewrite {
 			final int n = this.getItemCount();
 			final int normalizedIndex = (n + index) % n;
 			
-			if (this.parent != null) {
-				final int parentItemCount = this.parent.getItemCount();
+			if (this.getParent() != null) {
+				final int parentItemCount = this.getParent().getItemCount();
 				
 				if (normalizedIndex < parentItemCount) {
-					return this.parent.getItem(normalizedIndex);
+					return this.getParent().getItem(normalizedIndex);
 				}
 				
 				return this.items.get(normalizedIndex - parentItemCount);
@@ -532,7 +783,7 @@ public final class InteractiveRewrite {
 		public final Item getItem(final String name) {
 			final Item item = this.map.get(name);
 			
-			return item == null && this.parent != null ? this.parent.getItem(name) : item;
+			return item == null && this.getParent() != null ? this.getParent().getItem(name) : item;
 		}
 		
 		public final List<Object> getDefinition(final int index) {
@@ -552,7 +803,7 @@ public final class InteractiveRewrite {
 		}
 		
 		public final int getDepth() {
-			return this.parent == null ? 0 : 1 + this.parent.getDepth();
+			return this.getParent() == null ? 0 : 1 + this.getParent().getDepth();
 		}
 		
 		public final void printTo(final PrintStream output) {
@@ -562,7 +813,7 @@ public final class InteractiveRewrite {
 				final Object proof = item.getProof();
 				final String proofStatus;
 				
-				if (Special.TEMPLATE.equals(proof) || Special.DEDUCTION.equals(proof)) {
+				if (Special.DEDUCTION.equals(proof)) {
 					proofStatus = "OK";
 				} else if (proof instanceof Context && ((Context) proof).isGoalReached()) {
 					proofStatus = "OK";
@@ -576,13 +827,14 @@ public final class InteractiveRewrite {
 			{
 				final String proofStatus = this.isGoalReached() ? "OK" : "??";
 				
+				output.println();
 				output.println(indent + proofStatus + " " + deepToString(this.goal) + " (GOAL)");
 			}
 			
 		}
 		
 		public final int getItemCount() {
-			return (this.parent == null ? 0 : this.parent.getItemCount()) + this.items.size();
+			return (this.getParent() == null ? 0 : this.getParent().getItemCount()) + this.items.size();
 		}
 		
 		private final void addItem(final String name, final Item item) {
