@@ -2,42 +2,35 @@ package jrewrite2;
 
 import static net.sourceforge.aprog.tools.Tools.set;
 import static org.junit.Assert.*;
-import net.sourceforge.aprog.tools.Tools;
 
 import org.junit.Test;
 
 /**
  * @author codistmonk (creation 2014-06-10)
  */
-public final class ContextTest {
+public final class SessionTest {
 	
 	@Test
 	public final void test1() {
-		final Context context = new Context();
+		final Session session = new Session();
 		
-		context.assume(null, template(v("n"), rule(nat("n"), nat(s("n")))));
-		context.assume(null, nat("0"));
-		context.assume(null, equality("1", s("0")));
+		session.assume(template(v("n"), rule(nat("n"), nat(s("n")))));
+		session.assume(nat("0"));
+		session.assume(equality("1", s("0")));
 		
-		context.printTo(System.out);
+		session.printTo(System.out);
 		
 		{
-			final Context proof = context.prove(null, nat("1"));
+			session.prove(nat("1"));
 			
-			proof.printTo(System.out);
+			session.bind(0, expression("0"));
+			session.apply("#4", 1);
+			session.rewriteRight(5, "#2", set(0));
 			
-			proof.bind(null, 0, expression("0"));
-			proof.apply(null, 4, 1);
-			proof.rewriteRight(null, 5, 2, set(0));
+			session.printTo(System.out);
 			
-			proof.printTo(System.out);
-			
-			assertTrue(proof.isGoalReached());
+			assertTrue(session.isGoalReached());
 		}
-		
-		context.printTo(System.out);
-		
-		assertTrue(context.isGoalReached());
 	}
 	
 	public static final Template template(final String[] variableNames, final Object expression) {
