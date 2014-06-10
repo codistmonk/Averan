@@ -73,7 +73,7 @@ public final class InteractiveRewrite {
 		session.assume("definition of 0", nat("0"));
 		session.assume("definition of S", template(v("n"), rule(nat("n"), nat(s("n")))));
 		session.assume("definition of recursivity", template(v("P"), rule(apply1("P", "0")
-				, rule(template(v("n"), rule(apply1("P", "n"), apply1("P", s("n"))))
+				, rule(template(v("n"), rule(nat("n"), rule(apply1("P", "n"), apply1("P", s("n")))))
 						, template(v("n"), apply1("P", "n"))))));
 		session.assume("definition of 1", equality("1", s("0")));
 		
@@ -142,6 +142,22 @@ public final class InteractiveRewrite {
 			session.apply(-1, "expression of P 0 (d)");
 			
 			session.printTo(System.out);
+			
+			{
+				session.prove(template(v("n"), rule(nat("n"), rule(apply1("P", "n"), apply1("P", s("n"))))));
+				session.printTo(System.out);
+				session.introduce();
+				session.printTo(System.out);
+				session.introduce();
+				session.printTo(System.out);
+				session.introduce();
+				session.bind("definition of P", "a", "n");
+				session.express("expression of P n (a)", -1);
+				session.bind("definition of P", "a", s("n"));
+				session.express("expression of P (S n) (a)", -1);
+				
+				session.printTo(System.out);
+			}
 		}
 		
 		return session.isGoalReached();
