@@ -14,7 +14,7 @@ public final class Composite implements Expression, Iterable<Expression> {
 	
 	private final List<Expression> children;
 	
-	public Composite(final Expression[] children) {
+	public Composite(final Expression... children) {
 		this.children = Arrays.asList(children);
 	}
 	
@@ -59,14 +59,18 @@ public final class Composite implements Expression, Iterable<Expression> {
 		Object result = visitor.visitBeforeChildren(this);
 		
 		if (result == null) {
-			final int n = this.getChildCount();
-			final Object[] childrenVisitationResults = new Object[n];
-			
-			for (int i = 0; i < n; ++i) {
-				childrenVisitationResults[i] = this.getChild(i).accept(visitor);
-			}
-			
-			result = visitor.visitAfterChildren(this, childrenVisitationResults);
+			result = visitor.visitAfterChildren(this, this.computeChildrenVisitationResults(visitor));
+		}
+		
+		return result;
+	}
+	
+	public final Object[] computeChildrenVisitationResults(final Visitor visitor) {
+		final int n = this.getChildCount();
+		final Object[] result = new Object[n];
+		
+		for (int i = 0; i < n; ++i) {
+			result[i] = this.getChild(i).accept(visitor);
 		}
 		
 		return result;

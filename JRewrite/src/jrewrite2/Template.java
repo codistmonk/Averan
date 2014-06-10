@@ -1,6 +1,7 @@
 package jrewrite2;
 
 import static jrewrite2.Symbol.enclose;
+import static net.sourceforge.aprog.tools.Tools.array;
 import static net.sourceforge.aprog.tools.Tools.cast;
 
 /**
@@ -49,10 +50,7 @@ public final class Template implements Expression {
 		Object result = visitor.visitBeforeChildren(this);
 		
 		if (result == null) {
-			final Object[] childrenVisitationResults = {
-					this.getProposition().accept(visitor)
-			};
-			result = visitor.visitAfterChildren(this, childrenVisitationResults);
+			result = visitor.visitAfterChildren(this, array(this.getProposition().accept(visitor)));
 		}
 		
 		return result;

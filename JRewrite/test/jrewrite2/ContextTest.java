@@ -1,6 +1,8 @@
 package jrewrite2;
 
+import static net.sourceforge.aprog.tools.Tools.set;
 import static org.junit.Assert.*;
+import net.sourceforge.aprog.tools.Tools;
 
 import org.junit.Test;
 
@@ -21,6 +23,12 @@ public final class ContextTest {
 		
 		{
 			final Context proof = context.prove(null, nat("1"));
+			
+			proof.printTo(System.out);
+			
+			proof.bind(null, 0, expression("0"));
+			proof.apply(null, 4, 1);
+			proof.rewriteRight(null, 5, 2, set(0));
 			
 			proof.printTo(System.out);
 			

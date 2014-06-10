@@ -8,33 +8,42 @@ import static net.sourceforge.aprog.tools.Tools.cast;
  */
 public final class Equality implements Expression {
 	
-	private final Expression left;
-	
-	private final Expression right;
+	private final Composite composite;
 	
 	public Equality(final Expression left, final Expression right) {
-		this.left = left;
-		this.right = right;
+		this(new Composite(left, right));
+	}
+	
+	public Equality(final Composite composite) {
+		if (composite.getChildCount() != 2) {
+			throw new IllegalArgumentException();
+		}
+		
+		this.composite = composite;
+	}
+	
+	public final Composite getComposite() {
+		return this.composite;
 	}
 	
 	public final Expression getLeft() {
-		return this.left;
+		return this.getComposite().getChild(0);
 	}
 	
 	public final Expression getRight() {
-		return this.right;
+		return this.getComposite().getChild(1);
 	}
 	
 	@Override
 	public final int hashCode() {
-		return this.getLeft().hashCode() + this.getRight().hashCode();
+		return this.getComposite().hashCode();
 	}
 	
 	@Override
 	public final boolean equals(final Object object) {
 		final Equality that = cast(this.getClass(), object);
 		
-		return that != null && this.getLeft().equals(that.getLeft()) && this.getRight().equals(that.getRight());
+		return that != null && this.getComposite().equals(that.getComposite());
 	}
 	
 	@Override
@@ -47,11 +56,8 @@ public final class Equality implements Expression {
 		Object result = visitor.visitBeforeChildren(this);
 		
 		if (result == null) {
-			final Object[] childrenVisitationResults = {
-					this.getLeft().accept(visitor),
-					this.getRight().accept(visitor)
-			};
-			result = visitor.visitAfterChildren(this, childrenVisitationResults);
+			result = visitor.visitAfterChildren(this
+					, this.getComposite().computeChildrenVisitationResults(visitor));
 		}
 		
 		return result;
