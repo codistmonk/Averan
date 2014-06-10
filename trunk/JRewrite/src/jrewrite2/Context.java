@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.sourceforge.aprog.tools.Tools;
+
 /**
  * @author codistmonk (creation 2014-06-10)
  */
@@ -53,15 +55,34 @@ public final class Context implements Serializable {
 	}
 	
 	public final int getFactCount() {
-		return this.facts.size();
+		return (this.getParent() == null ? 0 : this.getParent().getFactCount()) + this.facts.size();
 	}
 	
 	public final Fact getFact(final int index) {
-		return this.facts.get(index);
+		final int n = this.getFactCount();
+		final int normalizedIndex = (n + index) % n;
+		
+		if (this.getParent() != null) {
+			final int parentItemCount = this.getParent().getFactCount();
+			
+			if (normalizedIndex < parentItemCount) {
+				return this.getParent().getFact(normalizedIndex);
+			}
+			
+			return this.facts.get(normalizedIndex - parentItemCount);
+		}
+		
+		return this.facts.get(normalizedIndex);
 	}
 	
 	public final int getFactIndex(final String key) {
-		return this.factIndices.get(key);
+		Integer result = this.factIndices.get(key);
+		
+		if (result == null && this.getParent() != null) {
+			result = this.getParent().getFactIndex(key);
+		}
+		
+		return result;
 	}
 	
 	public final void assume(final String key, final Expression proposition) {
@@ -102,14 +123,32 @@ public final class Context implements Serializable {
 	}
 	
 	public final void bind(final String key, final int templateIndex, final Expression expression) {
-		debugPrint("TODO");
-		// TODO
+		final Template template = (Template) this.getFact(templateIndex).getProposition();
+		final Expression newProposition = (Expression) template.getProposition().accept(new Binder(template.getVariableName(), expression));
+		
+		this.accept(key, newProposition, TRUE);
 	}
 	
-	public final void rewrite(final String key, final int factIndex
+	public final void rewriteLeft(final String key, final int factIndex
+			, final int equalityIndex, final Set<Integer> indices) {
+		final Equality equality = (Equality) this.getFact(equalityIndex).getProposition();
+		
+		this.rewrite(key, factIndex, equality.getLeft(), equality.getRight(), indices);
+	}
+	
+	public final void rewriteRight(final String key, final int factIndex
+			, final int equalityIndex, final Set<Integer> indices) {
+		final Equality equality = (Equality) this.getFact(equalityIndex).getProposition();
+		
+		this.rewrite(key, factIndex, equality.getRight(), equality.getLeft(), indices);
+	}
+	
+	private final void rewrite(final String key, final int factIndex
 			, final Expression pattern, final Expression replacement, final Set<Integer> indices) {
-		debugPrint("TODO");
-		// TODO
+		final Expression newExpression = (Expression) this.getFact(factIndex).getProposition()
+				.accept(new Rewriter(pattern, replacement, indices));
+		
+		this.accept(key, newExpression, TRUE);
 	}
 	
 	public final void apply(final String key, final int ruleIndex, final int conditionIndex) {
@@ -213,6 +252,195 @@ public final class Context implements Serializable {
 		 * {@value}.
 		 */
 		private static final long serialVersionUID = 1869338402483804728L;
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-06-10)
+	 */
+	public static abstract class AbstractVisitor implements Visitor {
+		
+		@Override
+		public final Composite visitAfterChildren(final Composite composite,
+				final Object[] childrenVisitationResults) {
+			if (!newCompositeNeeded(composite, childrenVisitationResults)) {
+				return composite;
+			}
+			
+			return newComposite(childrenVisitationResults);
+		}
+		
+		@Override
+		public final Rule visitAfterChildren(final Rule rule,
+				final Object[] childrenVisitationResults) {
+			if (!newCompositeNeeded(rule.getComposite(), childrenVisitationResults)) {
+				return rule;
+			}
+			
+			return new Rule(newComposite(childrenVisitationResults));
+		}
+		
+		@Override
+		public final Equality visitAfterChildren(final Equality equality,
+				final Object[] childrenVisitationResults) {
+			if (!newCompositeNeeded(equality.getComposite(), childrenVisitationResults)) {
+				return equality;
+			}
+			
+			return new Equality(newComposite(childrenVisitationResults));
+		}
+		
+		/**
+		 * {@value}.
+		 */
+		private static final long serialVersionUID = -2895672488681850761L;
+		
+		public static final boolean newCompositeNeeded(final Composite composite
+				, final Object[] childrenVisitationResults) {
+			final int n = composite.getChildCount();
+			
+			for (int i = 0; i < n; ++i) {
+				if (composite.getChild(i) != childrenVisitationResults[i]) {
+					return true;
+				}
+			}
+			
+			return false;
+		}
+		
+		public static final Composite newComposite(final Object[] childrenVisitationResults) {
+			final int n = childrenVisitationResults.length;
+			final Expression[] expressions = new Expression[n];
+			
+			for (int i = 0; i < n; ++i) {
+				expressions[i] = (Expression) childrenVisitationResults[i];
+			}
+			
+			return new Composite(expressions);
+		}
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-06-10)
+	 */
+	public static final class Binder extends AbstractVisitor {
+		
+		private final String variableName;
+		
+		private final Expression expression;
+		
+		public Binder(final String variableName, final Expression expression) {
+			this.variableName = variableName;
+			this.expression = expression;
+		}
+		
+		@Override
+		public final Expression visit(final Symbol symbol) {
+			return this.variableName.equals(symbol.toString()) ? this.expression : symbol;
+		}
+		
+		@Override
+		public final Void visitBeforeChildren(final Composite composite) {
+			return null;
+		}
+		
+		@Override
+		public final Void visitBeforeChildren(final Rule rule) {
+			return null;
+		}
+		
+		@Override
+		public final Void visitBeforeChildren(final Equality equality) {
+			return null;
+		}
+		
+		@Override
+		public final Template visitBeforeChildren(final Template template) {
+			return this.variableName.equals(template.getVariableName()) ? template : null;
+		}
+		
+		@Override
+		public Expression visitAfterChildren(final Template template,
+				final Object[] childrenVisitationResults) {
+			return (Expression) childrenVisitationResults[0];
+		}
+		
+		/**
+		 * {@value}.
+		 */
+		private static final long serialVersionUID = -4473669954982246122L;
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-06-10)
+	 */
+	public static final class Rewriter extends AbstractVisitor {
+		
+		private final Expression pattern;
+		
+		private final Expression replacement;
+		
+		private final Set<Integer> indices;
+		
+		private int index;
+		
+		public Rewriter(final Expression pattern, final Expression replacement,
+				final Set<Integer> indices) {
+			this.pattern = pattern;
+			this.replacement = replacement;
+			this.indices = indices;
+		}
+		
+		@Override
+		public final Expression visit(final Symbol symbol) {
+			Expression result = this.visit((Expression) symbol);
+			
+			if (result == null) {
+				result = symbol;
+			}
+			
+			return result;
+		}
+		
+		@Override
+		public final Expression visitBeforeChildren(final Composite composite) {
+			return this.visit(composite);
+		}
+		
+		@Override
+		public final Expression visitBeforeChildren(final Rule rule) {
+			return this.visit(rule);
+		}
+		
+		@Override
+		public Expression visitBeforeChildren(final Equality equality) {
+			return this.visit(equality);
+		}
+		
+		@Override
+		public final Expression visitBeforeChildren(final Template template) {
+			return this.visit(template);
+		}
+		
+		@Override
+		public final Template visitAfterChildren(final Template template,
+				final Object[] childrenVisitationResults) {
+			final Expression newProposition = (Expression) childrenVisitationResults[0];
+			
+			return newProposition == template.getProposition() ? template
+					: new Template(template.getVariableName(), newProposition);
+		}
+		
+		private final Expression visit(final Expression object) {
+			return this.pattern.equals(object) && this.indices.contains(this.index++) ? this.replacement : null;
+		}
+		
+		/**
+		 * {@value}.
+		 */
+		private static final long serialVersionUID = 9150325302376037034L;
 		
 	}
 	

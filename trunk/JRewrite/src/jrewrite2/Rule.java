@@ -8,34 +8,42 @@ import static net.sourceforge.aprog.tools.Tools.cast;
  */
 public final class Rule implements Expression {
 	
-	private final Expression condition;
-	
-	private final Expression expression;
+	private final Composite composite;
 	
 	public Rule(final Expression condition, final Expression expression) {
-		this.condition = condition;
-		this.expression = expression;
+		this(new Composite(condition, expression));
+	}
+	
+	public Rule(final Composite composite) {
+		if (composite.getChildCount() != 2) {
+			throw new IllegalArgumentException();
+		}
+		
+		this.composite = composite;
+	}
+	
+	public final Composite getComposite() {
+		return this.composite;
 	}
 	
 	public final Expression getCondition() {
-		return this.condition;
+		return this.composite.getChild(0);
 	}
 	
 	public final Expression getExpression() {
-		return this.expression;
+		return this.composite.getChild(1);
 	}
 	
 	@Override
 	public final int hashCode() {
-		return this.getCondition().hashCode() + this.getExpression().hashCode();
+		return this.getComposite().hashCode();
 	}
 	
 	@Override
 	public final boolean equals(final Object object) {
 		final Rule that = cast(this.getClass(), object);
 		
-		return that != null && this.getCondition().equals(that.getCondition())
-				&& this.getExpression().equals(that.getExpression());
+		return that != null && this.getComposite().equals(that.getComposite());
 	}
 	
 	@Override
@@ -48,11 +56,8 @@ public final class Rule implements Expression {
 		Object result = visitor.visitBeforeChildren(this);
 		
 		if (result == null) {
-			final Object[] childrenVisitationResults = {
-					this.getCondition().accept(visitor),
-					this.getExpression().accept(visitor)
-			};
-			result = visitor.visitAfterChildren(this, childrenVisitationResults);
+			result = visitor.visitAfterChildren(this
+					, this.getComposite().computeChildrenVisitationResults(visitor));
 		}
 		
 		return result;
