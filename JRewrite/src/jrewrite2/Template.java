@@ -1,5 +1,6 @@
 package jrewrite2;
 
+import static jrewrite2.Symbol.enclose;
 import static net.sourceforge.aprog.tools.Tools.cast;
 
 /**
@@ -40,7 +41,7 @@ public final class Template implements Expression {
 	
 	@Override
 	public final String toString() {
-		return "?" + this.getVariableName() + " (" + this.getProposition() + ")";
+		return "?" + this.getVariableName() + " " + enclose(this.getProposition());
 	}
 	
 	@Override

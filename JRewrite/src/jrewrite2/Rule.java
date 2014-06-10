@@ -1,5 +1,6 @@
 package jrewrite2;
 
+import static jrewrite2.Symbol.enclose;
 import static net.sourceforge.aprog.tools.Tools.cast;
 
 /**
@@ -39,7 +40,7 @@ public final class Rule implements Expression {
 	
 	@Override
 	public final String toString() {
-		return "(" + this.getCondition() + ") -> (" + this.getExpression() + ")";
+		return enclose(this.getCondition()) + " -> " + enclose(this.getExpression());
 	}
 	
 	@Override

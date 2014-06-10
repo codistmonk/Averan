@@ -1,5 +1,6 @@
 package jrewrite2;
 
+import static jrewrite2.Symbol.enclose;
 import static net.sourceforge.aprog.tools.Tools.cast;
 
 /**
@@ -38,7 +39,7 @@ public final class Equality implements Expression {
 	
 	@Override
 	public final String toString() {
-		return "(" + this.getLeft() + ") = (" + this.getRight() + ")";
+		return enclose(this.getLeft()) + " = " + enclose(this.getRight());
 	}
 	
 	@Override

@@ -2,11 +2,12 @@ package jrewrite2;
 
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.debugPrint;
+import static net.sourceforge.aprog.tools.Tools.join;
 
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -121,16 +122,25 @@ public final class Context implements Serializable {
 		this.accept(key, rule.getExpression(), TRUE);
 	}
 	
+	public final int getDepth() {
+		return this.getParent() == null ? 0 : 1 + this.getParent().getDepth();
+	}
+	
 	public final void printTo(final PrintStream output) {
 		output.println();
 		
+		final String indent = join("", Collections.nCopies(this.getDepth(), "\t").toArray());
+		
 		for (final Map.Entry<String, Integer> entry : this.factIndices.entrySet()) {
-			output.println("(" + entry.getKey() + ") " + this.getFact(entry.getValue()).getProposition());
+			final Fact fact = this.getFact(entry.getValue());
+			
+			output.println(indent + "(" + entry.getKey() + ":"
+					+ getJustification(fact.getProof()) + ") " + fact.getProposition());
 		}
 		
 		output.println();
 		
-		output.println("(goal) " + this.getGoal());
+		output.println(indent + "(goal:" + getJustification(this) + ") " + this.getGoal());
 	}
 	
 	private final void accept(final String key, final Expression proposition, final Symbol justification) {
@@ -162,6 +172,20 @@ public final class Context implements Serializable {
 	public static final Symbol TRUE = new Symbol("True");
 	
 	public static final Symbol FALSE = new Symbol("False");
+	
+	public static final String getJustification(final Context proof) {
+		final String result;
+		
+		if (!proof.isGoalReached()) {
+			result = "Unproven";
+		} else if (Context.ASSUMED.equals(proof.getGoal())) {
+			result = "Assumed";
+		} else {
+			result = "True";
+		}
+		
+		return result;
+	}
 	
 	/**
 	 * @author codistmonk (creation 2014-06-10)

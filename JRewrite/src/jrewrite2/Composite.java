@@ -1,12 +1,11 @@
 package jrewrite2;
 
+import static jrewrite2.Symbol.enclose;
 import static net.sourceforge.aprog.tools.Tools.cast;
 
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-
-import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2014-06-10)
@@ -41,7 +40,13 @@ public final class Composite implements Expression, Iterable<Expression> {
 	
 	@Override
 	public final String toString() {
-		return Tools.join("", this.children.toArray());
+		final StringBuilder resultBuilder = new StringBuilder();
+		
+		for (final Expression child : this) {
+			resultBuilder.append(enclose(child));
+		}
+		
+		return resultBuilder.toString();
 	}
 	
 	@Override
