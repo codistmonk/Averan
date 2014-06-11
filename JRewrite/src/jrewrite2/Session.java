@@ -200,6 +200,18 @@ public final class Session implements Serializable {
 		this.pop();
 	}
 	
+	public final void removeFact(final String key) {
+		this.removeFact(this.getFactIndex(key));
+	}
+	
+	public final void removeFact(final int index) {
+		if (this.getGoal().equals(this.getFact(index).getProposition())) {
+			throw new IllegalArgumentException();
+		}
+		
+		this.currentContext.removeFact(index);
+	}
+	
 	public final int getNormalizedIndex(final int index) {
 		return this.currentContext.getNormalizedIndex(index);
 	}

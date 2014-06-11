@@ -59,13 +59,13 @@ public final class Context implements Serializable {
 		final int normalizedIndex = getNormalizedIndex(index);
 		
 		if (this.getParent() != null) {
-			final int parentItemCount = this.getParent().getFactCount();
+			final int parentFactCount = this.getParent().getFactCount();
 			
-			if (normalizedIndex < parentItemCount) {
+			if (normalizedIndex < parentFactCount) {
 				return this.getParent().getFact(normalizedIndex);
 			}
 			
-			return this.facts.get(normalizedIndex - parentItemCount);
+			return this.facts.get(normalizedIndex - parentFactCount);
 		}
 		
 		return this.facts.get(normalizedIndex);
@@ -154,6 +154,31 @@ public final class Context implements Serializable {
 		}
 		
 		this.accept(key, rule.getExpression(), TRUE);
+	}
+	
+	public final void removeFact(final int index) {
+		final int normalizedIndex = this.getNormalizedIndex(index);
+		final int parentFactCount = this.getParent() == null ? 0 : this.getParent().getFactCount();
+		final int localIndex = normalizedIndex - parentFactCount;
+		
+		if (localIndex < 0) {
+			this.getParent().removeFact(normalizedIndex);
+		} else {
+			String key = null;
+			
+			for (final Map.Entry<String, Integer> entry : this.factIndices.entrySet()) {
+				final int j = entry.getValue();
+				
+				if (normalizedIndex == j) {
+					key = entry.getKey();
+				} else if (normalizedIndex < j) {
+					entry.setValue(j - 1);
+				} 
+			}
+			
+			this.factIndices.remove(key);
+			this.facts.remove(localIndex);
+		}
 	}
 	
 	public final int getDepth() {
