@@ -27,6 +27,10 @@ public final class Session implements Serializable {
 		return this.currentContext.isGoalReached();
 	}
 	
+	public final int getLocalFactCount() {
+		return this.currentContext.getLocalFactCount();
+	}
+	
 	public final int getFactCount() {
 		return this.currentContext.getFactCount();
 	}
@@ -165,7 +169,7 @@ public final class Session implements Serializable {
 		final int normalizedEqualityIndex = this.getNormalizedIndex(equalityIndex);
 		final Equality equality = (Equality) this.getFact(normalizedEqualityIndex).getProposition();
 		
-		this.bind("symmetry_of_equality", equality.getLeft());
+		this.bind(SYMMETRY_OF_EQUALITY, equality.getLeft());
 		this.bind(-1, equality.getRight());
 		this.apply(-1, normalizedEqualityIndex);
 		this.rewriteLeft(normalizedFactIndex, -1, indices);
@@ -204,6 +208,14 @@ public final class Session implements Serializable {
 		this.pop();
 	}
 	
+	public final void undo() {
+		if (this.getLocalFactCount() == 0) {
+			this.currentContext = this.currentContext.getParent();
+		}
+		
+		this.currentContext.undo();
+	}
+	
 	public final int getNormalizedIndex(final int index) {
 		return this.currentContext.getNormalizedIndex(index);
 	}
@@ -226,5 +238,15 @@ public final class Session implements Serializable {
 	 * {@value}.
 	 */
 	private static final long serialVersionUID = -3276320733153503278L;
+	
+	/**
+	 * {@value}.
+	 */
+	public static final String IDENTITY = "identity";
+	
+	/**
+	 * {@value}.
+	 */
+	public static final String SYMMETRY_OF_EQUALITY = "symmetry_of_equality";
 	
 }
