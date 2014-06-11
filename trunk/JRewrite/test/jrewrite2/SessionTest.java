@@ -44,6 +44,12 @@ public final class SessionTest {
 			
 			assertTrue(session.isGoalReached());
 		}
+		
+		session.removeFact(-1);
+		
+		session.printTo(System.out);
+		
+		assertTrue(session.isGoalReached());
 	}
 	
 	public static final Template template(final String[] variableNames, final Object expression) {
@@ -78,7 +84,7 @@ public final class SessionTest {
 	}
 	
 	public static final Composite nat(final Object object) {
-		return composite(object, ":", "N");
+		return composite(object, " : ", "N");
 	}
 	
 	public static final Composite composite(final Object... objects) {
