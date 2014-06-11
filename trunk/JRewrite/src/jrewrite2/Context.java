@@ -19,6 +19,8 @@ public final class Context implements Serializable {
 	
 	private final Context parent;
 	
+	private final int parentFactCount;
+	
 	private final List<Fact> facts;
 	
 	private final Map<String, Integer> factIndices;
@@ -33,10 +35,15 @@ public final class Context implements Serializable {
 	
 	public Context(final Context parent, final Expression goal) {
 		this.parent = parent;
+		this.parentFactCount = parent == null ? 0 : parent.getFactCount();
 		this.goal = goal;
 		this.facts = new ArrayList<>();
 		this.factIndices = new LinkedHashMap<>();
 		this.goalReached = TRUE.equals(goal) || ASSUMED.equals(goal);
+		
+		if (parent != null) {
+			parent.new SubcontextAddedEvent(this).fire();
+		}
 	}
 	
 	public final Context getParent() {
@@ -52,23 +59,17 @@ public final class Context implements Serializable {
 	}
 	
 	public final int getFactCount() {
-		return (this.getParent() == null ? 0 : this.getParent().getFactCount()) + this.facts.size();
+		return this.parentFactCount + this.facts.size();
 	}
 	
 	public final Fact getFact(final int index) {
 		final int normalizedIndex = getNormalizedIndex(index);
 		
-		if (this.getParent() != null) {
-			final int parentFactCount = this.getParent().getFactCount();
-			
-			if (normalizedIndex < parentFactCount) {
-				return this.getParent().getFact(normalizedIndex);
-			}
-			
-			return this.facts.get(normalizedIndex - parentFactCount);
+		if (normalizedIndex < this.parentFactCount) {
+			return this.getParent().getFact(normalizedIndex);
 		}
 		
-		return this.facts.get(normalizedIndex);
+		return this.facts.get(normalizedIndex - this.parentFactCount);
 	}
 	
 	public final int getNormalizedIndex(final int index) {
@@ -92,11 +93,7 @@ public final class Context implements Serializable {
 	}
 	
 	public final Context prove(final String key, final Expression proposition) {
-		final Context result = new Context(this, proposition);
-		
-		this.addFact(key, new Fact(proposition, result));
-		
-		return result;
+		return this.addFact(key, proposition, this, proposition).getProof();
 	}
 	
 	public final void introduce(final String key) {
@@ -156,31 +153,6 @@ public final class Context implements Serializable {
 		this.accept(key, rule.getExpression(), TRUE);
 	}
 	
-	public final void removeFact(final int index) {
-		final int normalizedIndex = this.getNormalizedIndex(index);
-		final int parentFactCount = this.getParent() == null ? 0 : this.getParent().getFactCount();
-		final int localIndex = normalizedIndex - parentFactCount;
-		
-		if (localIndex < 0) {
-			this.getParent().removeFact(normalizedIndex);
-		} else {
-			String key = null;
-			
-			for (final Map.Entry<String, Integer> entry : this.factIndices.entrySet()) {
-				final int j = entry.getValue();
-				
-				if (normalizedIndex == j) {
-					key = entry.getKey();
-				} else if (normalizedIndex < j) {
-					entry.setValue(j - 1);
-				} 
-			}
-			
-			this.factIndices.remove(key);
-			this.facts.remove(localIndex);
-		}
-	}
-	
 	public final int getDepth() {
 		return this.getParent() == null ? 0 : 1 + this.getParent().getDepth();
 	}
@@ -204,22 +176,111 @@ public final class Context implements Serializable {
 	}
 	
 	private final void accept(final String key, final Expression proposition, final Symbol justification) {
-		this.addFact(key, new Fact(proposition, new Context(null, justification)));
+		this.addFact(key, proposition, null, justification);
 	}
 	
-	private final void addFact(final String key, final Fact fact) {
+	private final Fact addFact(final String key, final Expression proposition
+			, final Context proofParent, final Expression proofGoal) {
 		final String actualKey = key != null ? key : this.newKey();
+		final Fact result = new Fact(actualKey, proposition, new Context(proofParent, proofGoal));
 		
 		this.factIndices.put(actualKey, this.getFactCount());
-		this.facts.add(fact);
+		this.facts.add(result);
 		
-		if (this.getGoal().equals(fact.getProposition())) {
+		if (this.getGoal().equals(result.getProposition())) {
 			this.goalReached = true;
 		}
+		
+		this.new FactAddedEvent(result).fire();
+		
+		return result;
 	}
 	
 	private final String newKey() {
 		return "#" + this.getFactCount();
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-06-11)
+	 */
+	public abstract class Event extends net.sourceforge.aprog.events.EventManager.AbstractEvent<Context> {
+		
+		protected Event() {
+			super(Context.this);
+		}
+		
+		/**
+		 * {@value}.
+		 */
+		private static final long serialVersionUID = 1040969981433873669L;
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-06-11)
+	 */
+	public final class SubcontextAddedEvent extends Event {
+		
+		private final Context subcontext;
+		
+		public SubcontextAddedEvent(final Context subcontext) {
+			this.subcontext = subcontext;
+		}
+		
+		public final Context getSubcontext() {
+			return this.subcontext;
+		}
+		
+		/**
+		 * {@value}.
+		 */
+		private static final long serialVersionUID = 1040969981433873669L;
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-06-11)
+	 */
+	public abstract class FactEvent extends Event {
+		
+		private final int factIndex;
+		
+		private final Fact fact;
+		
+		protected FactEvent(final int factIndex, final Fact fact) {
+			this.factIndex = factIndex;
+			this.fact = fact;
+		}
+		
+		public final int getFactIndex() {
+			return this.factIndex;
+		}
+		
+		public final Fact getFact() {
+			return this.fact;
+		}
+		
+		/**
+		 * {@value}.
+		 */
+		private static final long serialVersionUID = 1040969981433873669L;
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-06-11)
+	 */
+	public final class FactAddedEvent extends FactEvent {
+		
+		public FactAddedEvent(final Fact fact) {
+			super(Context.this.getFactIndex(fact.getKey()), fact);
+		}
+		
+		/**
+		 * {@value}.
+		 */
+		private static final long serialVersionUID = -5833119728091250675L;
+		
 	}
 	
 	/**
@@ -252,13 +313,20 @@ public final class Context implements Serializable {
 	 */
 	public static final class Fact implements Serializable {
 		
+		private final String key;
+		
 		private final Expression proposition;
 		
 		private final Context proof;
 		
-		public Fact(final Expression proposition, final Context proof) {
+		public Fact(final String key, final Expression proposition, final Context proof) {
+			this.key = key;
 			this.proposition = proposition;
 			this.proof = proof;
+		}
+		
+		public final String getKey() {
+			return this.key;
 		}
 		
 		public final Expression getProposition() {
@@ -279,7 +347,7 @@ public final class Context implements Serializable {
 	/**
 	 * @author codistmonk (creation 2014-06-10)
 	 */
-	public static abstract class AbstractVisitor implements Visitor {
+	public static abstract class Visitor implements jrewrite2.Visitor {
 		
 		@Override
 		public final Composite visitAfterChildren(final Composite composite,
@@ -345,7 +413,7 @@ public final class Context implements Serializable {
 	/**
 	 * @author codistmonk (creation 2014-06-10)
 	 */
-	public static final class Binder extends AbstractVisitor {
+	public static final class Binder extends Visitor {
 		
 		private final String variableName;
 		
@@ -401,7 +469,7 @@ public final class Context implements Serializable {
 	/**
 	 * @author codistmonk (creation 2014-06-10)
 	 */
-	public static final class Rewriter extends AbstractVisitor {
+	public static final class Rewriter extends Visitor {
 		
 		private final Expression pattern;
 		

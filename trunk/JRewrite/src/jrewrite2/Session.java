@@ -15,6 +15,10 @@ public final class Session implements Serializable {
 	
 	private Context currentContext = this.rootContext;
 	
+	public final Context getRootContext() {
+		return this.rootContext;
+	}
+	
 	public final Expression getGoal() {
 		return this.currentContext.getGoal();
 	}
@@ -198,18 +202,6 @@ public final class Session implements Serializable {
 	public final void apply(final String key, final int ruleIndex, final int conditionIndex) {
 		this.currentContext.apply(key, ruleIndex, conditionIndex);
 		this.pop();
-	}
-	
-	public final void removeFact(final String key) {
-		this.removeFact(this.getFactIndex(key));
-	}
-	
-	public final void removeFact(final int index) {
-		if (this.getGoal().equals(this.getFact(index).getProposition())) {
-			throw new IllegalArgumentException();
-		}
-		
-		this.currentContext.removeFact(index);
 	}
 	
 	public final int getNormalizedIndex(final int index) {
