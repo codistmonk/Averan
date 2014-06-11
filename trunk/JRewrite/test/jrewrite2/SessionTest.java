@@ -14,18 +14,31 @@ public final class SessionTest {
 	public final void test1() {
 		final Session session = new Session();
 		
-		session.assume(template(v("n"), rule(nat("n"), nat(s("n")))));
-		session.assume(nat("0"));
-		session.assume(equality("1", s("0")));
+		session.assume("identity", template(v("x"), equality("x", "x")));
+		
+		session.printTo(System.out);
+		
+		{
+			session.prove("symmetry_of_equality", template(v("x", "y"), rule(equality("x", "y"), equality("y", "x"))));
+			session.introduce("declaration_of_x");
+			session.introduce();
+			session.introduce();
+			session.rewriteLeft("declaration_of_x", -1, set(0));
+			session.printTo(System.out);
+		}
+		
+		session.assume("definition_of_S", template(v("n"), rule(nat("n"), nat(s("n")))));
+		session.assume("definition_of_0", nat("0"));
+		session.assume("definition_of_1", equality("1", s("0")));
 		
 		session.printTo(System.out);
 		
 		{
 			session.prove(nat("1"));
 			
-			session.bind(0, expression("0"));
-			session.apply("#4", 1);
-			session.rewriteRight(5, "#2", set(0));
+			session.bind("definition_of_S", expression("0"));
+			session.apply(-1, "definition_of_0");
+			session.rewriteRight(-1, "definition_of_1", set(0));
 			
 			session.printTo(System.out);
 			

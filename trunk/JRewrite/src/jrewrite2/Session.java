@@ -157,8 +157,14 @@ public final class Session implements Serializable {
 	
 	public final void rewriteRight(final String key, final int factIndex,
 			final int equalityIndex, final Set<Integer> indices) {
-		this.currentContext.rewriteRight(key, factIndex, equalityIndex, indices);
-		this.pop();
+		final int normalizedFactIndex = this.getNormalizedIndex(factIndex);
+		final int normalizedEqualityIndex = this.getNormalizedIndex(equalityIndex);
+		final Equality equality = (Equality) this.getFact(normalizedEqualityIndex).getProposition();
+		
+		this.bind("symmetry_of_equality", equality.getLeft());
+		this.bind(-1, equality.getRight());
+		this.apply(-1, normalizedEqualityIndex);
+		this.rewriteLeft(normalizedFactIndex, -1, indices);
 	}
 	
 	public final void apply(final String ruleKey, final String conditionKey) {
@@ -192,6 +198,10 @@ public final class Session implements Serializable {
 	public final void apply(final String key, final int ruleIndex, final int conditionIndex) {
 		this.currentContext.apply(key, ruleIndex, conditionIndex);
 		this.pop();
+	}
+	
+	public final int getNormalizedIndex(final int index) {
+		return this.currentContext.getNormalizedIndex(index);
 	}
 	
 	public final int getDepth() {

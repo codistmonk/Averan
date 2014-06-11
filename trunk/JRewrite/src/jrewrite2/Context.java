@@ -56,8 +56,7 @@ public final class Context implements Serializable {
 	}
 	
 	public final Fact getFact(final int index) {
-		final int n = this.getFactCount();
-		final int normalizedIndex = (n + index) % n;
+		final int normalizedIndex = getNormalizedIndex(index);
 		
 		if (this.getParent() != null) {
 			final int parentItemCount = this.getParent().getFactCount();
@@ -70,6 +69,12 @@ public final class Context implements Serializable {
 		}
 		
 		return this.facts.get(normalizedIndex);
+	}
+	
+	public final int getNormalizedIndex(final int index) {
+		final int n = this.getFactCount();
+		
+		return (n + index) % n;
 	}
 	
 	public final int getFactIndex(final String key) {
@@ -133,13 +138,6 @@ public final class Context implements Serializable {
 		this.rewrite(key, factIndex, equality.getLeft(), equality.getRight(), indices);
 	}
 	
-	public final void rewriteRight(final String key, final int factIndex
-			, final int equalityIndex, final Set<Integer> indices) {
-		final Equality equality = (Equality) this.getFact(equalityIndex).getProposition();
-		
-		this.rewrite(key, factIndex, equality.getRight(), equality.getLeft(), indices);
-	}
-	
 	private final void rewrite(final String key, final int factIndex
 			, final Expression pattern, final Expression replacement, final Set<Integer> indices) {
 		final Expression newExpression = (Expression) this.getFact(factIndex).getProposition()
@@ -170,13 +168,14 @@ public final class Context implements Serializable {
 		for (final Map.Entry<String, Integer> entry : this.factIndices.entrySet()) {
 			final Fact fact = this.getFact(entry.getValue());
 			
-			output.println(indent + "(" + entry.getKey() + ":"
-					+ getJustification(fact.getProof()) + ") " + fact.getProposition());
+			output.println(indent + "(" + entry.getKey() + " : " + getJustification(fact.getProof()) + ")");
+			output.println(indent + "\t" + fact.getProposition());
 		}
 		
 		output.println();
 		
-		output.println(indent + "(goal:" + getJustification(this) + ") " + this.getGoal());
+		output.println(indent + "(goal : " + getJustification(this) + ")");
+		output.println(indent + "\t" + this.getGoal());
 	}
 	
 	private final void accept(final String key, final Expression proposition, final Symbol justification) {
@@ -360,7 +359,11 @@ public final class Context implements Serializable {
 		@Override
 		public Expression visitAfterChildren(final Template template,
 				final Object[] childrenVisitationResults) {
-			return (Expression) childrenVisitationResults[0];
+			if (childrenVisitationResults[0] == template.getProposition()) {
+				return template;
+			}
+			
+			return new Template(template.getVariableName(), (Expression) childrenVisitationResults[0]);
 		}
 		
 		/**
