@@ -22,18 +22,7 @@ public final class SessionTest {
 		
 		EventManager.getInstance().addListener(session.getRootContext(), Context.Event.class, eventCounter);
 		
-		session.assume("identity", template(v("x"), equality("x", "x")));
-		
-		session.printTo(System.out);
-		
-		{
-			session.prove("symmetry_of_equality", template(v("x", "y"), rule(equality("x", "y"), equality("y", "x"))));
-			session.introduce("declaration_of_x");
-			session.introduce();
-			session.introduce();
-			session.rewriteLeft("declaration_of_x", -1, set(0));
-			session.printTo(System.out);
-		}
+		addStandardFactsTo(session);
 		
 		session.assume("definition_of_S", template(v("n"), rule(nat("n"), nat(s("n")))));
 		session.assume("definition_of_0", nat("0"));
@@ -53,8 +42,36 @@ public final class SessionTest {
 			assertTrue(session.isGoalReached());
 		}
 		
-		assertEquals(2L, eventCounter.getSubcontextCount());
-		assertEquals(6L, eventCounter.getFactCount());
+		assertEquals(2L, eventCounter.getSubcontextCreations());
+		assertEquals(6L, eventCounter.getFactAdditions());
+		assertEquals(0L, eventCounter.getFactRemovals());
+		
+		session.undo();
+		
+		assertEquals(2L, eventCounter.getSubcontextCreations());
+		assertEquals(6L, eventCounter.getFactAdditions());
+		assertEquals(1L, eventCounter.getFactRemovals());
+		
+		session.prove(session.getGoal());
+		session.undo();
+		
+		session.printTo(System.out);
+		
+		assertEquals(5L, session.getFactCount());
+		
+		assertTrue(session.isGoalReached());
+	}
+	
+	public static final void addStandardFactsTo(final Session session) {
+		session.assume(Session.IDENTITY, template(v("x"), equality("x", "x")));
+		
+		{
+			session.prove(Session.SYMMETRY_OF_EQUALITY, template(v("x", "y"), rule(equality("x", "y"), equality("y", "x"))));
+			session.introduce("declaration_of_x");
+			session.introduce();
+			session.introduce();
+			session.rewriteLeft("declaration_of_x", -1, set(0));
+		}
 	}
 	
 	public static final Template template(final String[] variableNames, final Object expression) {
@@ -112,26 +129,37 @@ public final class SessionTest {
 	 */
 	public static final class EventCounter implements Serializable {
 		
-		private int subcontextCount;
+		private int subcontextCreations;
 		
-		private int factCount;
+		private int factAdditions;
 		
-		public final int getSubcontextCount() {
-			return this.subcontextCount;
+		private int factRemovals;
+		
+		public final int getSubcontextCreations() {
+			return this.subcontextCreations;
 		}
 		
-		public final int getFactCount() {
-			return this.factCount;
+		public final int getFactAdditions() {
+			return this.factAdditions;
+		}
+		
+		public final int getFactRemovals() {
+			return this.factRemovals;
 		}
 		
 		@Listener
-		public final void subcontextAdded(final Context.SubcontextAddedEvent event) {
-			++this.subcontextCount;
+		public final void subcontextAdded(final Context.SubcontextCreatedEvent event) {
+			++this.subcontextCreations;
 		}
 		
 		@Listener
 		public final void factAdded(final Context.FactAddedEvent event) {
-			++this.factCount;
+			++this.factAdditions;
+		}
+		
+		@Listener
+		public final void factAdded(final Context.FactRemovedEvent event) {
+			++this.factRemovals;
 		}
 		
 		/**

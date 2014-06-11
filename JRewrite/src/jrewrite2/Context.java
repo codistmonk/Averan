@@ -27,7 +27,9 @@ public final class Context implements Serializable {
 	
 	private Expression goal;
 	
-	private boolean goalReached;
+	private int goalReached;
+	
+	private final List<UndoableOperation> undoableOperations;
 	
 	public Context() {
 		this(null, TRUE);
@@ -39,10 +41,11 @@ public final class Context implements Serializable {
 		this.goal = goal;
 		this.facts = new ArrayList<>();
 		this.factIndices = new LinkedHashMap<>();
-		this.goalReached = TRUE.equals(goal) || ASSUMED.equals(goal);
+		this.goalReached = TRUE.equals(goal) || ASSUMED.equals(goal) ? 1 : 0;
+		this.undoableOperations = new ArrayList<>();
 		
 		if (parent != null) {
-			parent.new SubcontextAddedEvent(this).fire();
+			parent.new SubcontextCreatedEvent(this).fire();
 		}
 	}
 	
@@ -55,11 +58,15 @@ public final class Context implements Serializable {
 	}
 	
 	public final boolean isGoalReached() {
-		return this.goalReached;
+		return 0 < this.goalReached;
+	}
+	
+	public final int getLocalFactCount() {
+		return this.facts.size();
 	}
 	
 	public final int getFactCount() {
-		return this.parentFactCount + this.facts.size();
+		return this.parentFactCount + this.getLocalFactCount();
 	}
 	
 	public final Fact getFact(final int index) {
@@ -104,6 +111,8 @@ public final class Context implements Serializable {
 			
 			this.accept(key, rule.getCondition(), TRUE);
 			
+			this.undoableOperations.add(UndoableOperation.Simple.INTRODUCE_CONDITION);
+			
 			return;
 		}
 		
@@ -114,6 +123,8 @@ public final class Context implements Serializable {
 			final Symbol variable = new Symbol(template.getVariableName());
 			
 			this.accept(key, new Equality(variable, variable), TRUE);
+			
+			this.undoableOperations.add(new UndoableOperation.IntroduceVariable(template));
 			
 			return;
 		}
@@ -175,8 +186,32 @@ public final class Context implements Serializable {
 		output.println(indent + "\t" + this.getGoal());
 	}
 	
-	private final void accept(final String key, final Expression proposition, final Symbol justification) {
-		this.addFact(key, proposition, null, justification);
+	public final void undo() {
+		UndoableOperation operation = this.undoableOperations.remove(this.undoableOperations.size() - 1);
+		final Fact lastFact = this.facts.remove(this.facts.size() - 1);
+		this.factIndices.remove(lastFact.getKey());
+		
+		if (this.getGoal().equals(lastFact.getProposition())) {
+			--this.goalReached;
+		}
+		
+		if (operation == UndoableOperation.Simple.INTRODUCE_CONDITION) {
+			this.goal = new Rule(lastFact.getProposition(), this.getGoal());
+			operation = this.undoableOperations.remove(this.undoableOperations.size() - 1);
+		} else if (operation instanceof UndoableOperation.IntroduceVariable) {
+			this.goal = ((UndoableOperation.IntroduceVariable) operation).getOldGoal();
+			operation = this.undoableOperations.remove(this.undoableOperations.size() - 1);
+		}
+		
+		if (operation != UndoableOperation.Simple.ADD_FACT) {
+			throw new IllegalStateException();
+		}
+		
+		this.new FactRemovedEvent(this.getFactCount(), lastFact).fire();
+	}
+	
+	private final Fact accept(final String key, final Expression proposition, final Symbol justification) {
+		return this.addFact(key, proposition, null, justification);
 	}
 	
 	private final Fact addFact(final String key, final Expression proposition
@@ -188,8 +223,10 @@ public final class Context implements Serializable {
 		this.facts.add(result);
 		
 		if (this.getGoal().equals(result.getProposition())) {
-			this.goalReached = true;
+			++this.goalReached;
 		}
+		
+		this.undoableOperations.add(UndoableOperation.Simple.ADD_FACT);
 		
 		this.new FactAddedEvent(result).fire();
 		
@@ -219,11 +256,11 @@ public final class Context implements Serializable {
 	/**
 	 * @author codistmonk (creation 2014-06-11)
 	 */
-	public final class SubcontextAddedEvent extends Event {
+	public final class SubcontextCreatedEvent extends Event {
 		
 		private final Context subcontext;
 		
-		public SubcontextAddedEvent(final Context subcontext) {
+		public SubcontextCreatedEvent(final Context subcontext) {
 			this.subcontext = subcontext;
 		}
 		
@@ -284,6 +321,22 @@ public final class Context implements Serializable {
 	}
 	
 	/**
+	 * @author codistmonk (creation 2014-06-11)
+	 */
+	public final class FactRemovedEvent extends FactEvent {
+		
+		public FactRemovedEvent(final int oldIndex, final Fact fact) {
+			super(oldIndex, fact);
+		}
+		
+		/**
+		 * {@value}.
+		 */
+		private static final long serialVersionUID = 4515749350766209254L;
+		
+	}
+	
+	/**
 	 * {@value}.
 	 */
 	private static final long serialVersionUID = 2082834263764356892L;
@@ -306,6 +359,43 @@ public final class Context implements Serializable {
 		}
 		
 		return result;
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-06-10)
+	 */
+	private static abstract interface UndoableOperation extends Serializable {
+		
+		/**
+		 * @author codistmonk (creation 2014-06-10)
+		 */
+		static enum Simple implements UndoableOperation {
+			
+			ADD_FACT, INTRODUCE_CONDITION;
+			
+		}
+		
+		/**
+		 * @author codistmonk (creation 2014-06-10)
+		 */
+		static final class IntroduceVariable implements UndoableOperation {
+			private final Template oldGoal;
+			
+			IntroduceVariable(final Template oldGoal) {
+				this.oldGoal = oldGoal;
+			}
+			
+			final Template getOldGoal() {
+				return this.oldGoal;
+			}
+			
+			/**
+			 * {@value}.
+			 */
+			private static final long serialVersionUID = -6888538847397737959L;
+			
+		}
+		
 	}
 	
 	/**
