@@ -3,6 +3,11 @@ package jrewrite2;
 import static net.sourceforge.aprog.tools.Tools.set;
 import static org.junit.Assert.*;
 
+import java.io.Serializable;
+
+import net.sourceforge.aprog.events.EventManager;
+import net.sourceforge.aprog.events.EventManager.Event.Listener;
+
 import org.junit.Test;
 
 /**
@@ -13,6 +18,9 @@ public final class SessionTest {
 	@Test
 	public final void test1() {
 		final Session session = new Session();
+		final EventCounter eventCounter = new EventCounter();
+		
+		EventManager.getInstance().addListener(session.getRootContext(), Context.Event.class, eventCounter);
 		
 		session.assume("identity", template(v("x"), equality("x", "x")));
 		
@@ -45,11 +53,8 @@ public final class SessionTest {
 			assertTrue(session.isGoalReached());
 		}
 		
-		session.removeFact(-1);
-		
-		session.printTo(System.out);
-		
-		assertTrue(session.isGoalReached());
+		assertEquals(2L, eventCounter.getSubcontextCount());
+		assertEquals(6L, eventCounter.getFactCount());
 	}
 	
 	public static final Template template(final String[] variableNames, final Object expression) {
@@ -100,6 +105,40 @@ public final class SessionTest {
 	
 	public static final Expression expression(final Object object) {
 		return object instanceof Expression ? (Expression) object : new Symbol(object.toString());
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-06-11)
+	 */
+	public static final class EventCounter implements Serializable {
+		
+		private int subcontextCount;
+		
+		private int factCount;
+		
+		public final int getSubcontextCount() {
+			return this.subcontextCount;
+		}
+		
+		public final int getFactCount() {
+			return this.factCount;
+		}
+		
+		@Listener
+		public final void subcontextAdded(final Context.SubcontextAddedEvent event) {
+			++this.subcontextCount;
+		}
+		
+		@Listener
+		public final void factAdded(final Context.FactAddedEvent event) {
+			++this.factCount;
+		}
+		
+		/**
+		 * {@value}.
+		 */
+		private static final long serialVersionUID = 7886550936698464154L;
+		
 	}
 	
 }
