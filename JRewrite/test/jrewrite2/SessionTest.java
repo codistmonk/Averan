@@ -90,6 +90,8 @@ public final class SessionTest {
 		
 		// TODO prove
 		session.assume("S_n_is_n+1", template(v("n"), equality(s("n"), plus("n", "1"))));
+		// TODO prove
+		session.assume("m_+_S_n_is_S_m_+_n", template(v("m", "n"), equality(plus("m", s("n")), plus(s("m"), "n"))));
 		
 		// TODO prove
 		session.assume("right_addition_to_equality", template(v("a", "b", "c"), rule(equality("a", "b"), equality(plus("a", "c"), plus("b", "c")))));
@@ -137,7 +139,7 @@ public final class SessionTest {
 		
 		session.printTo(System.out);
 		
-		session.prove("arithmetic_series", template(v("n"), equality(apply2("sum", "Id", "n"), fraction(times("n", plus("n", "1")), "2"))));
+		session.prove("arithmetic_series", template(v("n"), rule(nat("n"), equality(apply2("sum", "Id", "n"), fraction(times("n", plus("n", "1")), "2")))));
 		session.assume("definition_of_P", template(v("n"), equality(apply1("P", "n"), equality(apply2("sum", "Id", "n"), fraction(times("n", plus("n", "1")), "2")))));
 		session.bind("definition_of_P_0(a)", "definition_of_P", expression("0"));
 		session.bind("sum_Id_0(a)", "definition_of_sum_0", expression("Id"));
@@ -147,6 +149,7 @@ public final class SessionTest {
 		session.bind("left_multiplication_by_0", plus("0", "1"));
 		session.rewriteLeft("definition_of_P_0(c)", "definition_of_P_0(b)", -1);
 		session.bind("fraction_of_0", expression("1"));
+		session.printTo(System.out);
 		session.rewriteRight(-1, "definition_of_2");
 		session.rewriteLeft("definition_of_P_0(d)", "definition_of_P_0(c)", -1);
 		session.bind(Session.IDENTITY, expression("0"));
@@ -158,7 +161,7 @@ public final class SessionTest {
 		session.introduce("declaration_of_n");
 		session.introduce("trueness_of_P_n");
 		session.bind("definition_of_P_n(a)", "definition_of_P", expression("n"));
-		session.bind("definition_of_P_S_n(a)", "definition_of_P", s("n"));
+		session.bind("definition_of_P_S_n", "definition_of_P", s("n"));
 		session.rewriteLeft("equation(a)", "trueness_of_P_n", "definition_of_P_n(a)");
 		session.bind("right_addition_to_equality", ((Equality) session.getProposition("equation(a)")).getLeft());
 		session.bind(-1, ((Equality) session.getProposition("equation(a)")).getRight());
@@ -186,12 +189,24 @@ public final class SessionTest {
 		session.bind(-1, expression("n"));
 		session.bind(-1, expression("2"));
 		session.rewriteRight("equation(i)", "equation(h)", -1);
+		session.bind("m_+_S_n_is_S_m_+_n", expression("n"));
+		session.bind(-1, expression("1"));
+		session.rewriteRight(-1, "definition_of_2");
+		session.rewriteLeft("equation(i)", -1);
+		session.rewriteRight(-1, "definition_of_P_S_n");
+		
+		session.bind("recurrence_principle", expression("P"));
+		session.apply(-1, "trueness_of_P_0");
+		session.apply(-1, "trueness_of_P_S_n");
+//		session.rewriteLeft(-1, "definition_of_P");
 		
 		session.printTo(System.out);
 	}
 	
 	public static final void addStandardFactsTo(final Session session) {
 		session.assume(Session.IDENTITY, template(v("x"), equality("x", "x")));
+		
+		session.printTo(System.out);
 		
 		{
 			session.prove(Session.SYMMETRY_OF_EQUALITY, template(v("x", "y"), rule(equality("x", "y"), equality("y", "x"))));

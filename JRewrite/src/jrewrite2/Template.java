@@ -13,10 +13,14 @@ public final class Template implements Expression {
 	
 	private final Expression proposition;
 	
-	public Template(final String variableName,
-			final Expression proposition) {
+	public Template(final String variableName, final Expression proposition) {
 		this.variableName = variableName;
-		this.proposition = proposition;
+		this.proposition = (Expression) proposition.accept(new Context.Rewriter(new Symbol(variableName), this.new Variable()));
+	}
+	
+	public Template(final String variableName, final Expression proposition, final Template.Variable oldVariable) {
+		this.variableName = variableName;
+		this.proposition = (Expression) proposition.accept(new Context.Rewriter(oldVariable, this.new Variable()));
 	}
 	
 	public final String getVariableName() {
@@ -54,6 +58,44 @@ public final class Template implements Expression {
 		}
 		
 		return result;
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-06-12)
+	 */
+	public final class Variable implements Expression {
+		
+		public final Template getTemplate() {
+			return Template.this;
+		}
+		
+		@Override
+		public final int hashCode() {
+			return this.getTemplate().getVariableName().hashCode();
+		}
+		
+		@Override
+		public final boolean equals(final Object object) {
+			final Variable that = cast(this.getClass(), object);
+			
+			return that != null && this.getTemplate().toString().equals(that.getTemplate().toString());
+		}
+		
+		@Override
+		public final String toString() {
+			return "@" + this.getTemplate().getVariableName();
+		}
+		
+		@Override
+		public final Object accept(final Visitor visitor) {
+			return visitor.visit(this);
+		}
+		
+		/**
+		 * {@value}.
+		 */
+		private static final long serialVersionUID = -6993567931969693569L;
+		
 	}
 	
 	/**

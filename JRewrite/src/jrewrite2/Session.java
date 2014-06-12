@@ -250,7 +250,7 @@ public final class Session implements Serializable {
 			final int equalityIndex, final Set<Integer> indices) {
 		final int normalizedFactIndex = this.getNormalizedIndex(factIndex);
 		final int normalizedEqualityIndex = this.getNormalizedIndex(equalityIndex);
-		final Equality equality = (Equality) this.getFact(normalizedEqualityIndex).getProposition();
+		final Equality equality = (Equality) this.getProposition(normalizedEqualityIndex);
 		
 		this.bind(SYMMETRY_OF_EQUALITY, equality.getLeft());
 		this.bind(-1, equality.getRight());
