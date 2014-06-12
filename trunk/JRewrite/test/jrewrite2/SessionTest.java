@@ -89,6 +89,9 @@ public final class SessionTest {
 		session.assume("definition_of_+_n", template(v("m", "n"), equality(plus("m", s("n")), s(plus("m", "n")))));
 		
 		// TODO prove
+		session.assume("S_n_is_n+1", template(v("n"), equality(s("n"), plus("n", "1"))));
+		
+		// TODO prove
 		session.assume("right_addition_to_equality", template(v("a", "b", "c"), rule(equality("a", "b"), equality(plus("a", "c"), plus("b", "c")))));
 		
 		session.assume("definition_of_*_0", template(v("m"), equality(times("m", "0"), "0")));
@@ -153,6 +156,13 @@ public final class SessionTest {
 		session.bind(-1, ((Equality) session.getProposition("equation(a)")).getRight());
 		session.bind(-1, s("n"));
 		session.apply("equation(b)", -1, "equation(a)");
+		session.bind("definition_of_Id", s("n"));
+		session.rewriteRight("equation(c)", "equation(b)", -1, set(0));
+		session.bind("definition_of_sum_n", expression("Id"));
+		session.bind(-1, expression("n"));
+		session.rewriteRight("equation(d)", "equation(c)", -1);
+		session.bind("S_n_is_n+1", expression("n"));
+		session.rewriteRight("equation(e)", "equation(d)", -1);
 		
 		session.printTo(System.out);
 	}
