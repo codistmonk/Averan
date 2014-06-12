@@ -9,6 +9,8 @@ public abstract interface Visitor extends Serializable {
 	
 	public abstract Object visit(Symbol symbol);
 	
+	public abstract Object visit(Template.Variable variable);
+	
 	public abstract Object visitBeforeChildren(Composite composite);
 	
 	public abstract Object visitAfterChildren(Composite composite, Object[] childrenVisitationResults);

@@ -12,6 +12,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.sourceforge.aprog.tools.Tools;
+import jrewrite2.Template.Variable;
+
 /**
  * @author codistmonk (creation 2014-06-10)
  */
@@ -119,7 +122,7 @@ public final class Context implements Serializable {
 		final Template template = cast(Template.class, this.getGoal());
 		
 		if (template != null) {
-			this.goal = template.getProposition();
+			this.goal = (Expression) template.getProposition().accept(new Rewriter(template.new Variable(), new Symbol(template.getVariableName())));
 			final Symbol variable = new Symbol(template.getVariableName());
 			
 			this.accept(key, new Equality(variable, variable), TRUE);
@@ -134,7 +137,7 @@ public final class Context implements Serializable {
 	
 	public final void bind(final String key, final int templateIndex, final Expression expression) {
 		final Template template = (Template) this.getFact(templateIndex).getProposition();
-		final Expression newProposition = (Expression) template.getProposition().accept(new Binder(template.getVariableName(), expression));
+		final Expression newProposition = (Expression) template.getProposition().accept(new Rewriter(template.new Variable(), expression));
 		
 		this.accept(key, newProposition, TRUE);
 	}
@@ -158,6 +161,8 @@ public final class Context implements Serializable {
 		final Rule rule = (Rule) this.getFact(ruleIndex).getProposition();
 		
 		if (!rule.getCondition().equals(this.getFact(conditionIndex).getProposition())) {
+			Tools.debugError(rule.getCondition());
+			Tools.debugError(this.getFact(conditionIndex).getProposition());
 			throw new IllegalArgumentException();
 		}
 		
@@ -503,13 +508,13 @@ public final class Context implements Serializable {
 	/**
 	 * @author codistmonk (creation 2014-06-10)
 	 */
-	public static final class Binder extends Visitor {
+	public static final class Binder_ extends Visitor {
 		
 		private final String variableName;
 		
 		private final Expression expression;
 		
-		public Binder(final String variableName, final Expression expression) {
+		public Binder_(final String variableName, final Expression expression) {
 			this.variableName = variableName;
 			this.expression = expression;
 		}
@@ -517,6 +522,12 @@ public final class Context implements Serializable {
 		@Override
 		public final Expression visit(final Symbol symbol) {
 			return this.variableName.equals(symbol.toString()) ? this.expression : symbol;
+//			return symbol;
+		}
+		
+		@Override
+		public final Expression visit(final Variable variable) {
+			return this.variableName.equals(variable.getTemplate().getVariableName().toString()) ? this.expression : variable;
 		}
 		
 		@Override
@@ -569,8 +580,11 @@ public final class Context implements Serializable {
 		
 		private int index;
 		
-		public Rewriter(final Expression pattern, final Expression replacement,
-				final Set<Integer> indices) {
+		public Rewriter(final Expression pattern, final Expression replacement) {
+			this(pattern, replacement, Collections.<Integer> emptySet());
+		}
+		
+		public Rewriter(final Expression pattern, final Expression replacement, final Set<Integer> indices) {
 			this.pattern = pattern;
 			this.replacement = replacement;
 			this.indices = indices;
@@ -582,6 +596,17 @@ public final class Context implements Serializable {
 			
 			if (result == null) {
 				result = symbol;
+			}
+			
+			return result;
+		}
+		
+		@Override
+		public final Expression visit(final Variable variable) {
+			Expression result = this.visit((Expression) variable);
+			
+			if (result == null) {
+				result = variable;
 			}
 			
 			return result;
@@ -613,7 +638,7 @@ public final class Context implements Serializable {
 			final Expression newProposition = (Expression) childrenVisitationResults[0];
 			
 			return newProposition == template.getProposition() ? template
-					: new Template(template.getVariableName(), newProposition);
+					: new Template(template.getVariableName(), newProposition, template.new Variable());
 		}
 		
 		private final Expression visit(final Expression object) {
