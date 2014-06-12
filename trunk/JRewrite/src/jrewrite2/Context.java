@@ -617,7 +617,8 @@ public final class Context implements Serializable {
 		}
 		
 		private final Expression visit(final Expression object) {
-			return this.pattern.equals(object) && this.indices.contains(this.index++) ? this.replacement : null;
+			return this.pattern.equals(object)
+					&& (this.indices.contains(this.index++) || this.indices.isEmpty()) ? this.replacement : null;
 		}
 		
 		/**
