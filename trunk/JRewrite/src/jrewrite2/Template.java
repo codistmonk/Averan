@@ -3,6 +3,7 @@ package jrewrite2;
 import static jrewrite2.Symbol.enclose;
 import static net.sourceforge.aprog.tools.Tools.array;
 import static net.sourceforge.aprog.tools.Tools.cast;
+import jrewrite2.Context.Rewriter;
 
 /**
  * @author codistmonk (creation 2014-06-10)
@@ -40,8 +41,8 @@ public final class Template implements Expression {
 	public final boolean equals(final Object object) {
 		final Template that = cast(this.getClass(), object);
 		
-		return that != null && this.getVariableName().equals(that.getVariableName())
-				&& this.getProposition().equals(that.getProposition());
+		return that != null && this.getProposition().equals(
+				that.getProposition().accept(new Rewriter(that.new Variable(), this.new Variable())));
 	}
 	
 	@Override
@@ -78,7 +79,7 @@ public final class Template implements Expression {
 		public final boolean equals(final Object object) {
 			final Variable that = cast(this.getClass(), object);
 			
-			return that != null && this.getTemplate().toString().equals(that.getTemplate().toString());
+			return that != null && this.getTemplate() == that.getTemplate();
 		}
 		
 		@Override
