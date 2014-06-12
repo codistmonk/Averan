@@ -36,6 +36,18 @@ public final class Session implements Serializable {
 		return this.currentContext.getFactCount();
 	}
 	
+	public final Expression getProposition(final String key) {
+		return this.getFact(key).getProposition();
+	}
+	
+	public final Expression getProposition(final int index) {
+		return this.getFact(index).getProposition();
+	}
+	
+	public final Fact getFact(final String key) {
+		return this.getFact(this.getFactIndex(key));
+	}
+	
 	public final Fact getFact(final int index) {
 		return this.currentContext.getFact(index);
 	}
