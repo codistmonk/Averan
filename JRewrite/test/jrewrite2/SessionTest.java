@@ -106,7 +106,7 @@ public final class SessionTest {
 		// TODO prove
 		session.assume("right_multiplication_by_1", template(v("n"), equality(times("n", "1"), "n")));
 		
-		session.assume("definition_of_/", template(v("a", "b", "c"), rule(equality("a", times("b", "c")), equality(div("a","c"), "b"))));
+		session.assume("definition_of_/", template(v("a", "b", "c"), rule(equality("a", times("b", "c")), equality(fraction("a","c"), "b"))));
 		
 		// TODO prove
 		session.assume("left_distributivity_of_*_over_+", template(v("a", "b", "c")
@@ -114,11 +114,17 @@ public final class SessionTest {
 		
 		// TODO prove
 		session.assume("left_addition_of_fraction", template(v("a", "b", "c")
-				, equality(plus(div("a", "b"), "c"), div(plus("a", times("b", "c")), "c"))));
+				, equality(plus(fraction("a", "b"), "c"), fraction(plus("a", times("b", "c")), "c"))));
 		
 		// TODO prove
 		session.assume("fraction_of_0", template(v("n")
-				, equality(div("0", s("n")), "0")));
+				, equality(fraction("0", s("n")), "0")));
+		// TODO prove
+		session.assume("addition_of_fractions_with_same_denominator", template(v("a", "b", "c")
+				, equality(plus(fraction("a", "c"), fraction("b", "c")), fraction(plus("a", "b"), "c"))));
+		// TODO prove
+		session.assume("right_multiplication_by_denominator", template(v("a", "b")
+				, equality("a", fraction(times("a", s("b")), s("b")))));
 		
 		session.assume("definition_of_sum_0", template(v("E")
 				, equality(apply2("sum", "E", "0"), apply1("E", "0"))));
@@ -129,8 +135,8 @@ public final class SessionTest {
 		
 		session.printTo(System.out);
 		
-		session.prove("arithmetic_series", template(v("n"), equality(apply2("sum", "Id", "n"), div(times("n", plus("n", "1")), "2"))));
-		session.assume("definition_of_P", template(v("n"), equality(apply1("P", "n"), equality(apply2("sum", "Id", "n"), div(times("n", plus("n", "1")), "2")))));
+		session.prove("arithmetic_series", template(v("n"), equality(apply2("sum", "Id", "n"), fraction(times("n", plus("n", "1")), "2"))));
+		session.assume("definition_of_P", template(v("n"), equality(apply1("P", "n"), equality(apply2("sum", "Id", "n"), fraction(times("n", plus("n", "1")), "2")))));
 		session.bind("definition_of_P_0(a)", "definition_of_P", expression("0"));
 		session.bind("sum_Id_0(a)", "definition_of_sum_0", expression("Id"));
 		session.bind("Id_0", "definition_of_Id", expression("0"));
@@ -163,6 +169,14 @@ public final class SessionTest {
 		session.rewriteRight("equation(d)", "equation(c)", -1);
 		session.bind("S_n_is_n+1", expression("n"));
 		session.rewriteRight("equation(e)", "equation(d)", -1);
+		session.bind("right_multiplication_by_denominator", s("n"));
+		session.bind(-1, expression("1"));
+		session.rewriteRight(-1, "definition_of_2");
+		session.rewriteLeft("equation(f)", "equation(e)", -1, set(2));
+		session.bind("addition_of_fractions_with_same_denominator", times("n", s("n")));
+		session.bind(-1, times(s("n"), "2"));
+		session.bind(-1, expression("2"));
+		session.rewriteLeft("equation(g)", "equation(f)", -1);
 		
 		session.printTo(System.out);
 	}
@@ -226,7 +240,7 @@ public final class SessionTest {
 		return composite(object1, " * ", object2);
 	}
 	
-	public static final Composite div(final Object object1, final Object object2) {
+	public static final Composite fraction(final Object object1, final Object object2) {
 		return composite(object1, " / ", object2);
 	}
 	
