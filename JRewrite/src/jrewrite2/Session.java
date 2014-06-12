@@ -2,6 +2,7 @@ package jrewrite2;
 
 import java.io.PrintStream;
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.Set;
 
 import jrewrite2.Context.Fact;
@@ -87,6 +88,39 @@ public final class Session implements Serializable {
 		this.pop();
 	}
 	
+	public final void rewriteLeft(final String factKey, final String equalityKey) {
+		this.rewriteLeft(null, factKey, equalityKey, Collections.<Integer> emptySet());
+	}
+	
+	public final void rewriteLeft(final String factKey, final int equalityIndex) {
+		this.rewriteLeft(null, factKey, equalityIndex, Collections.<Integer> emptySet());
+	}
+	
+	public final void rewriteLeft(final int factIndex, final String equalityKey) {
+		this.rewriteLeft(null, factIndex, equalityKey, Collections.<Integer> emptySet());
+	}
+	
+	public final void rewriteLeft(final int factIndex, final int equalityIndex) {
+		this.rewriteLeft(null, factIndex, equalityIndex, Collections.<Integer> emptySet());
+	}
+	
+	public final void rewriteLeft(final String key, final String factKey, final String equalityKey) {
+		this.rewriteLeft(key, this.getFactIndex(factKey), this.getFactIndex(equalityKey)
+				, Collections.<Integer> emptySet());
+	}
+	
+	public final void rewriteLeft(final String key, final String factKey, final int equalityIndex) {
+		this.rewriteLeft(key, this.getFactIndex(factKey), equalityIndex, Collections.<Integer> emptySet());
+	}
+	
+	public final void rewriteLeft(final String key, final int factIndex, final String equalityKey) {
+		this.rewriteLeft(key, factIndex, this.getFactIndex(equalityKey), Collections.<Integer> emptySet());
+	}
+	
+	public final void rewriteLeft(final String key, final int factIndex, final int equalityIndex) {
+		this.rewriteLeft(key, factIndex, equalityIndex, Collections.<Integer> emptySet());
+	}
+	
 	public final void rewriteLeft(final String factKey,
 			final String equalityKey, final Set<Integer> indices) {
 		this.rewriteLeft(null, factKey, equalityKey, indices);
@@ -126,6 +160,43 @@ public final class Session implements Serializable {
 			final int equalityIndex, final Set<Integer> indices) {
 		this.currentContext.rewriteLeft(key, factIndex, equalityIndex, indices);
 		this.pop();
+	}
+	
+	public final void rewriteRight(final String factKey, final String equalityKey) {
+		this.rewriteRight(null, factKey, equalityKey, Collections.<Integer> emptySet());
+	}
+	
+	public final void rewriteRight(final String factKey, final int equalityIndex) {
+		this.rewriteRight(null, factKey, equalityIndex, Collections.<Integer> emptySet());
+	}
+	
+	public final void rewriteRight(final int factIndex, final String equalityKey) {
+		this.rewriteRight(null, factIndex, equalityKey, Collections.<Integer> emptySet());
+	}
+	
+	public final void rewriteRight(final int factIndex, final int equalityIndex) {
+		this.rewriteRight(null, factIndex, equalityIndex, Collections.<Integer> emptySet());
+	}
+	
+	public final void rewriteRight(final String key, final String factKey,
+			final String equalityKey) {
+		this.rewriteRight(key, this.getFactIndex(factKey), this.getFactIndex(equalityKey)
+				, Collections.<Integer> emptySet());
+	}
+	
+	public final void rewriteRight(final String key, final String factKey,
+			final int equalityIndex) {
+		this.rewriteRight(key, this.getFactIndex(factKey), equalityIndex, Collections.<Integer> emptySet());
+	}
+	
+	public final void rewriteRight(final String key, final int factIndex,
+			final String equalityKey) {
+		this.rewriteRight(key, factIndex, equalityKey, Collections.<Integer> emptySet());
+	}
+	
+	public final void rewriteRight(final String key, final int factIndex,
+			final int equalityIndex) {
+		this.rewriteRight(key, factIndex, equalityIndex, Collections.<Integer> emptySet());
 	}
 	
 	public final void rewriteRight(final String factKey,
@@ -172,7 +243,7 @@ public final class Session implements Serializable {
 		this.bind(SYMMETRY_OF_EQUALITY, equality.getLeft());
 		this.bind(-1, equality.getRight());
 		this.apply(-1, normalizedEqualityIndex);
-		this.rewriteLeft(normalizedFactIndex, -1, indices);
+		this.rewriteLeft(key, normalizedFactIndex, -1, indices);
 	}
 	
 	public final void apply(final String ruleKey, final String conditionKey) {
