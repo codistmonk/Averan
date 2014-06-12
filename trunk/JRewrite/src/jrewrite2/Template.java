@@ -3,7 +3,6 @@ package jrewrite2;
 import static jrewrite2.Symbol.enclose;
 import static net.sourceforge.aprog.tools.Tools.array;
 import static net.sourceforge.aprog.tools.Tools.cast;
-import jrewrite2.Context.Rewriter;
 
 /**
  * @author codistmonk (creation 2014-06-10)
@@ -16,12 +15,12 @@ public final class Template implements Expression {
 	
 	public Template(final String variableName, final Expression proposition) {
 		this.variableName = variableName;
-		this.proposition = (Expression) proposition.accept(new Context.Rewriter(new Symbol(variableName), this.new Variable()));
+		this.proposition = (Expression) proposition.accept(new Rewriter(new Symbol(variableName), this.new Variable()));
 	}
 	
 	public Template(final String variableName, final Expression proposition, final Template.Variable oldVariable) {
 		this.variableName = variableName;
-		this.proposition = (Expression) proposition.accept(new Context.Rewriter(oldVariable, this.new Variable()));
+		this.proposition = (Expression) proposition.accept(new Rewriter(oldVariable, this.new Variable()));
 	}
 	
 	public final String getVariableName() {
