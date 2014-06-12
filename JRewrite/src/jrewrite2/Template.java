@@ -83,7 +83,7 @@ public final class Template implements Expression {
 		
 		@Override
 		public final String toString() {
-			return "@" + this.getTemplate().getVariableName();
+			return this.getTemplate().getVariableName();
 		}
 		
 		@Override

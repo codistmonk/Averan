@@ -41,7 +41,8 @@ public final class Symbol implements Expression {
 	private static final long serialVersionUID = 1502089546938825632L;
 	
 	public static final String enclose(final Expression expression) {
-		return expression instanceof Symbol ? expression.toString() : "(" + expression + ")";
+		return expression instanceof Symbol ? expression.toString()
+				: expression instanceof Template.Variable ? expression.toString() : "(" + expression + ")";
 	}
 	
 }

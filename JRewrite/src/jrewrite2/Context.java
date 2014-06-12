@@ -508,68 +508,6 @@ public final class Context implements Serializable {
 	/**
 	 * @author codistmonk (creation 2014-06-10)
 	 */
-	public static final class Binder_ extends Visitor {
-		
-		private final String variableName;
-		
-		private final Expression expression;
-		
-		public Binder_(final String variableName, final Expression expression) {
-			this.variableName = variableName;
-			this.expression = expression;
-		}
-		
-		@Override
-		public final Expression visit(final Symbol symbol) {
-			return this.variableName.equals(symbol.toString()) ? this.expression : symbol;
-//			return symbol;
-		}
-		
-		@Override
-		public final Expression visit(final Variable variable) {
-			return this.variableName.equals(variable.getTemplate().getVariableName().toString()) ? this.expression : variable;
-		}
-		
-		@Override
-		public final Void visitBeforeChildren(final Composite composite) {
-			return null;
-		}
-		
-		@Override
-		public final Void visitBeforeChildren(final Rule rule) {
-			return null;
-		}
-		
-		@Override
-		public final Void visitBeforeChildren(final Equality equality) {
-			return null;
-		}
-		
-		@Override
-		public final Template visitBeforeChildren(final Template template) {
-			return this.variableName.equals(template.getVariableName()) ? template : null;
-		}
-		
-		@Override
-		public Expression visitAfterChildren(final Template template,
-				final Object[] childrenVisitationResults) {
-			if (childrenVisitationResults[0] == template.getProposition()) {
-				return template;
-			}
-			
-			return new Template(template.getVariableName(), (Expression) childrenVisitationResults[0]);
-		}
-		
-		/**
-		 * {@value}.
-		 */
-		private static final long serialVersionUID = -4473669954982246122L;
-		
-	}
-	
-	/**
-	 * @author codistmonk (creation 2014-06-10)
-	 */
 	public static final class Rewriter extends Visitor {
 		
 		private final Expression pattern;
