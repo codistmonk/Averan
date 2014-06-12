@@ -446,32 +446,32 @@ public final class Context implements Serializable {
 		
 		@Override
 		public final Composite visitAfterChildren(final Composite composite,
-				final Object[] childrenVisitationResults) {
-			if (!newCompositeNeeded(composite, childrenVisitationResults)) {
+				final Object[] childrenVisitResults) {
+			if (!newCompositeNeeded(composite, childrenVisitResults)) {
 				return composite;
 			}
 			
-			return newComposite(childrenVisitationResults);
+			return newComposite(childrenVisitResults);
 		}
 		
 		@Override
 		public final Rule visitAfterChildren(final Rule rule,
-				final Object[] childrenVisitationResults) {
-			if (!newCompositeNeeded(rule.getComposite(), childrenVisitationResults)) {
+				final Object[] childrenVisitResults) {
+			if (!newCompositeNeeded(rule.getComposite(), childrenVisitResults)) {
 				return rule;
 			}
 			
-			return new Rule(newComposite(childrenVisitationResults));
+			return new Rule(newComposite(childrenVisitResults));
 		}
 		
 		@Override
 		public final Equality visitAfterChildren(final Equality equality,
-				final Object[] childrenVisitationResults) {
-			if (!newCompositeNeeded(equality.getComposite(), childrenVisitationResults)) {
+				final Object[] childrenVisitResults) {
+			if (!newCompositeNeeded(equality.getComposite(), childrenVisitResults)) {
 				return equality;
 			}
 			
-			return new Equality(newComposite(childrenVisitationResults));
+			return new Equality(newComposite(childrenVisitResults));
 		}
 		
 		/**
@@ -480,11 +480,11 @@ public final class Context implements Serializable {
 		private static final long serialVersionUID = -2895672488681850761L;
 		
 		public static final boolean newCompositeNeeded(final Composite composite
-				, final Object[] childrenVisitationResults) {
+				, final Object[] childrenVisitResults) {
 			final int n = composite.getChildCount();
 			
 			for (int i = 0; i < n; ++i) {
-				if (composite.getChild(i) != childrenVisitationResults[i]) {
+				if (composite.getChild(i) != childrenVisitResults[i]) {
 					return true;
 				}
 			}
@@ -492,12 +492,12 @@ public final class Context implements Serializable {
 			return false;
 		}
 		
-		public static final Composite newComposite(final Object[] childrenVisitationResults) {
-			final int n = childrenVisitationResults.length;
+		public static final Composite newComposite(final Object[] childrenVisitResults) {
+			final int n = childrenVisitResults.length;
 			final Expression[] expressions = new Expression[n];
 			
 			for (int i = 0; i < n; ++i) {
-				expressions[i] = (Expression) childrenVisitationResults[i];
+				expressions[i] = (Expression) childrenVisitResults[i];
 			}
 			
 			return new Composite(expressions);
@@ -572,8 +572,8 @@ public final class Context implements Serializable {
 		
 		@Override
 		public final Template visitAfterChildren(final Template template,
-				final Object[] childrenVisitationResults) {
-			final Expression newProposition = (Expression) childrenVisitationResults[0];
+				final Object[] childrenVisitResults) {
+			final Expression newProposition = (Expression) childrenVisitResults[0];
 			
 			return newProposition == template.getProposition() ? template
 					: new Template(template.getVariableName(), newProposition, template.new Variable());
