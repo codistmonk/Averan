@@ -98,6 +98,8 @@ public final class SessionTest {
 		session.assume("definition_of_*_n", template(v("m", "n"), equality(times("m", s("n")), plus(times("m", "n"), "m"))));
 		
 		// TODO prove
+		session.assume("commutativity_of_multiplication", template(v("a", "b"), equality(times("a", "b"), times("b", "a"))));
+		// TODO prove
 		session.assume("left_multiplication_by_0", template(v("n"), equality(times("0", "n"), "0")));
 		// TODO prove
 		session.assume("right_multiplication_by_0", template(v("n"), equality(times("n", "0"), "0")));
@@ -177,6 +179,13 @@ public final class SessionTest {
 		session.bind(-1, times(s("n"), "2"));
 		session.bind(-1, expression("2"));
 		session.rewriteLeft("equation(g)", "equation(f)", -1);
+		session.bind("commutativity_of_multiplication", expression("n"));
+		session.bind(-1, s("n"));
+		session.rewriteLeft("equation(h)", "equation(g)", -1);
+		session.bind("left_distributivity_of_*_over_+", s("n"));
+		session.bind(-1, expression("n"));
+		session.bind(-1, expression("2"));
+		session.rewriteRight("equation(i)", "equation(h)", -1);
 		
 		session.printTo(System.out);
 	}
