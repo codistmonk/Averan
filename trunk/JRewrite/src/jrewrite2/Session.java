@@ -20,20 +20,24 @@ public final class Session implements Serializable {
 		return this.rootContext;
 	}
 	
+	public final Context getCurrentContext() {
+		return this.currentContext;
+	}
+	
 	public final Expression getGoal() {
-		return this.currentContext.getGoal();
+		return this.getCurrentContext().getGoal();
 	}
 	
 	public final boolean isGoalReached() {
-		return this.currentContext.isGoalReached();
+		return this.getCurrentContext().isGoalReached();
 	}
 	
 	public final int getLocalFactCount() {
-		return this.currentContext.getLocalFactCount();
+		return this.getCurrentContext().getLocalFactCount();
 	}
 	
 	public final int getFactCount() {
-		return this.currentContext.getFactCount();
+		return this.getCurrentContext().getFactCount();
 	}
 	
 	public final Expression getProposition(final String key) {
@@ -49,11 +53,11 @@ public final class Session implements Serializable {
 	}
 	
 	public final Fact getFact(final int index) {
-		return this.currentContext.getFact(index);
+		return this.getCurrentContext().getFact(index);
 	}
 	
 	public final int getFactIndex(final String key) {
-		return this.currentContext.getFactIndex(key);
+		return this.getCurrentContext().getFactIndex(key);
 	}
 	
 	public final void assume(final Expression proposition) {
@@ -61,17 +65,21 @@ public final class Session implements Serializable {
 	}
 	
 	public final void assume(final String key, final Expression proposition) {
-		this.currentContext.assume(key, proposition);
+		this.getCurrentContext().assume(key, proposition);
 		this.pop();
 	}
 	
-	public final void prove(final Expression proposition) {
-		this.prove(null, proposition);
+	public final Context prove(final Expression proposition) {
+		return this.prove(null, proposition);
 	}
 	
-	public final void prove(final String key, final Expression proposition) {
-		this.currentContext = this.currentContext.prove(key, proposition);
+	public final Context prove(final String key, final Expression proposition) {
+		final Context result = this.getCurrentContext().prove(key, proposition);
+		this.currentContext = result;
+		
 		this.pop();
+		
+		return result;
 	}
 	
 	public final void introduce() {
@@ -79,7 +87,7 @@ public final class Session implements Serializable {
 	}
 	
 	public final void introduce(final String key) {
-		this.currentContext.introduce(key);
+		this.getCurrentContext().introduce(key);
 		this.pop();
 	}
 	
@@ -96,7 +104,7 @@ public final class Session implements Serializable {
 	}
 	
 	public final void bind(final String key, final int templateIndex, final Expression expression) {
-		this.currentContext.bind(key, templateIndex, expression);
+		this.getCurrentContext().bind(key, templateIndex, expression);
 		this.pop();
 	}
 	
@@ -170,7 +178,7 @@ public final class Session implements Serializable {
 	
 	public final void rewriteLeft(final String key, final int factIndex,
 			final int equalityIndex, final Set<Integer> indices) {
-		this.currentContext.rewriteLeft(key, factIndex, equalityIndex, indices);
+		this.getCurrentContext().rewriteLeft(key, factIndex, equalityIndex, indices);
 		this.pop();
 	}
 	
@@ -287,33 +295,37 @@ public final class Session implements Serializable {
 	}
 	
 	public final void apply(final String key, final int ruleIndex, final int conditionIndex) {
-		this.currentContext.apply(key, ruleIndex, conditionIndex);
+		this.getCurrentContext().apply(key, ruleIndex, conditionIndex);
 		this.pop();
 	}
 	
 	public final void undo() {
 		if (this.getLocalFactCount() == 0) {
-			this.currentContext = this.currentContext.getParent();
+			this.currentContext = this.getCurrentContext().getParent();
 		}
 		
-		this.currentContext.undo();
+		this.getCurrentContext().undo();
 	}
 	
 	public final int getNormalizedIndex(final int index) {
-		return this.currentContext.getNormalizedIndex(index);
+		return this.getCurrentContext().getNormalizedIndex(index);
 	}
 	
 	public final int getDepth() {
-		return this.currentContext.getDepth();
+		return this.getCurrentContext().getDepth();
 	}
 	
 	public final void printTo(final PrintStream output) {
-		this.currentContext.printTo(output);
+		this.printTo(output, false);
+	}
+	
+	public final void printTo(final PrintStream output, final boolean printProofs) {
+		this.getCurrentContext().printTo(output, printProofs);
 	}
 	
 	public final void pop() {
-		while (this.isGoalReached() && this.currentContext.getParent() != null) {
-			this.currentContext = this.currentContext.getParent();
+		while (this.isGoalReached() && this.getCurrentContext().getParent() != null) {
+			this.currentContext = this.getCurrentContext().getParent();
 		}
 	}
 	

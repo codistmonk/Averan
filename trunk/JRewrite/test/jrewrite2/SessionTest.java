@@ -212,15 +212,17 @@ public final class SessionTest {
 	public static final void addStandardFactsTo(final Session session) {
 		session.assume(Session.IDENTITY, template(v("x"), equality("x", "x")));
 		
-		session.printTo(System.out);
-		
 		{
-			session.prove(Session.SYMMETRY_OF_EQUALITY, template(v("x", "y"), rule(equality("x", "y"), equality("y", "x"))));
+			session.prove(Session.SYMMETRY_OF_EQUALITY
+					, template(v("x", "y"), rule(equality("x", "y"), equality("y", "x"))));
+			
 			session.introduce("declaration_of_x");
 			session.introduce();
 			session.introduce();
 			session.rewriteLeft("declaration_of_x", -1, set(0));
 		}
+		
+		session.printTo(System.out, true);
 	}
 	
 	public static final Template template(final String[] variableNames, final Object expression) {
