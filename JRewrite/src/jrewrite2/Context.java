@@ -172,16 +172,22 @@ public final class Context implements Serializable {
 		return this.getParent() == null ? 0 : 1 + this.getParent().getDepth();
 	}
 	
-	public final void printTo(final PrintStream output) {
+	public final void printTo(final PrintStream output, final boolean printProofs) {
 		output.println();
 		
 		final String indent = join("", Collections.nCopies(this.getDepth(), "\t").toArray());
 		
 		for (final Map.Entry<String, Integer> entry : this.factIndices.entrySet()) {
 			final Fact fact = this.getFact(entry.getValue());
+			final Context proof = fact.getProof();
+			final String justification = getJustification(proof);
 			
-			output.println(indent + "(" + entry.getKey() + " : " + getJustification(fact.getProof()) + ")");
+			output.println(indent + "(" + entry.getKey() + " : " + justification + ")");
 			output.println(indent + "\t" + fact.getProposition());
+			
+			if (printProofs && !Context.TRUE.equals(proof.getGoal()) && !Context.ASSUMED.equals(proof.getGoal())) {
+				proof.printTo(output, printProofs);
+			}
 		}
 		
 		output.println();
