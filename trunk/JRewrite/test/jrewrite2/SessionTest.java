@@ -195,12 +195,18 @@ public final class SessionTest {
 		session.rewriteLeft("equation(i)", -1);
 		session.rewriteRight(-1, "definition_of_P_S_n");
 		
+		session.printTo(System.out);
+		
 		session.bind("recurrence_principle", expression("P"));
 		session.apply(-1, "trueness_of_P_0");
 		session.apply(-1, "trueness_of_P_S_n");
-//		session.rewriteLeft(-1, "definition_of_P");
+		session.bind("definition_of_P", ((Template) session.getProposition(-1)).new Variable());
+		session.rewriteLeft(-2, -1);
 		
 		session.printTo(System.out);
+		
+		assertEquals(0L, session.getDepth());
+		assertTrue(session.isGoalReached());
 	}
 	
 	public static final void addStandardFactsTo(final Session session) {
