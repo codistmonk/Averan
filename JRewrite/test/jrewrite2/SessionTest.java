@@ -148,6 +148,11 @@ public final class SessionTest {
 		session.introduce("trueness_of_P_n");
 		session.bind("definition_of_P_n(a)", "definition_of_P", expression("n"));
 		session.bind("definition_of_P_S_n(a)", "definition_of_P", s("n"));
+		session.rewriteLeft("equation(a)", "trueness_of_P_n", "definition_of_P_n(a)");
+		session.bind("right_addition_to_equality", ((Equality) session.getProposition("equation(a)")).getLeft());
+		session.bind(-1, ((Equality) session.getProposition("equation(a)")).getRight());
+		session.bind(-1, s("n"));
+		session.apply("equation(b)", -1, "equation(a)");
 		
 		session.printTo(System.out);
 	}
