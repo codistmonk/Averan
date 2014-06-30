@@ -227,8 +227,22 @@ public final class SessionTest {
 		))));
 		session.assume("definition_of_C_i", forallNat("i", membership(sub("C", "i"), "Sample")));
 		session.assume("definition_of_m", forallNat("i", equality(sub("m", "i"), apply("mean", sub("C", "i")))));
+		session.assume("definition_of_covariance", forall("m", equality(apply("cov", "m"), times("m", transpose("m")))));
+		session.assume("definition_of_between_class_covariance", equality("S_B", apply("cov", minus(sub("m", 2), sub("m", 1)))));
+		session.assume("definition_of_within_class_covariance", forallNat("i", equality(apply("Sw", "i")
+				, apply("sum", card(sub("C", "i")), template(v("j"), apply("cov", minus(sub("C", "i", "j"), sub("m", "i"))))))));
+		session.assume("definition_of_total_within_class_covariance", equality("S_W", plus(apply("Sw", 1), apply("Sw", 2))));
+		session.assume("definition_of_objective", forall("w", equality(apply("J", "w"), fraction(qForm("S_B", "w"), qForm("S_W", "w")))));
 		
 		session.printTo(System.out);
+	}
+	
+	public static final Composite qForm(final Object innerMatrix, final Object outerMatrix) {
+		return times(transpose(outerMatrix), times(innerMatrix, outerMatrix));
+	}
+	
+	public static final Composite transpose(final Object matrix) {
+		return composite(matrix, "ᵀ");
 	}
 	
 	public static final Composite powerset(final Object set) {
@@ -327,6 +341,10 @@ public final class SessionTest {
 	
 	public static final Composite plus(final Object object1, final Object object2) {
 		return infix(" + ", object1, object2);
+	}
+	
+	public static final Composite minus(final Object object1, final Object object2) {
+		return infix(" - ", object1, object2);
 	}
 	
 	public static final Composite times(final Object object1, final Object object2) {
