@@ -1,5 +1,7 @@
 package jrewrite2;
 
+import static net.sourceforge.aprog.tools.Tools.append;
+import static net.sourceforge.aprog.tools.Tools.array;
 import static net.sourceforge.aprog.tools.Tools.set;
 import static org.junit.Assert.*;
 
@@ -7,6 +9,7 @@ import java.io.Serializable;
 
 import net.sourceforge.aprog.events.EventManager;
 import net.sourceforge.aprog.events.EventManager.Event.Listener;
+import net.sourceforge.aprog.tools.Tools;
 
 import org.junit.Test;
 
@@ -71,10 +74,10 @@ public final class SessionTest {
 		session.assume("definition_of_S", template(v("n"), rule(nat("n"), nat(s("n")))));
 		session.assume("definition_of_0", nat("0"));
 		session.assume("recurrence_principle", template(v("P"), rule(
-				apply1("P", "0"),
+				apply("P", "0"),
 				rule(
-						template(v("n"), rule(apply1("P", "n"), apply1("P", s("n")))),
-						template(v("n"), rule(nat("n"), apply1("P", "n")))))));
+						template(v("n"), rule(apply("P", "n"), apply("P", s("n")))),
+						template(v("n"), rule(nat("n"), apply("P", "n")))))));
 		session.assume("definition_of_1", equality("1", s("0")));
 		session.assume("definition_of_2", equality("2", s("1")));
 		session.assume("definition_of_3", equality("3", s("2")));
@@ -131,16 +134,16 @@ public final class SessionTest {
 				, equality("a", fraction(times("a", s("b")), s("b")))));
 		
 		session.assume("definition_of_sum_0", template(v("E")
-				, equality(apply2("sum", "E", "0"), apply1("E", "0"))));
+				, equality(apply("sum", "E", "0"), apply("E", "0"))));
 		session.assume("definition_of_sum_n", template(v("E", "n")
-				, equality(apply2("sum", "E", s("n")), plus(apply2("sum", "E", "n"), apply1("E", s("n"))))));
+				, equality(apply("sum", "E", s("n")), plus(apply("sum", "E", "n"), apply("E", s("n"))))));
 		
-		session.assume("definition_of_Id", template(v("x"), equality(apply1("Id", "x"), "x")));
+		session.assume("definition_of_Id", template(v("x"), equality(apply("Id", "x"), "x")));
 		
 		session.printTo(System.out);
 		
-		session.prove("arithmetic_series", template(v("n"), rule(nat("n"), equality(apply2("sum", "Id", "n"), fraction(times("n", plus("n", "1")), "2")))));
-		session.assume("definition_of_P", template(v("n"), equality(apply1("P", "n"), equality(apply2("sum", "Id", "n"), fraction(times("n", plus("n", "1")), "2")))));
+		session.prove("arithmetic_series", template(v("n"), rule(nat("n"), equality(apply("sum", "Id", "n"), fraction(times("n", plus("n", "1")), "2")))));
+		session.assume("definition_of_P", template(v("n"), equality(apply("P", "n"), equality(apply("sum", "Id", "n"), fraction(times("n", plus("n", "1")), "2")))));
 		session.bind("definition_of_P_0(a)", "definition_of_P", expression("0"));
 		session.bind("sum_Id_0(a)", "definition_of_sum_0", expression("Id"));
 		session.bind("Id_0", "definition_of_Id", expression("0"));
@@ -157,7 +160,7 @@ public final class SessionTest {
 		
 		session.printTo(System.out);
 		
-		session.prove("trueness_of_P_S_n", template(v("n"), rule(apply1("P", "n"), apply1("P", s("n")))));
+		session.prove("trueness_of_P_S_n", template(v("n"), rule(apply("P", "n"), apply("P", s("n")))));
 		session.introduce("declaration_of_n");
 		session.introduce("trueness_of_P_n");
 		session.bind("definition_of_P_n(a)", "definition_of_P", expression("n"));
@@ -209,6 +212,64 @@ public final class SessionTest {
 		assertTrue(session.isGoalReached());
 	}
 	
+	@Test
+	public final void test3() {
+		final Session session = new Session();
+		
+		addStandardFactsTo(session);
+		
+		session.assume("definition_of_n", nat("n"));
+		session.assume("definition_of_Observation", equality("Observation", composite("R", "^", "n")));
+		session.assume("definition_of_Sample", equality("Sample", powerset("Observation")));
+		session.assume("definition_of_mean", forall("E", equality(apply("mean", "E"), fraction(
+				apply("sum", card("E"), lambda("i", sub("E", "i")))
+				, card("E")
+		))));
+		session.assume("definition_of_C_i", forallNat("i", membership(sub("C", "i"), "Sample")));
+		session.assume("definition_of_m", forallNat("i", equality(sub("m", "i"), apply("mean", sub("C", "i")))));
+		
+		session.printTo(System.out);
+	}
+	
+	public static final Composite powerset(final Object set) {
+		return apply("℘", set);
+	}
+	
+	public static final Template forallNat(final String variableName, final Object proposition) {
+		return forall(variableName, rule(nat(variableName), proposition));
+	}
+	
+	public static final Template forall(final String variableName, final Object proposition) {
+		return template(v(variableName), proposition);
+	}
+	
+	public static final Template lambda(final String variableName, final Object proposition) {
+		return forall(variableName, proposition);
+	}
+	
+	public static final Composite card(final Object object) {
+		return composite("|", object, "|");
+	}
+	
+	public static final Composite sub(final Object container, final Object... keys) {
+		return composite(container, "_", infix(",", keys));
+	}
+	
+	public static final Composite infix(final Object operator, final Object... arguments) {
+		final int n = arguments.length;
+		final Object[] objects = new Object[n * 2 - 1];
+		
+		for (int i = 0; i < n; ++i) {
+			objects[i * 2] = arguments[i];
+		}
+		
+		for (int i = 1; i < n; ++i) {
+			objects[i * 2 - 1] = operator;
+		}
+		
+		return composite(objects);
+	}
+	
 	public static final void addStandardFactsTo(final Session session) {
 		session.assume(Session.IDENTITY, template(v("x"), equality("x", "x")));
 		
@@ -249,31 +310,31 @@ public final class SessionTest {
 	}
 	
 	public static final Composite s(final Object object) {
-		return apply1("S", object);
+		return apply("S", object);
 	}
 	
-	public static final Composite apply1(final Object function, final Object argument) {
-		return composite(function, " ", argument);
-	}
-	
-	public static final Composite apply2(final Object function, final Object argument1, final Object argument2) {
-		return composite(function, " ", argument1, " ", argument2);
+	public static final Composite apply(final Object function, final Object... arguments) {
+		return infix(" ", append(array(function), arguments));
 	}
 	
 	public static final Composite nat(final Object object) {
-		return composite(object, " : ", "N");
+		return membership(object, "ℕ");
+	}
+	
+	public static final Composite membership(final Object element, final Object set) {
+		return infix(" : ", element, set);
 	}
 	
 	public static final Composite plus(final Object object1, final Object object2) {
-		return composite(object1, " + ", object2);
+		return infix(" + ", object1, object2);
 	}
 	
 	public static final Composite times(final Object object1, final Object object2) {
-		return composite(object1, " * ", object2);
+		return infix(" * ", object1, object2);
 	}
 	
 	public static final Composite fraction(final Object object1, final Object object2) {
-		return composite(object1, " / ", object2);
+		return infix(" / ", object1, object2);
 	}
 	
 	public static final Composite composite(final Object... objects) {

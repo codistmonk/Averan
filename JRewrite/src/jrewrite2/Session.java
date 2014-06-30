@@ -3,6 +3,8 @@ package jrewrite2;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 
 import jrewrite2.Context.Fact;
@@ -16,12 +18,18 @@ public final class Session implements Serializable {
 	
 	private Context currentContext = this.rootContext;
 	
+	private final Map<String, Object> metadata = new LinkedHashMap<>();
+	
 	public final Context getRootContext() {
 		return this.rootContext;
 	}
 	
 	public final Context getCurrentContext() {
 		return this.currentContext;
+	}
+	
+	public final Map<String, Object> getMetadata() {
+		return this.metadata;
 	}
 	
 	public final Expression getGoal() {
