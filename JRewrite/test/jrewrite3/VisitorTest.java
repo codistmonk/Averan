@@ -7,8 +7,6 @@ import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import jrewrite3.Module.Variable;
-
 import org.junit.Test;
 
 /**
@@ -66,7 +64,7 @@ public final class VisitorTest {
 		}
 		
 		@Override
-		public final Object visit(final Variable variable) {
+		public final Object visit(final Module.Variable variable) {
 			this.getEvents().add(Event.VARIABLE);
 			
 			return variable;
