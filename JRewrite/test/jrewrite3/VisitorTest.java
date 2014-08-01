@@ -37,7 +37,7 @@ public final class VisitorTest {
 	/**
 	 * @author codistmonk (creation 2014-08-01)
 	 */
-	public static final class Recorder implements Visitor {
+	public static final class Recorder implements Visitor<Expression> {
 		
 		private final List<Event> events = new ArrayList<>();
 		
@@ -46,15 +46,15 @@ public final class VisitorTest {
 		}
 		
 		@Override
-		public final Object visitBeforeChildren(final Composite composite) {
+		public final Expression visitBeforeChildren(final Composite composite) {
 			this.getEvents().add(Event.COMPOSITE_BEFORE_CHILDREN);
 			
 			return composite;
 		}
 		
 		@Override
-		public final Object visitAfterChildren(final Composite composite,
-				final Object beforeVisit, final List<Object> childVisits) {
+		public final Expression visitAfterChildren(final Composite composite,
+				final Expression beforeVisit, final List<Expression> childVisits) {
 			this.getEvents().add(Event.COMPOSITE_AFTER_CHILDREN);
 			
 			assertEquals(composite, beforeVisit);
@@ -64,23 +64,23 @@ public final class VisitorTest {
 		}
 		
 		@Override
-		public final Object visit(final Module.Variable variable) {
+		public final Expression visit(final Module.Variable variable) {
 			this.getEvents().add(Event.VARIABLE);
 			
 			return variable;
 		}
 		
 		@Override
-		public final Object visitBeforeVariables(final Module module) {
+		public final Expression visitBeforeVariables(final Module module) {
 			this.getEvents().add(Event.MODULE_BEFORE_VARIABLES);
 			
 			return module;
 		}
 		
 		@Override
-		public final Object visitAfterFacts(final Module module, final Object beforeVisit,
-				final List<Object> variableVisits, final List<Object> conditionVisits,
-				final List<Object> factVisits) {
+		public final Expression visitAfterFacts(final Module module, final Expression beforeVisit,
+				final List<Expression> variableVisits, final List<Expression> conditionVisits,
+				final List<Expression> factVisits) {
 			this.getEvents().add(Event.MODULE_AFTER_FACTS);
 			
 			assertEquals(module, beforeVisit);

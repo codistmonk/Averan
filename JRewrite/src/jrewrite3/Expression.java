@@ -10,9 +10,9 @@ import java.util.stream.Collectors;
  */
 public abstract interface Expression extends Serializable {
 	
-	public abstract Object accept(Visitor visitor);
+	public abstract <R> R accept(Visitor<R> visitor);
 	
-	public static List<Object> listAccept(final Collection<? extends Expression> expressions, final Visitor visitor) {
+	public static <R> List<R> listAccept(final Collection<? extends Expression> expressions, final Visitor<R> visitor) {
 		return expressions.stream().map(e -> e.accept(visitor)).collect(Collectors.toList());
 	}
 	
