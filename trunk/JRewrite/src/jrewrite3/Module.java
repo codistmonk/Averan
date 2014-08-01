@@ -3,6 +3,7 @@ package jrewrite3;
 import static net.sourceforge.aprog.tools.Tools.cast;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -19,10 +20,15 @@ final class Module implements Expression {
 	private final List<Expression> facts;
 	
 	public Module(final Module parent) {
+		this(parent, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+	}
+	
+	Module(final Module parent, final List<Variable> variables,
+			final List<Expression> conditions, final List<Expression> facts) {
 		this.parent = parent;
-		this.variables = new ArrayList<>();
-		this.conditions = new ArrayList<>();
-		this.facts = new ArrayList<>();
+		this.variables = variables;
+		this.conditions = conditions;
+		this.facts = facts;
 	}
 	
 	public final Module getParent() {
@@ -42,11 +48,11 @@ final class Module implements Expression {
 	}
 	
 	@Override
-	public final Object accept(final Visitor visitor) {
-		final Object beforeVisit = visitor.visitBeforeVariables(this);
-		final List<Object> variableVisits = Expression.listAccept(this.getVariables(), visitor);
-		final List<Object> conditionVisits = Expression.listAccept(this.getConditions(), visitor);
-		final List<Object> factVisits = Expression.listAccept(this.getFacts(), visitor);
+	public final <R> R accept(final Visitor<R> visitor) {
+		final R beforeVisit = visitor.visitBeforeVariables(this);
+		final List<R> variableVisits = Expression.listAccept(this.getVariables(), visitor);
+		final List<R> conditionVisits = Expression.listAccept(this.getConditions(), visitor);
+		final List<R> factVisits = Expression.listAccept(this.getFacts(), visitor);
 		
 		return visitor.visitAfterFacts(this, beforeVisit, variableVisits, conditionVisits, factVisits);
 	}
@@ -104,7 +110,7 @@ final class Module implements Expression {
 		}
 		
 		@Override
-		public final Object accept(final Visitor visitor) {
+		public final <R> R accept(final Visitor<R> visitor) {
 			return visitor.visit(this);
 		}
 		
@@ -125,13 +131,7 @@ final class Module implements Expression {
 	public static final Variable EQUAL = ROOT.new Variable("=");
 	
 	public static final Composite equality(final Expression left, final Expression right) {
-		final Composite result = new Composite(3);
-		
-		result.getChildren().add(left);
-		result.getChildren().add(EQUAL);
-		result.getChildren().add(right);
-		
-		return result;
+		return new Composite(Arrays.asList(left, EQUAL, right));
 	}
 	
 	static {

@@ -17,7 +17,11 @@ final class Composite implements Expression {
 	}
 	
 	public Composite(final int initialCapacity) {
-		this.children = new ArrayList<>(initialCapacity);
+		this(new ArrayList<>(initialCapacity));
+	}
+	
+	public Composite(final List<Expression> children) {
+		this.children = children;
 	}
 	
 	public final List<Expression> getChildren() {
@@ -25,9 +29,9 @@ final class Composite implements Expression {
 	}
 	
 	@Override
-	public final Object accept(final Visitor visitor) {
-		final Object beforeVisit = visitor.visitBeforeChildren(this);
-		final List<Object> childVisits = Expression.listAccept(this.getChildren(), visitor);
+	public final <R> R accept(final Visitor<R> visitor) {
+		final R beforeVisit = visitor.visitBeforeChildren(this);
+		final List<R> childVisits = Expression.listAccept(this.getChildren(), visitor);
 		
 		return visitor.visitAfterChildren(this, beforeVisit, childVisits);
 	}
