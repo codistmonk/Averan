@@ -3,6 +3,7 @@ package jrewrite3;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -12,8 +13,21 @@ public abstract interface Expression extends Serializable {
 	
 	public abstract <R> R accept(Visitor<R> visitor);
 	
-	public static <R> List<R> listAccept(final Collection<? extends Expression> expressions, final Visitor<R> visitor) {
-		return expressions.stream().map(e -> e.accept(visitor)).collect(Collectors.toList());
+	public static <R> Supplier<List<R>> listAccept(final Collection<? extends Expression> expressions, final Visitor<R> visitor) {
+		return new Supplier<List<R>>() {
+			
+			private List<R> result;
+			
+			@Override
+			public final synchronized List<R> get() {
+				if (this.result == null) {
+					this.result = expressions.stream().map(e -> e.accept(visitor)).collect(Collectors.toList());
+				}
+				
+				return this.result;
+			}
+			
+		}; 
 	}
 	
 }

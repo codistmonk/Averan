@@ -30,10 +30,8 @@ final class Composite implements Expression {
 	
 	@Override
 	public final <R> R accept(final Visitor<R> visitor) {
-		final R beforeVisit = visitor.visitBeforeChildren(this);
-		final List<R> childVisits = Expression.listAccept(this.getChildren(), visitor);
-		
-		return visitor.visitAfterChildren(this, beforeVisit, childVisits);
+		return visitor.visitAfterChildren(this, visitor.visitBeforeChildren(this),
+				Expression.listAccept(this.getChildren(), visitor));
 	}
 	
 	@Override
