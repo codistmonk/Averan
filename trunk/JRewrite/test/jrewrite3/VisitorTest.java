@@ -1,7 +1,7 @@
 package jrewrite3;
 
-import static java.util.Arrays.asList;
 import static jrewrite3.VisitorTest.Recorder.Event.*;
+import static net.sourceforge.aprog.tools.Tools.array;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
@@ -21,7 +21,19 @@ public final class VisitorTest {
 		final Recorder recorder = new Recorder();
 		
 		assertEquals(Module.ROOT, Module.ROOT.accept(recorder));
-		assertEquals(asList(MODULE_BEFORE_VARIABLES, MODULE_AFTER_FACTS), recorder.getEvents());
+		assertArrayEquals(array(
+				MODULE_BEFORE_VARIABLES, // begin ROOT
+				VARIABLE, // variable "="
+				MODULE_BEFORE_VARIABLES, // begin equality
+				VARIABLE, // variable "x"
+				COMPOSITE_BEFORE_CHILDREN, // begin [x=x]
+				VARIABLE, // variable "x"
+				VARIABLE, // variable "="
+				VARIABLE, // variable "x"
+				COMPOSITE_AFTER_CHILDREN, // end [x=x]
+				MODULE_AFTER_FACTS, // end equality
+				MODULE_AFTER_FACTS // end ROOT
+				), recorder.getEvents().toArray());
 	}
 	
 	/**

@@ -24,7 +24,15 @@ public abstract interface Expression extends Serializable {
  */
 final class Composite implements Expression {
 	
-	private final List<Expression> children = new ArrayList<>();
+	private final List<Expression> children;
+	
+	public Composite() {
+		this(8);
+	}
+	
+	public Composite(final int initialCapacity) {
+		this.children = new ArrayList<>(initialCapacity);
+	}
 	
 	public final List<Expression> getChildren() {
 		return this.children;
@@ -125,5 +133,29 @@ final class Module implements Expression {
 	private static final long serialVersionUID = -6696557631458945912L;
 	
 	public static final Module ROOT = new Module(null);
+	
+	public static final Variable EQUAL = ROOT.new Variable("=");
+	
+	public static final Composite equality(final Expression left, final Expression right) {
+		final Composite result = new Composite(3);
+		
+		result.getChildren().add(left);
+		result.getChildren().add(EQUAL);
+		result.getChildren().add(right);
+		
+		return result;
+	}
+	
+	static {
+		ROOT.getVariables().add(EQUAL);
+		
+		final Module identity = new Module(ROOT);
+		final Variable x = identity.new Variable("x");
+		
+		identity.getVariables().add(x);
+		identity.getFacts().add(equality(x, x));
+		
+		ROOT.getFacts().add(identity);
+	}
 	
 }
