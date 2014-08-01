@@ -49,12 +49,10 @@ final class Module implements Expression {
 	
 	@Override
 	public final <R> R accept(final Visitor<R> visitor) {
-		final R beforeVisit = visitor.visitBeforeVariables(this);
-		final List<R> variableVisits = Expression.listAccept(this.getVariables(), visitor);
-		final List<R> conditionVisits = Expression.listAccept(this.getConditions(), visitor);
-		final List<R> factVisits = Expression.listAccept(this.getFacts(), visitor);
-		
-		return visitor.visitAfterFacts(this, beforeVisit, variableVisits, conditionVisits, factVisits);
+		return visitor.visitAfterFacts(this, visitor.visitBeforeVariables(this),
+				Expression.listAccept(this.getVariables(), visitor),
+				Expression.listAccept(this.getConditions(), visitor),
+				Expression.listAccept(this.getFacts(), visitor));
 	}
 	
 	@Override

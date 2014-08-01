@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Supplier;
 
 import jrewrite3.Module.Variable;
 
@@ -43,9 +44,9 @@ public final class Rewriter implements Visitor<Expression> {
 	
 	@Override
 	public final Expression visitAfterChildren(final Composite composite, final Expression beforeVisit,
-			final List<Expression> childVisits) {
-		if (composite == beforeVisit && !composite.getChildren().equals(childVisits)) {
-			return new Composite(childVisits);
+			final Supplier<List<Expression>> childVisits) {
+		if (composite == beforeVisit && !composite.getChildren().equals(childVisits.get())) {
+			return new Composite(childVisits.get());
 		}
 		
 		return beforeVisit;
@@ -61,16 +62,17 @@ public final class Rewriter implements Visitor<Expression> {
 		return this.tryToRewrite(module);
 	}
 	
+	@Override
 	public final Expression visitAfterFacts(final Module module, final Expression beforeVisit,
-			final List<Expression> variableVisits,
-			final List<Expression> conditionVisits,
-			final List<Expression> factVisits) {
-		if (module == beforeVisit && (!module.getVariables().equals(variableVisits) ||
-				!module.getConditions().equals(conditionVisits) ||
-				!module.getFacts().equals(factVisits))) {
+			final Supplier<List<Expression>> variableVisits,
+			final Supplier<List<Expression>> conditionVisits,
+			final Supplier<List<Expression>> factVisits) {
+		if (module == beforeVisit && (!module.getVariables().equals(variableVisits.get()) ||
+				!module.getConditions().equals(conditionVisits.get()) ||
+				!module.getFacts().equals(factVisits.get()))) {
 			final List<Variable> newVariables = new ArrayList<>();
 			
-			for (final Expression expression : variableVisits) {
+			for (final Expression expression : variableVisits.get()) {
 				final Variable variable = cast(Variable.class, expression);
 				
 				if (variable != null && module == variable.getModule()) {
@@ -78,7 +80,7 @@ public final class Rewriter implements Visitor<Expression> {
 				}
 			}
 			
-			return new Module(module.getParent(), newVariables, conditionVisits, factVisits);
+			return new Module(module.getParent(), newVariables, conditionVisits.get(), factVisits.get());
 		}
 		
 		return beforeVisit;

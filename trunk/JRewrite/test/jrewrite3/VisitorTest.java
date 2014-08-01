@@ -6,6 +6,7 @@ import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.junit.Test;
 
@@ -54,11 +55,11 @@ public final class VisitorTest {
 		
 		@Override
 		public final Expression visitAfterChildren(final Composite composite,
-				final Expression beforeVisit, final List<Expression> childVisits) {
-			this.getEvents().add(Event.COMPOSITE_AFTER_CHILDREN);
-			
+				final Expression beforeVisit, final Supplier<List<Expression>> childVisits) {
 			assertEquals(composite, beforeVisit);
-			assertEquals(composite.getChildren(), childVisits);
+			assertEquals(composite.getChildren(), childVisits.get());
+			
+			this.getEvents().add(Event.COMPOSITE_AFTER_CHILDREN);
 			
 			return Visitor.super.visitAfterChildren(composite, beforeVisit, childVisits);
 		}
@@ -79,14 +80,14 @@ public final class VisitorTest {
 		
 		@Override
 		public final Expression visitAfterFacts(final Module module, final Expression beforeVisit,
-				final List<Expression> variableVisits, final List<Expression> conditionVisits,
-				final List<Expression> factVisits) {
-			this.getEvents().add(Event.MODULE_AFTER_FACTS);
-			
+				final Supplier<List<Expression>> variableVisits, final Supplier<List<Expression>> conditionVisits,
+				final Supplier<List<Expression>> factVisits) {
 			assertEquals(module, beforeVisit);
-			assertEquals(module.getVariables(), variableVisits);
-			assertEquals(module.getConditions(), conditionVisits);
-			assertEquals(module.getFacts(), factVisits);
+			assertEquals(module.getVariables(), variableVisits.get());
+			assertEquals(module.getConditions(), conditionVisits.get());
+			assertEquals(module.getFacts(), factVisits.get());
+			
+			this.getEvents().add(Event.MODULE_AFTER_FACTS);
 			
 			return Visitor.super.visitAfterFacts(module, beforeVisit, variableVisits,
 					conditionVisits, factVisits);
