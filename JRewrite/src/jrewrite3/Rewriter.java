@@ -37,6 +37,12 @@ public final class Rewriter implements Visitor<Expression> {
 		return this;
 	}
 	
+	public final Rewriter rewrite(final Expression key, final Expression value) {
+		this.getRewrites().put(key, value);
+		
+		return this;
+	}
+	
 	@Override
 	public final Expression visitBeforeChildren(final Composite composite) {
 		return this.tryToRewrite(composite);
