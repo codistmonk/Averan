@@ -85,7 +85,9 @@ public final class Module implements Expression {
 	
 	@Override
 	public final String toString() {
-		return "?" + this.getParameters() + " " + this.getConditions() + "->" + this.getFacts();
+		return (this.getParameters().isEmpty() ? "" : "?" + this.getParameters() + " ")
+				+ (this.getConditions().isEmpty() ? "" : this.getConditions() + " -> ")
+				+ this.getFacts();
 	}
 	
 	/**

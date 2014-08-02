@@ -22,13 +22,13 @@ public final class VisitorTest {
 		assertEquals(Module.ROOT, Module.ROOT.accept(recorder));
 		assertArrayEquals(array(
 				MODULE_BEFORE_PARAMETERS, // begin ROOT
-				VARIABLE, // variable "="
+				SYMBOL, // parameter "="
 				MODULE_BEFORE_PARAMETERS, // begin equality
-				VARIABLE, // variable "x"
+				SYMBOL, // parameter "x"
 				COMPOSITE_BEFORE_CHILDREN, // begin [x=x]
-				VARIABLE, // variable "x"
-				VARIABLE, // variable "="
-				VARIABLE, // variable "x"
+				SYMBOL, // symbol "x"
+				SYMBOL, // symbol "="
+				SYMBOL, // symbol "x"
 				COMPOSITE_AFTER_CHILDREN, // end [x=x]
 				MODULE_AFTER_FACTS, // end equality
 				MODULE_AFTER_FACTS // end ROOT
@@ -65,10 +65,10 @@ public final class VisitorTest {
 		}
 		
 		@Override
-		public final Expression visit(final Module.Symbol variable) {
-			this.getEvents().add(Event.VARIABLE);
+		public final Expression visit(final Module.Symbol symbol) {
+			this.getEvents().add(Event.SYMBOL);
 			
-			return variable;
+			return symbol;
 		}
 		
 		@Override
@@ -105,7 +105,7 @@ public final class VisitorTest {
 			
 			COMPOSITE_BEFORE_CHILDREN, COMPOSITE_AFTER_CHILDREN,
 			MODULE_BEFORE_PARAMETERS, MODULE_AFTER_FACTS,
-			VARIABLE;
+			SYMBOL;
 			
 		}
 		

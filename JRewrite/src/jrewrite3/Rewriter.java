@@ -37,8 +37,8 @@ public final class Rewriter implements Visitor<Expression> {
 		return this;
 	}
 	
-	public final Rewriter rewrite(final Expression key, final Expression value) {
-		this.getRewrites().put(key, value);
+	public final Rewriter rewrite(final Expression pattern, final Expression replacement) {
+		this.getRewrites().put(pattern, replacement);
 		
 		return this;
 	}
@@ -59,8 +59,8 @@ public final class Rewriter implements Visitor<Expression> {
 	}
 	
 	@Override
-	public final Expression visit(final Symbol variable) {
-		return this.tryToRewrite(variable);
+	public final Expression visit(final Symbol symbol) {
+		return this.tryToRewrite(symbol);
 	}
 	
 	@Override

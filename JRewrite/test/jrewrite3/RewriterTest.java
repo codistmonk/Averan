@@ -23,6 +23,9 @@ public final class RewriterTest {
 		final Symbol value = $("42");
 		final Rewriter rewriter = new Rewriter().rewrite(variable, value);
 		
+		System.out.println(Module.ROOT);
+		
+		assertEquals((Object) $("x"), (Object) $("x"));
 		assertEquals(value, variable.accept(rewriter));
 	}
 	

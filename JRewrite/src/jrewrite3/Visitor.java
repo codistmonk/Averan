@@ -16,7 +16,7 @@ public abstract interface Visitor<R> extends Serializable {
 		return compositeVisit;
 	}
 	
-	public abstract R visit(Module.Symbol variable);
+	public abstract R visit(Module.Symbol symbol);
 	
 	public abstract R beginVisit(Module module);
 	
