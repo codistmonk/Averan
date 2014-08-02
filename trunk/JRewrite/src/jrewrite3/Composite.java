@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * @author codistmonk (creation 2014-08-01)
  */
-final class Composite implements Expression {
+public final class Composite implements Expression {
 	
 	private final List<Expression> children;
 	
@@ -31,7 +31,7 @@ final class Composite implements Expression {
 	@Override
 	public final <R> R accept(final Visitor<R> visitor) {
 		return visitor.endVisit(this, visitor.beginVisit(this),
-				Expression.listAccept(this.getChildren(), visitor));
+				Expression.listAcceptor(this.getChildren(), visitor));
 	}
 	
 	@Override
