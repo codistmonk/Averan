@@ -3,6 +3,7 @@ package jrewrite3;
 import static net.sourceforge.aprog.tools.Tools.cast;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -86,7 +87,15 @@ public final class Rewriter implements Visitor<Expression> {
 				}
 			}
 			
-			return new Module(module.getParent(), newVariables, conditionVisits.get(), factVisits.get());
+			final Module result = new Module(module.getParent(), newVariables,
+					conditionVisits.get(), factVisits.get());
+			
+			result.getConditionIndices().putAll(module.getConditionIndices());
+			result.getFactIndices().putAll(module.getFactIndices());
+			// TODO pass "rewrite" command as proof
+			result.getProofs().addAll(Collections.nCopies(module.getFacts().size(), null));
+			
+			return result;
 		}
 		
 		return moduleVisit;
