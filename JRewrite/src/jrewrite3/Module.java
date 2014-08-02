@@ -117,10 +117,24 @@ public final class Module implements Expression {
 	
 	@Override
 	public final boolean equals(final Object object) {
-		final Module that = cast(this.getClass(), object);
+		final int n = this.getParameters().size();
+		Module that = cast(this.getClass(), object);
 		
-		return that != null && this.getParameters().equals(that.getParameters())
-				&& this.getConditions().equals(that.getConditions())
+		if (that == null || n != that.getParameters().size()
+				|| this.getConditions().size() != that.getConditions().size()
+				|| this.getFacts().size() != that.getFacts().size()) {
+			return false;
+		}
+		
+		final Rewriter rewriter = new Rewriter();
+		
+		for (int i = 0; i < n; ++i) {
+			rewriter.rewrite(that.getParameters().get(i), this.getParameters().get(i));
+		}
+		
+		that = (Module) that.accept(rewriter);
+		
+		return this.getConditions().equals(that.getConditions())
 				&& this.getFacts().equals(that.getFacts());
 	}
 	
