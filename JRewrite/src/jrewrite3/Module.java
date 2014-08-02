@@ -45,18 +45,28 @@ public final class Module implements Expression {
 		this.proofs = new ArrayList<>(facts.size());
 	}
 	
-	public final Symbol parameter(final String parameter) {
-		for (final Symbol p : this.getParameters()) {
-			if (p.toString().equals(parameter)) {
-				return p;
-			}
+	public final Symbol parameter(final String name) {
+		Symbol result = this.getParameter(name);
+		
+		if (result != null) {
+			return result;
 		}
 		
-		final Symbol result = this.new Symbol(parameter);
+		result = this.new Symbol(name);
 		
 		this.getParameters().add(result);
 		
 		return result;
+	}
+	
+	public final Symbol getParameter(final String name) {
+		for (final Symbol parameter : this.getParameters()) {
+			if (parameter.toString().equals(name)) {
+				return parameter;
+			}
+		}
+		
+		return null;
 	}
 	
 	public final Module execute(final Suppose suppose) {
@@ -75,8 +85,8 @@ public final class Module implements Expression {
 	}
 	
 	public final Module execute(final Rewrite rewrite) {
-		final Expression source = rewrite.getSource();
-		final Composite equality = rewrite.getEquality();
+		final Expression source = rewrite.getSource().getProposition();
+		final Composite equality = rewrite.getEquality().getProposition();
 		final Expression pattern = equality.getChildren().get(0);
 		final Expression replacement = equality.getChildren().get(2);
 		final Expression newFact = source.accept(
@@ -85,6 +95,30 @@ public final class Module implements Expression {
 		this.newProposition(this.getFactIndices(), rewrite.getFactName());
 		this.getFacts().add(newFact);
 		this.getProofs().add(rewrite);
+		
+		return this;
+	}
+	
+	public final Module execute(final Bind bind) {
+		final Module protofact = (Module) bind.getModule().getProposition().accept(bind.getBinder());
+		
+		if (protofact.getParameters().isEmpty() && protofact.getConditions().isEmpty()) {
+			if (1 == protofact.getFacts().size()) {
+				this.newProposition(this.getFactIndices(), bind.getFactName());
+				this.getFacts().add(protofact.getFacts().get(0));
+				this.getProofs().add(bind);
+			} else {
+				for (final Map.Entry<String, Integer> entry : protofact.getFactIndices().entrySet()) {
+					this.newProposition(this.getFactIndices(), bind.getFactName() + "/" + entry.getKey());
+					this.getFacts().add(protofact.getFacts().get(entry.getValue()));
+					this.getProofs().add(bind);
+				}
+			}
+		} else {
+			this.newProposition(this.getFactIndices(), bind.getFactName());
+			this.getFacts().add(protofact);
+			this.getProofs().add(bind);
+		}
 		
 		return this;
 	}
@@ -349,85 +383,187 @@ public final class Module implements Expression {
 		
 		private final String factName;
 		
-		private final Module sourceModule;
+		private final PropositionReference<Expression> source;
 		
-		private final String sourceName;
-		
-		private final Module equalityModule;
-		
-		private final String equalityName;
+		private final PropositionReference<Composite> equality;
 		
 		private final Set<Integer> indices;
 		
-		public Rewrite(final Module sourceModule, final String sourceName,
-				final Module equalityModule, final String equalityName) {
-			this(null, sourceModule, sourceName, equalityModule, equalityName);
+		public Rewrite(final Module sourceContext, final String sourceName,
+				final Module equalityContext, final String equalityName) {
+			this(null, sourceContext, sourceName, equalityContext, equalityName);
 		}
 		
-		public Rewrite(final Module sourceModule, final String sourceName,
-				final Module equalityModule, final String equalityName,
+		public Rewrite(final Module sourceContext, final String sourceName,
+				final Module equalityContext, final String equalityName,
 				final Set<Integer> indices) {
-			this(null, sourceModule, sourceName, equalityModule, equalityName, indices);
+			this(null, sourceContext, sourceName, equalityContext, equalityName, indices);
 		}
 		
-		public Rewrite(final String factName, final Module sourceModule, final String sourceName,
-				final Module equalityModule, final String equalityName) {
-			this(factName, sourceModule, sourceName, equalityModule, equalityName, emptySet());
+		public Rewrite(final String factName, final Module sourceContext, final String sourceName,
+				final Module equalityContext, final String equalityName) {
+			this(factName, sourceContext, sourceName, equalityContext, equalityName, emptySet());
 		}
 		
-		public Rewrite(final String factName, final Module sourceModule,
-				final String sourceName, final Module equalityModule, final String equalityName,
+		public Rewrite(final String factName, final Module sourceContext,
+				final String sourceName, final Module equalityContext, final String equalityName,
 				final Set<Integer> indices) {
 			this.factName = factName;
-			this.sourceModule = sourceModule;
-			this.sourceName = sourceName;
-			this.equalityModule = equalityModule;
-			this.equalityName = equalityName;
+			this.source = new PropositionReference<>(sourceContext, sourceName);
+			this.equality = new PropositionReference<>(equalityContext, equalityName);
 			this.indices = indices;
+			
+			if (!isEquality(this.getEquality().getProposition())) {
+				throw new IllegalArgumentException();
+			}
 		}
 		
 		public final String getFactName() {
 			return this.factName;
 		}
 		
-		public final Module getSourceModule() {
-			return this.sourceModule;
-		}
-		
-		public final String getSourceName() {
-			return this.sourceName;
-		}
-		
-		public final Module getEqualityModule() {
-			return this.equalityModule;
-		}
-		
-		public final String getEqualityName() {
-			return this.equalityName;
-		}
-		
 		public final Set<Integer> getIndices() {
 			return this.indices;
 		}
 		
-		public final Expression getSource() {
-			return this.getSourceModule().getProposition(this.getSourceName());
+		public final PropositionReference<Expression> getSource() {
+			return this.source;
 		}
 		
-		public final Composite getEquality() {
-			final Composite result = cast(Composite.class, this.getEqualityModule().getProposition(this.getEqualityName()));
-			
-			if (!isEquality(result)) {
-				throw new IllegalArgumentException("Not an equality: " + this.getEqualityName());
-			}
-			
-			return result;
+		public final PropositionReference<Composite> getEquality() {
+			return this.equality;
 		}
 		
 		/**
 		 * {@value}.
 		 */
 		private static final long serialVersionUID = -1742061211293593816L;
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-08-02)
+	 */
+	public static final class Bind implements Command {
+		
+		private final String factName;
+		
+		private final PropositionReference<Module> module;
+		
+		private final Rewriter binder;
+		
+		private int bound;
+		
+		public Bind(final Module context, final String moduleName) {
+			this(null, context, moduleName);
+		}
+		
+		public Bind(final String factName, final Module context, final String moduleName) {
+			this.factName = factName;
+			this.module = new PropositionReference<>(context, moduleName);
+			this.binder = new Rewriter(this);
+		}
+		
+		public final String getFactName() {
+			return this.factName;
+		}
+		
+		public final PropositionReference<Module> getModule() {
+			return this.module;
+		}
+		
+		public final Rewriter getBinder() {
+			return this.binder;
+		}
+		
+		public final Bind bind(final Expression expression) {
+			final List<Symbol> parameters = this.getModule().getProposition().getParameters();
+			
+			if (this.bound < 0 || parameters.size() <= this.bound) {
+				throw new IllegalStateException("Inconsistent binding");
+			}
+			
+			this.getBinder().rewrite(parameters.get(this.bound++), expression);
+			
+			return this;
+		}
+		
+		public final Bind bind(final String parameterName, final Expression expression) {
+			if (0 < this.bound) {
+				throw new IllegalStateException("Inconsistent binding");
+			}
+			
+			final Symbol parameter = this.getModule().getProposition().getParameter(parameterName);
+			
+			if (parameter == null) {
+				throw new IllegalArgumentException("Parameter not found: " + parameterName);
+			}
+			
+			this.getBinder().rewrite(parameter, expression);
+			
+			this.bound = -1;
+			
+			return this;
+		}
+		
+		/**
+		 * {@value}.
+		 */
+		private static final long serialVersionUID = 32338105611173978L;
+		
+	}
+	
+//	/**
+//	 * @author codistmonk (creation 2014-08-02)
+//	 */
+//	public static final class Apply implements Command {
+//		
+//		private final String factName;
+//		
+//		private final PropositionReference<Module> module;
+//		
+//		// TODO
+//		
+//	}
+	
+	/**
+	 * @author codistmonk (creation 2014-08-02)
+	 */
+	public static final class PropositionReference<P extends Expression> implements Serializable {
+		
+		private final Module context;
+		
+		private final String propositionName;
+		
+		private final P proposition;
+		
+		public PropositionReference(final Module context, final String propositionName) {
+			this.context = context;
+			this.propositionName = propositionName;
+			this.proposition = this.getProposition();
+		}
+		
+		public final Module getContext() {
+			return this.context;
+		}
+		
+		public final String getPropositionName() {
+			return this.propositionName;
+		}
+		
+		@SuppressWarnings("unchecked")
+		public final P getProposition() {
+			if (this.proposition != null) {
+				return this.proposition;
+			}
+			
+			return (P) this.getContext().getProposition(this.getPropositionName());
+		}
+		
+		/**
+		 * {@value}.
+		 */
+		private static final long serialVersionUID = 8821738607644174239L;
 		
 	}
 	

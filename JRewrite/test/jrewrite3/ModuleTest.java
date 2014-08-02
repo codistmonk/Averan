@@ -9,6 +9,7 @@ import static org.junit.Assert.*;
 import java.util.function.Function;
 
 import jrewrite3.Module.Admit;
+import jrewrite3.Module.Bind;
 import jrewrite3.Module.Rewrite;
 import jrewrite3.Module.Suppose;
 import jrewrite3.Module.Symbol;
@@ -109,6 +110,15 @@ public final class ModuleTest {
 		module1.execute(new Rewrite("x=z", module1, "x=y", module1, "y=z"));
 		
 		assertEquals($("x", EQUAL, "z"), module1.getProposition("x=z"));
+	}
+	
+	@Test
+	public final void testBind() {
+		final Module module1 = new Module(Module.ROOT);
+		
+		module1.execute(new Bind("2=2", module1, "identity").bind($("2")));
+		
+		assertEquals($("2", EQUAL, "2"), module1.getProposition("2=2"));
 	}
 	
 	private static final Module testModule = new Module(null);
