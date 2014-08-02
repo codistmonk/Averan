@@ -6,6 +6,7 @@ import static net.sourceforge.aprog.tools.Tools.cast;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,9 @@ public final class Module implements Expression {
 	Module(final Module parent, final List<Symbol> parameters,
 			final List<Expression> conditions, final List<Expression> facts) {
 		this.parent = parent;
+		// XXX there may or may not be an issue with the fact that
+		//     existing parameters won't reference this module;
+		//     likewise for existing submodule's parents 
 		this.parameters = parameters;
 		this.conditions = conditions;
 		this.conditionIndices = new LinkedHashMap<>(conditions.size());
@@ -118,6 +122,49 @@ public final class Module implements Expression {
 			this.newProposition(this.getFactIndices(), bind.getFactName());
 			this.getFacts().add(protofact);
 			this.getProofs().add(bind);
+		}
+		
+		return this;
+	}
+	
+	public final Module execute(final Apply apply) {
+		final Module protofact = apply.getModule().getProposition();
+		final List<Expression> allConditions = protofact.getConditions();
+		final int removedConditions = apply.getRemovedConditions();
+		final List<Expression> remainingConditions = allConditions.subList(
+				removedConditions, allConditions.size());
+		
+		if (protofact.getParameters().isEmpty() && remainingConditions.isEmpty()) {
+			if (1 == protofact.getFacts().size()) {
+				this.newProposition(this.getFactIndices(), apply.getFactName());
+				this.getFacts().add(protofact.getFacts().get(0));
+				this.getProofs().add(apply);
+			} else {
+				for (final Map.Entry<String, Integer> entry : protofact.getFactIndices().entrySet()) {
+					this.newProposition(this.getFactIndices(), apply.getFactName() + "/" + entry.getKey());
+					this.getFacts().add(protofact.getFacts().get(entry.getValue()));
+					this.getProofs().add(apply);
+				}
+			}
+		} else if (remainingConditions.size() != allConditions.size()) {
+			final Module newFact = new Module(protofact.getParent(), protofact.getParameters(), remainingConditions, protofact.getFacts());
+			
+			for (final Map.Entry<String, Integer> entry : protofact.getConditionIndices().entrySet()) {
+				if (removedConditions <= entry.getValue()) {
+					newFact.getConditionIndices().put(entry.getKey(), entry.getValue() - removedConditions);
+				}
+			}
+			
+			newFact.getFactIndices().putAll(protofact.getFactIndices());
+			newFact.getProofs().addAll(Collections.nCopies(protofact.getFacts().size(), apply));
+			
+			this.newProposition(this.getFactIndices(), apply.getFactName());
+			this.getFacts().add(newFact);
+			this.getProofs().add(apply);
+		} else {
+			this.newProposition(this.getFactIndices(), apply.getFactName());
+			this.getFacts().add(protofact);
+			this.getProofs().add(apply);
 		}
 		
 		return this;
@@ -513,18 +560,54 @@ public final class Module implements Expression {
 		
 	}
 	
-//	/**
-//	 * @author codistmonk (creation 2014-08-02)
-//	 */
-//	public static final class Apply implements Command {
-//		
-//		private final String factName;
-//		
-//		private final PropositionReference<Module> module;
-//		
-//		// TODO
-//		
-//	}
+	/**
+	 * @author codistmonk (creation 2014-08-02)
+	 */
+	public static final class Apply implements Command {
+		
+		private final String factName;
+		
+		private final PropositionReference<Module> module;
+		
+		private int removedConditions;
+		
+		public Apply(final String factName, final Module context, final String moduleName) {
+			this.factName = factName;
+			this.module = new PropositionReference<>(context, moduleName);
+		}
+		
+		public final Apply apply(final Module context, final String propositionName) {
+			final Expression condition = context.getProposition(propositionName);
+			
+			if (this.getModule().getProposition().getConditions()
+					.get(this.removedConditions).equals(condition)) {
+				++this.removedConditions;
+			} else {
+				throw new IllegalArgumentException("Condition " + this.getRemovedConditions()
+						+ " does not match " + propositionName);
+			}
+			
+			return this;
+		}
+		
+		public final String getFactName() {
+			return this.factName;
+		}
+		
+		public final PropositionReference<Module> getModule() {
+			return this.module;
+		}
+		
+		public final int getRemovedConditions() {
+			return this.removedConditions;
+		}
+		
+		/**
+		 * {@value}.
+		 */
+		private static final long serialVersionUID = 1301730993080837859L;
+		
+	}
 	
 	/**
 	 * @author codistmonk (creation 2014-08-02)

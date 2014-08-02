@@ -9,6 +9,7 @@ import static org.junit.Assert.*;
 import java.util.function.Function;
 
 import jrewrite3.Module.Admit;
+import jrewrite3.Module.Apply;
 import jrewrite3.Module.Bind;
 import jrewrite3.Module.Rewrite;
 import jrewrite3.Module.Suppose;
@@ -121,6 +122,17 @@ public final class ModuleTest {
 		assertEquals($("2", EQUAL, "2"), module1.getProposition("2=2"));
 	}
 	
+	@Test
+	public final void testApply() {
+		final Module module1 = new Module(null);
+		
+		module1.execute(new Suppose("condition", $("A")));
+		module1.execute(new Suppose("rule", rule("A", "B")));
+		module1.execute(new Apply("fact", module1, "rule").apply(module1, "condition"));
+		
+		assertEquals($("B"), module1.getProposition("fact"));
+	}
+	
 	private static final Module testModule = new Module(null);
 	
 	@SuppressWarnings("unchecked")
@@ -133,6 +145,15 @@ public final class ModuleTest {
 		}
 		
 		return (E) new Composite(stream(objects).map(mapper).collect(toList()));
+	}
+	
+	private static final Module rule(final Object condition, final Object fact) {
+		final Module result = new Module(null);
+		
+		result.execute(new Suppose($(condition)));
+		result.execute(new Admit($(fact)));
+		
+		return result;
 	}
 	
 }
