@@ -13,7 +13,7 @@ final class Module implements Expression {
 	
 	private final Module parent;
 	
-	private final List<Variable> variables;
+	private final List<Symbol> parameters;
 	
 	private final List<Expression> conditions;
 	
@@ -23,20 +23,34 @@ final class Module implements Expression {
 		this(parent, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
 	}
 	
-	Module(final Module parent, final List<Variable> variables,
+	Module(final Module parent, final List<Symbol> parameters,
 			final List<Expression> conditions, final List<Expression> facts) {
 		this.parent = parent;
-		this.variables = variables;
+		this.parameters = parameters;
 		this.conditions = conditions;
 		this.facts = facts;
+	}
+	
+	public final Symbol parameter(final String parameter) {
+		final Symbol result = this.new Symbol(parameter);
+		
+		this.getParameters().add(result);
+		
+		return result;
+	}
+	
+	public final Module assume(final Expression fact) {
+		this.getFacts().add(fact);
+		
+		return this;
 	}
 	
 	public final Module getParent() {
 		return this.parent;
 	}
 	
-	public final List<Variable> getVariables() {
-		return this.variables;
+	public final List<Symbol> getParameters() {
+		return this.parameters;
 	}
 	
 	public final List<Expression> getConditions() {
@@ -49,39 +63,39 @@ final class Module implements Expression {
 	
 	@Override
 	public final <R> R accept(final Visitor<R> visitor) {
-		return visitor.visitAfterFacts(this, visitor.visitBeforeVariables(this),
-				Expression.listAccept(this.getVariables(), visitor),
+		return visitor.endVisit(this, visitor.beginVisit(this),
+				Expression.listAccept(this.getParameters(), visitor),
 				Expression.listAccept(this.getConditions(), visitor),
 				Expression.listAccept(this.getFacts(), visitor));
 	}
 	
 	@Override
 	public final int hashCode() {
-		return this.getVariables().hashCode() + this.getConditions().hashCode() + this.getFacts().hashCode();
+		return this.getParameters().hashCode() + this.getConditions().hashCode() + this.getFacts().hashCode();
 	}
 	
 	@Override
 	public final boolean equals(final Object object) {
 		final Module that = cast(this.getClass(), object);
 		
-		return that != null && this.getVariables().equals(that.getVariables())
+		return that != null && this.getParameters().equals(that.getParameters())
 				&& this.getConditions().equals(that.getConditions())
 				&& this.getFacts().equals(that.getFacts());
 	}
 	
 	@Override
 	public final String toString() {
-		return "?" + this.getVariables() + " " + this.getConditions() + "->" + this.getFacts();
+		return "?" + this.getParameters() + " " + this.getConditions() + "->" + this.getFacts();
 	}
 	
 	/**
 	 * @author codistmonk (creation 2014-08-01)
 	 */
-	public final class Variable implements Expression {
+	public final class Symbol implements Expression {
 		
 		private final String string;
 		
-		public Variable(final String string) {
+		public Symbol(final String string) {
 			this.string = string;
 		}
 		
@@ -96,7 +110,7 @@ final class Module implements Expression {
 		
 		@Override
 		public final boolean equals(final Object object) {
-			final Variable that = cast(this.getClass(), object);
+			final Symbol that = cast(this.getClass(), object);
 			
 			return that != null && this.toString().equals(that.toString())
 					&& this.getModule() == that.getModule();
@@ -126,22 +140,19 @@ final class Module implements Expression {
 	
 	public static final Module ROOT = new Module(null);
 	
-	public static final Variable EQUAL = ROOT.new Variable("=");
+	public static final Symbol EQUAL = ROOT.parameter("=");
 	
 	public static final Composite equality(final Expression left, final Expression right) {
 		return new Composite(Arrays.asList(left, EQUAL, right));
 	}
 	
 	static {
-		ROOT.getVariables().add(EQUAL);
-		
 		final Module identity = new Module(ROOT);
-		final Variable x = identity.new Variable("x");
+		final Symbol x = identity.parameter("x");
 		
-		identity.getVariables().add(x);
-		identity.getFacts().add(equality(x, x));
+		identity.assume(equality(x, x));
 		
-		ROOT.getFacts().add(identity);
+		ROOT.assume(identity);
 	}
 	
 }

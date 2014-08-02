@@ -7,7 +7,7 @@ import static org.junit.Assert.*;
 
 import java.util.function.Function;
 
-import jrewrite3.Module.Variable;
+import jrewrite3.Module.Symbol;
 
 import org.junit.Test;
 
@@ -19,8 +19,8 @@ public final class RewriterTest {
 	
 	@Test
 	public final void test1() {
-		final Variable variable = $("x");
-		final Variable value = $("42");
+		final Symbol variable = $("x");
+		final Symbol value = $("42");
 		final Rewriter rewriter = new Rewriter().rewrite(variable, value);
 		
 		assertEquals(value, variable.accept(rewriter));
@@ -38,8 +38,8 @@ public final class RewriterTest {
 	
 	@SuppressWarnings("unchecked")
 	private static final <E extends Expression> E $(final Object... objects) {
-		final Function<Object, Expression> mapper = o -> o instanceof Expression
-				? (Expression) o : EMPTY_MODULE.new Variable(o.toString());
+		final Function<Object, Expression> mapper = object -> object instanceof Expression
+				? (Expression) object : EMPTY_MODULE.new Symbol(object.toString());
 		
 		if (objects.length == 1) {
 			return (E) mapper.apply(objects[0]);

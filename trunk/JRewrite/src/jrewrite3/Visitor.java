@@ -9,20 +9,20 @@ import java.util.function.Supplier;
  */
 public abstract interface Visitor<R> extends Serializable {
 	
-	public abstract R visitBeforeChildren(Composite composite);
+	public abstract R beginVisit(Composite composite);
 	
-	public default R visitAfterChildren(final Composite composite, final R beforeVisit,
+	public default R endVisit(final Composite composite, final R compositeVisit,
 			final Supplier<List<R>> childVisits) {
-		return beforeVisit;
+		return compositeVisit;
 	}
 	
-	public abstract R visit(Module.Variable variable);
+	public abstract R visit(Module.Symbol variable);
 	
-	public abstract R visitBeforeVariables(Module module);
+	public abstract R beginVisit(Module module);
 	
-	public default R visitAfterFacts(final Module module, final R beforeVisit,
-			final Supplier<List<R>> variableVisits, final Supplier<List<R>> conditionVisits, final Supplier<List<R>> factVisits) {
-		return beforeVisit;
+	public default R endVisit(final Module module, final R moduleVisit,
+			final Supplier<List<R>> parameterVisits, final Supplier<List<R>> conditionVisits, final Supplier<List<R>> factVisits) {
+		return moduleVisit;
 	}
 	
 }

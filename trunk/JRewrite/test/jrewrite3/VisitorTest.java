@@ -21,9 +21,9 @@ public final class VisitorTest {
 		
 		assertEquals(Module.ROOT, Module.ROOT.accept(recorder));
 		assertArrayEquals(array(
-				MODULE_BEFORE_VARIABLES, // begin ROOT
+				MODULE_BEFORE_PARAMETERS, // begin ROOT
 				VARIABLE, // variable "="
-				MODULE_BEFORE_VARIABLES, // begin equality
+				MODULE_BEFORE_PARAMETERS, // begin equality
 				VARIABLE, // variable "x"
 				COMPOSITE_BEFORE_CHILDREN, // begin [x=x]
 				VARIABLE, // variable "x"
@@ -47,49 +47,49 @@ public final class VisitorTest {
 		}
 		
 		@Override
-		public final Expression visitBeforeChildren(final Composite composite) {
+		public final Expression beginVisit(final Composite composite) {
 			this.getEvents().add(Event.COMPOSITE_BEFORE_CHILDREN);
 			
 			return composite;
 		}
 		
 		@Override
-		public final Expression visitAfterChildren(final Composite composite,
-				final Expression beforeVisit, final Supplier<List<Expression>> childVisits) {
-			assertEquals(composite, beforeVisit);
+		public final Expression endVisit(final Composite composite,
+				final Expression compositeVisit, final Supplier<List<Expression>> childVisits) {
+			assertEquals(composite, compositeVisit);
 			assertEquals(composite.getChildren(), childVisits.get());
 			
 			this.getEvents().add(Event.COMPOSITE_AFTER_CHILDREN);
 			
-			return Visitor.super.visitAfterChildren(composite, beforeVisit, childVisits);
+			return Visitor.super.endVisit(composite, compositeVisit, childVisits);
 		}
 		
 		@Override
-		public final Expression visit(final Module.Variable variable) {
+		public final Expression visit(final Module.Symbol variable) {
 			this.getEvents().add(Event.VARIABLE);
 			
 			return variable;
 		}
 		
 		@Override
-		public final Expression visitBeforeVariables(final Module module) {
-			this.getEvents().add(Event.MODULE_BEFORE_VARIABLES);
+		public final Expression beginVisit(final Module module) {
+			this.getEvents().add(Event.MODULE_BEFORE_PARAMETERS);
 			
 			return module;
 		}
 		
 		@Override
-		public final Expression visitAfterFacts(final Module module, final Expression beforeVisit,
-				final Supplier<List<Expression>> variableVisits, final Supplier<List<Expression>> conditionVisits,
+		public final Expression endVisit(final Module module, final Expression moduleVisit,
+				final Supplier<List<Expression>> parameterVisits, final Supplier<List<Expression>> conditionVisits,
 				final Supplier<List<Expression>> factVisits) {
-			assertEquals(module, beforeVisit);
-			assertEquals(module.getVariables(), variableVisits.get());
+			assertEquals(module, moduleVisit);
+			assertEquals(module.getParameters(), parameterVisits.get());
 			assertEquals(module.getConditions(), conditionVisits.get());
 			assertEquals(module.getFacts(), factVisits.get());
 			
 			this.getEvents().add(Event.MODULE_AFTER_FACTS);
 			
-			return Visitor.super.visitAfterFacts(module, beforeVisit, variableVisits,
+			return Visitor.super.endVisit(module, moduleVisit, parameterVisits,
 					conditionVisits, factVisits);
 		}
 		
@@ -104,7 +104,7 @@ public final class VisitorTest {
 		public static enum Event {
 			
 			COMPOSITE_BEFORE_CHILDREN, COMPOSITE_AFTER_CHILDREN,
-			MODULE_BEFORE_VARIABLES, MODULE_AFTER_FACTS,
+			MODULE_BEFORE_PARAMETERS, MODULE_AFTER_FACTS,
 			VARIABLE;
 			
 		}
