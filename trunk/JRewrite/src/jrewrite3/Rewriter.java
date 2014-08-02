@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Supplier;
 
+import jrewrite3.Module.Rewrite;
 import jrewrite3.Module.Symbol;
 
 /**
@@ -18,11 +19,25 @@ import jrewrite3.Module.Symbol;
  */
 public final class Rewriter implements Visitor<Expression> {
 	
-	private final Map<Expression, Expression> rewrites = new LinkedHashMap<>();
+	private final Rewrite proof;
 	
-	private final Set<Integer> indices = new TreeSet<>();
+	private final Map<Expression, Expression> rewrites;
 	
-	private int index = -1;
+	private final Set<Integer> indices;
+	
+	private int index;
+	
+	public Rewriter() {
+		this(null);
+	}
+	
+	public Rewriter(final Rewrite proof) {
+		this.proof = proof;
+		this.rewrites = new LinkedHashMap<>();
+		this.indices = new TreeSet<>();
+		
+		this.reset();
+	}
 	
 	public final Map<Expression, Expression> getRewrites() {
 		return this.rewrites;
@@ -92,8 +107,7 @@ public final class Rewriter implements Visitor<Expression> {
 			
 			result.getConditionIndices().putAll(module.getConditionIndices());
 			result.getFactIndices().putAll(module.getFactIndices());
-			// TODO pass "rewrite" command as proof
-			result.getProofs().addAll(Collections.nCopies(module.getFacts().size(), null));
+			result.getProofs().addAll(Collections.nCopies(module.getFacts().size(), this.proof));
 			
 			return result;
 		}

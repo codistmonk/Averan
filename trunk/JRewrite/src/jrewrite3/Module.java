@@ -1,5 +1,6 @@
 package jrewrite3;
 
+import static java.util.Collections.emptySet;
 import static net.sourceforge.aprog.tools.Tools.cast;
 
 import java.io.Serializable;
@@ -8,6 +9,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author codistmonk (creation 2014-08-01)
@@ -70,6 +72,41 @@ public final class Module implements Expression {
 		this.getProofs().add(admit);
 		
 		return this;
+	}
+	
+	public final Module execute(final Rewrite rewrite) {
+		final Expression source = rewrite.getSource();
+		final Composite equality = rewrite.getEquality();
+		final Expression pattern = equality.getChildren().get(0);
+		final Expression replacement = equality.getChildren().get(2);
+		final Expression newFact = source.accept(
+				new Rewriter(rewrite).rewrite(pattern, replacement));
+		
+		this.newProposition(this.getFactIndices(), rewrite.getFactName());
+		this.getFacts().add(newFact);
+		this.getProofs().add(rewrite);
+		
+		return this;
+	}
+	
+	public final Expression getProposition(final String name) {
+		Integer resultIndex = this.getConditionIndices().get(name);
+		
+		if (resultIndex != null) {
+			return this.getConditions().get(resultIndex);
+		}
+		
+		resultIndex = this.getFactIndices().get(name);
+		
+		if (resultIndex != null) {
+			return this.getFacts().get(resultIndex);
+		}
+		
+		if (this.getParent() != null) {
+			return this.getParent().getProposition(name);
+		}
+		
+		throw new IllegalArgumentException("Proposition not found: " + name);
 	}
 	
 	public final Module getParent() {
@@ -215,6 +252,14 @@ public final class Module implements Expression {
 		return new Composite(Arrays.asList(left, EQUAL, right));
 	}
 	
+	public static final boolean isEquality(final Object object) {
+		final Composite composite = cast(Composite.class, object);
+		
+		return composite != null
+				&& composite.getChildren().size() == 3
+				&& EQUAL.equals(composite.getChildren().get(1));
+	}
+	
 	static {
 		final Module identity = new Module(ROOT);
 		final Symbol x = identity.parameter("x");
@@ -294,6 +339,95 @@ public final class Module implements Expression {
 		 * {@value}.
 		 */
 		private static final long serialVersionUID = -6762359358588862640L;
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-08-02)
+	 */
+	public static final class Rewrite implements Command {
+		
+		private final String factName;
+		
+		private final Module sourceModule;
+		
+		private final String sourceName;
+		
+		private final Module equalityModule;
+		
+		private final String equalityName;
+		
+		private final Set<Integer> indices;
+		
+		public Rewrite(final Module sourceModule, final String sourceName,
+				final Module equalityModule, final String equalityName) {
+			this(null, sourceModule, sourceName, equalityModule, equalityName);
+		}
+		
+		public Rewrite(final Module sourceModule, final String sourceName,
+				final Module equalityModule, final String equalityName,
+				final Set<Integer> indices) {
+			this(null, sourceModule, sourceName, equalityModule, equalityName, indices);
+		}
+		
+		public Rewrite(final String factName, final Module sourceModule, final String sourceName,
+				final Module equalityModule, final String equalityName) {
+			this(factName, sourceModule, sourceName, equalityModule, equalityName, emptySet());
+		}
+		
+		public Rewrite(final String factName, final Module sourceModule,
+				final String sourceName, final Module equalityModule, final String equalityName,
+				final Set<Integer> indices) {
+			this.factName = factName;
+			this.sourceModule = sourceModule;
+			this.sourceName = sourceName;
+			this.equalityModule = equalityModule;
+			this.equalityName = equalityName;
+			this.indices = indices;
+		}
+		
+		public final String getFactName() {
+			return this.factName;
+		}
+		
+		public final Module getSourceModule() {
+			return this.sourceModule;
+		}
+		
+		public final String getSourceName() {
+			return this.sourceName;
+		}
+		
+		public final Module getEqualityModule() {
+			return this.equalityModule;
+		}
+		
+		public final String getEqualityName() {
+			return this.equalityName;
+		}
+		
+		public final Set<Integer> getIndices() {
+			return this.indices;
+		}
+		
+		public final Expression getSource() {
+			return this.getSourceModule().getProposition(this.getSourceName());
+		}
+		
+		public final Composite getEquality() {
+			final Composite result = cast(Composite.class, this.getEqualityModule().getProposition(this.getEqualityName()));
+			
+			if (!isEquality(result)) {
+				throw new IllegalArgumentException("Not an equality: " + this.getEqualityName());
+			}
+			
+			return result;
+		}
+		
+		/**
+		 * {@value}.
+		 */
+		private static final long serialVersionUID = -1742061211293593816L;
 		
 	}
 	

@@ -1,11 +1,8 @@
 package jrewrite3;
 
-import static java.util.Arrays.stream;
-import static java.util.stream.Collectors.toList;
 import static jrewrite3.Module.EQUAL;
+import static jrewrite3.ModuleTest.$;
 import static org.junit.Assert.*;
-
-import java.util.function.Function;
 
 import jrewrite3.Module.Symbol;
 
@@ -33,20 +30,6 @@ public final class RewriterTest {
 		final Rewriter rewriter = new Rewriter().rewrite($("1", "+", "1"), $("2"));
 		
 		assertEquals($("2", EQUAL, "2"), definitionOf2.accept(rewriter));
-	}
-	
-	private static final Module EMPTY_MODULE = new Module(null);
-	
-	@SuppressWarnings("unchecked")
-	private static final <E extends Expression> E $(final Object... objects) {
-		final Function<Object, Expression> mapper = object -> object instanceof Expression
-				? (Expression) object : EMPTY_MODULE.new Symbol(object.toString());
-		
-		if (objects.length == 1) {
-			return (E) mapper.apply(objects[0]);
-		}
-		
-		return (E) new Composite(stream(objects).map(mapper).collect(toList()));
 	}
 	
 }
