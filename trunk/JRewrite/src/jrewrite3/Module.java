@@ -2,9 +2,12 @@ package jrewrite3;
 
 import static net.sourceforge.aprog.tools.Tools.cast;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author codistmonk (creation 2014-08-01)
@@ -17,7 +20,13 @@ public final class Module implements Expression {
 	
 	private final List<Expression> conditions;
 	
+	private final Map<String, Integer> conditionIndices;
+	
 	private final List<Expression> facts;
+	
+	private final Map<String, Integer> factIndices;
+	
+	private final List<Command> proofs;
 	
 	public Module(final Module parent) {
 		this(parent, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
@@ -28,7 +37,10 @@ public final class Module implements Expression {
 		this.parent = parent;
 		this.parameters = parameters;
 		this.conditions = conditions;
+		this.conditionIndices = new LinkedHashMap<>(conditions.size());
 		this.facts = facts;
+		this.factIndices = new LinkedHashMap<>(facts.size());
+		this.proofs = new ArrayList<>(facts.size());
 	}
 	
 	public final Symbol parameter(final String parameter) {
@@ -39,8 +51,17 @@ public final class Module implements Expression {
 		return result;
 	}
 	
-	public final Module assume(final Expression fact) {
-		this.getFacts().add(fact);
+	public final Module execute(final Suppose suppose) {
+		this.newProposition(this.getConditionIndices(), suppose.getConditionName());
+		this.getConditions().add(suppose.getCondition());
+		
+		return this;
+	}
+	
+	public final Module execute(final Admit admit) {
+		this.newProposition(this.getFactIndices(), admit.getFactName());
+		this.getFacts().add(admit.getFact());
+		this.getProofs().add(admit);
 		
 		return this;
 	}
@@ -57,8 +78,28 @@ public final class Module implements Expression {
 		return this.conditions;
 	}
 	
+	public final Map<String, Integer> getConditionIndices() {
+		return this.conditionIndices;
+	}
+	
 	public final List<Expression> getFacts() {
 		return this.facts;
+	}
+	
+	public final Map<String, Integer> getFactIndices() {
+		return this.factIndices;
+	}
+	
+	public final List<Command> getProofs() {
+		return this.proofs;
+	}
+	
+	public final int getPropositionCount() {
+		return this.getConditions().size() + this.getFacts().size();
+	}
+	
+	public final String newPropositionName() {
+		return "#" + this.getPropositionCount();
 	}
 	
 	@Override
@@ -88,6 +129,10 @@ public final class Module implements Expression {
 		return (this.getParameters().isEmpty() ? "" : "?" + this.getParameters() + " ")
 				+ (this.getConditions().isEmpty() ? "" : this.getConditions() + " -> ")
 				+ this.getFacts();
+	}
+	
+	private final void newProposition(final Map<String, Integer> indices, final String propositionName) {
+		indices.put(propositionName == null ? this.newPropositionName() : propositionName, indices.size());
 	}
 	
 	/**
@@ -144,6 +189,8 @@ public final class Module implements Expression {
 	
 	public static final Symbol EQUAL = ROOT.parameter("=");
 	
+	public static final String IDENTITY = "identity";
+	
 	public static final Composite equality(final Expression left, final Expression right) {
 		return new Composite(Arrays.asList(left, EQUAL, right));
 	}
@@ -152,9 +199,82 @@ public final class Module implements Expression {
 		final Module identity = new Module(ROOT);
 		final Symbol x = identity.parameter("x");
 		
-		identity.assume(equality(x, x));
+		identity.execute(new Admit(equality(x, x)));
 		
-		ROOT.assume(identity);
+		ROOT.execute(new Admit(IDENTITY, identity));
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-08-02)
+	 */
+	public static abstract interface Command extends Serializable {
+		//  Empty
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-08-02)
+	 */
+	public static final class Suppose implements Command {
+		
+		private final String conditionName;
+		
+		private final Expression condition;
+		
+		public Suppose(final Expression condition) {
+			this(null, condition);
+		}
+		
+		public Suppose(final String conditionName, final Expression condition) {
+			this.conditionName = conditionName;
+			this.condition = condition;
+		}
+		
+		public final String getConditionName() {
+			return this.conditionName;
+		}
+		
+		public final Expression getCondition() {
+			return this.condition;
+		}
+		
+		/**
+		 * {@value}.
+		 */
+		private static final long serialVersionUID = -3935414790571741334L;
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-08-02)
+	 */
+	public static final class Admit implements Command {
+		
+		private final String factName;
+		
+		private final Expression fact;
+		
+		public Admit(final Expression fact) {
+			this(null, fact);
+		}
+		
+		public Admit(final String factName, final Expression fact) {
+			this.factName = factName;
+			this.fact = fact;
+		}
+		
+		public final String getFactName() {
+			return this.factName;
+		}
+		
+		public final Expression getFact() {
+			return this.fact;
+		}
+		
+		/**
+		 * {@value}.
+		 */
+		private static final long serialVersionUID = -6762359358588862640L;
+		
 	}
 	
 }
