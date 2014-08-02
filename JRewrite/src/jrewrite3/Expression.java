@@ -13,7 +13,7 @@ public abstract interface Expression extends Serializable {
 	
 	public abstract <R> R accept(Visitor<R> visitor);
 	
-	public static <R> Supplier<List<R>> listAccept(final Collection<? extends Expression> expressions, final Visitor<R> visitor) {
+	public static <R> Supplier<List<R>> listAcceptor(final Collection<? extends Expression> expressions, final Visitor<R> visitor) {
 		return new Supplier<List<R>>() {
 			
 			private List<R> result;

@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * @author codistmonk (creation 2014-08-01)
  */
-final class Module implements Expression {
+public final class Module implements Expression {
 	
 	private final Module parent;
 	
@@ -64,9 +64,9 @@ final class Module implements Expression {
 	@Override
 	public final <R> R accept(final Visitor<R> visitor) {
 		return visitor.endVisit(this, visitor.beginVisit(this),
-				Expression.listAccept(this.getParameters(), visitor),
-				Expression.listAccept(this.getConditions(), visitor),
-				Expression.listAccept(this.getFacts(), visitor));
+				Expression.listAcceptor(this.getParameters(), visitor),
+				Expression.listAcceptor(this.getConditions(), visitor),
+				Expression.listAcceptor(this.getFacts(), visitor));
 	}
 	
 	@Override
