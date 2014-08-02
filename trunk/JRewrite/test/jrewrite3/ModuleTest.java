@@ -15,6 +15,25 @@ public final class ModuleTest {
 	public final void test1() {
 		final Module module1 = new Module(null);
 		
+		assertEquals(0, module1.getParameters().size());
+		
+		module1.parameter("x");
+		
+		assertEquals(1, module1.getParameters().size());
+		
+		module1.parameter("x");
+		
+		assertEquals(1, module1.getParameters().size());
+		
+		module1.parameter("y");
+		
+		assertEquals(2, module1.getParameters().size());
+	}
+	
+	@Test
+	public final void test2() {
+		final Module module1 = new Module(null);
+		
 		assertEquals(module1, module1);
 		
 		final Module module2 = new Module(null);

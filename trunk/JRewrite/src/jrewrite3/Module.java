@@ -44,6 +44,12 @@ public final class Module implements Expression {
 	}
 	
 	public final Symbol parameter(final String parameter) {
+		for (final Symbol p : this.getParameters()) {
+			if (p.toString().equals(parameter)) {
+				return p;
+			}
+		}
+		
 		final Symbol result = this.new Symbol(parameter);
 		
 		this.getParameters().add(result);
