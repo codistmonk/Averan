@@ -1,6 +1,7 @@
 package jrewrite3;
 
 import static net.sourceforge.aprog.tools.Tools.cast;
+import static net.sourceforge.aprog.tools.Tools.join;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +49,7 @@ public final class Composite implements Expression {
 	
 	@Override
 	public final String toString() {
-		return this.getChildren().toString();
+		return join("", this.getChildren().toArray());
 	}
 	
 	/**
