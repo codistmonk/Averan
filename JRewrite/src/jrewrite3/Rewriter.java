@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Supplier;
 
-import jrewrite3.Module.Variable;
+import jrewrite3.Module.Symbol;
 
 /**
  * @author codistmonk (creation 2014-08-01)
@@ -44,42 +44,42 @@ public final class Rewriter implements Visitor<Expression> {
 	}
 	
 	@Override
-	public final Expression visitBeforeChildren(final Composite composite) {
+	public final Expression beginVisit(final Composite composite) {
 		return this.tryToRewrite(composite);
 	}
 	
 	@Override
-	public final Expression visitAfterChildren(final Composite composite, final Expression beforeVisit,
+	public final Expression endVisit(final Composite composite, final Expression compositeVisit,
 			final Supplier<List<Expression>> childVisits) {
-		if (composite == beforeVisit && !composite.getChildren().equals(childVisits.get())) {
+		if (composite == compositeVisit && !composite.getChildren().equals(childVisits.get())) {
 			return new Composite(childVisits.get());
 		}
 		
-		return beforeVisit;
+		return compositeVisit;
 	}
 	
 	@Override
-	public final Expression visit(final Variable variable) {
+	public final Expression visit(final Symbol variable) {
 		return this.tryToRewrite(variable);
 	}
 	
 	@Override
-	public final Expression visitBeforeVariables(final Module module) {
+	public final Expression beginVisit(final Module module) {
 		return this.tryToRewrite(module);
 	}
 	
 	@Override
-	public final Expression visitAfterFacts(final Module module, final Expression beforeVisit,
-			final Supplier<List<Expression>> variableVisits,
+	public final Expression endVisit(final Module module, final Expression moduleVisit,
+			final Supplier<List<Expression>> parameterVisits,
 			final Supplier<List<Expression>> conditionVisits,
 			final Supplier<List<Expression>> factVisits) {
-		if (module == beforeVisit && (!module.getVariables().equals(variableVisits.get()) ||
+		if (module == moduleVisit && (!module.getParameters().equals(parameterVisits.get()) ||
 				!module.getConditions().equals(conditionVisits.get()) ||
 				!module.getFacts().equals(factVisits.get()))) {
-			final List<Variable> newVariables = new ArrayList<>();
+			final List<Symbol> newVariables = new ArrayList<>();
 			
-			for (final Expression expression : variableVisits.get()) {
-				final Variable variable = cast(Variable.class, expression);
+			for (final Expression expression : parameterVisits.get()) {
+				final Symbol variable = cast(Symbol.class, expression);
 				
 				if (variable != null && module == variable.getModule()) {
 					newVariables.add(variable);
@@ -89,7 +89,7 @@ public final class Rewriter implements Visitor<Expression> {
 			return new Module(module.getParent(), newVariables, conditionVisits.get(), factVisits.get());
 		}
 		
-		return beforeVisit;
+		return moduleVisit;
 	}
 	
 	private final Expression tryToRewrite(final Expression expression) {
