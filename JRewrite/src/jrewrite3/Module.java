@@ -73,14 +73,6 @@ public final class Module implements Expression {
 		return null;
 	}
 	
-	public final Module execute(final Admit admit) {
-		this.newProposition(this.getFactIndices(), admit.getFactName());
-		this.getFacts().add(admit.getFact());
-		this.getProofs().add(admit);
-		
-		return this;
-	}
-	
 	public final Module execute(final Recall recall) {
 		this.newProposition(this.getFactIndices(), recall.getFactName());
 		this.getFacts().add(recall.getProposition().getProposition());
@@ -394,9 +386,9 @@ public final class Module implements Expression {
 		final Module identity = new Module(ROOT);
 		final Symbol x = identity.parameter("x");
 		
-		identity.execute(new Admit(equality(x, x)));
+		identity.new Admit(equality(x, x)).execute();
 		
-		ROOT.execute(new Admit(IDENTITY, identity));
+		ROOT.new Admit(IDENTITY, identity).execute();
 	}
 	
 	/**
@@ -470,9 +462,7 @@ public final class Module implements Expression {
 	/**
 	 * @author codistmonk (creation 2014-08-02)
 	 */
-	public static final class Admit implements Command {
-		
-		private final String factName;
+	public final class Admit extends AddProposition {
 		
 		private final Expression fact;
 		
@@ -481,18 +471,25 @@ public final class Module implements Expression {
 		}
 		
 		public Admit(final String factName, final Expression fact) {
-			this.factName = factName;
+			super(factName);
 			this.fact = fact;
-		}
-		
-		public final String getFactName() {
-			return this.factName;
 		}
 		
 		public final Expression getFact() {
 			return this.fact;
 		}
 		
+		@Override
+		public final Module execute() {
+			final Module result = Module.this;
+			
+			result.newProposition(result.getFactIndices(), this.getPropositionName());
+			result.getFacts().add(this.getFact());
+			result.getProofs().add(this);
+			
+			return result;
+		}
+
 		/**
 		 * {@value}.
 		 */
