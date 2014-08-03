@@ -128,7 +128,7 @@ public final class ModuleTest {
 		
 		module1.new Suppose("x=y", $("x", EQUAL, "y")).execute();
 		module1.new Suppose("y=z", $("y", EQUAL, "z")).execute();
-		module1.execute(module1.new Rewrite("x=z", module1, "x=y", module1, "y=z"));
+		module1.new Rewrite("x=z", module1, "x=y", module1, "y=z").execute();
 		
 		assertEquals($("x", EQUAL, "z"), module1.getProposition("x=z"));
 	}
