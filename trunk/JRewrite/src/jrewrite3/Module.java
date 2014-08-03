@@ -299,6 +299,19 @@ public final class Module implements Expression {
 			return this.addFact(fact, this.getPropositionName());
 		}
 		
+		protected final Module addFacts(final Module protofact) {
+			if (1 == protofact.getFacts().size()) {
+				return this.addFact(protofact.getFacts().get(0));
+			}
+			
+			for (final Map.Entry<String, Integer> entry : protofact.getFactIndices().entrySet()) {
+				this.addFact(protofact.getFacts().get(entry.getValue()),
+						this.getPropositionName() + "/" + entry.getKey());
+			}
+			
+			return Module.this;
+		}
+		
 		/**
 		 * {@value}.
 		 */
@@ -614,20 +627,11 @@ public final class Module implements Expression {
 		public final Module execute() {
 			final Module protofact = (Module) this.getModule().getProposition().accept(this.getBinder());
 			
-			if (!protofact.isFree()) {
-				return this.addFact(protofact);
+			if (protofact.isFree()) {
+				return this.addFacts(protofact);
 			}
 			
-			if (1 == protofact.getFacts().size()) {
-				return this.addFact(protofact.getFacts().get(0));
-			}
-			
-			for (final Map.Entry<String, Integer> entry : protofact.getFactIndices().entrySet()) {
-				this.addFact(protofact.getFacts().get(entry.getValue()),
-						this.getPropositionName() + "/" + entry.getKey());
-			}
-			
-			return Module.this;
+			return this.addFact(protofact);
 		}
 		
 		/**
@@ -691,16 +695,7 @@ public final class Module implements Expression {
 					removedConditions, allConditions.size());
 			
 			if (protofact.getParameters().isEmpty() && remainingConditions.isEmpty()) {
-				if (1 == protofact.getFacts().size()) {
-					return this.addFact(protofact.getFacts().get(0));
-				}
-				
-				for (final Map.Entry<String, Integer> entry : protofact.getFactIndices().entrySet()) {
-					this.addFact(protofact.getFacts().get(entry.getValue()),
-							this.getPropositionName() + "/" + entry.getKey());
-				}
-				
-				return Module.this;
+				return this.addFacts(protofact);
 			}
 			
 			if (remainingConditions.size() != allConditions.size()) {
