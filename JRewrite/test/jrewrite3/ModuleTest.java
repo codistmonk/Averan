@@ -9,9 +9,6 @@ import static org.junit.Assert.*;
 import java.util.function.Function;
 
 import jrewrite3.Module.Admit;
-import jrewrite3.Module.Apply;
-import jrewrite3.Module.Bind;
-import jrewrite3.Module.Rewrite;
 import jrewrite3.Module.Suppose;
 import jrewrite3.Module.Symbol;
 
@@ -108,7 +105,7 @@ public final class ModuleTest {
 		
 		module1.execute(new Suppose("x=y", $("x", EQUAL, "y")));
 		module1.execute(new Suppose("y=z", $("y", EQUAL, "z")));
-		module1.execute(new Rewrite("x=z", module1, "x=y", module1, "y=z"));
+		module1.execute(module1.new Rewrite("x=z", module1, "x=y", module1, "y=z"));
 		
 		assertEquals($("x", EQUAL, "z"), module1.getProposition("x=z"));
 	}
@@ -117,7 +114,7 @@ public final class ModuleTest {
 	public final void testBind() {
 		final Module module1 = new Module(Module.ROOT);
 		
-		module1.execute(new Bind("2=2", module1, "identity").bind($("2")));
+		module1.execute(module1.new Bind("2=2", module1, "identity").bind($("2")));
 		
 		assertEquals($("2", EQUAL, "2"), module1.getProposition("2=2"));
 	}
@@ -128,7 +125,7 @@ public final class ModuleTest {
 		
 		module1.execute(new Suppose("condition", $("A")));
 		module1.execute(new Suppose("rule", rule("A", "B")));
-		module1.execute(new Apply("fact", module1, "rule").apply(module1, "condition"));
+		module1.execute(module1.new Apply("fact", module1, "rule").apply(module1, "condition"));
 		
 		assertEquals($("B"), module1.getProposition("fact"));
 	}

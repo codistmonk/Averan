@@ -433,19 +433,61 @@ public final class Module implements Expression {
 		
 	}
 	
+	public final boolean isFree() {
+		return this.getParameters().isEmpty() && this.getConditions().isEmpty();
+	}
+	
+	public final boolean canAccess(final Module context) {
+		if (this.isInside(context)) {
+			return true;
+		}
+		
+		Module freeContextParent = context;
+		
+		while (freeContextParent != null && freeContextParent.isFree()) {
+			freeContextParent = freeContextParent.getParent();
+			
+			if (this.isInside(freeContextParent)) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	public final boolean isInside(final Module module) {
+		Module parent = this;
+		
+		if (parent == module) {
+			return true;
+		}
+		
+		do {
+			parent = parent.getParent();
+			
+			if (parent == module) {
+				return true;
+			}
+		} while (parent != null);
+		
+		return false;
+	}
+	
 	/**
 	 * @author codistmonk (creation 2014-08-02)
 	 */
-	public static final class Recall implements Command {
+	public final class Recall implements Command {
 		
 		private final String factName;
 		
 		private final PropositionReference<Expression> proposition;
 		
 		public Recall(final String factName, final Module context, final String propositionName) {
+			if (!Module.this.canAccess(context)) {
+				throw new IllegalArgumentException("Inaccessible proposition context");
+			}
+			
 			this.factName = factName;
-			// FIXME verify that the references are legal, ie they are
-			//       visible propositions in the target context
 			this.proposition = new PropositionReference<>(context, propositionName);
 		}
 		
@@ -467,7 +509,7 @@ public final class Module implements Expression {
 	/**
 	 * @author codistmonk (creation 2014-08-02)
 	 */
-	public static final class Claim implements Command {
+	public final class Claim implements Command {
 		
 		private final String factName;
 		
@@ -480,11 +522,13 @@ public final class Module implements Expression {
 		}
 		
 		public Claim(final String factName, final Expression fact, final Module proofContext) {
+			if (!Module.this.canAccess(proofContext)) {
+				throw new IllegalArgumentException("Inaccessible proof context");
+			}
+			
 			this.factName = factName;
 			this.fact = fact;
 			this.proofContext = proofContext;
-			
-			// FIXME check that fact and proofContext hierarchies are compatible
 			
 			if (fact instanceof Module) {
 				if (!fact.equals(proofContext)) {
@@ -519,7 +563,7 @@ public final class Module implements Expression {
 	/**
 	 * @author codistmonk (creation 2014-08-02)
 	 */
-	public static final class Rewrite implements Command {
+	public final class Rewrite implements Command {
 		
 		private final String factName;
 		
@@ -548,9 +592,15 @@ public final class Module implements Expression {
 		public Rewrite(final String factName, final Module sourceContext,
 				final String sourceName, final Module equalityContext, final String equalityName,
 				final Set<Integer> indices) {
+			if (!Module.this.canAccess(sourceContext)) {
+				throw new IllegalArgumentException("Inaccessible source context");
+			}
+			
+			if (!Module.this.canAccess(equalityContext)) {
+				throw new IllegalArgumentException("Inaccessible equality context");
+			}
+			
 			this.factName = factName;
-			// FIXME verify that the references are legal, ie they are
-			//       visible propositions in the target context
 			this.source = new PropositionReference<>(sourceContext, sourceName);
 			this.equality = new PropositionReference<>(equalityContext, equalityName);
 			this.indices = indices;
@@ -586,7 +636,7 @@ public final class Module implements Expression {
 	/**
 	 * @author codistmonk (creation 2014-08-02)
 	 */
-	public static final class Bind implements Command {
+	public final class Bind implements Command {
 		
 		private final String factName;
 		
@@ -601,9 +651,11 @@ public final class Module implements Expression {
 		}
 		
 		public Bind(final String factName, final Module context, final String moduleName) {
+			if (!Module.this.canAccess(context)) {
+				throw new IllegalArgumentException("Inaccessible module context");
+			}
+			
 			this.factName = factName;
-			// FIXME verify that the references are legal, ie they are
-			//       visible propositions in the target context
 			this.module = new PropositionReference<>(context, moduleName);
 			this.binder = new Rewriter(this);
 		}
@@ -660,7 +712,7 @@ public final class Module implements Expression {
 	/**
 	 * @author codistmonk (creation 2014-08-02)
 	 */
-	public static final class Apply implements Command {
+	public final class Apply implements Command {
 		
 		private final String factName;
 		
@@ -669,9 +721,11 @@ public final class Module implements Expression {
 		private int removedConditions;
 		
 		public Apply(final String factName, final Module context, final String moduleName) {
+			if (!Module.this.canAccess(context)) {
+				throw new IllegalArgumentException("Inaccessible module context");
+			}
+			
 			this.factName = factName;
-			// FIXME verify that the references are legal, ie they are
-			//       visible propositions in the target context
 			this.module = new PropositionReference<>(context, moduleName);
 		}
 		
