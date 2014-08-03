@@ -53,7 +53,7 @@ public final class ModuleTest {
 		{
 			final Symbol x = module1.parameter("x");
 			final Symbol y = module1.parameter("y");
-			module1.execute(new Admit(Module.equality(x, y)));
+			module1.new Admit(Module.equality(x, y)).execute();
 		}
 		
 		assertNotEquals(module1, module2);
@@ -61,7 +61,7 @@ public final class ModuleTest {
 		{
 			final Symbol y = module2.parameter("y");
 			final Symbol x = module2.parameter("x");
-			module2.execute(new Admit(Module.equality(y, x)));
+			module2.new Admit(Module.equality(y, x)).execute();
 		}
 		
 		assertEquals(module1, module2);
@@ -91,11 +91,11 @@ public final class ModuleTest {
 		
 		assertArrayEquals(array(), module1.getConditions().toArray());
 		
-		module1.execute(new Admit(fact));
+		module1.new Admit(fact).execute();
 		
 		assertArrayEquals(array(fact), module1.getFacts().toArray());
 		
-		module1.execute(new Admit("fact", fact));
+		module1.new Admit("fact", fact).execute();
 		
 		assertArrayEquals(array(fact, fact), module1.getFacts().toArray());
 		assertEquals(fact, module1.getProposition("fact"));
@@ -172,7 +172,7 @@ public final class ModuleTest {
 		final Module result = new Module(null);
 		
 		result.new Suppose($(condition)).execute();
-		result.execute(new Admit($(fact)));
+		result.new Admit($(fact)).execute();
 		
 		return result;
 	}
