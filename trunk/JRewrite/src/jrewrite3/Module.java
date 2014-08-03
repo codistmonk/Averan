@@ -73,21 +73,6 @@ public final class Module implements Expression {
 		return null;
 	}
 	
-	public final Module execute(final Rewrite rewrite) {
-		final Expression source = rewrite.getSource().getProposition();
-		final Composite equality = rewrite.getEquality().getProposition();
-		final Expression pattern = equality.getChildren().get(0);
-		final Expression replacement = equality.getChildren().get(2);
-		final Expression newFact = source.accept(
-				new Rewriter(rewrite).rewrite(pattern, replacement));
-		
-		this.newProposition(this.getFactIndices(), rewrite.getFactName());
-		this.getFacts().add(newFact);
-		this.getProofs().add(rewrite);
-		
-		return this;
-	}
-	
 	public final Module execute(final Bind bind) {
 		final Module protofact = (Module) bind.getModule().getProposition().accept(bind.getBinder());
 		
@@ -548,9 +533,7 @@ public final class Module implements Expression {
 	/**
 	 * @author codistmonk (creation 2014-08-02)
 	 */
-	public final class Rewrite implements Command {
-		
-		private final String factName;
+	public final class Rewrite extends AddProposition {
 		
 		private final PropositionReference<Expression> source;
 		
@@ -577,6 +560,8 @@ public final class Module implements Expression {
 		public Rewrite(final String factName, final Module sourceContext,
 				final String sourceName, final Module equalityContext, final String equalityName,
 				final Set<Integer> indices) {
+			super(factName);
+			
 			if (!Module.this.canAccess(sourceContext)) {
 				throw new IllegalArgumentException("Inaccessible source context");
 			}
@@ -585,7 +570,6 @@ public final class Module implements Expression {
 				throw new IllegalArgumentException("Inaccessible equality context");
 			}
 			
-			this.factName = factName;
 			this.source = new PropositionReference<>(sourceContext, sourceName);
 			this.equality = new PropositionReference<>(equalityContext, equalityName);
 			this.indices = indices;
@@ -593,10 +577,6 @@ public final class Module implements Expression {
 			if (!isEquality(this.getEquality().getProposition())) {
 				throw new IllegalArgumentException();
 			}
-		}
-		
-		public final String getFactName() {
-			return this.factName;
 		}
 		
 		public final Set<Integer> getIndices() {
@@ -609,6 +589,23 @@ public final class Module implements Expression {
 		
 		public final PropositionReference<Composite> getEquality() {
 			return this.equality;
+		}
+		
+		@Override
+		public final Module execute() {
+			final Module result = Module.this;
+			final Expression source = this.getSource().getProposition();
+			final Composite equality = this.getEquality().getProposition();
+			final Expression pattern = equality.getChildren().get(0);
+			final Expression replacement = equality.getChildren().get(2);
+			final Expression newFact = source.accept(
+					new Rewriter(this).rewrite(pattern, replacement));
+			
+			result.newProposition(result.getFactIndices(), this.getPropositionName());
+			result.getFacts().add(newFact);
+			result.getProofs().add(this);
+			
+			return result;
 		}
 		
 		/**
