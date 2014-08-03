@@ -88,6 +88,16 @@ public final class Module implements Expression {
 		return this;
 	}
 	
+	public final Module execute(final Recall recall) {
+		// TODO
+		return this;
+	}
+	
+	public final Module execute(final Claim claim) {
+		// TODO
+		return this;
+	}
+	
 	public final Module execute(final Rewrite rewrite) {
 		final Expression source = rewrite.getSource().getProposition();
 		final Composite equality = rewrite.getEquality().getProposition();
@@ -426,6 +436,89 @@ public final class Module implements Expression {
 	/**
 	 * @author codistmonk (creation 2014-08-02)
 	 */
+	public static final class Recall implements Command {
+		
+		private final String factName;
+		
+		private final PropositionReference<Expression> proposition;
+		
+		public Recall(final String factName, final Module context, final String propositionName) {
+			this.factName = factName;
+			// FIXME verify that the references are legal, ie they are
+			//       visible propositions in the target context
+			this.proposition = new PropositionReference<>(context, propositionName);
+		}
+		
+		public final String getFactName() {
+			return this.factName;
+		}
+		
+		public final PropositionReference<Expression> getProposition() {
+			return this.proposition;
+		}
+		
+		/**
+		 * {@value}.
+		 */
+		private static final long serialVersionUID = 3738702808623483557L;
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-08-02)
+	 */
+	public static final class Claim implements Command {
+		
+		private final String factName;
+		
+		private final Expression fact;
+		
+		private final Module proofContext;
+		
+		public Claim(final Expression fact, final Module proofContext) {
+			this(null, fact, proofContext);
+		}
+		
+		public Claim(final String factName, final Expression fact, final Module proofContext) {
+			this.factName = factName;
+			this.fact = fact;
+			this.proofContext = proofContext;
+			
+			// FIXME check that fact and proofContext hierarchies are compatible
+			
+			if (fact instanceof Module) {
+				if (!fact.equals(proofContext)) {
+					throw new IllegalArgumentException("Invalid proof");
+				}
+			} else if (!proofContext.getParameters().isEmpty()
+					|| !proofContext.getConditions().isEmpty()
+					|| !fact.equals(proofContext.getFacts().get(proofContext.getFacts().size() - 1))) {
+				throw new IllegalArgumentException("Invalid proof");
+			}
+		}
+		
+		public final String getFactName() {
+			return this.factName;
+		}
+		
+		public final Expression getFact() {
+			return this.fact;
+		}
+		
+		public final Module getProofContext() {
+			return this.proofContext;
+		}
+		
+		/**
+		 * {@value}.
+		 */
+		private static final long serialVersionUID = 8939922924220505450L;
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-08-02)
+	 */
 	public static final class Rewrite implements Command {
 		
 		private final String factName;
@@ -456,6 +549,8 @@ public final class Module implements Expression {
 				final String sourceName, final Module equalityContext, final String equalityName,
 				final Set<Integer> indices) {
 			this.factName = factName;
+			// FIXME verify that the references are legal, ie they are
+			//       visible propositions in the target context
 			this.source = new PropositionReference<>(sourceContext, sourceName);
 			this.equality = new PropositionReference<>(equalityContext, equalityName);
 			this.indices = indices;
@@ -507,6 +602,8 @@ public final class Module implements Expression {
 		
 		public Bind(final String factName, final Module context, final String moduleName) {
 			this.factName = factName;
+			// FIXME verify that the references are legal, ie they are
+			//       visible propositions in the target context
 			this.module = new PropositionReference<>(context, moduleName);
 			this.binder = new Rewriter(this);
 		}
@@ -573,6 +670,8 @@ public final class Module implements Expression {
 		
 		public Apply(final String factName, final Module context, final String moduleName) {
 			this.factName = factName;
+			// FIXME verify that the references are legal, ie they are
+			//       visible propositions in the target context
 			this.module = new PropositionReference<>(context, moduleName);
 		}
 		
