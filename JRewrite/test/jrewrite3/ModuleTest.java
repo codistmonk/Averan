@@ -3,6 +3,9 @@ package jrewrite3;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toList;
 import static jrewrite3.Module.EQUAL;
+import static jrewrite3.Module.IDENTITY;
+import static jrewrite3.Module.ROOT;
+import static jrewrite3.Module.equality;
 import static net.sourceforge.aprog.tools.Tools.array;
 import static org.junit.Assert.*;
 
@@ -100,6 +103,28 @@ public final class ModuleTest {
 	}
 	
 	@Test
+	public final void testRecall() {
+		final Module module1 = new Module(null);
+		
+		module1.execute(new Suppose("ifA", $("A")));
+		module1.execute(module1.new Recall("thenA", module1, "ifA"));
+		
+		assertEquals($("A"), module1.getProposition("thenA"));
+	}
+	
+	@Test
+	public final void testClaim() {
+		final Module module1 = new Module(null);
+		final Symbol x = module1.parameter("x");
+		final Module module2 = new Module(ROOT);
+		
+		module2.execute(module2.new Bind(ROOT, IDENTITY).bind(x));
+		module1.execute(module1.new Claim("x=x", equality(x, x), module2));
+		
+		assertEquals($(x, EQUAL, x), module1.getProposition("x=x"));
+	}
+	
+	@Test
 	public final void testRewrite() {
 		final Module module1 = new Module(null);
 		
@@ -112,7 +137,7 @@ public final class ModuleTest {
 	
 	@Test
 	public final void testBind() {
-		final Module module1 = new Module(Module.ROOT);
+		final Module module1 = new Module(ROOT);
 		
 		module1.execute(module1.new Bind("2=2", module1, "identity").bind($("2")));
 		
