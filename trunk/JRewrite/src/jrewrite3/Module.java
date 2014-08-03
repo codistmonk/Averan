@@ -684,7 +684,6 @@ public final class Module implements Expression {
 		
 		@Override
 		public final Module execute() {
-			final Module result = Module.this;
 			final Module protofact = this.getModule().getProposition();
 			final List<Expression> allConditions = protofact.getConditions();
 			final int removedConditions = this.getRemovedConditions();
@@ -693,18 +692,20 @@ public final class Module implements Expression {
 			
 			if (protofact.getParameters().isEmpty() && remainingConditions.isEmpty()) {
 				if (1 == protofact.getFacts().size()) {
-					result.newProposition(result.getFactIndices(), this.getPropositionName());
-					result.getFacts().add(protofact.getFacts().get(0));
-					result.getProofs().add(this);
-				} else {
-					for (final Map.Entry<String, Integer> entry : protofact.getFactIndices().entrySet()) {
-						result.newProposition(result.getFactIndices(), this.getPropositionName() + "/" + entry.getKey());
-						result.getFacts().add(protofact.getFacts().get(entry.getValue()));
-						result.getProofs().add(this);
-					}
+					return this.addFact(protofact.getFacts().get(0));
 				}
-			} else if (remainingConditions.size() != allConditions.size()) {
-				final Module newFact = new Module(protofact.getParent(), protofact.getParameters(), remainingConditions, protofact.getFacts());
+				
+				for (final Map.Entry<String, Integer> entry : protofact.getFactIndices().entrySet()) {
+					this.addFact(protofact.getFacts().get(entry.getValue()),
+							this.getPropositionName() + "/" + entry.getKey());
+				}
+				
+				return Module.this;
+			}
+			
+			if (remainingConditions.size() != allConditions.size()) {
+				final Module newFact = new Module(protofact.getParent(), protofact.getParameters(),
+						remainingConditions, protofact.getFacts());
 				
 				for (final Map.Entry<String, Integer> entry : protofact.getConditionIndices().entrySet()) {
 					if (removedConditions <= entry.getValue()) {
@@ -715,16 +716,10 @@ public final class Module implements Expression {
 				newFact.getFactIndices().putAll(protofact.getFactIndices());
 				newFact.getProofs().addAll(Collections.nCopies(protofact.getFacts().size(), this));
 				
-				result.newProposition(result.getFactIndices(), this.getPropositionName());
-				result.getFacts().add(newFact);
-				result.getProofs().add(this);
-			} else {
-				result.newProposition(result.getFactIndices(), this.getPropositionName());
-				result.getFacts().add(protofact);
-				result.getProofs().add(this);
+				return this.addFact(newFact);
 			}
 			
-			return null;
+			return this.addFact(protofact);
 		}
 		
 		/**
