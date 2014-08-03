@@ -117,7 +117,7 @@ public final class ModuleTest {
 		final Module module2 = new Module(ROOT);
 		
 		module2.execute(module2.new Bind(ROOT, IDENTITY).bind(x));
-		module1.execute(module1.new Claim("x=x", equality(x, x), module2));
+		module1.new Claim("x=x", equality(x, x), module2).execute();
 		
 		assertEquals($(x, EQUAL, x), module1.getProposition("x=x"));
 	}
