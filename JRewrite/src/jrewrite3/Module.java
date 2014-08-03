@@ -276,6 +276,29 @@ public final class Module implements Expression {
 			return this.propositionName;
 		}
 		
+		protected final Module addProposition(final Expression proposition, final String propositionName,
+				final List<Expression> propositions, final Map<String, Integer> propositionIndices) {
+			final Module result = Module.this;
+			
+			result.newProposition(propositionIndices, propositionName);
+			propositions.add(proposition);
+			
+			return result;
+		}
+		
+		protected final Module addFact(final Expression fact, final String factName) {
+			final Module result = Module.this;
+			
+			this.addProposition(fact, factName, result.getFacts(), result.getFactIndices());
+			result.getProofs().add(this);
+			
+			return result;
+		}
+		
+		protected final Module addFact(final Expression fact) {
+			return this.addFact(fact, this.getPropositionName());
+		}
+		
 		/**
 		 * {@value}.
 		 */
@@ -305,12 +328,10 @@ public final class Module implements Expression {
 		
 		@Override
 		public final Module execute() {
-			final Module result = Module.this;
+			final Module module = Module.this;
 			
-			result.newProposition(result.getConditionIndices(), this.getPropositionName());
-			result.getConditions().add(this.getCondition());
-			
-			return Module.this;
+			return this.addProposition(this.getCondition(), this.getPropositionName(),
+					module.getConditions(), module.getConditionIndices());
 		}
 		
 		/**
@@ -342,15 +363,9 @@ public final class Module implements Expression {
 		
 		@Override
 		public final Module execute() {
-			final Module result = Module.this;
-			
-			result.newProposition(result.getFactIndices(), this.getPropositionName());
-			result.getFacts().add(this.getFact());
-			result.getProofs().add(this);
-			
-			return result;
+			return this.addFact(this.getFact());
 		}
-
+		
 		/**
 		 * {@value}.
 		 */
@@ -385,13 +400,7 @@ public final class Module implements Expression {
 		
 		@Override
 		public final Module execute() {
-			final Module result = Module.this;
-			
-			result.newProposition(result.getFactIndices(), this.getPropositionName());
-			result.getFacts().add(this.getProposition().getProposition());
-			result.getProofs().add(this);
-			
-			return result;
+			return this.addFact(this.getProposition().getProposition());
 		}
 		
 		/**
@@ -445,13 +454,7 @@ public final class Module implements Expression {
 		
 		@Override
 		public final Module execute() {
-			final Module result = Module.this;
-			
-			result.newProposition(result.getFactIndices(), this.getPropositionName());
-			result.getFacts().add(this.getFact());
-			result.getProofs().add(this);
-			
-			return result;
+			return this.addFact(this.getFact());
 		}
 		
 		/**
@@ -529,12 +532,9 @@ public final class Module implements Expression {
 			final Composite equality = this.getEquality().getProposition();
 			final Expression pattern = equality.getChildren().get(0);
 			final Expression replacement = equality.getChildren().get(2);
-			final Expression newFact = source.accept(
-					new Rewriter(this).rewrite(pattern, replacement));
+			final Expression newFact = source.accept(new Rewriter(this).rewrite(pattern, replacement));
 			
-			result.newProposition(result.getFactIndices(), this.getPropositionName());
-			result.getFacts().add(newFact);
-			result.getProofs().add(this);
+			this.addFact(newFact);
 			
 			return result;
 		}
@@ -612,28 +612,22 @@ public final class Module implements Expression {
 		
 		@Override
 		public final Module execute() {
-			final Module result = Module.this;
 			final Module protofact = (Module) this.getModule().getProposition().accept(this.getBinder());
 			
-			if (protofact.getParameters().isEmpty() && protofact.getConditions().isEmpty()) {
-				if (1 == protofact.getFacts().size()) {
-					result.newProposition(result.getFactIndices(), this.getPropositionName());
-					result.getFacts().add(protofact.getFacts().get(0));
-					result.getProofs().add(this);
-				} else {
-					for (final Map.Entry<String, Integer> entry : protofact.getFactIndices().entrySet()) {
-						result.newProposition(result.getFactIndices(), this.getPropositionName() + "/" + entry.getKey());
-						result.getFacts().add(protofact.getFacts().get(entry.getValue()));
-						result.getProofs().add(this);
-					}
-				}
-			} else {
-				result.newProposition(result.getFactIndices(), this.getPropositionName());
-				result.getFacts().add(protofact);
-				result.getProofs().add(this);
+			if (!protofact.isFree()) {
+				return this.addFact(protofact);
 			}
 			
-			return result;
+			if (1 == protofact.getFacts().size()) {
+				return this.addFact(protofact.getFacts().get(0));
+			}
+			
+			for (final Map.Entry<String, Integer> entry : protofact.getFactIndices().entrySet()) {
+				this.addFact(protofact.getFacts().get(entry.getValue()),
+						this.getPropositionName() + "/" + entry.getKey());
+			}
+			
+			return Module.this;
 		}
 		
 		/**
