@@ -89,12 +89,18 @@ public final class Module implements Expression {
 	}
 	
 	public final Module execute(final Recall recall) {
-		// TODO
+		this.newProposition(this.getFactIndices(), recall.getFactName());
+		this.getFacts().add(recall.getProposition().getProposition());
+		this.getProofs().add(recall);
+		
 		return this;
 	}
 	
 	public final Module execute(final Claim claim) {
-		// TODO
+		this.newProposition(this.getFactIndices(), claim.getFactName());
+		this.getFacts().add(claim.getFact());
+		this.getProofs().add(claim);
+		
 		return this;
 	}
 	
@@ -279,6 +285,46 @@ public final class Module implements Expression {
 				+ this.getFacts();
 	}
 	
+	public final boolean isFree() {
+		return this.getParameters().isEmpty() && this.getConditions().isEmpty();
+	}
+	
+	public final boolean canAccess(final Module context) {
+		if (this.isInside(context)) {
+			return true;
+		}
+		
+		Module freeContextParent = context;
+		
+		while (freeContextParent != null && freeContextParent.isFree()) {
+			freeContextParent = freeContextParent.getParent();
+			
+			if (this.isInside(freeContextParent)) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	public final boolean isInside(final Module module) {
+		Module parent = this;
+		
+		if (parent == module) {
+			return true;
+		}
+		
+		do {
+			parent = parent.getParent();
+			
+			if (parent == module) {
+				return true;
+			}
+		} while (parent != null);
+		
+		return false;
+	}
+	
 	private final void newProposition(final Map<String, Integer> indices, final String propositionName) {
 		indices.put(propositionName == null ? this.newPropositionName() : propositionName, indices.size());
 	}
@@ -335,7 +381,7 @@ public final class Module implements Expression {
 	
 	public static final Module ROOT = new Module(null);
 	
-	public static final Symbol EQUAL = ROOT.parameter("=");
+	public static final Symbol EQUAL = ROOT.new Symbol("=");
 	
 	public static final String IDENTITY = "identity";
 	
@@ -431,46 +477,6 @@ public final class Module implements Expression {
 		 */
 		private static final long serialVersionUID = -6762359358588862640L;
 		
-	}
-	
-	public final boolean isFree() {
-		return this.getParameters().isEmpty() && this.getConditions().isEmpty();
-	}
-	
-	public final boolean canAccess(final Module context) {
-		if (this.isInside(context)) {
-			return true;
-		}
-		
-		Module freeContextParent = context;
-		
-		while (freeContextParent != null && freeContextParent.isFree()) {
-			freeContextParent = freeContextParent.getParent();
-			
-			if (this.isInside(freeContextParent)) {
-				return true;
-			}
-		}
-		
-		return false;
-	}
-	
-	public final boolean isInside(final Module module) {
-		Module parent = this;
-		
-		if (parent == module) {
-			return true;
-		}
-		
-		do {
-			parent = parent.getParent();
-			
-			if (parent == module) {
-				return true;
-			}
-		} while (parent != null);
-		
-		return false;
 	}
 	
 	/**
