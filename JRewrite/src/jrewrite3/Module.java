@@ -73,14 +73,6 @@ public final class Module implements Expression {
 		return null;
 	}
 	
-	public final Module execute(final Recall recall) {
-		this.newProposition(this.getFactIndices(), recall.getFactName());
-		this.getFacts().add(recall.getProposition().getProposition());
-		this.getProofs().add(recall);
-		
-		return this;
-	}
-	
 	public final Module execute(final Claim claim) {
 		this.newProposition(this.getFactIndices(), claim.getFactName());
 		this.getFacts().add(claim.getFact());
@@ -360,45 +352,6 @@ public final class Module implements Expression {
 	}
 	
 	/**
-	 * {@value}.
-	 */
-	private static final long serialVersionUID = -6696557631458945912L;
-	
-	public static final Module ROOT = new Module(null);
-	
-	public static final Symbol EQUAL = ROOT.new Symbol("=");
-	
-	public static final String IDENTITY = "identity";
-	
-	public static final Composite equality(final Expression left, final Expression right) {
-		return new Composite(Arrays.asList(left, EQUAL, right));
-	}
-	
-	public static final boolean isEquality(final Object object) {
-		final Composite composite = cast(Composite.class, object);
-		
-		return composite != null
-				&& composite.getChildren().size() == 3
-				&& EQUAL.equals(composite.getChildren().get(1));
-	}
-	
-	static {
-		final Module identity = new Module(ROOT);
-		final Symbol x = identity.parameter("x");
-		
-		identity.new Admit(equality(x, x)).execute();
-		
-		ROOT.new Admit(IDENTITY, identity).execute();
-	}
-	
-	/**
-	 * @author codistmonk (creation 2014-08-02)
-	 */
-	public static abstract interface Command extends Serializable {
-		//  Empty
-	}
-	
-	/**
 	 * @author codistmonk (creation 2014-08-02)
 	 */
 	public abstract class AddProposition implements Command {
@@ -500,27 +453,37 @@ public final class Module implements Expression {
 	/**
 	 * @author codistmonk (creation 2014-08-02)
 	 */
-	public final class Recall implements Command {
-		
-		private final String factName;
+	public final class Recall extends AddProposition {
 		
 		private final PropositionReference<Expression> proposition;
 		
+		public Recall(final Module context, final String propositionName) {
+			this(null, context, propositionName);
+		}
+		
 		public Recall(final String factName, final Module context, final String propositionName) {
+			super(factName);
+			
 			if (!Module.this.canAccess(context)) {
 				throw new IllegalArgumentException("Inaccessible proposition context");
 			}
 			
-			this.factName = factName;
 			this.proposition = new PropositionReference<>(context, propositionName);
-		}
-		
-		public final String getFactName() {
-			return this.factName;
 		}
 		
 		public final PropositionReference<Expression> getProposition() {
 			return this.proposition;
+		}
+		
+		@Override
+		public final Module execute() {
+			final Module result = Module.this;
+			
+			result.newProposition(result.getFactIndices(), this.getPropositionName());
+			result.getFacts().add(this.getProposition().getProposition());
+			result.getProofs().add(this);
+			
+			return result;
 		}
 		
 		/**
@@ -784,6 +747,45 @@ public final class Module implements Expression {
 		 */
 		private static final long serialVersionUID = 1301730993080837859L;
 		
+	}
+	
+	/**
+	 * {@value}.
+	 */
+	private static final long serialVersionUID = -6696557631458945912L;
+	
+	public static final Module ROOT = new Module(null);
+	
+	public static final Symbol EQUAL = ROOT.new Symbol("=");
+	
+	public static final String IDENTITY = "identity";
+	
+	public static final Composite equality(final Expression left, final Expression right) {
+		return new Composite(Arrays.asList(left, EQUAL, right));
+	}
+	
+	public static final boolean isEquality(final Object object) {
+		final Composite composite = cast(Composite.class, object);
+		
+		return composite != null
+				&& composite.getChildren().size() == 3
+				&& EQUAL.equals(composite.getChildren().get(1));
+	}
+	
+	static {
+		final Module identity = new Module(ROOT);
+		final Symbol x = identity.parameter("x");
+		
+		identity.new Admit(equality(x, x)).execute();
+		
+		ROOT.new Admit(IDENTITY, identity).execute();
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-08-02)
+	 */
+	public static abstract interface Command extends Serializable {
+		//  Empty
 	}
 	
 	/**

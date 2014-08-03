@@ -11,7 +11,6 @@ import static org.junit.Assert.*;
 
 import java.util.function.Function;
 
-import jrewrite3.Module.Admit;
 import jrewrite3.Module.Symbol;
 
 import org.junit.Test;
@@ -106,7 +105,7 @@ public final class ModuleTest {
 		final Module module1 = new Module(null);
 		
 		module1.new Suppose("ifA", $("A")).execute();
-		module1.execute(module1.new Recall("thenA", module1, "ifA"));
+		module1.new Recall("thenA", module1, "ifA").execute();
 		
 		assertEquals($("A"), module1.getProposition("thenA"));
 	}
