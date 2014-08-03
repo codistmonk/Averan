@@ -116,7 +116,7 @@ public final class ModuleTest {
 		final Symbol x = module1.parameter("x");
 		final Module module2 = new Module(ROOT);
 		
-		module2.execute(module2.new Bind(ROOT, IDENTITY).bind(x));
+		module2.new Bind(ROOT, IDENTITY).bind(x).execute();
 		module1.new Claim("x=x", equality(x, x), module2).execute();
 		
 		assertEquals($(x, EQUAL, x), module1.getProposition("x=x"));
@@ -137,7 +137,7 @@ public final class ModuleTest {
 	public final void testBind() {
 		final Module module1 = new Module(ROOT);
 		
-		module1.execute(module1.new Bind("2=2", module1, "identity").bind($("2")));
+		module1.new Bind("2=2", module1, "identity").bind($("2")).execute();
 		
 		assertEquals($("2", EQUAL, "2"), module1.getProposition("2=2"));
 	}
@@ -148,7 +148,7 @@ public final class ModuleTest {
 		
 		module1.new Suppose("condition", $("A")).execute();
 		module1.new Suppose("rule", rule("A", "B")).execute();
-		module1.execute(module1.new Apply("fact", module1, "rule").apply(module1, "condition"));
+		module1.new Apply("fact", module1, "rule").apply(module1, "condition").execute();
 		
 		assertEquals($("B"), module1.getProposition("fact"));
 	}
