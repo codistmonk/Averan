@@ -3,6 +3,7 @@ package jrewrite3;
 import static net.sourceforge.aprog.tools.Tools.cast;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -55,6 +56,12 @@ public final class Rewriter implements Visitor<Expression> {
 	
 	public final Rewriter rewrite(final Expression pattern, final Expression replacement) {
 		this.getRewrites().put(pattern, replacement);
+		
+		return this;
+	}
+	
+	public final Rewriter atIndices(final Collection<Integer> indices) {
+		this.getIndices().addAll(indices);
 		
 		return this;
 	}

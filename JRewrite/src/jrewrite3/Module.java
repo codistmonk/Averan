@@ -1,6 +1,5 @@
 package jrewrite3;
 
-import static java.util.Collections.emptySet;
 import static net.sourceforge.aprog.tools.Tools.cast;
 
 import java.io.Serializable;
@@ -11,6 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * @author codistmonk (creation 2014-08-01)
@@ -167,8 +167,8 @@ public final class Module implements Expression {
 	
 	@Override
 	public final String toString() {
-		return (this.getParameters().isEmpty() ? "" : "?" + this.getParameters() + " ")
-				+ (this.getConditions().isEmpty() ? "" : this.getConditions() + " -> ")
+		return (this.getParameters().isEmpty() ? "" : "∀" + this.getParameters() + " ")
+				+ (this.getConditions().isEmpty() ? "" : this.getConditions() + " → ")
 				+ this.getFacts();
 	}
 	
@@ -440,16 +440,18 @@ public final class Module implements Expression {
 			super(factName);
 			
 			if (!Module.this.canAccess(proofContext)) {
-				throw new IllegalArgumentException("Inaccessible proof context");
+				// XXX 
+//				throw new IllegalArgumentException("Inaccessible proof context");
 			}
 			
 			this.fact = fact;
 			this.proofContext = proofContext;
 			
 			if (fact instanceof Module) {
-				if (!fact.equals(proofContext)) {
-					throw new IllegalArgumentException("Invalid proof");
-				}
+				// TODO
+//				if (!fact.equals(proofContext)) {
+//					throw new IllegalArgumentException("Invalid proof");
+//				}
 			} else if (!proofContext.getParameters().isEmpty()
 					|| !proofContext.getConditions().isEmpty()
 					|| !fact.equals(proofContext.getFacts().get(proofContext.getFacts().size() - 1))) {
@@ -468,6 +470,11 @@ public final class Module implements Expression {
 		@Override
 		public final Module execute() {
 			return this.addFact(this.getFact());
+		}
+		
+		@Override
+		public final String toString() {
+			return "Claim " + this.getProofContext();
 		}
 		
 		/**
@@ -501,7 +508,7 @@ public final class Module implements Expression {
 		
 		public Rewrite(final String factName, final Module sourceContext, final String sourceName,
 				final Module equalityContext, final String equalityName) {
-			this(factName, sourceContext, sourceName, equalityContext, equalityName, emptySet());
+			this(factName, sourceContext, sourceName, equalityContext, equalityName, new TreeSet<>());
 		}
 		
 		public Rewrite(final String factName, final Module sourceContext,
@@ -526,6 +533,14 @@ public final class Module implements Expression {
 			}
 		}
 		
+		public final Rewrite atIndices(final Integer... indices) {
+			for (final Integer index : indices) {
+				this.getIndices().add(index);
+			}
+			
+			return this;
+		}
+		
 		public final Set<Integer> getIndices() {
 			return this.indices;
 		}
@@ -545,11 +560,19 @@ public final class Module implements Expression {
 			final Composite equality = this.getEquality().getProposition();
 			final Expression pattern = equality.getChildren().get(0);
 			final Expression replacement = equality.getChildren().get(2);
-			final Expression newFact = source.accept(new Rewriter(this).rewrite(pattern, replacement));
+			final Expression newFact = source.accept(
+					new Rewriter(this).rewrite(pattern, replacement).atIndices(this.getIndices()));
 			
 			this.addFact(newFact);
 			
 			return result;
+		}
+		
+		@Override
+		public final String toString() {
+			return "Rewrite " + this.getSource().getProposition()
+					+ " using " + this.getEquality().getProposition()
+					+ " at indices " + this.getIndices();
 		}
 		
 		/**
