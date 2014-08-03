@@ -73,13 +73,6 @@ public final class Module implements Expression {
 		return null;
 	}
 	
-	public final Module execute(final Suppose suppose) {
-		this.newProposition(this.getConditionIndices(), suppose.getConditionName());
-		this.getConditions().add(suppose.getCondition());
-		
-		return this;
-	}
-	
 	public final Module execute(final Admit admit) {
 		this.newProposition(this.getFactIndices(), admit.getFactName());
 		this.getFacts().add(admit.getFact());
@@ -325,7 +318,7 @@ public final class Module implements Expression {
 		return false;
 	}
 	
-	private final void newProposition(final Map<String, Integer> indices, final String propositionName) {
+	final void newProposition(final Map<String, Integer> indices, final String propositionName) {
 		indices.put(propositionName == null ? this.newPropositionName() : propositionName, indices.size());
 	}
 	
@@ -416,9 +409,31 @@ public final class Module implements Expression {
 	/**
 	 * @author codistmonk (creation 2014-08-02)
 	 */
-	public static final class Suppose implements Command {
+	public abstract class AddProposition implements Command {
 		
-		private final String conditionName;
+		private final String propositionName;
+		
+		public AddProposition(final String propositionName) {
+			this.propositionName = propositionName;
+		}
+		
+		public final String getPropositionName() {
+			return this.propositionName;
+		}
+		
+		public abstract Module execute();
+		
+		/**
+		 * {@value}.
+		 */
+		private static final long serialVersionUID = 5756077527983505640L;
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-08-02)
+	 */
+	public final class Suppose extends AddProposition {
 		
 		private final Expression condition;
 		
@@ -427,16 +442,22 @@ public final class Module implements Expression {
 		}
 		
 		public Suppose(final String conditionName, final Expression condition) {
-			this.conditionName = conditionName;
+			super(conditionName);
 			this.condition = condition;
-		}
-		
-		public final String getConditionName() {
-			return this.conditionName;
 		}
 		
 		public final Expression getCondition() {
 			return this.condition;
+		}
+		
+		@Override
+		public final Module execute() {
+			final Module result = Module.this;
+			
+			result.newProposition(result.getConditionIndices(), this.getPropositionName());
+			result.getConditions().add(this.getCondition());
+			
+			return Module.this;
 		}
 		
 		/**

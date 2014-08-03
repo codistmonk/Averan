@@ -22,7 +22,6 @@ public final class VisitorTest {
 		assertEquals(Module.ROOT, Module.ROOT.accept(recorder));
 		assertArrayEquals(array(
 				MODULE_BEFORE_PARAMETERS, // begin ROOT
-				SYMBOL, // parameter "="
 				MODULE_BEFORE_PARAMETERS, // begin equality
 				SYMBOL, // parameter "x"
 				COMPOSITE_BEFORE_CHILDREN, // begin [x=x]

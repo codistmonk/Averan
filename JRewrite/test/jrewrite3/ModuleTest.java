@@ -12,7 +12,6 @@ import static org.junit.Assert.*;
 import java.util.function.Function;
 
 import jrewrite3.Module.Admit;
-import jrewrite3.Module.Suppose;
 import jrewrite3.Module.Symbol;
 
 import org.junit.Test;
@@ -75,11 +74,11 @@ public final class ModuleTest {
 		
 		assertArrayEquals(array(), module1.getConditions().toArray());
 		
-		module1.execute(new Suppose(condition));
+		module1.new Suppose(condition).execute();
 		
 		assertArrayEquals(array(condition), module1.getConditions().toArray());
 		
-		module1.execute(new Suppose("condition", condition));
+		module1.new Suppose("condition", condition).execute();
 		
 		assertArrayEquals(array(condition, condition), module1.getConditions().toArray());
 		assertEquals(condition, module1.getProposition("condition"));
@@ -106,7 +105,7 @@ public final class ModuleTest {
 	public final void testRecall() {
 		final Module module1 = new Module(null);
 		
-		module1.execute(new Suppose("ifA", $("A")));
+		module1.new Suppose("ifA", $("A")).execute();
 		module1.execute(module1.new Recall("thenA", module1, "ifA"));
 		
 		assertEquals($("A"), module1.getProposition("thenA"));
@@ -128,8 +127,8 @@ public final class ModuleTest {
 	public final void testRewrite() {
 		final Module module1 = new Module(null);
 		
-		module1.execute(new Suppose("x=y", $("x", EQUAL, "y")));
-		module1.execute(new Suppose("y=z", $("y", EQUAL, "z")));
+		module1.new Suppose("x=y", $("x", EQUAL, "y")).execute();
+		module1.new Suppose("y=z", $("y", EQUAL, "z")).execute();
 		module1.execute(module1.new Rewrite("x=z", module1, "x=y", module1, "y=z"));
 		
 		assertEquals($("x", EQUAL, "z"), module1.getProposition("x=z"));
@@ -148,8 +147,8 @@ public final class ModuleTest {
 	public final void testApply() {
 		final Module module1 = new Module(null);
 		
-		module1.execute(new Suppose("condition", $("A")));
-		module1.execute(new Suppose("rule", rule("A", "B")));
+		module1.new Suppose("condition", $("A")).execute();
+		module1.new Suppose("rule", rule("A", "B")).execute();
 		module1.execute(module1.new Apply("fact", module1, "rule").apply(module1, "condition"));
 		
 		assertEquals($("B"), module1.getProposition("fact"));
@@ -172,7 +171,7 @@ public final class ModuleTest {
 	private static final Module rule(final Object condition, final Object fact) {
 		final Module result = new Module(null);
 		
-		result.execute(new Suppose($(condition)));
+		result.new Suppose($(condition)).execute();
 		result.execute(new Admit($(fact)));
 		
 		return result;
