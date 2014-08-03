@@ -73,14 +73,6 @@ public final class Module implements Expression {
 		return null;
 	}
 	
-	public final Module execute(final Claim claim) {
-		this.newProposition(this.getFactIndices(), claim.getFactName());
-		this.getFacts().add(claim.getFact());
-		this.getProofs().add(claim);
-		
-		return this;
-	}
-	
 	public final Module execute(final Rewrite rewrite) {
 		final Expression source = rewrite.getSource().getProposition();
 		final Composite equality = rewrite.getEquality().getProposition();
@@ -496,9 +488,7 @@ public final class Module implements Expression {
 	/**
 	 * @author codistmonk (creation 2014-08-02)
 	 */
-	public final class Claim implements Command {
-		
-		private final String factName;
+	public final class Claim extends AddProposition {
 		
 		private final Expression fact;
 		
@@ -509,11 +499,12 @@ public final class Module implements Expression {
 		}
 		
 		public Claim(final String factName, final Expression fact, final Module proofContext) {
+			super(factName);
+			
 			if (!Module.this.canAccess(proofContext)) {
 				throw new IllegalArgumentException("Inaccessible proof context");
 			}
 			
-			this.factName = factName;
 			this.fact = fact;
 			this.proofContext = proofContext;
 			
@@ -528,16 +519,23 @@ public final class Module implements Expression {
 			}
 		}
 		
-		public final String getFactName() {
-			return this.factName;
-		}
-		
 		public final Expression getFact() {
 			return this.fact;
 		}
 		
 		public final Module getProofContext() {
 			return this.proofContext;
+		}
+		
+		@Override
+		public final Module execute() {
+			final Module result = Module.this;
+			
+			result.newProposition(result.getFactIndices(), this.getPropositionName());
+			result.getFacts().add(this.getFact());
+			result.getProofs().add(this);
+			
+			return result;
 		}
 		
 		/**
