@@ -73,73 +73,6 @@ public final class Module implements Expression {
 		return null;
 	}
 	
-	public final Module execute(final Bind bind) {
-		final Module protofact = (Module) bind.getModule().getProposition().accept(bind.getBinder());
-		
-		if (protofact.getParameters().isEmpty() && protofact.getConditions().isEmpty()) {
-			if (1 == protofact.getFacts().size()) {
-				this.newProposition(this.getFactIndices(), bind.getFactName());
-				this.getFacts().add(protofact.getFacts().get(0));
-				this.getProofs().add(bind);
-			} else {
-				for (final Map.Entry<String, Integer> entry : protofact.getFactIndices().entrySet()) {
-					this.newProposition(this.getFactIndices(), bind.getFactName() + "/" + entry.getKey());
-					this.getFacts().add(protofact.getFacts().get(entry.getValue()));
-					this.getProofs().add(bind);
-				}
-			}
-		} else {
-			this.newProposition(this.getFactIndices(), bind.getFactName());
-			this.getFacts().add(protofact);
-			this.getProofs().add(bind);
-		}
-		
-		return this;
-	}
-	
-	public final Module execute(final Apply apply) {
-		final Module protofact = apply.getModule().getProposition();
-		final List<Expression> allConditions = protofact.getConditions();
-		final int removedConditions = apply.getRemovedConditions();
-		final List<Expression> remainingConditions = allConditions.subList(
-				removedConditions, allConditions.size());
-		
-		if (protofact.getParameters().isEmpty() && remainingConditions.isEmpty()) {
-			if (1 == protofact.getFacts().size()) {
-				this.newProposition(this.getFactIndices(), apply.getFactName());
-				this.getFacts().add(protofact.getFacts().get(0));
-				this.getProofs().add(apply);
-			} else {
-				for (final Map.Entry<String, Integer> entry : protofact.getFactIndices().entrySet()) {
-					this.newProposition(this.getFactIndices(), apply.getFactName() + "/" + entry.getKey());
-					this.getFacts().add(protofact.getFacts().get(entry.getValue()));
-					this.getProofs().add(apply);
-				}
-			}
-		} else if (remainingConditions.size() != allConditions.size()) {
-			final Module newFact = new Module(protofact.getParent(), protofact.getParameters(), remainingConditions, protofact.getFacts());
-			
-			for (final Map.Entry<String, Integer> entry : protofact.getConditionIndices().entrySet()) {
-				if (removedConditions <= entry.getValue()) {
-					newFact.getConditionIndices().put(entry.getKey(), entry.getValue() - removedConditions);
-				}
-			}
-			
-			newFact.getFactIndices().putAll(protofact.getFactIndices());
-			newFact.getProofs().addAll(Collections.nCopies(protofact.getFacts().size(), apply));
-			
-			this.newProposition(this.getFactIndices(), apply.getFactName());
-			this.getFacts().add(newFact);
-			this.getProofs().add(apply);
-		} else {
-			this.newProposition(this.getFactIndices(), apply.getFactName());
-			this.getFacts().add(protofact);
-			this.getProofs().add(apply);
-		}
-		
-		return this;
-	}
-	
 	public final Expression getProposition(final String name) {
 		Integer resultIndex = this.getConditionIndices().get(name);
 		
@@ -342,8 +275,6 @@ public final class Module implements Expression {
 		public final String getPropositionName() {
 			return this.propositionName;
 		}
-		
-		public abstract Module execute();
 		
 		/**
 		 * {@value}.
@@ -618,9 +549,7 @@ public final class Module implements Expression {
 	/**
 	 * @author codistmonk (creation 2014-08-02)
 	 */
-	public final class Bind implements Command {
-		
-		private final String factName;
+	public final class Bind extends AddProposition {
 		
 		private final PropositionReference<Module> module;
 		
@@ -633,17 +562,14 @@ public final class Module implements Expression {
 		}
 		
 		public Bind(final String factName, final Module context, final String moduleName) {
+			super(factName);
+			
 			if (!Module.this.canAccess(context)) {
 				throw new IllegalArgumentException("Inaccessible module context");
 			}
 			
-			this.factName = factName;
 			this.module = new PropositionReference<>(context, moduleName);
 			this.binder = new Rewriter(this);
-		}
-		
-		public final String getFactName() {
-			return this.factName;
 		}
 		
 		public final PropositionReference<Module> getModule() {
@@ -684,6 +610,32 @@ public final class Module implements Expression {
 			return this;
 		}
 		
+		@Override
+		public final Module execute() {
+			final Module result = Module.this;
+			final Module protofact = (Module) this.getModule().getProposition().accept(this.getBinder());
+			
+			if (protofact.getParameters().isEmpty() && protofact.getConditions().isEmpty()) {
+				if (1 == protofact.getFacts().size()) {
+					result.newProposition(result.getFactIndices(), this.getPropositionName());
+					result.getFacts().add(protofact.getFacts().get(0));
+					result.getProofs().add(this);
+				} else {
+					for (final Map.Entry<String, Integer> entry : protofact.getFactIndices().entrySet()) {
+						result.newProposition(result.getFactIndices(), this.getPropositionName() + "/" + entry.getKey());
+						result.getFacts().add(protofact.getFacts().get(entry.getValue()));
+						result.getProofs().add(this);
+					}
+				}
+			} else {
+				result.newProposition(result.getFactIndices(), this.getPropositionName());
+				result.getFacts().add(protofact);
+				result.getProofs().add(this);
+			}
+			
+			return result;
+		}
+		
 		/**
 		 * {@value}.
 		 */
@@ -694,20 +646,23 @@ public final class Module implements Expression {
 	/**
 	 * @author codistmonk (creation 2014-08-02)
 	 */
-	public final class Apply implements Command {
-		
-		private final String factName;
+	public final class Apply extends AddProposition {
 		
 		private final PropositionReference<Module> module;
 		
 		private int removedConditions;
 		
+		public Apply(final Module context, final String moduleName) {
+			this(null, context, moduleName);
+		}
+		
 		public Apply(final String factName, final Module context, final String moduleName) {
+			super(factName);
+			
 			if (!Module.this.canAccess(context)) {
 				throw new IllegalArgumentException("Inaccessible module context");
 			}
 			
-			this.factName = factName;
 			this.module = new PropositionReference<>(context, moduleName);
 		}
 		
@@ -725,16 +680,57 @@ public final class Module implements Expression {
 			return this;
 		}
 		
-		public final String getFactName() {
-			return this.factName;
-		}
-		
 		public final PropositionReference<Module> getModule() {
 			return this.module;
 		}
 		
 		public final int getRemovedConditions() {
 			return this.removedConditions;
+		}
+		
+		@Override
+		public final Module execute() {
+			final Module result = Module.this;
+			final Module protofact = this.getModule().getProposition();
+			final List<Expression> allConditions = protofact.getConditions();
+			final int removedConditions = this.getRemovedConditions();
+			final List<Expression> remainingConditions = allConditions.subList(
+					removedConditions, allConditions.size());
+			
+			if (protofact.getParameters().isEmpty() && remainingConditions.isEmpty()) {
+				if (1 == protofact.getFacts().size()) {
+					result.newProposition(result.getFactIndices(), this.getPropositionName());
+					result.getFacts().add(protofact.getFacts().get(0));
+					result.getProofs().add(this);
+				} else {
+					for (final Map.Entry<String, Integer> entry : protofact.getFactIndices().entrySet()) {
+						result.newProposition(result.getFactIndices(), this.getPropositionName() + "/" + entry.getKey());
+						result.getFacts().add(protofact.getFacts().get(entry.getValue()));
+						result.getProofs().add(this);
+					}
+				}
+			} else if (remainingConditions.size() != allConditions.size()) {
+				final Module newFact = new Module(protofact.getParent(), protofact.getParameters(), remainingConditions, protofact.getFacts());
+				
+				for (final Map.Entry<String, Integer> entry : protofact.getConditionIndices().entrySet()) {
+					if (removedConditions <= entry.getValue()) {
+						newFact.getConditionIndices().put(entry.getKey(), entry.getValue() - removedConditions);
+					}
+				}
+				
+				newFact.getFactIndices().putAll(protofact.getFactIndices());
+				newFact.getProofs().addAll(Collections.nCopies(protofact.getFacts().size(), this));
+				
+				result.newProposition(result.getFactIndices(), this.getPropositionName());
+				result.getFacts().add(newFact);
+				result.getProofs().add(this);
+			} else {
+				result.newProposition(result.getFactIndices(), this.getPropositionName());
+				result.getFacts().add(protofact);
+				result.getProofs().add(this);
+			}
+			
+			return null;
 		}
 		
 		/**
@@ -780,7 +776,9 @@ public final class Module implements Expression {
 	 * @author codistmonk (creation 2014-08-02)
 	 */
 	public static abstract interface Command extends Serializable {
-		//  Empty
+		
+		public abstract Module execute();
+		
 	}
 	
 	/**
