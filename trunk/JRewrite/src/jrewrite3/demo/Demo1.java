@@ -1,10 +1,11 @@
 package jrewrite3.demo;
 
+import static jrewrite3.ExpressionTools.*;
 import static jrewrite3.Module.IDENTITY;
-import static jrewrite3.Module.equality;
-import jrewrite3.Module;
+
 import jrewrite3.Module.Symbol;
 import jrewrite3.Session;
+
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 
 /**
@@ -24,15 +25,10 @@ public final class Demo1 {
 		final Session session = new Session();
 		
 		{
-			final Module proposition = new Module(session.getCurrentContext().getModule());
-			final Symbol x = proposition.parameter("x");
-			final Symbol y = proposition.parameter("y");
+			session.prove($(forAll("x", "y"), $($("x", "=", "y"), "->", $("y", "=", "x"))));
 			
-			proposition.new Suppose(equality(x, y)).execute();
-			proposition.new Admit(equality(y, x)).execute();
-			
-			session.prove(proposition);
 			session.introduce();
+			final Symbol x = session.getCurrentContext().getModule().getParameters().get(0);
 			session.introduce();
 			session.introduce("x=y");
 			session.prove(session.getCurrentContext().getCurrentGoal());

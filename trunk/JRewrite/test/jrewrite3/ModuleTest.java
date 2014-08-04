@@ -1,15 +1,13 @@
 package jrewrite3;
 
-import static java.util.Arrays.stream;
-import static java.util.stream.Collectors.toList;
+import static jrewrite3.ExpressionTools.$;
+import static jrewrite3.ExpressionTools.rule;
 import static jrewrite3.Module.EQUAL;
 import static jrewrite3.Module.IDENTITY;
 import static jrewrite3.Module.ROOT;
 import static jrewrite3.Module.equality;
 import static net.sourceforge.aprog.tools.Tools.array;
 import static org.junit.Assert.*;
-
-import java.util.function.Function;
 
 import jrewrite3.Module.Symbol;
 
@@ -151,29 +149,6 @@ public final class ModuleTest {
 		module1.new Apply("fact", module1, "rule").apply(module1, "condition").execute();
 		
 		assertEquals($("B"), module1.getProposition("fact"));
-	}
-	
-	private static final Module testModule = new Module(null);
-	
-	@SuppressWarnings("unchecked")
-	static final <E extends Expression> E $(final Object... objects) {
-		final Function<Object, Expression> mapper = object -> object instanceof Expression
-				? (Expression) object : testModule.new Symbol(object.toString());
-		
-		if (objects.length == 1) {
-			return (E) mapper.apply(objects[0]);
-		}
-		
-		return (E) new Composite(stream(objects).map(mapper).collect(toList()));
-	}
-	
-	private static final Module rule(final Object condition, final Object fact) {
-		final Module result = new Module(null);
-		
-		result.new Suppose($(condition)).execute();
-		result.new Admit($(fact)).execute();
-		
-		return result;
 	}
 	
 }
