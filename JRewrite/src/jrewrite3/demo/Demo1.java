@@ -1,5 +1,6 @@
 package jrewrite3.demo;
 
+import static jrewrite3.Module.IDENTITY;
 import static jrewrite3.Module.equality;
 import jrewrite3.Module;
 import jrewrite3.Module.Symbol;
@@ -33,8 +34,10 @@ public final class Demo1 {
 			session.prove(proposition);
 			session.introduce();
 			session.introduce();
-			session.introduce();
-			session.rewrite("#0", "#2", 0);
+			session.introduce("x=y");
+			session.prove(session.getCurrentContext().getCurrentGoal());
+			session.bind(IDENTITY, x);
+			session.rewrite("#0", "x=y", 0);
 		}
 		
 		session.printTo(System.out, true);
