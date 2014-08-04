@@ -17,6 +17,8 @@ import jrewrite3.core.Module.Symbol;
  */
 public final class Session implements Serializable {
 	
+	private final List<Module> modules;
+	
 	private final List<ProofContext> stack;
 	
 	public Session() {
@@ -24,8 +26,15 @@ public final class Session implements Serializable {
 	}
 	
 	public Session(final Module mainModule) {
+		this.modules = new ArrayList<>();
 		this.stack = new ArrayList<ProofContext>();
 		this.stack.add(0, new ProofContext(null, mainModule, null));
+	}
+	
+	public final Session load(final Module module) {
+		this.modules.add(module);
+		
+		return this;
 	}
 	
 	public final ProofContext getCurrentContext() {
@@ -76,9 +85,21 @@ public final class Session implements Serializable {
 	}
 	
 	public final Session bind(final String factName, final String moduleName, final Expression... expressions) {
-		final Module module = this.getCurrentContext().getModule();
+		Module module = this.getCurrentContext().getModule();
 		
-		module.new Bind(factName, module, moduleName).bind(expressions).execute();
+		if (module.getPropositionOrNull(moduleName) == null) {
+			module = null;
+			
+			for (final Module otherModule : this.modules) {
+				if (otherModule.getPropositionOrNull(moduleName) != null) {
+					module = otherModule;
+					break;
+				}
+			}
+		}
+		
+		this.getCurrentContext().getModule().new Bind(
+				factName, module, moduleName).bind(expressions).execute();
 		
 		return this.pop();
 	}
@@ -125,7 +146,27 @@ public final class Session implements Serializable {
 		}
 	}
 	
-	public final void printModule(final Module module, final PrintStream output,
+	private final Session pop() {
+		while (1 < this.stack.size() && this.getCurrentContext().isGoalReached()) {
+			final ProofContext previous = this.stack.remove(0);
+			final Module proof = previous.getModule();
+			final Expression fact = previous.getInitialGoal() instanceof Module ?
+					proof : previous.getInitialGoal();
+			
+			this.getCurrentContext().getModule().new Claim(previous.getName(), fact, proof).execute();
+		}
+		
+		return this;
+	}
+	
+	/**
+	 * {@value}.
+	 */
+	private static final long serialVersionUID = -4545117345944633693L;
+	
+	public static final String ATOMIC_INDENT = "\t";
+	
+	public static final void printModule(final Module module, final PrintStream output,
 			final boolean printProofs, final String indent) {
 		if (!module.getParameters().isEmpty()) {
 			output.println(indent + "∀" + module.getParameters());
@@ -173,26 +214,6 @@ public final class Session implements Serializable {
 			}
 		}
 	}
-	
-	private final Session pop() {
-		while (1 < this.stack.size() && this.getCurrentContext().isGoalReached()) {
-			final ProofContext previous = this.stack.remove(0);
-			final Module proof = previous.getModule();
-			final Expression fact = previous.getInitialGoal() instanceof Module ?
-					proof : previous.getInitialGoal();
-			
-			this.getCurrentContext().getModule().new Claim(previous.getName(), fact, proof).execute();
-		}
-		
-		return this;
-	}
-	
-	/**
-	 * {@value}.
-	 */
-	private static final long serialVersionUID = -4545117345944633693L;
-	
-	public static final String ATOMIC_INDENT = "\t";
 	
 	/**
 	 * @author codistmonk (creation 2014-08-02)
@@ -261,7 +282,6 @@ public final class Session implements Serializable {
 				final List<Symbol> newParameters = new ArrayList<>(parameters.subList(1, parameters.size()));
 				final Symbol parameter = parameters.get(0);
 				
-//				this.getModule().new Suppose(equality(parameter, parameter)).execute();
 				this.getModule().getParameters().add(parameter);
 				
 				this.setCurrentGoal(new Module(

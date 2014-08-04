@@ -83,7 +83,7 @@ public final class Module implements Expression {
 		return null;
 	}
 	
-	public final Expression getProposition(final String name) {
+	public final Expression getPropositionOrNull(final String name) {
 		Integer resultIndex = this.getConditionIndices().get(name);
 		
 		if (resultIndex != null) {
@@ -97,10 +97,20 @@ public final class Module implements Expression {
 		}
 		
 		if (this.getParent() != null) {
-			return this.getParent().getProposition(name);
+			return this.getParent().getPropositionOrNull(name);
 		}
 		
-		throw new IllegalArgumentException("Proposition not found: " + name);
+		return null;
+	}
+	
+	public final Expression getProposition(final String name) {
+		final Expression result = this.getPropositionOrNull(name);
+		
+		if (result == null) {
+			throw new IllegalArgumentException("Proposition not found: " + name);
+		}
+		
+		return result;
 	}
 	
 	public final Module getParent() {
@@ -441,6 +451,14 @@ public final class Module implements Expression {
 		private final Expression fact;
 		
 		private final Module proofContext;
+		
+		public Claim(final Module module) {
+			this((String) null, module);
+		}
+		
+		public Claim(final String factName, final Module module) {
+			this(factName, module, module);
+		}
 		
 		public Claim(final Expression fact, final Module proofContext) {
 			this(null, fact, proofContext);
