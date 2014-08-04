@@ -786,8 +786,6 @@ public final class Module implements Expression {
 	
 	public static final Symbol EQUAL = ROOT.new Symbol("=");
 	
-	public static final String IDENTITY = "identity";
-	
 	public static final Composite equality(final Expression left, final Expression right) {
 		return new Composite(Arrays.asList(left, EQUAL, right));
 	}
@@ -798,15 +796,6 @@ public final class Module implements Expression {
 		return composite != null
 				&& composite.getChildren().size() == 3
 				&& EQUAL.equals(composite.getChildren().get(1));
-	}
-	
-	static {
-		final Module identity = new Module(ROOT);
-		final Symbol x = identity.parameter("x");
-		
-		identity.new Admit(equality(x, x)).execute();
-		
-		ROOT.new Admit(IDENTITY, identity).execute();
 	}
 	
 	/**
