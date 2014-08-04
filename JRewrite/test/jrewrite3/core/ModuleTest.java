@@ -3,14 +3,15 @@ package jrewrite3.core;
 import static jrewrite3.core.ExpressionTools.$;
 import static jrewrite3.core.ExpressionTools.rule;
 import static jrewrite3.core.Module.EQUAL;
-import static jrewrite3.core.Module.IDENTITY;
 import static jrewrite3.core.Module.ROOT;
 import static jrewrite3.core.Module.equality;
+import static jrewrite3.modules.Standard.IDENTITY;
 import static net.sourceforge.aprog.tools.Tools.array;
 import static org.junit.Assert.*;
 import jrewrite3.core.Expression;
 import jrewrite3.core.Module;
 import jrewrite3.core.Module.Symbol;
+import jrewrite3.modules.Standard;
 
 import org.junit.Test;
 
@@ -115,7 +116,7 @@ public final class ModuleTest {
 		final Symbol x = module1.parameter("x");
 		final Module module2 = new Module(ROOT);
 		
-		module2.new Bind(ROOT, IDENTITY).bind(x).execute();
+		module2.new Bind(Standard.MODULE, IDENTITY).bind(x).execute();
 		module1.new Claim("x=x", equality(x, x), module2).execute();
 		
 		assertEquals($(x, EQUAL, x), module1.getProposition("x=x"));
@@ -134,9 +135,9 @@ public final class ModuleTest {
 	
 	@Test
 	public final void testBind() {
-		final Module module1 = new Module(ROOT);
+		final Module module1 = new Module(Standard.MODULE);
 		
-		module1.new Bind("2=2", module1, "identity").bind($("2")).execute();
+		module1.new Bind("2=2", module1, IDENTITY).bind($("2")).execute();
 		
 		assertEquals($("2", EQUAL, "2"), module1.getProposition("2=2"));
 	}

@@ -11,6 +11,7 @@ import java.util.function.Supplier;
 import jrewrite3.core.Composite;
 import jrewrite3.core.Expression;
 import jrewrite3.core.Module;
+import jrewrite3.core.Module.Symbol;
 import jrewrite3.core.Visitor;
 
 import org.junit.Test;
@@ -24,18 +25,23 @@ public final class VisitorTest {
 	public final void test1() {
 		final Recorder recorder = new Recorder();
 		
-		assertEquals(Module.ROOT, Module.ROOT.accept(recorder));
+		final Module module = new Module(null);
+		final Symbol x = module.parameter("x");
+		
+		module.new Suppose(x).execute();
+		module.new Admit(Module.equality(x, x)).execute();
+		
+		assertEquals(module, module.accept(recorder));
 		assertArrayEquals(array(
-				MODULE_BEFORE_PARAMETERS, // begin ROOT
-				MODULE_BEFORE_PARAMETERS, // begin equality
+				MODULE_BEFORE_PARAMETERS, // begin module
 				SYMBOL, // parameter "x"
+				SYMBOL, // condition "x"
 				COMPOSITE_BEFORE_CHILDREN, // begin [x=x]
 				SYMBOL, // symbol "x"
 				SYMBOL, // symbol "="
 				SYMBOL, // symbol "x"
 				COMPOSITE_AFTER_CHILDREN, // end [x=x]
-				MODULE_AFTER_FACTS, // end equality
-				MODULE_AFTER_FACTS // end ROOT
+				MODULE_AFTER_FACTS // end module
 				), recorder.getEvents().toArray());
 	}
 	
