@@ -3,7 +3,6 @@ package jrewrite3.demo;
 import static jrewrite3.ExpressionTools.*;
 import static jrewrite3.Module.IDENTITY;
 
-import jrewrite3.Module.Symbol;
 import jrewrite3.Session;
 
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
@@ -24,16 +23,19 @@ public final class Demo1 {
 	public static final void main(final String[] commandLineArguments) {
 		final Session session = new Session();
 		
+		session.claim("symmetry_of_identity", $(forAll("x", "y"), $($("x", "=", "y"), "->", $("y", "=", "x"))));
+		
 		{
-			session.prove($(forAll("x", "y"), $($("x", "=", "y"), "->", $("y", "=", "x"))));
+			session.introduce("x");
+			session.introduce("y");
+			session.introduce("eqxy");
 			
-			session.introduce();
-			final Symbol x = session.getCurrentContext().getModule().getParameters().get(0);
-			session.introduce();
-			session.introduce("x=y");
-			session.prove(session.getCurrentContext().getCurrentGoal());
-			session.bind(IDENTITY, x);
-			session.rewrite("#0", "x=y", 0);
+			session.claim("eqyx", session.getCurrentGoal());
+			
+			{
+				session.bind("idx", IDENTITY, session.getParameter("x"));
+				session.rewrite("eqyx", "idx", "eqxy", 0);
+			}
 		}
 		
 		session.printTo(System.out, true);

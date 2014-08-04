@@ -25,33 +25,60 @@ public final class Session implements Serializable {
 	
 	public Session(final Module mainModule) {
 		this.stack = new ArrayList<ProofContext>();
-		this.stack.add(0, new ProofContext(mainModule, null));
+		this.stack.add(0, new ProofContext(null, mainModule, null));
 	}
 	
 	public final ProofContext getCurrentContext() {
 		return this.stack.get(0);
 	}
 	
+	public final Expression getCurrentGoal() {
+		return this.getCurrentContext().getCurrentGoal();
+	}
+	
+	public final Symbol getParameter(final String name) {
+		return this.getCurrentContext().getModule().findParameter(name);
+	}
+	
+	public final Symbol getParameter(final int index) {
+		final List<Symbol> parameters = this.getCurrentContext().getModule().getParameters();
+		final int n = parameters.size();
+		
+		return parameters.get((index + n) % n);
+	}
+	
 	public final Session rewrite(final String sourceName, final String equalityName, final Integer... indices) {
+		return this.rewrite(null, sourceName, equalityName, indices);
+	}
+	
+	public final Session rewrite(final String factName, final String sourceName, final String equalityName, final Integer... indices) {
 		final Module module = this.getCurrentContext().getModule();
 		
-		module.new Rewrite(module, sourceName, module, equalityName).atIndices(indices).execute();
+		module.new Rewrite(factName, module, sourceName, module, equalityName).atIndices(indices).execute();
 		
 		return this.pop();
 	}
 	
 	public final Session apply(final String moduleName, final String conditionName) {
+		return this.apply(null, moduleName, conditionName);
+	}
+	
+	public final Session apply(final String factName, final String moduleName, final String conditionName) {
 		final Module module = this.getCurrentContext().getModule();
 		
-		module.new Apply(module, moduleName).apply(module, conditionName).execute();
+		module.new Apply(factName, module, moduleName).apply(module, conditionName).execute();
 		
 		return this.pop();
 	}
 	
 	public final Session bind(final String moduleName, final Expression... expressions) {
+		return this.bind(null, moduleName, expressions);
+	}
+	
+	public final Session bind(final String factName, final String moduleName, final Expression... expressions) {
 		final Module module = this.getCurrentContext().getModule();
 		
-		module.new Bind(module, moduleName).bind(expressions).execute();
+		module.new Bind(factName, module, moduleName).bind(expressions).execute();
 		
 		return this.pop();
 	}
@@ -66,8 +93,12 @@ public final class Session implements Serializable {
 		return this.pop();
 	}
 	
-	public final Session prove(final Expression proposition) {
-		final ProofContext proofContext = new ProofContext(
+	public final Session claim(final Expression proposition) {
+		return this.claim(null, proposition);
+	}
+	
+	public final Session claim(final String factName, final Expression proposition) {
+		final ProofContext proofContext = new ProofContext(factName,
 				new Module(this.getCurrentContext().getModule()), proposition);
 		
 		this.stack.add(0, proofContext);
@@ -83,7 +114,7 @@ public final class Session implements Serializable {
 			final ProofContext context = this.stack.get(i);
 			final Module module = context.getModule();
 			
-			output.println(indent + "(module)");
+			output.println(indent + "((MODULE))");
 			
 			printModule(module, output, printProofs, indent);
 			
@@ -103,7 +134,7 @@ public final class Session implements Serializable {
 		final List<Expression> conditions = module.getConditions();
 		
 		if (!conditions.isEmpty()) {
-			output.println(indent + "(conditions)");
+			output.println(indent + "((CONDITIONS))");
 			
 			for (final Map.Entry<String, Integer> entry : module.getConditionIndices().entrySet()) {
 				output.println(indent + "(" + entry.getKey() + ")");
@@ -119,22 +150,23 @@ public final class Session implements Serializable {
 			} else {
 				final List<Command> proofs = module.getProofs();
 				
-				output.println(indent + "(facts)");
+				output.println(indent + "((FACTS))");
 				
 				for (final Map.Entry<String, Integer> entry : module.getFactIndices().entrySet()) {
 					output.println(indent + "(" + entry.getKey() + ")");
 					output.println(indent + ATOMIC_INDENT + facts.get(entry.getValue()));
 					
 					if (printProofs) {
-						output.println(indent + ATOMIC_INDENT + "(proof)");
+						output.println(indent + ATOMIC_INDENT + "((PROOF))");
 						
 						final Command command = proofs.get(entry.getValue());
 						final Claim claim = cast(Claim.class, command);
 						
 						if (claim == null) {
-							output.println(indent + ATOMIC_INDENT + command);
+							output.println(indent + ATOMIC_INDENT + ATOMIC_INDENT + command);
 						} else {
-							printModule(claim.getProofContext(), output, printProofs, indent + ATOMIC_INDENT);
+							printModule(claim.getProofContext(), output, printProofs,
+									indent + ATOMIC_INDENT + ATOMIC_INDENT);
 						}
 					}
 				}
@@ -149,7 +181,7 @@ public final class Session implements Serializable {
 			final Expression fact = previous.getInitialGoal() instanceof Module ?
 					proof : previous.getInitialGoal();
 			
-			this.getCurrentContext().getModule().new Claim(fact, proof).execute();
+			this.getCurrentContext().getModule().new Claim(previous.getName(), fact, proof).execute();
 		}
 		
 		return this;
@@ -167,6 +199,8 @@ public final class Session implements Serializable {
 	 */
 	public static final class ProofContext implements Serializable {
 		
+		private final String name;
+		
 		private final Module module;
 		
 		private final Expression initialGoal;
@@ -177,10 +211,15 @@ public final class Session implements Serializable {
 		
 		private int uncheckedFactIndex;
 		
-		public ProofContext(final Module module, final Expression goal) {
+		public ProofContext(final String name, final Module module, final Expression goal) {
+			this.name = name;
 			this.module = module;
 			this.initialGoal = goal;
 			this.currentGoal = goal;
+		}
+		
+		public final String getName() {
+			return this.name;
 		}
 		
 		public final Module getModule() {

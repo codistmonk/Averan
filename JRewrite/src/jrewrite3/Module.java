@@ -63,6 +63,16 @@ public final class Module implements Expression {
 		return result;
 	}
 	
+	public final Symbol findParameter(final String name) {
+		Symbol result = this.getParameter(name);
+		
+		if (result != null || this.getParent() == null) {
+			return result;
+		}
+		
+		return this.getParent().findParameter(name);
+	}
+	
 	public final Symbol getParameter(final String name) {
 		for (final Symbol parameter : this.getParameters()) {
 			if (parameter.toString().equals(name)) {
