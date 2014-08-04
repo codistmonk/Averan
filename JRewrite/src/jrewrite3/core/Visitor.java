@@ -1,4 +1,4 @@
-package jrewrite3;
+package jrewrite3.core;
 
 import java.io.Serializable;
 import java.util.List;

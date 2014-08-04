@@ -1,4 +1,4 @@
-package jrewrite3;
+package jrewrite3.core;
 
 import static net.sourceforge.aprog.tools.Tools.cast;
 
@@ -8,9 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import jrewrite3.Module.Claim;
-import jrewrite3.Module.Command;
-import jrewrite3.Module.Symbol;
+import jrewrite3.core.Module.Claim;
+import jrewrite3.core.Module.Command;
+import jrewrite3.core.Module.Symbol;
 
 /**
  * @author codistmonk (creation 2014-08-02)
@@ -125,7 +125,7 @@ public final class Session implements Serializable {
 		}
 	}
 	
-	public void printModule(final Module module, final PrintStream output,
+	public final void printModule(final Module module, final PrintStream output,
 			final boolean printProofs, final String indent) {
 		if (!module.getParameters().isEmpty()) {
 			output.println(indent + "∀" + module.getParameters());

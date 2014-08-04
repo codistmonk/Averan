@@ -1,10 +1,8 @@
 package jrewrite3.demo;
 
-import static jrewrite3.ExpressionTools.*;
-import static jrewrite3.Module.IDENTITY;
-
-import jrewrite3.Session;
-
+import static jrewrite3.core.ExpressionTools.*;
+import static jrewrite3.core.Module.IDENTITY;
+import jrewrite3.core.Session;
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 
 /**

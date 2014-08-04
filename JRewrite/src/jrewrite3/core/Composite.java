@@ -1,4 +1,4 @@
-package jrewrite3;
+package jrewrite3.core;
 
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.join;
