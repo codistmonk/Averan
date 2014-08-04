@@ -439,20 +439,15 @@ public final class Module implements Expression {
 		public Claim(final String factName, final Expression fact, final Module proofContext) {
 			super(factName);
 			
-			if (!Module.this.canAccess(proofContext)) {
-				// XXX 
-//				throw new IllegalArgumentException("Inaccessible proof context");
-			}
-			
 			this.fact = fact;
 			this.proofContext = proofContext;
 			
 			if (fact instanceof Module) {
-				// TODO
-//				if (!fact.equals(proofContext)) {
-//					throw new IllegalArgumentException("Invalid proof");
-//				}
-			} else if (!proofContext.getParameters().isEmpty()
+				if (!fact.equals(proofContext)) {
+					throw new IllegalArgumentException("Invalid proof");
+				}
+			} else if (!Module.this.canAccess(proofContext)
+					|| !proofContext.getParameters().isEmpty()
 					|| !proofContext.getConditions().isEmpty()
 					|| !fact.equals(proofContext.getFacts().get(proofContext.getFacts().size() - 1))) {
 				throw new IllegalArgumentException("Invalid proof");
@@ -616,14 +611,16 @@ public final class Module implements Expression {
 			return this.binder;
 		}
 		
-		public final Bind bind(final Expression expression) {
+		public final Bind bind(final Expression... expressions) {
 			final List<Symbol> parameters = this.getModule().getProposition().getParameters();
 			
-			if (this.bound < 0 || parameters.size() <= this.bound) {
-				throw new IllegalStateException("Inconsistent binding");
+			for (final Expression expression : expressions) {
+				if (this.bound < 0 || parameters.size() <= this.bound) {
+					throw new IllegalStateException("Inconsistent binding");
+				}
+				
+				this.getBinder().rewrite(parameters.get(this.bound++), expression);
 			}
-			
-			this.getBinder().rewrite(parameters.get(this.bound++), expression);
 			
 			return this;
 		}
@@ -655,6 +652,11 @@ public final class Module implements Expression {
 			}
 			
 			return this.addFact(protofact);
+		}
+		
+		@Override
+		public final String toString() {
+			return "Bind " + this.getModule().getProposition() + " using " + this.getBinder().getRewrites();
 		}
 		
 		/**
