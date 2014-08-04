@@ -1,7 +1,7 @@
 package jrewrite3;
 
+import static jrewrite3.ExpressionTools.$;
 import static jrewrite3.Module.EQUAL;
-import static jrewrite3.ModuleTest.$;
 import static org.junit.Assert.*;
 
 import jrewrite3.Module.Symbol;
