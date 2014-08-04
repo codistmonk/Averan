@@ -1,10 +1,11 @@
-package jrewrite3;
+package jrewrite3.core;
 
-import static jrewrite3.ExpressionTools.$;
-import static jrewrite3.Module.EQUAL;
+import static jrewrite3.core.ExpressionTools.$;
+import static jrewrite3.core.Module.EQUAL;
 import static org.junit.Assert.*;
-
-import jrewrite3.Module.Symbol;
+import jrewrite3.core.Expression;
+import jrewrite3.core.Rewriter;
+import jrewrite3.core.Module.Symbol;
 
 import org.junit.Test;
 

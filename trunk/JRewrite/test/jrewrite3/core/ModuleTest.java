@@ -1,15 +1,16 @@
-package jrewrite3;
+package jrewrite3.core;
 
-import static jrewrite3.ExpressionTools.$;
-import static jrewrite3.ExpressionTools.rule;
-import static jrewrite3.Module.EQUAL;
-import static jrewrite3.Module.IDENTITY;
-import static jrewrite3.Module.ROOT;
-import static jrewrite3.Module.equality;
+import static jrewrite3.core.ExpressionTools.$;
+import static jrewrite3.core.ExpressionTools.rule;
+import static jrewrite3.core.Module.EQUAL;
+import static jrewrite3.core.Module.IDENTITY;
+import static jrewrite3.core.Module.ROOT;
+import static jrewrite3.core.Module.equality;
 import static net.sourceforge.aprog.tools.Tools.array;
 import static org.junit.Assert.*;
-
-import jrewrite3.Module.Symbol;
+import jrewrite3.core.Expression;
+import jrewrite3.core.Module;
+import jrewrite3.core.Module.Symbol;
 
 import org.junit.Test;
 

@@ -1,12 +1,17 @@
-package jrewrite3;
+package jrewrite3.core;
 
-import static jrewrite3.VisitorTest.Recorder.Event.*;
+import static jrewrite3.core.VisitorTest.Recorder.Event.*;
 import static net.sourceforge.aprog.tools.Tools.array;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
+
+import jrewrite3.core.Composite;
+import jrewrite3.core.Expression;
+import jrewrite3.core.Module;
+import jrewrite3.core.Visitor;
 
 import org.junit.Test;
 

@@ -1,4 +1,4 @@
-package jrewrite3;
+package jrewrite3.core;
 
 import static net.sourceforge.aprog.tools.Tools.cast;
 
@@ -12,8 +12,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Supplier;
 
-import jrewrite3.Module.Command;
-import jrewrite3.Module.Symbol;
+import jrewrite3.core.Module.Command;
+import jrewrite3.core.Module.Symbol;
 
 /**
  * @author codistmonk (creation 2014-08-01)
