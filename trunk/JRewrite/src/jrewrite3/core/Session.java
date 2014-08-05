@@ -56,6 +56,16 @@ public final class Session implements Serializable {
 		return parameters.get((index + n) % n);
 	}
 	
+	public final Session suppose(final Expression condition) {
+		return this.suppose(null, condition);
+	}
+	
+	public final Session suppose(final String conditionName, final Expression condition) {
+		this.getCurrentContext().getModule().new Suppose(conditionName, condition).execute();
+		
+		return this.pop();
+	}
+	
 	public final Session rewrite(final String sourceName, final String equalityName, final Integer... indices) {
 		return this.rewrite(null, sourceName, equalityName, indices);
 	}
@@ -230,6 +240,8 @@ public final class Session implements Serializable {
 		
 		private boolean goalReached;
 		
+		private int uncheckedConditionIndex;
+		
 		private int uncheckedFactIndex;
 		
 		public ProofContext(final String name, final Module module, final Expression goal) {
@@ -252,6 +264,20 @@ public final class Session implements Serializable {
 		}
 		
 		public final boolean isGoalReached() {
+			if (!this.goalReached) {
+				final List<Expression> conditions = this.getModule().getConditions();
+				final int conditionCount = conditions.size();
+				
+				while (this.uncheckedConditionIndex < conditionCount) {
+					if (!this.goalReached
+							&& this.getCurrentGoal().equals(conditions.get(this.uncheckedConditionIndex))) {
+						this.goalReached = true;
+					}
+					
+					++this.uncheckedConditionIndex;
+				}
+			}
+			
 			if (!this.goalReached) {
 				final List<Expression> facts = this.getModule().getFacts();
 				final int factCount = facts.size();

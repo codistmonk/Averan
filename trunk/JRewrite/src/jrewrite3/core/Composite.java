@@ -6,6 +6,8 @@ import static net.sourceforge.aprog.tools.Tools.join;
 import java.util.ArrayList;
 import java.util.List;
 
+import jrewrite3.core.Module.Symbol;
+
 /**
  * @author codistmonk (creation 2014-08-01)
  */
@@ -49,7 +51,17 @@ public final class Composite implements Expression {
 	
 	@Override
 	public final String toString() {
-		return join("", this.getChildren().toArray());
+		final StringBuilder resultBuilder = new StringBuilder();
+		
+		for (final Expression child : this.getChildren()) {
+			if (child instanceof Symbol) {
+				resultBuilder.append(child);
+			} else {
+				resultBuilder.append('(').append(child).append(')');
+			}
+		}
+		
+		return resultBuilder.toString();
 	}
 	
 	/**
