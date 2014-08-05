@@ -38,11 +38,11 @@ public final class Demo2 {
 	static {
 		final Session session = new Session(MODULE);
 		
-		session.suppose("definition_of_m", $(forAll("X"), $(
+		session.suppose("definition_of_M", $(forAll("X", "n"), $(
 				$("n", "=", $("columnCount", " ", "X")),
-				"/\\",
-				$$("M X=(1/nX(1_n)((1_n)ᵀ))"))));
-		session.suppose("definition_of_var", $(forAll("X"), $$("V X=(X-(M X))(X-(M X))ᵀ")));
+				"->",
+				$$("M X=1/nX(1_n)(1_nᵀ)"))));
+		session.suppose("definition_of_V", $(forAll("X"), $$("V X=(X-(M X))(X-(M X))ᵀ")));
 	}
 	
 	/**
@@ -153,9 +153,19 @@ public final class Demo2 {
 				
 				leftAssociative('-', 100),
 				
+				leftAssociative('(', 150),
+				
+				leftAssociative("VARIABLE", 150),
+				
+				leftAssociative("INTEGER", 150),
+				
+				leftAssociative("EXPRESSION", 150),
+				
 				leftAssociative('/', 200),
 				
 				leftAssociative(' ', 300),
+				
+				leftAssociative('ᵀ', 400),
 				
 				namedRule("expression",              "ALL",         /* -> */ "EXPRESSION"),
 				
