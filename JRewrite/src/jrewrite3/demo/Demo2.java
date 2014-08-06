@@ -1,5 +1,6 @@
 package jrewrite3.demo;
 
+import static java.util.Arrays.copyOfRange;
 import static jrewrite3.core.ExpressionTools.*;
 import static jrewrite3.demo.Demo2.ExpressionParser.$$;
 import static net.sourceforge.aprog.tools.Tools.append;
@@ -12,6 +13,7 @@ import static net.sourceforge.aurochs.LRParserTools.*;
 import static net.sourceforge.aurochs.RegularTools.*;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.List;
 
 import jrewrite3.core.Composite;
@@ -20,6 +22,7 @@ import jrewrite3.core.Module;
 import jrewrite3.core.Session;
 import jrewrite3.modules.Standard;
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
+import net.sourceforge.aprog.tools.Tools;
 import net.sourceforge.aurochs.AbstractLRParser.GeneratedToken;
 import net.sourceforge.aurochs.AbstractLRParser.Listener;
 import net.sourceforge.aurochs.LRParser;
@@ -45,20 +48,20 @@ public final class Demo2 {
 		final Session session = new Session(MODULE);
 		
 		// TODO define ∈, ᵀ, matrix product
-		session.suppose("definition_of_¬", $$("∀P ¬P=(P→≀false)"));
-		session.suppose("definition_of_∃", $$("∀P,x (∃x P x)=¬((∀y)¬(P y))"));
-		session.suppose("definition_of_∩", $$("∀A,B,x (x∈A∩B)=(x∈A∧x∈B)"));
+		session.suppose("definition_of_¬", $$("∀P ¬P = (P→≀false)"));
+		session.suppose("definition_of_∃", $$("∀P,x (∃x P x) = ¬(∀y ¬(P y))"));
+		session.suppose("definition_of_∩", $$("∀A,B,x (x∈A∩B) = (x∈A ∧ x∈B)"));
 		
-		session.suppose("definition_of_≀M", $$("∀M,m,n ((M∈≀M_m,n)→∀i,j (0≤i<m∧0≤j<m)→M_i,j∈ℝ)"));
-		session.suppose("definition_of_≀C", $$("∀M,n M∈≀C_n→(∃m)M∈≀M_m,n"));
-		session.suppose("definition_of_≀R", $$("∀M,m M∈≀R_m→(∃n)M∈≀M_m,n"));
+		session.suppose("definition_of_≀M", $$("∀M,m,n (M∈≀M_m,n → ∀i,j (0≤i<m ∧ 0≤j<m) → M_i,j∈ℝ)"));
+		session.suppose("definition_of_≀C", $$("∀M,n M∈≀C_n → ∃m M∈≀M_m,n"));
+		session.suppose("definition_of_≀R", $$("∀M,m M∈≀R_m → ∃n M∈≀M_m,n"));
 		
 		// TODO prove
-		session.suppose("transposition_of_product", $$("∀X,Y (XY)ᵀ=YᵀXᵀ"));
+		session.suppose("transposition_of_product", $$("∀X,Y (XY)ᵀ = YᵀXᵀ"));
 		
-		session.suppose("definition_of_1_n", $$("∀n (1_n∈(≀R_n)∩(≀C_1)∧∀i (1_n)_i,1=1)"));
-		session.suppose("definition_of_M", $$("∀X,n X∈≀C_n→M X=1/nX(1_n)(1_nᵀ)"));
-		session.suppose("definition_of_V", $$("∀X V X=(X-(M X))(X-(M X))ᵀ"));
+		session.suppose("definition_of_1_n", $$("∀n ((1_n∈(≀R_n)∩(≀C_1)) ∧ ∀i (1_n)_i,1=1)"));
+		session.suppose("definition_of_M", $$("∀X,n X∈≀C_n → (M X) = 1/nX(1_n)(1_nᵀ)"));
+		session.suppose("definition_of_V", $$("∀X (V X) = (X-(M X))(X-(M X))ᵀ"));
 	}
 	
 	/**
@@ -152,10 +155,6 @@ public final class Demo2 {
 			 * {@value}.
 			 */
 			private static final long serialVersionUID = 2607977220438106247L;
-
-			public static LexerTokenRule binaryOperator(final String operator) {
-				return tokenRule(operator,    /* -> */ sequence(zeroOrMore(' '), string(operator), zeroOrMore(' ')));
-			}
 			
 			static final LexerRule[] lexerRules = {
 				
@@ -165,11 +164,11 @@ public final class Demo2 {
 				
 				tokenRule(        "1_",       /* -> */ string("1_")),
 		        
-		        binaryOperator("→"),
+		        verbatimTokenRule("→",        /* -> */ '→'),
 		        
-		        binaryOperator("∧"),
-				
-		        binaryOperator("="),
+		        verbatimTokenRule("∧",        /* -> */ '∧'),
+		        
+				verbatimTokenRule("=",        /* -> */ '='),
 				
 				verbatimTokenRule("+",        /* -> */ '+'),
 				
@@ -213,11 +212,13 @@ public final class Demo2 {
 			
 			static final ParserRule[] parserRules = {
 				
-				leftAssociative("∧", 5),
+				leftAssociative(' ', 5),
 				
-				leftAssociative("→", 5),
+				leftAssociative('∧', 5),
 				
-				leftAssociative("=", 10),
+				leftAssociative('→', 5),
+				
+				leftAssociative('=', 10),
 				
 				leftAssociative('∈', 50),
 				
@@ -244,8 +245,6 @@ public final class Demo2 {
 				leftAssociative("1_", 150),
 				
 				leftAssociative('/', 155),
-				
-				leftAssociative(' ', 300),
 				
 				leftAssociative('ᵀ', 400),
 				
@@ -281,11 +280,11 @@ public final class Demo2 {
 				
 				namedRule("operatedExpression",      "EXPRESSION", /* -> */ "EXPRESSION", "OPERATION"),
 				
-				namedRule("operation",               "OPERATION",  /* -> */ "=", "EXPRESSION"),
+				namedRule("operation",               "OPERATION",  /* -> */ " = ", "EXPRESSION"),
 				
-				namedRule("operation",               "OPERATION",  /* -> */ "→", "EXPRESSION"),
+				namedRule("operation",               "OPERATION",  /* -> */ " → ", "EXPRESSION"),
 				
-				namedRule("operation",               "OPERATION",  /* -> */ "∧", "EXPRESSION"),
+				namedRule("operation",               "OPERATION",  /* -> */ " ∧ ", "EXPRESSION"),
 				
 				namedRule("operation",               "OPERATION",  /* -> */ '∈', "EXPRESSION"),
 				
@@ -331,14 +330,57 @@ public final class Demo2 {
 				
 				namedRule("identifier",              "IDENTIFIER", /* -> */ "VARIABLE"),
 				
+				namedRule("binaryOperation",         " = ",        /* -> */ " +", '=', " +"),
+				
+				namedRule("binaryOperation",         " = ",        /* -> */ '=', " +"),
+				
+				namedRule("binaryOperation",         " = ",        /* -> */ " +", '='),
+				
+				namedRule("binaryOperation",         " = ",        /* -> */ '='),
+				
+				namedRule("binaryOperation",         " → ",        /* -> */ " +", '→', " +"),
+				
+				namedRule("binaryOperation",         " → ",        /* -> */ '→', " +"),
+				
+				namedRule("binaryOperation",         " → ",        /* -> */ " +", '→'),
+				
+				namedRule("binaryOperation",         " → ",        /* -> */ '→'),
+				
+				namedRule("binaryOperation",         " ∧ ",        /* -> */ " +", '∧', " +"),
+				
+				namedRule("binaryOperation",         " ∧ ",        /* -> */ '∧', " +"),
+				
+				namedRule("binaryOperation",         " ∧ ",        /* -> */ " +", '∧'),
+				
+				namedRule("binaryOperation",         " ∧ ",        /* -> */ '∧'),
+				
+				namedRule("spaces",                  " +",         /* -> */ ' ', " +"),
+				
+				namedRule("spaces",                  " +",         /* -> */ ' '),
+				
 			};
+			
+			public static final Object[] trim(final Object[] values) {
+				int i = 0;
+				int j = values.length;
+				
+				while (i < j && "".equals(values[i].toString().trim())) {
+					++i;
+				}
+				
+				while (i < j && "".equals(values[j - 1].toString().trim())) {
+					--j;
+				}
+				
+				return copyOfRange(values, i, j);
+			}
 			
 			final Object expression(final Object[] values) {
 				if (1 == values.length && values[0] instanceof List) {
 					return values[0];
 				}
 				
-				return $(values);
+				return $(trim(values));
 			}
 			
 			final Object operatedExpression(final Object[] values) {
@@ -355,6 +397,14 @@ public final class Demo2 {
 				}
 				
 				return values;
+			}
+			
+			final Object binaryOperation(final Object[] values) {
+				return trim(values)[0];
+			}
+			
+			final Object spaces(final Object[] values) {
+				return "";
 			}
 			
 			final Object operation(final Object[] values) {
