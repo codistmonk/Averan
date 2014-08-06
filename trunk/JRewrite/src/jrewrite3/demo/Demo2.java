@@ -44,11 +44,12 @@ public final class Demo2 {
 	static {
 		final Session session = new Session(MODULE);
 		
-		session.suppose("definition_of_∃", $$("(∀P,x)((∃x)P x)=(((∀y)P y→≀false)→≀false)"));
+		session.suppose("definition_of_¬", $$("(∀P)¬P=(P→≀false)"));
+		session.suppose("definition_of_∃", $$("(∀P,x)((∃x)P x)=¬((∀y)¬(P y))"));
 		session.suppose("definition_of_∩", $$("(∀A,B,x)(x∈A∩B)=(x∈A∧x∈B)"));
 		
 		session.suppose("definition_of_≀M", $$("(∀M,m,n)((M∈≀M_m,n)→(∀i,j)(0≤i<m∧0≤j<m)→M_i,j∈ℝ)"));
-		session.suppose("definition_of_≀C", $$("(∀M,m)M∈≀C_n→(∃m)M∈≀M_m,n"));
+		session.suppose("definition_of_≀C", $$("(∀M,n)M∈≀C_n→(∃m)M∈≀M_m,n"));
 		session.suppose("definition_of_≀R", $$("(∀M,m)M∈≀R_m→(∃n)M∈≀M_m,n"));
 		
 		session.suppose("transposition_of_product", $$("(∀X,Y)(XY)ᵀ=YᵀXᵀ"));
