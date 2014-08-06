@@ -19,7 +19,6 @@ import jrewrite3.core.Expression;
 import jrewrite3.core.Module;
 import jrewrite3.core.Session;
 import jrewrite3.modules.Standard;
-
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 import net.sourceforge.aurochs.AbstractLRParser.GeneratedToken;
 import net.sourceforge.aurochs.AbstractLRParser.Listener;
@@ -28,6 +27,7 @@ import net.sourceforge.aurochs.LRParserTools;
 import net.sourceforge.aurochs.AbstractLRParser.ReductionEvent;
 import net.sourceforge.aurochs.AbstractLRParser.UnexpectedSymbolErrorEvent;
 import net.sourceforge.aurochs.LRParserTools.LexerRule;
+import net.sourceforge.aurochs.LRParserTools.LexerTokenRule;
 import net.sourceforge.aurochs.LRParserTools.ParserRule;
 
 /**
@@ -45,20 +45,20 @@ public final class Demo2 {
 		final Session session = new Session(MODULE);
 		
 		// TODO define ∈, ᵀ, matrix product
-		session.suppose("definition_of_¬", $$("(∀P)¬P=(P→≀false)"));
-		session.suppose("definition_of_∃", $$("(∀P,x)((∃x)P x)=¬((∀y)¬(P y))"));
-		session.suppose("definition_of_∩", $$("(∀A,B,x)(x∈A∩B)=(x∈A∧x∈B)"));
+		session.suppose("definition_of_¬", $$("∀P ¬P=(P→≀false)"));
+		session.suppose("definition_of_∃", $$("∀P,x (∃x P x)=¬((∀y)¬(P y))"));
+		session.suppose("definition_of_∩", $$("∀A,B,x (x∈A∩B)=(x∈A∧x∈B)"));
 		
-		session.suppose("definition_of_≀M", $$("(∀M,m,n)((M∈≀M_m,n)→(∀i,j)(0≤i<m∧0≤j<m)→M_i,j∈ℝ)"));
-		session.suppose("definition_of_≀C", $$("(∀M,n)M∈≀C_n→(∃m)M∈≀M_m,n"));
-		session.suppose("definition_of_≀R", $$("(∀M,m)M∈≀R_m→(∃n)M∈≀M_m,n"));
+		session.suppose("definition_of_≀M", $$("∀M,m,n ((M∈≀M_m,n)→∀i,j (0≤i<m∧0≤j<m)→M_i,j∈ℝ)"));
+		session.suppose("definition_of_≀C", $$("∀M,n M∈≀C_n→(∃m)M∈≀M_m,n"));
+		session.suppose("definition_of_≀R", $$("∀M,m M∈≀R_m→(∃n)M∈≀M_m,n"));
 		
 		// TODO prove
-		session.suppose("transposition_of_product", $$("(∀X,Y)(XY)ᵀ=YᵀXᵀ"));
+		session.suppose("transposition_of_product", $$("∀X,Y (XY)ᵀ=YᵀXᵀ"));
 		
-		session.suppose("definition_of_1_n", $$("(∀n)(1_n∈(≀R_n)∩(≀C_1)∧∀i(1_n)_i,1=1)"));
-		session.suppose("definition_of_M", $$("(∀X,n)X∈≀C_n→M X=1/nX(1_n)(1_nᵀ)"));
-		session.suppose("definition_of_V", $$("(∀X)V X=(X-(M X))(X-(M X))ᵀ"));
+		session.suppose("definition_of_1_n", $$("∀n (1_n∈(≀R_n)∩(≀C_1)∧∀i (1_n)_i,1=1)"));
+		session.suppose("definition_of_M", $$("∀X,n X∈≀C_n→M X=1/nX(1_n)(1_nᵀ)"));
+		session.suppose("definition_of_V", $$("∀X V X=(X-(M X))(X-(M X))ᵀ"));
 	}
 	
 	/**
@@ -153,6 +153,10 @@ public final class Demo2 {
 			 */
 			private static final long serialVersionUID = 2607977220438106247L;
 
+			public static LexerTokenRule binaryOperator(final String operator) {
+				return tokenRule(operator,    /* -> */ sequence(zeroOrMore(' '), string(operator), zeroOrMore(' ')));
+			}
+			
 			static final LexerRule[] lexerRules = {
 				
 				tokenRule(        "VARIABLE", /* -> */ union(range('A', 'Z'), range('a', 'z'))),
@@ -160,8 +164,12 @@ public final class Demo2 {
 				tokenRule(        "INTEGER",  /* -> */ oneOrMore(range('0', '9'))),
 				
 				tokenRule(        "1_",       /* -> */ string("1_")),
+		        
+		        binaryOperator("→"),
+		        
+		        binaryOperator("∧"),
 				
-				verbatimTokenRule("=",        /* -> */ '='),
+		        binaryOperator("="),
 				
 				verbatimTokenRule("+",        /* -> */ '+'),
 				
@@ -201,19 +209,15 @@ public final class Demo2 {
 		        
 		        verbatimTokenRule("∩",        /* -> */ '∩'),
 		        
-		        verbatimTokenRule("→",        /* -> */ '→'),
-		        
-		        verbatimTokenRule("∧",        /* -> */ '∧'),
-		        
 			};
 			
 			static final ParserRule[] parserRules = {
 				
-				leftAssociative('∧', 5),
+				leftAssociative("∧", 5),
 				
-				leftAssociative('→', 5),
+				leftAssociative("→", 5),
 				
-				leftAssociative('=', 10),
+				leftAssociative("=", 10),
 				
 				leftAssociative('∈', 50),
 				
@@ -259,7 +263,11 @@ public final class Demo2 {
 				
 				namedRule("expression",              "EXPRESSION", /* -> */ '∃', "VARIABLE"),
 				
+				namedRule("expression",              "EXPRESSION", /* -> */ '∃', "VARIABLE", ' '),
+				
 				namedRule("forall",                  "EXPRESSION", /* -> */ '∀', "VARIABLES"),
+				
+				namedRule("forall",                  "EXPRESSION", /* -> */ '∀', "VARIABLES", ' '),
 				
 				namedRule("forall",                  "VARIABLES",  /* -> */ "VARIABLE", ',', "VARIABLES"),
 				
@@ -273,7 +281,11 @@ public final class Demo2 {
 				
 				namedRule("operatedExpression",      "EXPRESSION", /* -> */ "EXPRESSION", "OPERATION"),
 				
-				namedRule("operation",               "OPERATION",  /* -> */ '=', "EXPRESSION"),
+				namedRule("operation",               "OPERATION",  /* -> */ "=", "EXPRESSION"),
+				
+				namedRule("operation",               "OPERATION",  /* -> */ "→", "EXPRESSION"),
+				
+				namedRule("operation",               "OPERATION",  /* -> */ "∧", "EXPRESSION"),
 				
 				namedRule("operation",               "OPERATION",  /* -> */ '∈', "EXPRESSION"),
 				
@@ -290,10 +302,6 @@ public final class Demo2 {
 				namedRule("operation",               "OPERATION",  /* -> */ ' ', "EXPRESSION"),
 				
 				namedRule("operation",               "OPERATION",  /* -> */ '∩', "EXPRESSION"),
-				
-				namedRule("operation",               "OPERATION",  /* -> */ '→', "EXPRESSION"),
-				
-				namedRule("operation",               "OPERATION",  /* -> */ '∧', "EXPRESSION"),
 				
 				namedRule("operation",               "OPERATION",  /* -> */ "EXPRESSION"),
 				
