@@ -12,12 +12,14 @@ import static net.sourceforge.aurochs.LRParserTools.*;
 import static net.sourceforge.aurochs.RegularTools.*;
 
 import java.io.Serializable;
+import java.util.List;
 
 import jrewrite3.core.Composite;
 import jrewrite3.core.Expression;
 import jrewrite3.core.Module;
 import jrewrite3.core.Session;
 import jrewrite3.modules.Standard;
+
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 import net.sourceforge.aurochs.AbstractLRParser.GeneratedToken;
 import net.sourceforge.aurochs.AbstractLRParser.Listener;
@@ -42,30 +44,24 @@ public final class Demo2 {
 	static {
 		final Session session = new Session(MODULE);
 		
-		session.suppose("definition_of_∃", $(forAll("P", "x"),
-				$($$("(∃x)P x"), "=", $($(forAll("y"), $("P y", "->", "false")), "->", "false"))));
+		session.suppose("definition_of_∃", $$("(∀P,x)((∃x)P x)=(∀y)(P y→≀false)→≀false"));
 		session.suppose("definition_of_∩", $(forAll("A", "B", "x"),
 				$($$("x∈A∩B"), "=", $$("x∈A", "x∈B"))));
 		
 		session.suppose("definition_of_≀M", $(forAll("M", "m", "n"),
 				$($$("M∈≀M_m,n"), "->", $(forAll("i", "j"),
 						$($$("0≤i<m", "0≤j<m"), "->", $$("M_i,j∈ℝ"))))));
-		session.suppose("definition_of_≀C", $(forAll("M", "n"),
-				$($$("M∈≀C_n"), "->", $$("(∃m)M∈≀M_m,n"))));
-		session.suppose("definition_of_≀R", $(forAll("M", "m"),
-				$($$("M∈≀R_m"), "->", $$("(∃n)M∈≀M_m,n"))));
+		session.suppose("definition_of_≀C", $$("(∀M,m)M∈≀C_n→(∃m)M∈≀M_m,n"));
+		session.suppose("definition_of_≀R", $$("(∀M,m)M∈≀R_m→(∃n)M∈≀M_m,n"));
 		
-		session.suppose("transposition_of_product", $(forAll("X", "Y"), $$("(XY)ᵀ=YᵀXᵀ")));
+		session.suppose("transposition_of_product", $$("(∀X,Y)(XY)ᵀ=YᵀXᵀ"));
 		
 		session.suppose("definition_of_1_n", $(forAll("n"), $(
 				$$("1_n∈(≀R_n)∩(≀C_1)"),
 				"&",
-				$(forAll("i"), $$("(1_n)_i,1=1")))));
-		session.suppose("definition_of_M", $(forAll("X", "n"), $(
-				$$("X∈≀C_n"),
-				"->",
-				$$("M X=1/nX(1_n)(1_nᵀ)"))));
-		session.suppose("definition_of_V", $(forAll("X"), $$("V X=(X-(M X))(X-(M X))ᵀ")));
+				$$("∀i(1_n)_i,1=1"))));
+		session.suppose("definition_of_M", $$("(∀X,n)X∈≀C_n→M X=1/nX(1_n)(1_nᵀ)"));
+		session.suppose("definition_of_V", $$("(∀X)V X=(X-(M X))(X-(M X))ᵀ"));
 	}
 	
 	/**
@@ -208,9 +204,13 @@ public final class Demo2 {
 		        
 		        verbatimTokenRule("∩",        /* -> */ '∩'),
 		        
+		        verbatimTokenRule("→",        /* -> */ '→'),
+		        
 			};
 			
 			static final ParserRule[] parserRules = {
+				
+				leftAssociative('→', 5),
 				
 				leftAssociative('=', 10),
 				
@@ -252,11 +252,17 @@ public final class Demo2 {
 				
 				leftAssociative('¬', 400),
 				
-//				leftAssociative('∀', 400),
+				leftAssociative('∀', 400),
 				
 				namedRule("expression",              "ALL",         /* -> */ "EXPRESSION"),
 				
 				namedRule("expression",              "EXPRESSION",  /* -> */ '∃', "VARIABLE"),
+				
+				namedRule("forall",                  "EXPRESSION",  /* -> */ '∀', "VARIABLES"),
+				
+				namedRule("forall",                  "VARIABLES",  /* -> */ "VARIABLE", ',', "VARIABLES"),
+				
+				namedRule("forall",                  "VARIABLES",  /* -> */ "VARIABLE"),
 				
 				namedRule("expression",              "EXPRESSION",  /* -> */ '¬', "EXPRESSION"),
 				
@@ -283,6 +289,8 @@ public final class Demo2 {
 				namedRule("operation",               "OPERATION",  /* -> */ ' ', "EXPRESSION"),
 				
 				namedRule("operation",               "OPERATION",  /* -> */ '∩', "EXPRESSION"),
+				
+				namedRule("operation",               "OPERATION",  /* -> */ '→', "EXPRESSION"),
 				
 				namedRule("operation",               "OPERATION",  /* -> */ "EXPRESSION"),
 				
@@ -315,6 +323,10 @@ public final class Demo2 {
 			};
 			
 			final Object expression(final Object[] values) {
+				if (1 == values.length && values[0] instanceof List) {
+					return values[0];
+				}
+				
 				return $(values);
 			}
 			
@@ -322,7 +334,23 @@ public final class Demo2 {
 				return $(append(array(values[0]), (Object[]) values[1]));
 			}
 			
+			final Object forall(final Object[] values) {
+				if (values[0].equals('∀')) {
+					return forAll((Object[]) values[1]);
+				}
+				
+				if (3 == values.length && values[1].equals(',')) {
+					return append(array(values[0]), (Object[]) values[2]);
+				}
+				
+				return values;
+			}
+			
 			final Object operation(final Object[] values) {
+				if (0 < values.length && values[0].equals('→')) {
+					values[0] = "->";
+				}
+				
 				if (values.length == 2) {
 					if (values[0].equals('≤') || values[0].equals('<')) {
 						final Composite values1 = cast(Composite.class, values[1]);
@@ -341,7 +369,7 @@ public final class Demo2 {
 			}
 			
 			final Object parenthesizedExpression(final Object[] values) {
-				return $(values[1]);
+				return values[1] instanceof List ? values[1] : $(values[1]);
 			}
 			
 			final Object identifier(final Object[] values) {
