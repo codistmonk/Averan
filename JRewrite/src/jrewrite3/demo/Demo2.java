@@ -40,12 +40,18 @@ public final class Demo2 {
 	static {
 		final Session session = new Session(MODULE);
 		
+		session.suppose("transposition_of_product", $(forAll("X", "Y"), $$("(XY)ᵀ=YᵀXᵀ")));
+		session.suppose("definition_of_1_n", $(forAll("n"), $(
+				$($("columnCount", " ", $$("1_n")), "=", "1"),
+				"&",
+				$($("rowCount", " ", $$("1_n")), "=", "n"),
+				"&",
+				$(forAll("i"), $$("(1_n)_i,1=1")))));
 		session.suppose("definition_of_M", $(forAll("X", "n"), $(
 				$("n", "=", $("columnCount", " ", "X")),
 				"->",
 				$$("M X=1/nX(1_n)(1_nᵀ)"))));
 		session.suppose("definition_of_V", $(forAll("X"), $$("V X=(X-(M X))(X-(M X))ᵀ")));
-		session.suppose("transposition_of_product", $(forAll("X", "Y"), $$("(XY)ᵀ=YᵀXᵀ")));
 	}
 	
 	/**
@@ -151,6 +157,10 @@ public final class Demo2 {
 		        
 		        verbatimTokenRule(" ",        /* -> */ ' '),
 		        
+		        verbatimTokenRule("_",        /* -> */ '_'),
+		        
+		        verbatimTokenRule(",",        /* -> */ ','),
+		        
 			};
 			
 			static final ParserRule[] parserRules = {
@@ -175,6 +185,8 @@ public final class Demo2 {
 				
 				leftAssociative('ᵀ', 400),
 				
+				leftAssociative('_', 400),
+				
 				namedRule("expression",              "ALL",         /* -> */ "EXPRESSION"),
 				
 				namedRule("expression",              "EXPRESSION",  /* -> */ "EXPRESSION", 'ᵀ'),
@@ -198,6 +210,14 @@ public final class Demo2 {
 				namedRule("expression",              "EXPRESSION",  /* -> */ "INTEGER"),
 				
 				namedRule("expression",              "EXPRESSION",  /* -> */ "VARIABLE"),
+				
+				namedRule("operation",               "OPERATION",  /* -> */ '_', "INDEX"),
+				
+				namedRule("operation",               "OPERATION",  /* -> */ '_', "INDEX", ',', "INDEX"),
+				
+				namedRule("expression",              "INDEX",  /* -> */ "VARIABLE"),
+				
+				namedRule("expression",              "INDEX",  /* -> */ "INTEGER"),
 				
 				namedRule("expression",              "EXPRESSION",  /* -> */ "1_", "VARIABLE"),
 				
