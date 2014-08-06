@@ -56,10 +56,7 @@ public final class Demo2 {
 		
 		session.suppose("transposition_of_product", $$("(∀X,Y)(XY)ᵀ=YᵀXᵀ"));
 		
-		session.suppose("definition_of_1_n", $(forAll("n"), $(
-				$$("1_n∈(≀R_n)∩(≀C_1)"),
-				"&",
-				$$("∀i(1_n)_i,1=1"))));
+		session.suppose("definition_of_1_n", $(forAll("n"), $$("1_n∈(≀R_n)∩(≀C_1)", "∀i(1_n)_i,1=1")));
 		session.suppose("definition_of_M", $$("(∀X,n)X∈≀C_n→M X=1/nX(1_n)(1_nᵀ)"));
 		session.suppose("definition_of_V", $$("(∀X)V X=(X-(M X))(X-(M X))ᵀ"));
 	}
