@@ -93,6 +93,10 @@ public final class ExpressionTools {
 		return result;
 	}
 	
+	public static final Module conditions(final Object... conditions) {
+		return facts(conditions);
+	}
+	
 	public static final Module facts(final Object... facts) {
 		final Module result = new Module(null);
 		
