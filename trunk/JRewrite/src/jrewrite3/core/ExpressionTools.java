@@ -10,8 +10,8 @@ import java.util.List;
 import java.util.function.Function;
 
 import jrewrite3.core.Module.Symbol;
+
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
-import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2014-08-04)
@@ -53,6 +53,26 @@ public final class ExpressionTools {
 			}
 		}
 		
+		if ((objects.length & 1) != 0) {
+			boolean isConjunction = true;
+			
+			for (int i = 1; isConjunction && i < objects.length; i += 2) {
+				if (!"&".equals(objects[i])) {
+					isConjunction = false;
+				}
+			}
+			
+			if (isConjunction) {
+				final Object[] facts = new Object[objects.length / 2 + 1];
+				
+				for (int i = 0; i < objects.length; i += 2) {
+					facts[i / 2] = objects[i];
+				}
+				
+				return (E) facts(facts);
+			}
+		}
+		
 		return (E) new Composite(stream(objects).map(mapper).collect(toList()));
 	}
 	
@@ -69,6 +89,16 @@ public final class ExpressionTools {
 		
 		result.new Suppose($(condition)).execute();
 		result.new Admit($(fact)).execute();
+		
+		return result;
+	}
+	
+	public static final Module facts(final Object... facts) {
+		final Module result = new Module(null);
+		
+		for (final Object fact : facts) {
+			result.new Admit($(fact)).execute();
+		}
 		
 		return result;
 	}
