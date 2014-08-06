@@ -18,7 +18,6 @@ import jrewrite3.core.Expression;
 import jrewrite3.core.Module;
 import jrewrite3.core.Session;
 import jrewrite3.modules.Standard;
-
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 import net.sourceforge.aurochs.AbstractLRParser.GeneratedToken;
 import net.sourceforge.aurochs.AbstractLRParser.Listener;
@@ -43,20 +42,27 @@ public final class Demo2 {
 	static {
 		final Session session = new Session(MODULE);
 		
+		session.suppose("definition_of_∃", $(forAll("P", "x"),
+				$($$("(∃x)P x"), "=", $($(forAll("y"), $("P y", "->", "false")), "->", "false"))));
+		session.suppose("definition_of_∩", $(forAll("A", "B", "x"),
+				$($$("x∈A∩B"), "=", $$("x∈A", "x∈B"))));
+		
 		session.suppose("definition_of_≀M", $(forAll("M", "m", "n"),
-				$($$("M∈≀M_m,n"), "->", $(forAll("i", "j"), $(
-						$$("0≤i<m", "0≤j<m"),
-						"->",
-						$$("M_i,j∈ℝ"))))));
+				$($$("M∈≀M_m,n"), "->", $(forAll("i", "j"),
+						$($$("0≤i<m", "0≤j<m"), "->", $$("M_i,j∈ℝ"))))));
+		session.suppose("definition_of_≀C", $(forAll("M", "n"),
+				$($$("M∈≀C_n"), "->", $$("(∃m)M∈≀M_m,n"))));
+		session.suppose("definition_of_≀R", $(forAll("M", "m"),
+				$($$("M∈≀R_m"), "->", $$("(∃n)M∈≀M_m,n"))));
+		
 		session.suppose("transposition_of_product", $(forAll("X", "Y"), $$("(XY)ᵀ=YᵀXᵀ")));
+		
 		session.suppose("definition_of_1_n", $(forAll("n"), $(
-				$$("≀columnCount 1_n=1"),
-				"&",
-				$$("≀rowCount 1_n=n"),
+				$$("1_n∈(≀R_n)∩(≀C_1)"),
 				"&",
 				$(forAll("i"), $$("(1_n)_i,1=1")))));
 		session.suppose("definition_of_M", $(forAll("X", "n"), $(
-				$$("n=≀columnCount X"),
+				$$("X∈≀C_n"),
 				"->",
 				$$("M X=1/nX(1_n)(1_nᵀ)"))));
 		session.suppose("definition_of_V", $(forAll("X"), $$("V X=(X-(M X))(X-(M X))ᵀ")));
@@ -127,6 +133,7 @@ public final class Demo2 {
 		
 		public static final ExpressionParser instance = new ExpressionParser();
 		
+		@SuppressWarnings("unchecked")
 		public static final <E extends Expression> E $$(final CharSequence... charSequences) {
 			final int n = charSequences.length;
 			
@@ -193,6 +200,14 @@ public final class Demo2 {
 		        
 		        verbatimTokenRule("ℝ",        /* -> */ 'ℝ'),
 		        
+		        verbatimTokenRule("∃",        /* -> */ '∃'),
+		        
+		        verbatimTokenRule("∀",        /* -> */ '∀'),
+		        
+		        verbatimTokenRule("¬",        /* -> */ '¬'),
+		        
+		        verbatimTokenRule("∩",        /* -> */ '∩'),
+		        
 			};
 			
 			static final ParserRule[] parserRules = {
@@ -208,6 +223,8 @@ public final class Demo2 {
 				leftAssociative('+', 100),
 				
 				leftAssociative('-', 100),
+				
+				leftAssociative('∩', 125),
 				
 				leftAssociative('(', 150),
 				
@@ -231,7 +248,17 @@ public final class Demo2 {
 				
 				leftAssociative('≀', 500),
 				
+				leftAssociative('∃', 400),
+				
+				leftAssociative('¬', 400),
+				
+//				leftAssociative('∀', 400),
+				
 				namedRule("expression",              "ALL",         /* -> */ "EXPRESSION"),
+				
+				namedRule("expression",              "EXPRESSION",  /* -> */ '∃', "VARIABLE"),
+				
+				namedRule("expression",              "EXPRESSION",  /* -> */ '¬', "EXPRESSION"),
 				
 				namedRule("expression",              "EXPRESSION",  /* -> */ "EXPRESSION", 'ᵀ'),
 				
@@ -254,6 +281,8 @@ public final class Demo2 {
 				namedRule("operation",               "OPERATION",  /* -> */ '/', "EXPRESSION"),
 				
 				namedRule("operation",               "OPERATION",  /* -> */ ' ', "EXPRESSION"),
+				
+				namedRule("operation",               "OPERATION",  /* -> */ '∩', "EXPRESSION"),
 				
 				namedRule("operation",               "OPERATION",  /* -> */ "EXPRESSION"),
 				
