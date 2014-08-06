@@ -1,6 +1,7 @@
 package jrewrite3.core;
 
 import static net.sourceforge.aprog.tools.Tools.cast;
+import static net.sourceforge.aprog.tools.Tools.list;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -11,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+
+import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2014-08-01)
@@ -187,9 +190,25 @@ public final class Module implements Expression {
 	
 	@Override
 	public final String toString() {
-		return (this.getParameters().isEmpty() ? "" : "∀" + this.getParameters() + " ")
-				+ (this.getConditions().isEmpty() ? "" : this.getConditions() + " → ")
-				+ this.getFacts();
+		return (this.getParameters().isEmpty() ? "" : "∀" + join(",", this.getParameters()) + " ")
+				+ (this.getConditions().isEmpty() ? "" : formatConjunction(this.getConditions()) + " → ")
+				+ formatConjunction(this.getFacts());
+	}
+	
+	public static final String formatConjunction(final List<Expression> propositions) {
+		if (propositions.size() == 1) {
+			final Expression proposition = propositions.get(0);
+			
+			if (proposition instanceof Symbol) {
+				return proposition.toString();
+			}
+		}
+		
+		return "(" + join(" ∧ ", propositions) + ")";
+	}
+	
+	public static final String join(final String separator, final Iterable<?> elements) {
+		return Tools.join(separator, list(elements).toArray());
 	}
 	
 	public final boolean isFree() {
