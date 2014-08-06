@@ -44,6 +44,7 @@ public final class Demo2 {
 	static {
 		final Session session = new Session(MODULE);
 		
+		// TODO define ∈, ᵀ, matrix product
 		session.suppose("definition_of_¬", $$("(∀P)¬P=(P→≀false)"));
 		session.suppose("definition_of_∃", $$("(∀P,x)((∃x)P x)=¬((∀y)¬(P y))"));
 		session.suppose("definition_of_∩", $$("(∀A,B,x)(x∈A∩B)=(x∈A∧x∈B)"));
@@ -52,6 +53,7 @@ public final class Demo2 {
 		session.suppose("definition_of_≀C", $$("(∀M,n)M∈≀C_n→(∃m)M∈≀M_m,n"));
 		session.suppose("definition_of_≀R", $$("(∀M,m)M∈≀R_m→(∃n)M∈≀M_m,n"));
 		
+		// TODO prove
 		session.suppose("transposition_of_product", $$("(∀X,Y)(XY)ᵀ=YᵀXᵀ"));
 		
 		session.suppose("definition_of_1_n", $$("(∀n)(1_n∈(≀R_n)∩(≀C_1)∧∀i(1_n)_i,1=1)"));
