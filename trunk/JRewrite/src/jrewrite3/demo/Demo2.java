@@ -45,18 +45,15 @@ public final class Demo2 {
 		final Session session = new Session(MODULE);
 		
 		session.suppose("definition_of_∃", $$("(∀P,x)((∃x)P x)=(((∀y)P y→≀false)→≀false)"));
-		session.suppose("definition_of_∩", $(forAll("A", "B", "x"),
-				$($$("x∈A∩B"), "=", $$("x∈A", "x∈B"))));
+		session.suppose("definition_of_∩", $$("(∀A,B,x)(x∈A∩B)=(x∈A∧x∈B)"));
 		
-		session.suppose("definition_of_≀M", $(forAll("M", "m", "n"),
-				$($$("M∈≀M_m,n"), "->", $(forAll("i", "j"),
-						$($$("0≤i<m", "0≤j<m"), "->", $$("M_i,j∈ℝ"))))));
+		session.suppose("definition_of_≀M", $$("(∀M,m,n)((M∈≀M_m,n)→(∀i,j)(0≤i<m∧0≤j<m)→M_i,j∈ℝ)"));
 		session.suppose("definition_of_≀C", $$("(∀M,m)M∈≀C_n→(∃m)M∈≀M_m,n"));
 		session.suppose("definition_of_≀R", $$("(∀M,m)M∈≀R_m→(∃n)M∈≀M_m,n"));
 		
 		session.suppose("transposition_of_product", $$("(∀X,Y)(XY)ᵀ=YᵀXᵀ"));
 		
-		session.suppose("definition_of_1_n", $(forAll("n"), $$("1_n∈(≀R_n)∩(≀C_1)", "∀i(1_n)_i,1=1")));
+		session.suppose("definition_of_1_n", $$("(∀n)(1_n∈(≀R_n)∩(≀C_1)∧∀i(1_n)_i,1=1)"));
 		session.suppose("definition_of_M", $$("(∀X,n)X∈≀C_n→M X=1/nX(1_n)(1_nᵀ)"));
 		session.suppose("definition_of_V", $$("(∀X)V X=(X-(M X))(X-(M X))ᵀ"));
 	}
@@ -172,7 +169,7 @@ public final class Demo2 {
 				verbatimTokenRule("ᵀ",        /* -> */ 'ᵀ'),
 				
 		        verbatimTokenRule("(",        /* -> */ '('),
-
+		        
 		        verbatimTokenRule(")",        /* -> */ ')'),
 		        
 		        verbatimTokenRule(" ",        /* -> */ ' '),
@@ -203,9 +200,13 @@ public final class Demo2 {
 		        
 		        verbatimTokenRule("→",        /* -> */ '→'),
 		        
+		        verbatimTokenRule("∧",        /* -> */ '∧'),
+		        
 			};
 			
 			static final ParserRule[] parserRules = {
+				
+				leftAssociative('∧', 5),
 				
 				leftAssociative('→', 5),
 				
@@ -251,23 +252,23 @@ public final class Demo2 {
 				
 				leftAssociative('∀', 400),
 				
-				namedRule("expression",              "ALL",         /* -> */ "EXPRESSION"),
+				namedRule("expression",              "ALL",        /* -> */ "EXPRESSION"),
 				
-				namedRule("expression",              "EXPRESSION",  /* -> */ '∃', "VARIABLE"),
+				namedRule("expression",              "EXPRESSION", /* -> */ '∃', "VARIABLE"),
 				
-				namedRule("forall",                  "EXPRESSION",  /* -> */ '∀', "VARIABLES"),
+				namedRule("forall",                  "EXPRESSION", /* -> */ '∀', "VARIABLES"),
 				
 				namedRule("forall",                  "VARIABLES",  /* -> */ "VARIABLE", ',', "VARIABLES"),
 				
 				namedRule("forall",                  "VARIABLES",  /* -> */ "VARIABLE"),
 				
-				namedRule("expression",              "EXPRESSION",  /* -> */ '¬', "EXPRESSION"),
+				namedRule("expression",              "EXPRESSION", /* -> */ '¬', "EXPRESSION"),
 				
-				namedRule("expression",              "EXPRESSION",  /* -> */ "EXPRESSION", 'ᵀ'),
+				namedRule("expression",              "EXPRESSION", /* -> */ "EXPRESSION", 'ᵀ'),
 				
 				namedRule("parenthesizedExpression", "EXPRESSION", /* -> */ '(', "EXPRESSION", ')'),
 				
-				namedRule("operatedExpression",      "EXPRESSION",  /* -> */ "EXPRESSION", "OPERATION"),
+				namedRule("operatedExpression",      "EXPRESSION", /* -> */ "EXPRESSION", "OPERATION"),
 				
 				namedRule("operation",               "OPERATION",  /* -> */ '=', "EXPRESSION"),
 				
@@ -289,33 +290,35 @@ public final class Demo2 {
 				
 				namedRule("operation",               "OPERATION",  /* -> */ '→', "EXPRESSION"),
 				
+				namedRule("operation",               "OPERATION",  /* -> */ '∧', "EXPRESSION"),
+				
 				namedRule("operation",               "OPERATION",  /* -> */ "EXPRESSION"),
 				
-				namedRule("expression",              "EXPRESSION",  /* -> */ "INTEGER"),
+				namedRule("expression",              "EXPRESSION", /* -> */ "INTEGER"),
 				
-				namedRule("expression",              "EXPRESSION",  /* -> */ "VARIABLE"),
+				namedRule("expression",              "EXPRESSION", /* -> */ "VARIABLE"),
 				
 				namedRule("operation",               "OPERATION",  /* -> */ '_', "INDEX"),
 				
 				namedRule("operation",               "OPERATION",  /* -> */ '_', "INDEX", ',', "INDEX"),
 				
-				namedRule("expression",              "INDEX",  /* -> */ "VARIABLE"),
+				namedRule("expression",              "INDEX",      /* -> */ "VARIABLE"),
 				
-				namedRule("expression",              "INDEX",  /* -> */ "INTEGER"),
+				namedRule("expression",              "INDEX",      /* -> */ "INTEGER"),
 				
-				namedRule("expression",              "EXPRESSION",  /* -> */ 'ℕ'),
+				namedRule("expression",              "EXPRESSION", /* -> */ 'ℕ'),
 				
-				namedRule("expression",              "EXPRESSION",  /* -> */ 'ℝ'),
+				namedRule("expression",              "EXPRESSION", /* -> */ 'ℝ'),
 				
-				namedRule("expression",              "EXPRESSION",  /* -> */ "1_", "VARIABLE"),
+				namedRule("expression",              "EXPRESSION", /* -> */ "1_", "VARIABLE"),
 				
-				namedRule("expression",              "EXPRESSION",  /* -> */ "1_", "INTEGER"),
+				namedRule("expression",              "EXPRESSION", /* -> */ "1_", "INTEGER"),
 				
-				namedRule("identifier",              "EXPRESSION",  /* -> */ '≀', "IDENTIFIER"),
+				namedRule("identifier",              "EXPRESSION", /* -> */ '≀', "IDENTIFIER"),
 				
-				namedRule("identifier",              "IDENTIFIER",  /* -> */ "VARIABLE", "IDENTIFIER"),
+				namedRule("identifier",              "IDENTIFIER", /* -> */ "VARIABLE", "IDENTIFIER"),
 				
-				namedRule("identifier",              "IDENTIFIER",  /* -> */ "VARIABLE"),
+				namedRule("identifier",              "IDENTIFIER", /* -> */ "VARIABLE"),
 				
 			};
 			
