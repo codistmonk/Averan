@@ -44,7 +44,7 @@ public final class Demo2 {
 	static {
 		final Session session = new Session(MODULE);
 		
-		session.suppose("definition_of_∃", $$("(∀P,x)((∃x)P x)=(∀y)(P y→≀false)→≀false"));
+		session.suppose("definition_of_∃", $$("(∀P,x)((∃x)P x)=(((∀y)P y→≀false)→≀false)"));
 		session.suppose("definition_of_∩", $(forAll("A", "B", "x"),
 				$($$("x∈A∩B"), "=", $$("x∈A", "x∈B"))));
 		
