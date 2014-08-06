@@ -4,13 +4,16 @@ import static jrewrite3.core.ExpressionTools.*;
 import static jrewrite3.demo.Demo2.ExpressionParser.$$;
 import static net.sourceforge.aprog.tools.Tools.append;
 import static net.sourceforge.aprog.tools.Tools.array;
+import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.ignore;
+import static net.sourceforge.aprog.tools.Tools.join;
 import static net.sourceforge.aurochs.AurochsTools.input;
 import static net.sourceforge.aurochs.LRParserTools.*;
 import static net.sourceforge.aurochs.RegularTools.*;
 
 import java.io.Serializable;
 
+import jrewrite3.core.Composite;
 import jrewrite3.core.Expression;
 import jrewrite3.core.Module;
 import jrewrite3.core.Session;
@@ -40,15 +43,20 @@ public final class Demo2 {
 	static {
 		final Session session = new Session(MODULE);
 		
+		session.suppose("definition_of_≀M", $(forAll("M", "m", "n"),
+				$($$("M∈≀M_m,n"), "->", $(forAll("i", "j"), $(
+						$$("0≤i<m", "0≤j<m"),
+						"->",
+						$$("M_i,j∈ℝ"))))));
 		session.suppose("transposition_of_product", $(forAll("X", "Y"), $$("(XY)ᵀ=YᵀXᵀ")));
 		session.suppose("definition_of_1_n", $(forAll("n"), $(
-				$($("columnCount", " ", $$("1_n")), "=", "1"),
+				$$("≀columnCount 1_n=1"),
 				"&",
-				$($("rowCount", " ", $$("1_n")), "=", "n"),
+				$$("≀rowCount 1_n=n"),
 				"&",
 				$(forAll("i"), $$("(1_n)_i,1=1")))));
 		session.suppose("definition_of_M", $(forAll("X", "n"), $(
-				$("n", "=", $("columnCount", " ", "X")),
+				$$("n=≀columnCount X"),
 				"->",
 				$$("M X=1/nX(1_n)(1_nᵀ)"))));
 		session.suppose("definition_of_V", $(forAll("X"), $$("V X=(X-(M X))(X-(M X))ᵀ")));
@@ -119,8 +127,20 @@ public final class Demo2 {
 		
 		public static final ExpressionParser instance = new ExpressionParser();
 		
-		public static final <E extends Expression> E $$(final CharSequence charSequence) {
-			return instance.parse(charSequence);
+		public static final <E extends Expression> E $$(final CharSequence... charSequences) {
+			final int n = charSequences.length;
+			
+			if (n == 1) {
+				return instance.parse(charSequences[0]);
+			}
+			
+			final Object[] facts = new Object[n];
+			
+			for (int i = 0; i < n; ++i) {
+				facts[i] = instance.parse(charSequences[i]);
+			}
+			
+			return (E) facts(facts);
 		}
 		
 		/**
@@ -161,11 +181,29 @@ public final class Demo2 {
 		        
 		        verbatimTokenRule(",",        /* -> */ ','),
 		        
+		        verbatimTokenRule("≀",        /* -> */ '≀'),
+		        
+		        verbatimTokenRule("≤",        /* -> */ '≤'),
+		        
+		        verbatimTokenRule("<",        /* -> */ '<'),
+		        
+		        verbatimTokenRule("∈",        /* -> */ '∈'),
+		        
+		        verbatimTokenRule("ℕ",        /* -> */ 'ℕ'),
+		        
+		        verbatimTokenRule("ℝ",        /* -> */ 'ℝ'),
+		        
 			};
 			
 			static final ParserRule[] parserRules = {
 				
 				leftAssociative('=', 10),
+				
+				leftAssociative('∈', 50),
+				
+				leftAssociative('≤', 50),
+				
+				leftAssociative('<', 50),
 				
 				leftAssociative('+', 100),
 				
@@ -177,6 +215,10 @@ public final class Demo2 {
 				
 				leftAssociative("INTEGER", 150),
 				
+				leftAssociative('ℕ', 150),
+				
+				leftAssociative('ℝ', 150),
+				
 				leftAssociative("1_", 150),
 				
 				leftAssociative('/', 155),
@@ -187,6 +229,8 @@ public final class Demo2 {
 				
 				leftAssociative('_', 400),
 				
+				leftAssociative('≀', 500),
+				
 				namedRule("expression",              "ALL",         /* -> */ "EXPRESSION"),
 				
 				namedRule("expression",              "EXPRESSION",  /* -> */ "EXPRESSION", 'ᵀ'),
@@ -196,6 +240,12 @@ public final class Demo2 {
 				namedRule("operatedExpression",      "EXPRESSION",  /* -> */ "EXPRESSION", "OPERATION"),
 				
 				namedRule("operation",               "OPERATION",  /* -> */ '=', "EXPRESSION"),
+				
+				namedRule("operation",               "OPERATION",  /* -> */ '∈', "EXPRESSION"),
+				
+				namedRule("operation",               "OPERATION",  /* -> */ '≤', "EXPRESSION"),
+				
+				namedRule("operation",               "OPERATION",  /* -> */ '<', "EXPRESSION"),
 				
 				namedRule("operation",               "OPERATION",  /* -> */ '+', "EXPRESSION"),
 				
@@ -219,9 +269,19 @@ public final class Demo2 {
 				
 				namedRule("expression",              "INDEX",  /* -> */ "INTEGER"),
 				
+				namedRule("expression",              "EXPRESSION",  /* -> */ 'ℕ'),
+				
+				namedRule("expression",              "EXPRESSION",  /* -> */ 'ℝ'),
+				
 				namedRule("expression",              "EXPRESSION",  /* -> */ "1_", "VARIABLE"),
 				
 				namedRule("expression",              "EXPRESSION",  /* -> */ "1_", "INTEGER"),
+				
+				namedRule("identifier",              "EXPRESSION",  /* -> */ '≀', "IDENTIFIER"),
+				
+				namedRule("identifier",              "IDENTIFIER",  /* -> */ "VARIABLE", "IDENTIFIER"),
+				
+				namedRule("identifier",              "IDENTIFIER",  /* -> */ "VARIABLE"),
 				
 			};
 			
@@ -234,11 +294,29 @@ public final class Demo2 {
 			}
 			
 			final Object operation(final Object[] values) {
+				if (values.length == 2) {
+					if (values[0].equals('≤') || values[0].equals('<')) {
+						final Composite values1 = cast(Composite.class, values[1]);
+						
+						if (values1 != null && 3 <= values1.getChildren().size()) {
+							final String rightOperator = values1.getChildren().get(1).toString();
+							
+							if ("≤".equals(rightOperator) || "<".equals(rightOperator)) {
+								return append(array(values[0]), values1.getChildren().toArray());
+							}
+						}
+					}
+				}
+				
 				return values;
 			}
 			
 			final Object parenthesizedExpression(final Object[] values) {
 				return $(values[1]);
+			}
+			
+			final Object identifier(final Object[] values) {
+				return join("", values);
 			}
 			
 		}
