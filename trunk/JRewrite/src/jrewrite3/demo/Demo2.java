@@ -2,6 +2,8 @@ package jrewrite3.demo;
 
 import static jrewrite3.core.ExpressionTools.*;
 import static jrewrite3.demo.Demo2.ExpressionParser.$$;
+import static net.sourceforge.aprog.tools.Tools.append;
+import static net.sourceforge.aprog.tools.Tools.array;
 import static net.sourceforge.aprog.tools.Tools.ignore;
 import static net.sourceforge.aurochs.AurochsTools.input;
 import static net.sourceforge.aurochs.LRParserTools.*;
@@ -43,6 +45,7 @@ public final class Demo2 {
 				"->",
 				$$("M X=1/nX(1_n)(1_nᵀ)"))));
 		session.suppose("definition_of_V", $(forAll("X"), $$("V X=(X-(M X))(X-(M X))ᵀ")));
+		session.suppose("transposition_of_product", $(forAll("X", "Y"), $$("(XY)ᵀ=YᵀXᵀ")));
 	}
 	
 	/**
@@ -60,13 +63,13 @@ public final class Demo2 {
 		
 		private final LRParser mathParser;
 		
-		private Object result;
+		private transient Object result;
 		
 		{
 			this.mathParser = LRParserTools.newParser(MathParser.class);
 			
 			this.mathParser.addListener(new Listener() {
-				
+
 				@Override
 				public final void unexpectedSymbolErrorOccured(final UnexpectedSymbolErrorEvent event) {
 					ignore(event);
@@ -80,6 +83,11 @@ public final class Demo2 {
 						ExpressionParser.this.setResult(generatedToken.getValue());
 					}
 				}
+				
+				/**
+				 * {@value}.
+				 */
+				private static final long serialVersionUID = 7194229918744361926L;
 				
 			});
 		}
@@ -127,9 +135,9 @@ public final class Demo2 {
 				
 				tokenRule(        "1_",       /* -> */ string("1_")),
 				
-				verbatimTokenRule("+",        /* -> */ '+'),
-				
 				verbatimTokenRule("=",        /* -> */ '='),
+				
+				verbatimTokenRule("+",        /* -> */ '+'),
 				
 				verbatimTokenRule("-",        /* -> */ '-'),
 				
@@ -159,9 +167,9 @@ public final class Demo2 {
 				
 				leftAssociative("INTEGER", 150),
 				
-				leftAssociative("EXPRESSION", 150),
+				leftAssociative("1_", 150),
 				
-				leftAssociative('/', 200),
+				leftAssociative('/', 155),
 				
 				leftAssociative(' ', 300),
 				
@@ -169,27 +177,23 @@ public final class Demo2 {
 				
 				namedRule("expression",              "ALL",         /* -> */ "EXPRESSION"),
 				
-				namedRule("expression",              "EXPRESSION",  /* -> */ "PEXPRESSION"),
-				
-				namedRule("parenthesizedExpression", "PEXPRESSION", /* -> */ '(', "EXPRESSION", ')'),
-				
-				namedRule("expression",              "EXPRESSION",  /* -> */ "EXPRESSION", '+', "EXPRESSION"),
-				
-				namedRule("expression",              "EXPRESSION",  /* -> */ "EXPRESSION", '-', "EXPRESSION"),
-				
-				namedRule("expression",              "EXPRESSION",  /* -> */ "EXPRESSION", "VARIABLE"),
-				
-				namedRule("expression",              "EXPRESSION",  /* -> */ "EXPRESSION", "INTEGER"),
-				
-				namedRule("expression",              "EXPRESSION",  /* -> */ "INTEGER", "EXPRESSION"),
-				
-				namedRule("expression",              "EXPRESSION",  /* -> */ "EXPRESSION", "PEXPRESSION"),
-				
-				namedRule("expression",              "EXPRESSION",  /* -> */ "PEXPRESSION", "EXPRESSION"),
-				
-				namedRule("expression",              "EXPRESSION",  /* -> */ "EXPRESSION", '/', "EXPRESSION"),
-				
 				namedRule("expression",              "EXPRESSION",  /* -> */ "EXPRESSION", 'ᵀ'),
+				
+				namedRule("parenthesizedExpression", "EXPRESSION", /* -> */ '(', "EXPRESSION", ')'),
+				
+				namedRule("operatedExpression",      "EXPRESSION",  /* -> */ "EXPRESSION", "OPERATION"),
+				
+				namedRule("operation",               "OPERATION",  /* -> */ '=', "EXPRESSION"),
+				
+				namedRule("operation",               "OPERATION",  /* -> */ '+', "EXPRESSION"),
+				
+				namedRule("operation",               "OPERATION",  /* -> */ '-', "EXPRESSION"),
+				
+				namedRule("operation",               "OPERATION",  /* -> */ '/', "EXPRESSION"),
+				
+				namedRule("operation",               "OPERATION",  /* -> */ ' ', "EXPRESSION"),
+				
+				namedRule("operation",               "OPERATION",  /* -> */ "EXPRESSION"),
 				
 				namedRule("expression",              "EXPRESSION",  /* -> */ "INTEGER"),
 				
@@ -199,14 +203,18 @@ public final class Demo2 {
 				
 				namedRule("expression",              "EXPRESSION",  /* -> */ "1_", "INTEGER"),
 				
-				namedRule("expression",              "EXPRESSION",  /* -> */ "EXPRESSION", ' ', "EXPRESSION"),
-				
-				namedRule("expression",              "EXPRESSION",  /* -> */ "EXPRESSION", '=', "EXPRESSION"),
-				
 			};
 			
 			final Object expression(final Object[] values) {
 				return $(values);
+			}
+			
+			final Object operatedExpression(final Object[] values) {
+				return $(append(array(values[0]), (Object[]) values[1]));
+			}
+			
+			final Object operation(final Object[] values) {
+				return values;
 			}
 			
 			final Object parenthesizedExpression(final Object[] values) {
