@@ -53,10 +53,11 @@ public final class Demo2 {
 		session.suppose("definition_of_∩", $$("∀A,B,x (x∈A∩B) = (x∈A ∧ x∈B)"));
 		
 		session.suppose("definition_of_≀M", $$("∀M,m,n (M∈≀M_m,n → ∀i,j (0≤i<m ∧ 0≤j<m) → M_i,j∈ℝ)"));
-		session.suppose("definition_of_≀C", $$("∀M,n M∈≀C_n → ∃m M∈≀M_m,n"));
-		session.suppose("definition_of_≀R", $$("∀M,m M∈≀R_m → ∃n M∈≀M_m,n"));
+		session.suppose("definition_of_≀C", $$("∀M,n M∈≀C_n = ∃m M∈≀M_m,n"));
+		session.suppose("definition_of_≀R", $$("∀M,m M∈≀R_m = ∃n M∈≀M_m,n"));
 		
 		// TODO prove
+		session.suppose("columnCount", $$("∀X,m,n X∈≀M_m,n → X∈≀C_n"));
 		session.suppose("transposition_of_product", $$("∀X,Y (XY)ᵀ = YᵀXᵀ"));
 		session.suppose("transposition_of_subtraction", $$("∀X,Y (X-Y)ᵀ = Xᵀ-Yᵀ"));
 		session.suppose("product_of_subtractions", $$("∀A,B,C,D ((A-B)(C-D)) = (((AC)-(AD))-(BC))+(BD)"));
@@ -74,7 +75,7 @@ public final class Demo2 {
 			session.introduce();
 			session.introduce();
 			session.introduce();
-			session.introduce();
+			session.introduce("type_of_X");
 			
 			final Symbol x = session.getParameter("X");
 			final Symbol m = session.getParameter("m");
@@ -87,17 +88,21 @@ public final class Demo2 {
 			final Expression mxmxt = $(mx, mxt);
 			
 			session.bind("definition_of_V", x, m, n);
-			session.apply("#1", "#0");
+			session.apply("#1", "type_of_X");
 			session.bind("transposition_of_subtraction", x, mx);
 			session.rewrite("#2", "#3");
 			session.bind("product_of_subtractions", x, mx, xt, mxt);
 			session.rewrite("#4", "#5");
-//			session.claim($(xmxt, "=", mxmxt));
-//			{
-//				session.bind(IDENTITY, xmxt);
-//				session.bind("definition_of_M", x);
+			session.claim($(xmxt, "=", mxmxt));
+			{
+				session.bind(IDENTITY, xmxt);
+				session.bind("definition_of_M", x, n);
+				session.bind("columnCount", x, m, n);
+				session.apply("#2", "type_of_X");
+				session.apply("#1", "#3");
+				session.rewrite("#0", "#4", 1);
 //				
-//			}
+			}
 		}
 		
 		session.printTo(System.out, true);
