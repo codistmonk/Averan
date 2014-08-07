@@ -89,7 +89,7 @@ public final class Session implements Serializable {
 	public final Session apply(final String factName, final String moduleName, final String conditionName) {
 		final Module module = this.getCurrentContext().getModule();
 		
-		module.new Apply(factName, module, moduleName).apply(module, conditionName).execute();
+		module.new Apply(factName, module, moduleName, module, conditionName).execute();
 		
 		return this.pop();
 	}
