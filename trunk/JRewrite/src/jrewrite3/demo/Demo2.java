@@ -3,6 +3,7 @@ package jrewrite3.demo;
 import static java.util.Arrays.copyOfRange;
 import static jrewrite3.core.ExpressionTools.*;
 import static jrewrite3.demo.Demo2.ExpressionParser.$$;
+import static jrewrite3.modules.Standard.IDENTITY;
 import static net.sourceforge.aprog.tools.Tools.append;
 import static net.sourceforge.aprog.tools.Tools.array;
 import static net.sourceforge.aprog.tools.Tools.cast;
@@ -60,25 +61,43 @@ public final class Demo2 {
 		session.suppose("transposition_of_subtraction", $$("∀X,Y (X-Y)ᵀ = Xᵀ-Yᵀ"));
 		session.suppose("product_of_subtractions", $$("∀A,B,C,D ((A-B)(C-D)) = (((AC)-(AD))-(BC))+(BD)"));
 		
+//		final Symbol m = session.getCurrentContext().getModule().parameter("m");
+//		final Symbol n = session.getCurrentContext().getModule().parameter("n");
+		
 		session.suppose("definition_of_1_n", $$("∀n ((1_n∈(≀R_n)∩(≀C_1)) ∧ ∀i (1_n)_i,1=1)"));
 		session.suppose("definition_of_M", $$("∀X,n X∈≀C_n → (M X) = 1/nX(1_n)(1_nᵀ)"));
-		session.suppose("definition_of_V", $$("∀X (V X) = (X-(M X))(X-(M X))ᵀ"));
+		session.suppose("definition_of_V", $$("∀X,m,n X∈≀M_m,n → (V X) = (X-(M X))(X-(M X))ᵀ"));
 		
-		session.claim("simplified_definition_of_V", $$("∀X (V X) = (XXᵀ)-(M X)(M X)ᵀ"));
+		session.claim("simplified_definition_of_V", $$("∀X,m,n X∈≀M_m,n → (V X) = (XXᵀ)-(M X)(M X)ᵀ"));
 		
 		{
 			session.introduce();
+			session.introduce();
+			session.introduce();
+			session.introduce();
 			
 			final Symbol x = session.getParameter("X");
+			final Symbol m = session.getParameter("m");
+			final Symbol n = session.getParameter("n");
 			final Expression xt = $(x, "ᵀ");
 			final Expression mx = $("M", " ", x);
-			final Expression mxt = $($("M", " ", x), "ᵀ");
+			final Expression mxt = $(mx, "ᵀ");
+			final Expression xmxt = $(x, mxt);
+			final Expression mxxt = $(mx, xt);
+			final Expression mxmxt = $(mx, mxt);
 			
-			session.bind("definition_of_V", x);
+			session.bind("definition_of_V", x, m, n);
+			session.apply("#1", "#0");
 			session.bind("transposition_of_subtraction", x, mx);
-			session.rewrite("#0", "#1");
-			session.bind("product_of_subtractions", x, mx, xt, mxt);
 			session.rewrite("#2", "#3");
+			session.bind("product_of_subtractions", x, mx, xt, mxt);
+			session.rewrite("#4", "#5");
+//			session.claim($(xmxt, "=", mxmxt));
+//			{
+//				session.bind(IDENTITY, xmxt);
+//				session.bind("definition_of_M", x);
+//				
+//			}
 		}
 		
 		session.printTo(System.out, true);

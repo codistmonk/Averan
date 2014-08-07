@@ -720,38 +720,49 @@ public final class Module implements Expression {
 		
 		private final PropositionReference<Module> module;
 		
+		private final PropositionReference<Module> proposition;
+		
 		private int removedConditions;
 		
-		public Apply(final Module context, final String moduleName) {
-			this(null, context, moduleName);
+		public Apply(final Module moduleContext, final String moduleName,
+				final Module propositionContext, final String propositionName) {
+			this(null, moduleContext, moduleName, propositionContext, propositionName);
 		}
 		
-		public Apply(final String factName, final Module context, final String moduleName) {
+		public Apply(final String factName, final Module moduleContext, final String moduleName,
+				final Module propositionContext, final String propositionName) {
 			super(factName);
 			
-			if (!Module.this.canAccess(context)) {
+			if (!Module.this.canAccess(moduleContext)) {
 				throw new IllegalArgumentException("Inaccessible module context");
 			}
 			
-			this.module = new PropositionReference<>(context, moduleName);
-		}
-		
-		public final Apply apply(final Module context, final String propositionName) {
-			final Expression condition = context.getProposition(propositionName);
-			
-			if (this.getModule().getProposition().getConditions()
-					.get(this.removedConditions).equals(condition)) {
-				++this.removedConditions;
-			} else {
-				throw new IllegalArgumentException("Condition " + this.getRemovedConditions()
-						+ " does not match " + propositionName);
+			if (!Module.this.canAccess(propositionContext)) {
+				throw new IllegalArgumentException("Inaccessible proposition context");
 			}
 			
-			return this;
+			this.module = new PropositionReference<>(moduleContext, moduleName);
+			this.proposition = new PropositionReference<>(propositionContext, propositionName);
+			
+			{
+				final Expression condition = this.getProposition().getProposition();
+				
+				if (this.getModule().getProposition().getConditions()
+						.get(this.removedConditions).equals(condition)) {
+					++this.removedConditions;
+				} else {
+					throw new IllegalArgumentException("Condition " + this.getRemovedConditions()
+							+ " does not match " + this.getProposition().getPropositionName());
+				}
+			}
 		}
 		
 		public final PropositionReference<Module> getModule() {
 			return this.module;
+		}
+		
+		public final PropositionReference<Module> getProposition() {
+			return this.proposition;
 		}
 		
 		public final int getRemovedConditions() {
@@ -787,6 +798,12 @@ public final class Module implements Expression {
 			}
 			
 			return this.addFact(protofact);
+		}
+		
+		@Override
+		public final String toString() {
+			return "Apply " + this.getModule().getPropositionName()
+					+ " using " + this.getProposition().getPropositionName();
 		}
 		
 		/**

@@ -148,7 +148,7 @@ public final class ModuleTest {
 		
 		module1.new Suppose("condition", $("A")).execute();
 		module1.new Suppose("rule", rule("A", "B")).execute();
-		module1.new Apply("fact", module1, "rule").apply(module1, "condition").execute();
+		module1.new Apply("fact", module1, "rule", module1, "condition").execute();
 		
 		assertEquals($("B"), module1.getProposition("fact"));
 	}
