@@ -18,6 +18,7 @@ import java.util.List;
 import jrewrite3.core.Composite;
 import jrewrite3.core.Expression;
 import jrewrite3.core.Module;
+import jrewrite3.core.Module.Symbol;
 import jrewrite3.core.Session;
 import jrewrite3.modules.Standard;
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
@@ -56,14 +57,29 @@ public final class Demo2 {
 		
 		// TODO prove
 		session.suppose("transposition_of_product", $$("∀X,Y (XY)ᵀ = YᵀXᵀ"));
+		session.suppose("transposition_of_subtraction", $$("∀X,Y (X-Y)ᵀ = Xᵀ-Yᵀ"));
+		session.suppose("product_of_subtractions", $$("∀A,B,C,D ((A-B)(C-D)) = (((AC)-(AD))-(BC))+(BD)"));
 		
 		session.suppose("definition_of_1_n", $$("∀n ((1_n∈(≀R_n)∩(≀C_1)) ∧ ∀i (1_n)_i,1=1)"));
 		session.suppose("definition_of_M", $$("∀X,n X∈≀C_n → (M X) = 1/nX(1_n)(1_nᵀ)"));
 		session.suppose("definition_of_V", $$("∀X (V X) = (X-(M X))(X-(M X))ᵀ"));
 		
-		session.claim("simplified_definition_of_V", $$("∀X (V X) = XXᵀ-(M X)(M X)ᵀ"));
-		session.introduce();
-		session.bind("definition_of_V", session.getParameter("X"));
+		session.claim("simplified_definition_of_V", $$("∀X (V X) = (XXᵀ)-(M X)(M X)ᵀ"));
+		
+		{
+			session.introduce();
+			
+			final Symbol x = session.getParameter("X");
+			final Expression xt = $(x, "ᵀ");
+			final Expression mx = $("M", " ", x);
+			final Expression mxt = $($("M", " ", x), "ᵀ");
+			
+			session.bind("definition_of_V", x);
+			session.bind("transposition_of_subtraction", x, mx);
+			session.rewrite("#0", "#1");
+			session.bind("product_of_subtractions", x, mx, xt, mxt);
+			session.rewrite("#2", "#3");
+		}
 		
 		session.printTo(System.out, true);
 	}

@@ -612,9 +612,9 @@ public final class Module implements Expression {
 		
 		@Override
 		public final String toString() {
-			return "Rewrite " + this.getSource().getProposition()
-					+ " using " + this.getEquality().getProposition()
-					+ " at indices " + this.getIndices();
+			return "Rewrite " + this.getSource().getPropositionName()
+					+ " using " + this.getEquality().getPropositionName()
+					+ (this.getIndices().isEmpty() ? "" : " at indices " + this.getIndices());
 		}
 		
 		/**
@@ -703,7 +703,7 @@ public final class Module implements Expression {
 		
 		@Override
 		public final String toString() {
-			return "Bind " + this.getModule().getProposition() + " using " + this.getBinder().getRewrites();
+			return "Bind " + this.getModule().getPropositionName() + " using " + this.getBinder().getRewrites();
 		}
 		
 		/**
