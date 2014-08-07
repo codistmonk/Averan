@@ -1,7 +1,5 @@
 package jrewrite3.core;
 
-import static net.sourceforge.aprog.tools.Tools.cast;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -99,17 +97,20 @@ public final class Rewriter implements Visitor<Expression> {
 		if (module == moduleVisit && (!module.getParameters().equals(parameterVisits.get()) ||
 				!module.getConditions().equals(conditionVisits.get()) ||
 				!module.getFacts().equals(factVisits.get()))) {
-			final List<Symbol> newVariables = new ArrayList<>();
+			final List<Symbol> oldParameters = module.getParameters();
+			final List<Expression> replacedParameters = parameterVisits.get();
+			final int n = oldParameters.size();
+			final List<Symbol> newParameters = new ArrayList<>();
 			
-			for (final Expression expression : parameterVisits.get()) {
-				final Symbol variable = cast(Symbol.class, expression);
+			for (int i = 0; i < n; ++i) {
+				final Symbol parameter = oldParameters.get(i);
 				
-				if (variable != null && module == variable.getModule()) {
-					newVariables.add(variable);
+				if (parameter == replacedParameters.get(i)) {
+					newParameters.add(parameter);
 				}
 			}
 			
-			final Module result = new Module(module.getParent(), newVariables,
+			final Module result = new Module(module.getParent(), newParameters,
 					conditionVisits.get(), factVisits.get());
 			
 			result.getConditionIndices().putAll(module.getConditionIndices());

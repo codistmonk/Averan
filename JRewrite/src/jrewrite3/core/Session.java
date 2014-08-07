@@ -26,9 +26,13 @@ public final class Session implements Serializable {
 	}
 	
 	public Session(final Module mainModule) {
+		this("main", mainModule);
+	}
+	
+	public Session(final String name, final Module mainModule) {
 		this.modules = new ArrayList<>();
 		this.stack = new ArrayList<ProofContext>();
-		this.stack.add(0, new ProofContext(null, mainModule, null));
+		this.stack.add(0, new ProofContext(name, mainModule, null));
 	}
 	
 	public final Session load(final Module module) {
@@ -145,12 +149,12 @@ public final class Session implements Serializable {
 			final ProofContext context = this.stack.get(i);
 			final Module module = context.getModule();
 			
-			output.println(indent + "((MODULE))");
+			output.println(indent + "((MODULE " + context.getName() + "))");
 			
 			printModule(module, output, printProofs, indent);
 			
 			if (context.getCurrentGoal() != null) {
-				output.println(indent + "(goal)");
+				output.println(indent + "((GOAL))");
 				output.println(indent + ATOMIC_INDENT + context.getCurrentGoal());
 			}
 		}
@@ -305,16 +309,15 @@ public final class Session implements Serializable {
 			final List<Expression> conditions = goal.getConditions();
 			
 			if (!parameters.isEmpty()) {
-				final List<Symbol> newParameters = new ArrayList<>(parameters.subList(1, parameters.size()));
+				final List<Symbol> newGoalParameters = new ArrayList<>(parameters.subList(1, parameters.size()));
 				final Symbol parameter = parameters.get(0);
-				
-				this.getModule().getParameters().add(parameter);
+				final Symbol introducedParameter = this.getModule().parameter(parameter.toString());
 				
 				this.setCurrentGoal(new Module(
 						goal.getParent(),
-						newParameters,
+						newGoalParameters,
 						new ArrayList<>(conditions),
-						new ArrayList<>(goal.getFacts())));
+						new ArrayList<>(goal.getFacts())).accept(new Rewriter().rewrite(parameter, introducedParameter)));
 			} else if (!conditions.isEmpty()) {
 				final List<Expression> newConditions = new ArrayList<>(conditions.subList(1, conditions.size()));
 				

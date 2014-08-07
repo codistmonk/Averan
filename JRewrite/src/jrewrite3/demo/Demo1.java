@@ -28,7 +28,8 @@ public final class Demo1 {
 				$(forAll("x", "y"), $($("x", "=", "y"), "->", $("y", "=", "x"))));
 		
 		{
-			session.introduce("x").introduce("y");
+			session.introduce("x");
+			session.introduce("y");
 			session.introduce("eqxy");
 			
 			session.claim("eqyx", session.getCurrentGoal());
