@@ -1,7 +1,6 @@
 package jrewrite3.core;
 
 import static net.sourceforge.aprog.tools.Tools.cast;
-import static net.sourceforge.aprog.tools.Tools.join;
 
 import java.util.ArrayList;
 import java.util.List;

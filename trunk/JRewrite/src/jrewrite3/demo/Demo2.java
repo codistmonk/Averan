@@ -13,7 +13,6 @@ import static net.sourceforge.aurochs.LRParserTools.*;
 import static net.sourceforge.aurochs.RegularTools.*;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.List;
 
 import jrewrite3.core.Composite;
@@ -30,7 +29,6 @@ import net.sourceforge.aurochs.LRParserTools;
 import net.sourceforge.aurochs.AbstractLRParser.ReductionEvent;
 import net.sourceforge.aurochs.AbstractLRParser.UnexpectedSymbolErrorEvent;
 import net.sourceforge.aurochs.LRParserTools.LexerRule;
-import net.sourceforge.aurochs.LRParserTools.LexerTokenRule;
 import net.sourceforge.aurochs.LRParserTools.ParserRule;
 
 /**
@@ -62,6 +60,12 @@ public final class Demo2 {
 		session.suppose("definition_of_1_n", $$("∀n ((1_n∈(≀R_n)∩(≀C_1)) ∧ ∀i (1_n)_i,1=1)"));
 		session.suppose("definition_of_M", $$("∀X,n X∈≀C_n → (M X) = 1/nX(1_n)(1_nᵀ)"));
 		session.suppose("definition_of_V", $$("∀X (V X) = (X-(M X))(X-(M X))ᵀ"));
+		
+		session.claim("simplified_definition_of_V", $$("∀X (V X) = XXᵀ-(M X)(M X)ᵀ"));
+		session.introduce();
+		session.bind("definition_of_V", session.getParameter("X"));
+		
+		session.printTo(System.out, true);
 	}
 	
 	/**
@@ -69,7 +73,7 @@ public final class Demo2 {
 	 * <br>Unused
 	 */
 	public static final void main(final String[] commandLineArguments) {
-		Session.printModule(MODULE, System.out, true, "");
+		// NOP
 	}
 	
 	/**
