@@ -47,12 +47,14 @@ public final class Demo2 {
 	static {
 		final Session session = new Session(MODULE);
 		
-		// TODO define ∈, ᵀ, matrix product
+		// TODO define ∈, ᵀ
 		session.suppose("definition_of_¬", $$("∀P ¬P = (P→≀false)"));
 		session.suppose("definition_of_∃", $$("∀P,x (∃x P x) = ¬(∀y ¬(P y))"));
 		session.suppose("definition_of_∩", $$("∀A,B,x (x∈A∩B) = (x∈A ∧ x∈B)"));
+		session.suppose("definition_of_Σ", $$("∀f ((Σ 0) f) = (f 0) ∧ (∀n (0<n) → ((Σ n) f) = (f n)+((Σ (n-1)) f))"));
+		session.suppose("definition_of_matrix_product", $$("∀A,B,C,m,p,n,f (A∈≀M_m,p ∧ B∈≀M_p,n) → (C∈≀M_m,n ∧ ∀i,j (0≤i<m ∧ 0≤j<n ∧ ∀k (0≤k<p) → (((f i) j) k) = A_i,kB_k,j) → C_i,j=(Σ (p-1)) f)"));
 		
-		session.suppose("definition_of_≀M", $$("∀M,m,n (M∈≀M_m,n → ∀i,j (0≤i<m ∧ 0≤j<m) → M_i,j∈ℝ)"));
+		session.suppose("definition_of_≀M", $$("∀M,m,n (M∈≀M_m,n → ∀i,j (0≤i<m ∧ 0≤j<n) → M_i,j∈ℝ)"));
 		session.suppose("definition_of_≀C", $$("∀M,n M∈≀C_n = ∃m M∈≀M_m,n"));
 		session.suppose("definition_of_≀R", $$("∀M,m M∈≀R_m = ∃n M∈≀M_m,n"));
 		
@@ -65,8 +67,8 @@ public final class Demo2 {
 //		final Symbol m = session.getCurrentContext().getModule().parameter("m");
 //		final Symbol n = session.getCurrentContext().getModule().parameter("n");
 		
-		session.suppose("definition_of_1_n", $$("∀n ((1_n∈(≀R_n)∩(≀C_1)) ∧ ∀i (1_n)_i,1=1)"));
-		session.suppose("definition_of_M", $$("∀X,n X∈≀C_n → (M X) = 1/nX(1_n)(1_nᵀ)"));
+		session.suppose("definition_of_U", $$("∀n,i,j (0≤i<n ∧ 0≤j<n) → (U n)_i,j=1/n"));
+		session.suppose("definition_of_M", $$("∀X,n X∈≀C_n → (M X) = X(U n)"));
 		session.suppose("definition_of_V", $$("∀X,m,n X∈≀M_m,n → (V X) = (X-(M X))(X-(M X))ᵀ"));
 		
 		session.claim("simplified_definition_of_V", $$("∀X,m,n X∈≀M_m,n → (V X) = (XXᵀ)-(M X)(M X)ᵀ"));
@@ -226,6 +228,14 @@ public final class Demo2 {
 		        
 		        verbatimTokenRule(")",        /* -> */ ')'),
 		        
+		        verbatimTokenRule("[",        /* -> */ '['),
+		        
+		        verbatimTokenRule("]",        /* -> */ ']'),
+		        
+		        verbatimTokenRule("{",        /* -> */ '{'),
+		        
+		        verbatimTokenRule("}",        /* -> */ '}'),
+		        
 		        verbatimTokenRule(" ",        /* -> */ ' '),
 		        
 		        verbatimTokenRule("_",        /* -> */ '_'),
@@ -251,6 +261,8 @@ public final class Demo2 {
 		        verbatimTokenRule("¬",        /* -> */ '¬'),
 		        
 		        verbatimTokenRule("∩",        /* -> */ '∩'),
+		        
+		        verbatimTokenRule("Σ",        /* -> */ 'Σ'),
 		        
 			};
 			
@@ -278,9 +290,15 @@ public final class Demo2 {
 				
 				leftAssociative('(', 150),
 				
+				leftAssociative('[', 150),
+				
+				leftAssociative('{', 150),
+				
 				leftAssociative("VARIABLE", 150),
 				
 				leftAssociative("INTEGER", 150),
+				
+				leftAssociative('Σ', 150),
 				
 				leftAssociative('ℕ', 150),
 				
@@ -322,6 +340,10 @@ public final class Demo2 {
 				
 				namedRule("parenthesizedExpression", "EXPRESSION", /* -> */ '(', "EXPRESSION", ')'),
 				
+				namedRule("expression",              "EXPRESSION", /* -> */ '[', "EXPRESSION", ']'),
+				
+				namedRule("expression",              "EXPRESSION", /* -> */ '{', "EXPRESSION", '}'),
+				
 				namedRule("operatedExpression",      "EXPRESSION", /* -> */ "EXPRESSION", "OPERATION"),
 				
 				namedRule("operation",               "OPERATION",  /* -> */ " = ", "EXPRESSION"),
@@ -359,6 +381,8 @@ public final class Demo2 {
 				namedRule("expression",              "INDEX",      /* -> */ "VARIABLE"),
 				
 				namedRule("expression",              "INDEX",      /* -> */ "INTEGER"),
+				
+				namedRule("expression",              "EXPRESSION", /* -> */ 'Σ'),
 				
 				namedRule("expression",              "EXPRESSION", /* -> */ 'ℕ'),
 				
