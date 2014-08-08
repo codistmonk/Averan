@@ -41,8 +41,12 @@ public final class Session implements Serializable {
 		return this;
 	}
 	
+	public final List<ProofContext> getStack() {
+		return this.stack;
+	}
+	
 	public final ProofContext getCurrentContext() {
-		return this.stack.get(0);
+		return this.getStack().get(0);
 	}
 	
 	public final Expression getCurrentGoal() {
@@ -136,33 +140,14 @@ public final class Session implements Serializable {
 		final ProofContext proofContext = new ProofContext(factName,
 				new Module(this.getCurrentContext().getModule()), proposition);
 		
-		this.stack.add(0, proofContext);
+		this.getStack().add(0, proofContext);
 		
 		return this.pop();
 	}
 	
-	public final void printTo(final PrintStream output, final boolean printProofs) {
-		final int n = this.stack.size();
-		String indent = "";
-		
-		for (int i = n - 1; 0 <= i; --i, indent += ATOMIC_INDENT) {
-			final ProofContext context = this.stack.get(i);
-			final Module module = context.getModule();
-			
-			output.println(indent + "((MODULE " + context.getName() + "))");
-			
-			printModule(module, output, printProofs, indent);
-			
-			if (context.getCurrentGoal() != null) {
-				output.println(indent + "((GOAL))");
-				output.println(indent + ATOMIC_INDENT + context.getCurrentGoal());
-			}
-		}
-	}
-	
 	private final Session pop() {
-		while (1 < this.stack.size() && this.getCurrentContext().isGoalReached()) {
-			final ProofContext previous = this.stack.remove(0);
+		while (1 < this.getStack().size() && this.getCurrentContext().isGoalReached()) {
+			final ProofContext previous = this.getStack().remove(0);
 			final Module proof = previous.getModule();
 			final Expression fact = previous.getInitialGoal() instanceof Module ?
 					proof : previous.getInitialGoal();
@@ -179,55 +164,6 @@ public final class Session implements Serializable {
 	private static final long serialVersionUID = -4545117345944633693L;
 	
 	public static final String ATOMIC_INDENT = "\t";
-	
-	public static final void printModule(final Module module, final PrintStream output,
-			final boolean printProofs, final String indent) {
-		if (!module.getParameters().isEmpty()) {
-			output.println(indent + "∀" + module.getParameters());
-		}
-		
-		final List<Expression> conditions = module.getConditions();
-		
-		if (!conditions.isEmpty()) {
-			output.println(indent + "((CONDITIONS))");
-			
-			for (final Map.Entry<String, Integer> entry : module.getConditionIndices().entrySet()) {
-				output.println(indent + "(" + entry.getKey() + ")");
-				output.println(indent + ATOMIC_INDENT + conditions.get(entry.getValue()));
-			}
-		}
-		
-		{
-			final List<Expression> facts = module.getFacts();
-			
-			if (facts.isEmpty()) {
-				output.println(indent + "()");
-			} else {
-				final List<Command> proofs = module.getProofs();
-				
-				output.println(indent + "((FACTS))");
-				
-				for (final Map.Entry<String, Integer> entry : module.getFactIndices().entrySet()) {
-					output.println(indent + "(" + entry.getKey() + ")");
-					output.println(indent + ATOMIC_INDENT + facts.get(entry.getValue()));
-					
-					if (printProofs) {
-						output.println(indent + ATOMIC_INDENT + "((PROOF))");
-						
-						final Command command = proofs.get(entry.getValue());
-						final Claim claim = cast(Claim.class, command);
-						
-						if (claim == null) {
-							output.println(indent + ATOMIC_INDENT + ATOMIC_INDENT + command);
-						} else {
-							printModule(claim.getProofContext(), output, printProofs,
-									indent + ATOMIC_INDENT + ATOMIC_INDENT);
-						}
-					}
-				}
-			}
-		}
-	}
 	
 	/**
 	 * @author codistmonk (creation 2014-08-02)
@@ -351,6 +287,112 @@ public final class Session implements Serializable {
 			
 			return module.getFacts().get(0);
 		}
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-08-08)
+	 */
+	public static final class Printer implements Serializable {
+		
+		private final PrintStream output;
+		
+		private final boolean printProofs;
+		
+		private String indent;
+		
+		public Printer(final PrintStream output) {
+			this(output, false, "");
+		}
+		
+		public Printer(final PrintStream output, final boolean printProofs) {
+			this(output, printProofs, "");
+		}
+		
+		public Printer(final PrintStream output, final boolean printProofs, final String indent) {
+			this.output = output;
+			this.printProofs = printProofs;
+			this.indent = indent;
+		}
+		
+		public final void printSession(final Session session) {
+			final int n = session.getStack().size();
+			
+			for (int i = n - 1; 0 <= i; --i, this.indent += ATOMIC_INDENT) {
+				printContext(session.getStack().get(i));
+			}
+		}
+		
+		public final void printContext(final ProofContext context) {
+			final Module module = context.getModule();
+			
+			this.output.println(this.indent + "((MODULE " + context.getName() + "))");
+			
+			this.printModule(module);
+			
+			if (context.getCurrentGoal() != null) {
+				this.output.println(this.indent + "((GOAL))");
+				this.output.println(this.indent + ATOMIC_INDENT + context.getCurrentGoal());
+			}
+		}
+		
+		public final void printModule(final Module module) {
+			if (!module.getParameters().isEmpty()) {
+				this.output.println(this.indent + "∀" + module.getParameters());
+			}
+			
+			final List<Expression> conditions = module.getConditions();
+			
+			if (!conditions.isEmpty()) {
+				this.output.println(this.indent + "((CONDITIONS))");
+				
+				for (final Map.Entry<String, Integer> entry : module.getConditionIndices().entrySet()) {
+					this.output.println(this.indent + "(" + entry.getKey() + ")");
+					this.output.println(this.indent + ATOMIC_INDENT + conditions.get(entry.getValue()));
+				}
+			}
+			
+			{
+				final List<Expression> facts = module.getFacts();
+				
+				if (facts.isEmpty()) {
+					this.output.println(this.indent + "()");
+				} else {
+					final List<Command> proofs = module.getProofs();
+					
+					this.output.println(this.indent + "((FACTS))");
+					
+					for (final Map.Entry<String, Integer> entry : module.getFactIndices().entrySet()) {
+						this.output.println(this.indent + "(" + entry.getKey() + ")");
+						this.output.println(this.indent + ATOMIC_INDENT + facts.get(entry.getValue()));
+						
+						if (this.printProofs) {
+							this.output.println(this.indent + ATOMIC_INDENT + "((PROOF))");
+							
+							final Command command = proofs.get(entry.getValue());
+							final Claim claim = cast(Claim.class, command);
+							
+							if (claim == null) {
+								this.output.println(this.indent + ATOMIC_INDENT + ATOMIC_INDENT + command);
+							} else {
+								final String oldIndent = this.indent;
+								try {
+									this.indent += ATOMIC_INDENT + ATOMIC_INDENT;
+									printModule(claim.getProofContext());
+								} finally {
+									this.indent = oldIndent;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		/**
+		 * {@value}.
+		 */
+		private static final long serialVersionUID = 2272468614566549833L;
 		
 	}
 	

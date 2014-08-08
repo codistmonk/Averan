@@ -2,10 +2,8 @@ package jrewrite3.demo;
 
 import static jrewrite3.core.ExpressionTools.*;
 import static jrewrite3.modules.Standard.IDENTITY;
-
 import jrewrite3.core.Session;
 import jrewrite3.modules.Standard;
-
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 
 /**
@@ -40,7 +38,7 @@ public final class Demo1 {
 			}
 		}
 		
-		session.printTo(System.out, true);
+		new Session.Printer(System.out, true).printSession(session);
 	}
 	
 }

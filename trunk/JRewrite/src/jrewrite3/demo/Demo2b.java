@@ -1,5 +1,7 @@
 package jrewrite3.demo;
 
+import static java.awt.Color.BLACK;
+import static java.awt.Color.WHITE;
 import static java.util.Arrays.copyOfRange;
 import static jrewrite3.core.ExpressionTools.$;
 import static jrewrite3.core.ExpressionTools.facts;
@@ -13,18 +15,26 @@ import static net.sourceforge.aurochs.AurochsTools.input;
 import static net.sourceforge.aurochs.LRParserTools.*;
 import static net.sourceforge.aurochs.RegularTools.*;
 
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
+
+import org.scilab.forge.jlatexmath.TeXFormula;
 
 import jrewrite3.core.Composite;
 import jrewrite3.core.Expression;
 import jrewrite3.core.Module;
+import jrewrite3.core.Module.Symbol;
 import jrewrite3.core.Session;
+import jrewrite3.core.Visitor;
 import jrewrite3.modules.Standard;
-
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
+import net.sourceforge.aprog.tools.Tools;
 import net.sourceforge.aurochs.LRParser;
 import net.sourceforge.aurochs.LRParserTools;
 import net.sourceforge.aurochs.AbstractLRParser.GeneratedToken;
@@ -48,7 +58,7 @@ public final class Demo2b {
 	static {
 		final Session session = new Session(MODULE);
 		
-		session.suppose("definition_of_¬", $$("∀P ¬P = (P→`false)"));
+		session.suppose("definition_of_¬", $$("∀P (¬P = (P→`false))"));
 		session.suppose("definition_of_∃", $$("∀P,x (∃x (P x)) = ¬(∀y ¬(P y))"));
 		session.suppose("definition_of_∩", $$("∀A,B,x (x∈A∩B) = (x∈A ∧ x∈B)"));
 		session.suppose("definition_of_Σ", $$("∀i,a,b,e,s (s=((Σ_(i=a)^b) e)) → (((b<a) → (s=0)) ∧ ((a≤b) → (s=s{b=b-1}+e{i=b})))"));
@@ -58,7 +68,40 @@ public final class Demo2b {
 		session.suppose("definition_of_matrix_product", $$("∀X,Y,n ((X∈≀C_n) ∧ (Y∈≀R_n)) → (∀i,j,k (XY)_(i,j)=((Σ_(k=0)^(n-1)) (X_(i,k))(Y_(k,j))))"));
 		session.suppose("definition_of_ᵀ", $$("∀X (∀i,j (Xᵀ_(i,j)=X_(j,i)))"));
 		
-		session.printTo(System.out, true);
+		new Session.Printer(System.out, true).printSession(session);
+		
+		{
+			final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+			
+			new Session.Printer(new TexPrintStream(buffer), true).printSession(session);
+			
+//			final String s = $$("∀P (¬P = (P→`false))").accept(new TexExporter()) + "\\\\2+2";
+			final String s = buffer.toString();
+			
+			final TeXFormula formula = new TeXFormula(s);
+			formula.createPNG(0, 16F, "view.png", WHITE, BLACK);
+		}
+	}
+	
+	public static final class TexPrintStream extends PrintStream {
+		
+		public TexPrintStream(final OutputStream out) {
+			super(out);
+		}
+		
+		@Override
+		public final void println(final String x) {
+			super.println(x);
+			super.println("\\\\");
+		}
+		
+		@Override
+		public void println(Object x) {
+			Tools.debugPrint(x);
+			// TODO Auto-generated method stub
+			super.println(x);
+		}
+		
 	}
 	
 	/**
@@ -290,6 +333,35 @@ public final class Demo2b {
 		}
 		
 		return result;
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-08-08)
+	 */
+	public static final class TexExporter implements Visitor<String> {
+		
+		@Override
+		public final String endVisit(final Composite composite, final String compositeVisit,
+				final Supplier<List<String>> childVisits) {
+			return composite.toString();
+		}
+		
+		@Override
+		public final String visit(final Symbol symbol) {
+			return symbol.toString();
+		}
+		
+		@Override
+		public final String endVisit(final Module module, final String moduleVisit,
+				final Supplier<List<String>> parameterVisits, final Supplier<List<String>> conditionVisits, final Supplier<List<String>> factVisits) {
+			return module.toString();
+		}
+		
+		/**
+		 * {@value}.
+		 */
+		private static final long serialVersionUID = -431423916607115811L;
+		
 	}
 	
 }
