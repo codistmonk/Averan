@@ -23,8 +23,8 @@ import jrewrite3.core.Expression;
 import jrewrite3.core.Module;
 import jrewrite3.core.Session;
 import jrewrite3.modules.Standard;
+
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
-import net.sourceforge.aprog.tools.Tools;
 import net.sourceforge.aurochs.LRParser;
 import net.sourceforge.aurochs.LRParserTools;
 import net.sourceforge.aurochs.AbstractLRParser.GeneratedToken;
@@ -55,7 +55,8 @@ public final class Demo2b {
 		session.suppose("definition_of_≀M", $$("∀X,m,n (X∈≀M_(m,n) = ∀i,j (0≤i<m ∧ 0≤j<n) → X_(i,j)∈ℝ)"));
 		session.suppose("definition_of_≀C", $$("∀X,n (X∈≀C_n) = ∃m (X∈≀M_(m,n))"));
 		session.suppose("definition_of_≀R", $$("∀X,m (X∈≀R_m) = ∃n (X∈≀M_(m,n))"));
-		session.suppose("definition_of_matrix_product", $$("∀A,B,n ((A∈≀C_n) ∧ (B∈≀R_n)) → (∀i,j,k (AB)_(i,j)=((Σ_(k=0)^(n-1)) (A_(i,k))(B_(k,j))))"));
+		session.suppose("definition_of_matrix_product", $$("∀X,Y,n ((X∈≀C_n) ∧ (Y∈≀R_n)) → (∀i,j,k (XY)_(i,j)=((Σ_(k=0)^(n-1)) (X_(i,k))(Y_(k,j))))"));
+		session.suppose("definition_of_ᵀ", $$("∀X (∀i,j (Xᵀ_(i,j)=X_(j,i)))"));
 		
 		session.printTo(System.out, true);
 	}
@@ -156,7 +157,7 @@ public final class Demo2b {
 					tokenRule("VARIABLE", /* -> */ union(range('A', 'Z'), range('a', 'z'))),
 					tokenRule("NATURAL",  /* -> */ oneOrMore(range('0', '9'))),
 					nontokenRule(" *",     /* -> */ zeroOrMore(' '))
-			), "+", "-", "/", "=", "(", ")", "{", "}", "[", "]", ",", "∀", "∃", "¬", "→", "`", "≀", "∧", "∈", "∩", "<", "≤", "Σ", "_", "^", "ℕ", "ℝ"/*, "ᵀ"*/);
+			), "+", "-", "/", "=", "(", ")", "{", "}", "[", "]", ",", "∀", "∃", "¬", "→", "`", "≀", "∧", "∈", "∩", "<", "≤", "Σ", "_", "^", "ℕ", "ℝ", "ᵀ");
 			
 			static final ParserRule[] parserRules = {
 				leftAssociative("∧", 5),
@@ -173,6 +174,7 @@ public final class Demo2b {
 				leftAssociative("-", 100),
 				leftAssociative("∩", 125),
 				leftAssociative("/", 200),
+				leftAssociative("ᵀ", 300),
 				leftAssociative("¬", 300),
 				leftAssociative("∀", 300),
 				leftAssociative("∃", 300),
@@ -190,6 +192,7 @@ public final class Demo2b {
 		        namedRule("expression",        "EXPRESSION", /* -> */  "∀", "PARAMETERS", "EXPRESSION"),
 		        namedRule("expression",        "EXPRESSION", /* -> */  "∃", "VARIABLE", "EXPRESSION"),
 		        namedRule("expression",        "EXPRESSION", /* -> */  "¬", "EXPRESSION"),
+		        namedRule("expression",        "EXPRESSION", /* -> */  "EXPRESSION", "ᵀ"),
 		        namedRule("operation",         "EXPRESSION", /* -> */  "EXPRESSION", "OPERATION"),
 		        namedRule("verbatim",          "OPERATION",  /* -> */  "+", "EXPRESSION"),
 		        namedRule("verbatim",          "OPERATION",  /* -> */  "-", "EXPRESSION"),
