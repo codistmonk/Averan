@@ -134,6 +134,16 @@ public final class ModuleTest {
 	}
 	
 	@Test
+	public final void testSubstitute() {
+		final Module module1 = new Module(null);
+		final Composite subsitution = $($("x", "y"), $($("x", "=", "4"), $("y", "=", "2")));
+		
+		module1.new Substitute("x2=42", subsitution).execute();
+		
+		assertEquals($(subsitution, "=", $("4","2")), module1.getProposition("x2=42"));
+	}
+	
+	@Test
 	public final void testBind() {
 		final Module module1 = new Module(Standard.MODULE);
 		

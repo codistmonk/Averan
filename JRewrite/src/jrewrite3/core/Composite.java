@@ -3,6 +3,7 @@ package jrewrite3.core;
 import static net.sourceforge.aprog.tools.Tools.cast;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import jrewrite3.core.Module.Symbol;
@@ -10,7 +11,7 @@ import jrewrite3.core.Module.Symbol;
 /**
  * @author codistmonk (creation 2014-08-01)
  */
-public final class Composite implements Expression {
+public final class Composite implements Expression, Iterable<Expression> {
 	
 	private final List<Expression> children;
 	
@@ -28,6 +29,11 @@ public final class Composite implements Expression {
 	
 	public final List<Expression> getChildren() {
 		return this.children;
+	}
+	
+	@Override
+	public final Iterator<Expression> iterator() {
+		return this.getChildren().iterator();
 	}
 	
 	@Override
