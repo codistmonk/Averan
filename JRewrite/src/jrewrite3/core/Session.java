@@ -302,8 +302,8 @@ public final class Session implements Serializable {
 		
 		private final boolean printProofs;
 		
-		public Exporter(final ExporterOutput output) {
-			this(output, false);
+		public Exporter(final boolean printProofs) {
+			this(new Printer(), printProofs);
 		}
 		
 		public Exporter(final ExporterOutput output, final boolean printProofs) {
@@ -311,21 +311,21 @@ public final class Session implements Serializable {
 			this.printProofs = printProofs;
 		}
 		
-		public final void printSession() {
+		public final void exportSession() {
 			final Session session = Session.this;
 			final int n = session.getStack().size();
 			
 			for (int i = n - 1; 0 <= i; --i) {
-				printContext(session.getStack().get(i));
+				this.exportContext(session.getStack().get(i));
 			}
 		}
 		
-		public final void printContext(final ProofContext context) {
+		private final void exportContext(final ProofContext context) {
 			final Module module = context.getModule();
 			
 			this.output.subcontext(context.getName());
 			
-			this.printModule(module);
+			this.exportModule(module);
 			
 			final Expression currentGoal = context.getCurrentGoal();
 			
@@ -334,7 +334,7 @@ public final class Session implements Serializable {
 			}
 		}
 		
-		public final void printModule(final Module module) {
+		private final void exportModule(final Module module) {
 			if (!module.getParameters().isEmpty()) {
 				this.output.processModuleParameters(module);
 			}
@@ -369,7 +369,7 @@ public final class Session implements Serializable {
 						if (claim == null) {
 							this.output.processModuleFactProof(command);
 						} else {
-							this.printModule(claim.getProofContext());
+							this.exportModule(claim.getProofContext());
 						}
 						
 						this.output.endModuleFactProof();
@@ -397,6 +397,10 @@ public final class Session implements Serializable {
 		private int indentLevel;
 		
 		private String indent;
+		
+		public Printer() {
+			this(System.out);
+		}
 		
 		public Printer(final PrintStream output) {
 			this.output = output;

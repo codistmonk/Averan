@@ -38,7 +38,7 @@ public final class Demo1 {
 			}
 		}
 		
-		session.new Exporter(new Session.Printer(System.out), true).printSession();
+		session.new Exporter(true).exportSession();
 	}
 	
 }
