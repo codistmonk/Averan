@@ -29,6 +29,7 @@ import org.scilab.forge.jlatexmath.TeXFormula;
 import jrewrite3.core.Composite;
 import jrewrite3.core.Expression;
 import jrewrite3.core.Module;
+import jrewrite3.core.Module.Command;
 import jrewrite3.core.Module.Symbol;
 import jrewrite3.core.Session;
 import jrewrite3.core.Visitor;
@@ -73,7 +74,8 @@ public final class Demo2b {
 		{
 			final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 			
-			session.new Exporter(new Session.Printer(new TexPrintStream(buffer)), true).exportSession();
+//			session.new Exporter(new Session.Printer(new TexPrintStream(buffer)), true).exportSession();
+			session.new Exporter(new TexPrinter(), true).exportSession();
 			
 //			final String s = $$("∀P (¬P = (P→`false))").accept(new TexExporter()) + "\\\\2+2";
 			final String s = buffer.toString();
@@ -81,27 +83,6 @@ public final class Demo2b {
 			final TeXFormula formula = new TeXFormula(s);
 			formula.createPNG(0, 16F, "view.png", WHITE, BLACK);
 		}
-	}
-	
-	public static final class TexPrintStream extends PrintStream {
-		
-		public TexPrintStream(final OutputStream out) {
-			super(out);
-		}
-		
-		@Override
-		public final void println(final String x) {
-			super.println(x);
-			super.println("\\\\");
-		}
-		
-		@Override
-		public void println(Object x) {
-			Tools.debugPrint(x);
-			// TODO Auto-generated method stub
-			super.println(x);
-		}
-		
 	}
 	
 	/**
@@ -336,31 +317,126 @@ public final class Demo2b {
 	}
 	
 	/**
-	 * @author codistmonk (creation 2014-08-08)
+	 * @author codistmonk (creation 2014-08-09)
 	 */
-	public static final class TexExporter implements Visitor<String> {
+	public static final class TexPrinter implements Session.ExporterOutput {
 		
-		@Override
-		public final String endVisit(final Composite composite, final String compositeVisit,
-				final Supplier<List<String>> childVisits) {
-			return composite.toString();
+		private final OutputStream output;
+		
+		public TexPrinter() {
+			this(System.out);
+		}
+		
+		public TexPrinter(final OutputStream output) {
+			this.output = output;
 		}
 		
 		@Override
-		public final String visit(final Symbol symbol) {
-			return symbol.toString();
+		public final void subcontext(final String name) {
+			// TODO Auto-generated method stub
+			
 		}
-		
+
 		@Override
-		public final String endVisit(final Module module, final String moduleVisit,
-				final Supplier<List<String>> parameterVisits, final Supplier<List<String>> conditionVisits, final Supplier<List<String>> factVisits) {
-			return module.toString();
+		public void processModuleParameters(Module module) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void beginModuleConditions(Module module) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void processModuleCondition(String conditionName,
+				Expression condition) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void endModuleConditions(Module module) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void beginModuleFacts(Module module) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void processModuleFact(String factName, Expression fact) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void beginModuleFactProof() {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void processModuleFactProof(Command command) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void endModuleFactProof() {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void endModuleFacts(Module module) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void processCurrentGoal(Expression currentGoal) {
+			// TODO Auto-generated method stub
+			
 		}
 		
 		/**
-		 * {@value}.
+		 * 
 		 */
-		private static final long serialVersionUID = -431423916607115811L;
+		private static final long serialVersionUID = 2589185560566140739L;
+		
+		/**
+		 * @author codistmonk (creation 2014-08-09)
+		 */
+		public static final class TexStringGenerator implements Visitor<String> {
+
+			@Override
+			public final String beginVisit(final Composite composite) {
+				return composite.toString();
+			}
+			
+			@Override
+			public final String beginVisit(final Module module) {
+				return module.toString();
+			}
+			
+			@Override
+			public final String visit(final Symbol symbol) {
+				return symbol.toString();
+			}
+			
+			/**
+			 * {@value}.
+			 */
+			private static final long serialVersionUID = 3004635190043687534L;
+			
+			public static final TexStringGenerator INSTANCE = new TexStringGenerator();
+			
+		}
 		
 	}
 	
