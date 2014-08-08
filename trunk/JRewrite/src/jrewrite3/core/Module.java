@@ -1,5 +1,6 @@
 package jrewrite3.core;
 
+import static java.lang.Integer.parseInt;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.list;
 
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 
 import net.sourceforge.aprog.tools.Tools;
 
@@ -529,6 +531,58 @@ public final class Module implements Expression {
 	/**
 	 * @author codistmonk (creation 2014-08-02)
 	 */
+	public final class Substitute extends AddProposition {
+		
+		private final Composite subsitution;
+		
+		public Substitute(final Composite expression) {
+			this(null, expression);
+		}
+		
+		public Substitute(final String propositionName, final Composite expression) {
+			super(propositionName);
+			
+			if (!isSubstitution(expression)) {
+				throw new IllegalArgumentException();
+			}
+			
+			this.subsitution = expression;
+		}
+		
+		public final Composite getExpression() {
+			return this.subsitution;
+		}
+		
+		@Override
+		public final Module execute() {
+			final Rewriter rewriter = new Rewriter(this);
+			final List<Expression> subsitution = this.getExpression().getChildren();
+			
+			for (final Expression e : (Composite) subsitution.get(1)) {
+				final Composite equality = (Composite) e;
+				
+				rewriter.rewrite(equality.getChildren().get(0), equality.getChildren().get(2));
+			}
+			
+			if (subsitution.size() == 3) {
+				for (final Expression e : (Composite) subsitution.get(2)) {
+					rewriter.getIndices().add(parseInt(e.toString()));
+				}
+			}
+			
+			return this.addFact(equality(this.getExpression(), subsitution.get(0).accept(rewriter)));
+		}
+		
+		/**
+		 * {@value}.
+		 */
+		private static final long serialVersionUID = -6314585645769164671L;
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-08-02)
+	 */
 	public final class Rewrite extends AddProposition {
 		
 		private final PropositionReference<Expression> source;
@@ -822,6 +876,8 @@ public final class Module implements Expression {
 	
 	public static final Symbol EQUAL = ROOT.new Symbol("=");
 	
+	public static final Pattern NATURAL = Pattern.compile("\\d+");
+	
 	public static final Composite equality(final Expression left, final Expression right) {
 		return new Composite(Arrays.asList(left, EQUAL, right));
 	}
@@ -832,6 +888,57 @@ public final class Module implements Expression {
 		return composite != null
 				&& composite.getChildren().size() == 3
 				&& EQUAL.equals(composite.getChildren().get(1));
+	}
+	
+	public static final boolean isSubstitution(final Object object) {
+		final Composite composite = cast(Composite.class, object);
+		
+		if (composite == null) {
+			return false;
+		}
+		
+		final List<Expression> children = composite.getChildren();
+		final int n = children.size();
+		
+		return 2 <= n && n <= 3
+				&& isSequenceOfEqualities(children.get(1))
+				&& (n != 3 || isSequenceOfIndices(children.get(2)));
+	}
+	
+	public static final boolean isNatural(final Object object) {
+		return object instanceof Symbol && NATURAL.matcher(object.toString()).matches();
+	}
+	
+	public static final boolean isSequenceOfIndices(final Object object) {
+		final Composite composite = cast(Composite.class, object);
+		
+		if (composite == null) {
+			return false;
+		}
+		
+		for (final Expression child : composite) {
+			if (!isNatural(child)) {
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
+	public static final boolean isSequenceOfEqualities(final Object object) {
+		final Composite composite = cast(Composite.class, object);
+		
+		if (composite == null) {
+			return false;
+		}
+		
+		for (final Expression child : composite) {
+			if (!isEquality(child)) {
+				return false;
+			}
+		}
+		
+		return true;
 	}
 	
 	/**
