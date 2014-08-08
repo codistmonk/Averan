@@ -73,6 +73,31 @@ public final class ExpressionTools {
 			}
 		}
 		
+		if (2 <= objects.length) {
+			final Composite bracedEqualities = cast(Composite.class, objects[1]);
+			
+			if (bracedEqualities != null) {
+				final List<Expression> children = bracedEqualities.getChildren();
+				final int n = children.size();
+				
+				if (2 <= n && "{".equals(children.get(0).toString()) && "}".equals(children.get(n - 1).toString())) {
+					Composite equalities = new Composite(children.subList(1, n - 1));
+					
+					if (Module.isSequenceOfEqualities(equalities)) {
+						return $(objects[0], equalities);
+					}
+					
+					if (equalities.getChildren().size() == 1) {
+						equalities = cast(Composite.class, equalities.getChildren().get(0));
+						
+						if (equalities != null) {
+							return $(objects[0], equalities);
+						}
+					}
+				}
+			}
+		}
+		
 		return (E) new Composite(stream(objects).map(mapper).collect(toList()));
 	}
 	

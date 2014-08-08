@@ -543,7 +543,7 @@ public final class Module implements Expression {
 			super(propositionName);
 			
 			if (!isSubstitution(expression)) {
-				throw new IllegalArgumentException();
+				throw new IllegalArgumentException("Not a substitution: " + expression);
 			}
 			
 			this.subsitution = expression;
