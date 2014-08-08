@@ -49,6 +49,7 @@ public final class Demo2b {
 		
 		session.suppose("definition_of_¬", $$("∀P ¬P = (P→`false)"));
 		session.suppose("definition_of_∃", $$("∀P,x (∃x (P x)) = ¬(∀y ¬(P y))"));
+		session.suppose("definition_of_∩", $$("∀A,B,x (x∈A∩B) = (x∈A ∧ x∈B)"));
 		
 		session.printTo(System.out, true);
 	}
@@ -156,19 +157,20 @@ public final class Demo2b {
 					tokenRule("VARIABLE", /* -> */ union(range('A', 'Z'), range('a', 'z'))),
 					tokenRule("NATURAL",  /* -> */ oneOrMore(range('0', '9'))),
 					nontokenRule('_',     /* -> */ zeroOrMore(' '))
-			), "+", "-", "/", "=", "(", ")", "{", "}", "[", "]", ",", "∀", "∃", "¬", "→", "`", "≀"/*, "∧", "∈", "Σ", "∩", "≤", "<", "_", "^", "ᵀ"*/);
+			), "+", "-", "/", "=", "(", ")", "{", "}", "[", "]", ",", "∀", "∃", "¬", "→", "`", "≀", "∧", "∈", "∩"/*, "Σ", "≤", "<", "_", "^", "ᵀ"*/);
 			
 			static final ParserRule[] parserRules = {
-//				leftAssociative("∧", 5),
+				leftAssociative("∧", 5),
 				leftAssociative("→", 5),
 				leftAssociative(",", 8),
 				leftAssociative("=", 10),
-//				leftAssociative("∈", 50),
+				leftAssociative("∈", 50),
 				leftAssociative("(", 100),
 				leftAssociative("{", 100),
 				leftAssociative("[", 100),
 				leftAssociative("+", 100),
 				leftAssociative("-", 100),
+				leftAssociative("∩", 125),
 				leftAssociative("/", 200),
 				leftAssociative("¬", 300),
 				leftAssociative("∀", 300),
@@ -188,8 +190,9 @@ public final class Demo2b {
 		        namedRule("verbatim",          "OPERATION",  /* -> */  "/", "EXPRESSION"),
 		        namedRule("verbatim",          "OPERATION",  /* -> */  "=", "EXPRESSION"),
 		        namedRule("verbatim",          "OPERATION",  /* -> */  "→", "EXPRESSION"),
-//		        namedRule("verbatim",          "OPERATION",  /* -> */  "∧", "EXPRESSION"),
-//		        namedRule("verbatim",          "OPERATION",  /* -> */  "∈", "EXPRESSION"),
+		        namedRule("verbatim",          "OPERATION",  /* -> */  "∧", "EXPRESSION"),
+		        namedRule("verbatim",          "OPERATION",  /* -> */  "∈", "EXPRESSION"),
+		        namedRule("verbatim",          "OPERATION",  /* -> */  "∩", "EXPRESSION"),
 //		        namedRule("verbatim",          "OPERATION",  /* -> */  ",", "EXPRESSION"),
 		        namedRule("verbatim",          "OPERATION",  /* -> */  "EXPRESSION"),
 		        namedRule("grouping",          "EXPRESSION", /* -> */  "(", "EXPRESSION", ")"),
