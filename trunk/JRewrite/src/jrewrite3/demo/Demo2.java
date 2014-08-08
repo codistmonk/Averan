@@ -107,7 +107,7 @@ public final class Demo2 {
 			}
 		}
 		
-		new Session.Printer(System.out, true).printSession(session);
+		session.new Exporter(System.out, true).printSession();
 	}
 	
 	/**

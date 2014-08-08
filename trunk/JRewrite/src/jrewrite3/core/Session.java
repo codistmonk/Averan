@@ -293,7 +293,7 @@ public final class Session implements Serializable {
 	/**
 	 * @author codistmonk (creation 2014-08-08)
 	 */
-	public static final class Printer implements Serializable {
+	public final class Exporter implements Serializable {
 		
 		private final PrintStream output;
 		
@@ -301,21 +301,22 @@ public final class Session implements Serializable {
 		
 		private String indent;
 		
-		public Printer(final PrintStream output) {
+		public Exporter(final PrintStream output) {
 			this(output, false, "");
 		}
 		
-		public Printer(final PrintStream output, final boolean printProofs) {
+		public Exporter(final PrintStream output, final boolean printProofs) {
 			this(output, printProofs, "");
 		}
 		
-		public Printer(final PrintStream output, final boolean printProofs, final String indent) {
+		public Exporter(final PrintStream output, final boolean printProofs, final String indent) {
 			this.output = output;
 			this.printProofs = printProofs;
 			this.indent = indent;
 		}
 		
-		public final void printSession(final Session session) {
+		public final void printSession() {
+			final Session session = Session.this;
 			final int n = session.getStack().size();
 			
 			for (int i = n - 1; 0 <= i; --i, this.indent += ATOMIC_INDENT) {
@@ -330,9 +331,11 @@ public final class Session implements Serializable {
 			
 			this.printModule(module);
 			
-			if (context.getCurrentGoal() != null) {
+			final Expression currentGoal = context.getCurrentGoal();
+			
+			if (currentGoal != null) {
 				this.output.println(this.indent + "((GOAL))");
-				this.output.println(this.indent + ATOMIC_INDENT + context.getCurrentGoal());
+				this.output.println(this.indent + ATOMIC_INDENT + currentGoal);
 			}
 		}
 		
