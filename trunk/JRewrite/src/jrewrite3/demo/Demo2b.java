@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import jrewrite3.core.Composite;
 import jrewrite3.core.Expression;
 import jrewrite3.core.Module;
 import jrewrite3.core.Session;
@@ -50,7 +51,11 @@ public final class Demo2b {
 		session.suppose("definition_of_¬", $$("∀P ¬P = (P→`false)"));
 		session.suppose("definition_of_∃", $$("∀P,x (∃x (P x)) = ¬(∀y ¬(P y))"));
 		session.suppose("definition_of_∩", $$("∀A,B,x (x∈A∩B) = (x∈A ∧ x∈B)"));
-		session.suppose("definition_of_Σ", $$("∀e,a,b,i,s (s=((Σ_(i=a)^b) e)) → (((b<a) → (s=0)) ∧ ((a=b) → (s=e{i=a})) ∧ ((a<b) → (s=s{b=b-1}+e{i=b})))"));
+		session.suppose("definition_of_Σ", $$("∀i,a,b,e,s (s=((Σ_(i=a)^b) e)) → (((b<a) → (s=0)) ∧ ((a≤b) → (s=s{b=b-1}+e{i=b})))"));
+		session.suppose("definition_of_≀M", $$("∀X,m,n (X∈≀M_(m,n) = ∀i,j (0≤i<m ∧ 0≤j<n) → X_(i,j)∈ℝ)"));
+		session.suppose("definition_of_≀C", $$("∀X,n (X∈≀C_n) = ∃m (X∈≀M_(m,n))"));
+		session.suppose("definition_of_≀R", $$("∀X,m (X∈≀R_m) = ∃n (X∈≀M_(m,n))"));
+		session.suppose("definition_of_matrix_product", $$("∀A,B,n ((A∈≀C_n) ∧ (B∈≀R_n)) → (∀i,j,k (AB)_(i,j)=((Σ_(k=0)^(n-1)) (A_(i,k))(B_(k,j))))"));
 		
 		session.printTo(System.out, true);
 	}
@@ -60,14 +65,7 @@ public final class Demo2b {
 	 * <br>Unused
 	 */
 	public static final void main(final String[] commandLineArguments) {
-//		Tools.debugPrint(LRParserTools.newParser(MathParser.class).parse(input("1  +1")));
-		Tools.debugPrint(ExpressionParser.instance.parse("1 +2"));
-		Tools.debugPrint(ExpressionParser.instance.parse("A+B+C"));
-		Tools.debugPrint(ExpressionParser.instance.parse("(AB)+(CD)"));
-		Tools.debugPrint($$("¬P = (P → `false)"));
-		Tools.debugPrint($$("¬(∀y ¬(P y))"));
-		Tools.debugPrint($$("∀P (∃x (P x)) = ¬(∀y ¬(P y))"));
-//		Tools.debugPrint($$("P=(P→≀false)"));
+		// NOP
 	}
 	
 	/**
@@ -158,7 +156,7 @@ public final class Demo2b {
 					tokenRule("VARIABLE", /* -> */ union(range('A', 'Z'), range('a', 'z'))),
 					tokenRule("NATURAL",  /* -> */ oneOrMore(range('0', '9'))),
 					nontokenRule(" *",     /* -> */ zeroOrMore(' '))
-			), "+", "-", "/", "=", "(", ")", "{", "}", "[", "]", ",", "∀", "∃", "¬", "→", "`", "≀", "∧", "∈", "∩", "<", "Σ", "_", "^"/*, "≤", "ᵀ"*/);
+			), "+", "-", "/", "=", "(", ")", "{", "}", "[", "]", ",", "∀", "∃", "¬", "→", "`", "≀", "∧", "∈", "∩", "<", "≤", "Σ", "_", "^", "ℕ", "ℝ"/*, "ᵀ"*/);
 			
 			static final ParserRule[] parserRules = {
 				leftAssociative("∧", 5),
@@ -167,6 +165,7 @@ public final class Demo2b {
 				leftAssociative("=", 10),
 				leftAssociative("∈", 50),
 				leftAssociative("<", 50),
+				leftAssociative("≤", 50),
 				leftAssociative("(", 100),
 				leftAssociative("{", 100),
 				leftAssociative("[", 100),
@@ -183,6 +182,9 @@ public final class Demo2b {
 				leftAssociative("≀", 340),
 				leftAssociative("VARIABLE", 350),
 				leftAssociative("NATURAL", 350),
+				leftAssociative("Σ", 350),
+				leftAssociative("ℕ", 350),
+				leftAssociative("ℝ", 350),
 				
 		        namedRule("expression",        "ALL",        /* -> */  "EXPRESSION"),
 		        namedRule("expression",        "EXPRESSION", /* -> */  "∀", "PARAMETERS", "EXPRESSION"),
@@ -198,8 +200,10 @@ public final class Demo2b {
 		        namedRule("verbatim",          "OPERATION",  /* -> */  "∈", "EXPRESSION"),
 		        namedRule("verbatim",          "OPERATION",  /* -> */  "∩", "EXPRESSION"),
 		        namedRule("verbatim",          "OPERATION",  /* -> */  "<", "EXPRESSION"),
+		        namedRule("verbatim",          "OPERATION",  /* -> */  "≤", "EXPRESSION"),
 		        namedRule("verbatim",          "OPERATION",  /* -> */  "_", "EXPRESSION"),
 		        namedRule("verbatim",          "OPERATION",  /* -> */  "^", "EXPRESSION"),
+		        namedRule("verbatim",          "OPERATION",  /* -> */  ",", "EXPRESSION"),
 		        namedRule("verbatim",          "OPERATION",  /* -> */  "EXPRESSION"),
 		        namedRule("grouping",          "EXPRESSION", /* -> */  "(", "EXPRESSION", ")"),
 		        namedRule("expression",        "EXPRESSION", /* -> */  "{", "EXPRESSION", "}"),
@@ -207,14 +211,16 @@ public final class Demo2b {
 		        namedRule("expression",        "EXPRESSION", /* -> */  "NATURAL"),
 		        namedRule("expression",        "EXPRESSION", /* -> */  "IDENTIFIER"),
 		        namedRule("expression",        "EXPRESSION", /* -> */  "Σ"),
+		        namedRule("expression",        "EXPRESSION", /* -> */  "ℕ"),
+		        namedRule("expression",        "EXPRESSION", /* -> */  "ℝ"),
 		        namedRule("concatenation",     "IDENTIFIER", /* -> */  "≀", "WORD"),
 		        namedRule("concatenation",     "IDENTIFIER", /* -> */  "≀", "`", "WORD"),
 		        namedRule("concatenation",     "IDENTIFIER", /* -> */  "`", "WORD"),
 		        namedRule("concatenation",     "IDENTIFIER", /* -> */  "VARIABLE"),
 		        namedRule("concatenation",     "WORD",       /* -> */  "WORD", "VARIABLE"),
 		        namedRule("concatenation",     "WORD",       /* -> */  "VARIABLE"),
-		        namedRule("list",              "PARAMETERS",       /* -> */ "PARAMETERS", ",", "VARIABLE"),
-		        namedRule("list",              "PARAMETERS",       /* -> */ "VARIABLE"),
+		        namedRule("list",              "PARAMETERS", /* -> */ "PARAMETERS", ",", "VARIABLE"),
+		        namedRule("list",              "PARAMETERS", /* -> */ "VARIABLE"),
 				
 			};
 			
@@ -227,8 +233,16 @@ public final class Demo2b {
 		    }
 			
 		    final Object operation(final Object[] values) {
-		    	if (values[1] instanceof Object[]) {
-		    		return $(append(array(values[0]), (Object[])values[1]));
+		    	final Object[] right = cast(Object[].class, values[1]);
+		    	
+		    	if (right != null) {
+		    		final Composite left = cast(Composite.class, values[0]);
+		    		
+		    		if (left != null && ("<".equals(right[0].toString()) || "≤".equals(right[0].toString()))) {
+		    			return $(append(left.getChildren().toArray(), right));
+		    		}
+		    		
+		    		return $(append(array(values[0]), right));
 		    	}
 		    	
 		    	return $(append(array(values[0]), values[1]));
