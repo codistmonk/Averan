@@ -1,6 +1,9 @@
 package jrewrite3.core;
 
+import static java.lang.Math.max;
+import static java.util.Collections.nCopies;
 import static net.sourceforge.aprog.tools.Tools.cast;
+import static net.sourceforge.aprog.tools.Tools.join;
 
 import java.io.PrintStream;
 import java.io.Serializable;
@@ -295,31 +298,24 @@ public final class Session implements Serializable {
 	 */
 	public final class Exporter implements Serializable {
 		
-		private final PrintStream output;
+		private final ExporterOutput output;
 		
 		private final boolean printProofs;
 		
-		private String indent;
-		
-		public Exporter(final PrintStream output) {
-			this(output, false, "");
+		public Exporter(final ExporterOutput output) {
+			this(output, false);
 		}
 		
-		public Exporter(final PrintStream output, final boolean printProofs) {
-			this(output, printProofs, "");
-		}
-		
-		public Exporter(final PrintStream output, final boolean printProofs, final String indent) {
+		public Exporter(final ExporterOutput output, final boolean printProofs) {
 			this.output = output;
 			this.printProofs = printProofs;
-			this.indent = indent;
 		}
 		
 		public final void printSession() {
 			final Session session = Session.this;
 			final int n = session.getStack().size();
 			
-			for (int i = n - 1; 0 <= i; --i, this.indent += ATOMIC_INDENT) {
+			for (int i = n - 1; 0 <= i; --i) {
 				printContext(session.getStack().get(i));
 			}
 		}
@@ -327,68 +323,60 @@ public final class Session implements Serializable {
 		public final void printContext(final ProofContext context) {
 			final Module module = context.getModule();
 			
-			this.output.println(this.indent + "((MODULE " + context.getName() + "))");
+			this.output.subcontext(context.getName());
 			
 			this.printModule(module);
 			
 			final Expression currentGoal = context.getCurrentGoal();
 			
 			if (currentGoal != null) {
-				this.output.println(this.indent + "((GOAL))");
-				this.output.println(this.indent + ATOMIC_INDENT + currentGoal);
+				this.output.processCurrentGoal(currentGoal);
 			}
 		}
 		
 		public final void printModule(final Module module) {
 			if (!module.getParameters().isEmpty()) {
-				this.output.println(this.indent + "∀" + module.getParameters());
+				this.output.processModuleParameters(module);
 			}
 			
 			final List<Expression> conditions = module.getConditions();
 			
 			if (!conditions.isEmpty()) {
-				this.output.println(this.indent + "((CONDITIONS))");
+				this.output.beginModuleConditions(module);
 				
 				for (final Map.Entry<String, Integer> entry : module.getConditionIndices().entrySet()) {
-					this.output.println(this.indent + "(" + entry.getKey() + ")");
-					this.output.println(this.indent + ATOMIC_INDENT + conditions.get(entry.getValue()));
+					this.output.processModuleCondition(entry.getKey(), conditions.get(entry.getValue()));
 				}
+				
+				this.output.endModuleConditions(module);
 			}
 			
 			{
-				final List<Expression> facts = module.getFacts();
+				this.output.beginModuleFacts(module);
 				
-				if (facts.isEmpty()) {
-					this.output.println(this.indent + "()");
-				} else {
-					final List<Command> proofs = module.getProofs();
+				final List<Expression> facts = module.getFacts();
+				final List<Command> proofs = module.getProofs();
+				
+				for (final Map.Entry<String, Integer> entry : module.getFactIndices().entrySet()) {
+					this.output.processModuleFact(entry.getKey(), facts.get(entry.getValue()));
 					
-					this.output.println(this.indent + "((FACTS))");
-					
-					for (final Map.Entry<String, Integer> entry : module.getFactIndices().entrySet()) {
-						this.output.println(this.indent + "(" + entry.getKey() + ")");
-						this.output.println(this.indent + ATOMIC_INDENT + facts.get(entry.getValue()));
+					if (this.printProofs) {
+						this.output.beginModuleFactProof();
 						
-						if (this.printProofs) {
-							this.output.println(this.indent + ATOMIC_INDENT + "((PROOF))");
-							
-							final Command command = proofs.get(entry.getValue());
-							final Claim claim = cast(Claim.class, command);
-							
-							if (claim == null) {
-								this.output.println(this.indent + ATOMIC_INDENT + ATOMIC_INDENT + command);
-							} else {
-								final String oldIndent = this.indent;
-								try {
-									this.indent += ATOMIC_INDENT + ATOMIC_INDENT;
-									printModule(claim.getProofContext());
-								} finally {
-									this.indent = oldIndent;
-								}
-							}
+						final Command command = proofs.get(entry.getValue());
+						final Claim claim = cast(Claim.class, command);
+						
+						if (claim == null) {
+							this.output.processModuleFactProof(command);
+						} else {
+							this.printModule(claim.getProofContext());
 						}
+						
+						this.output.endModuleFactProof();
 					}
 				}
+				
+				this.output.endModuleFacts(module);
 			}
 		}
 		
@@ -396,6 +384,131 @@ public final class Session implements Serializable {
 		 * {@value}.
 		 */
 		private static final long serialVersionUID = 2272468614566549833L;
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-08-08)
+	 */
+	public static final class Printer implements ExporterOutput {
+		
+		private final PrintStream output;
+		
+		private int indentLevel;
+		
+		private String indent;
+		
+		public Printer(final PrintStream output) {
+			this.output = output;
+			this.indentLevel = -1;
+			this.indent = "";
+		}
+		
+		@Override
+		public final void subcontext(final String name) {
+			this.indent = join("", nCopies(++this.indentLevel, ATOMIC_INDENT).toArray());
+			
+			this.output.println(this.indent + "((MODULE " + name + "))");
+		}
+		
+		@Override
+		public final void processModuleParameters(final Module module) {
+			this.output.println(this.indent + "∀" + module.getParameters());
+		}
+		
+		@Override
+		public final void beginModuleConditions(final Module module) {
+			this.output.println(this.indent + "((CONDITIONS))");
+		}
+		
+		@Override
+		public final void processModuleCondition(final String conditionName, final Expression condition) {
+			this.output.println(this.indent + "(" + conditionName + ")");
+			this.output.println(this.indent + ATOMIC_INDENT + condition);
+		}
+		
+		@Override
+		public final void endModuleConditions(final Module module) {
+			// NOP
+		}
+		
+		@Override
+		public final void beginModuleFacts(final Module module) {
+			if (module.getFacts().isEmpty()) {
+				this.output.println(this.indent + "()");
+			} else {
+				this.output.println(this.indent + "((FACTS))");
+			}
+		}
+		
+		@Override
+		public final void processModuleFact(final String factName, final Expression fact) {
+			this.output.println(this.indent + "(" + factName + ")");
+			this.output.println(this.indent + ATOMIC_INDENT + fact);
+		}
+		
+		@Override
+		public final void beginModuleFactProof() {
+			this.output.println(this.indent + ATOMIC_INDENT + "((PROOF))");
+			this.indent = join("", nCopies(++this.indentLevel, ATOMIC_INDENT).toArray());
+		}
+		
+		@Override
+		public final void processModuleFactProof(final Command command) {
+			this.output.println(this.indent + ATOMIC_INDENT + command);
+		}
+		
+		@Override
+		public final void endModuleFactProof() {
+			this.indent = join("", nCopies(max(0, --this.indentLevel), ATOMIC_INDENT).toArray());
+		}
+		
+		@Override
+		public final void endModuleFacts(final Module module) {
+			// NOP
+		}
+		
+		@Override
+		public final void processCurrentGoal(final Expression currentGoal) {
+			this.output.println(this.indent + "((GOAL))");
+			this.output.println(this.indent + ATOMIC_INDENT + currentGoal);
+		}
+		
+		/**
+		 * {@value}.
+		 */
+		private static final long serialVersionUID = 5124521844835011803L;
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-08-08)
+	 */
+	public static interface ExporterOutput extends Serializable {
+		
+		public abstract void subcontext(String name);
+		
+		public abstract void processModuleParameters(Module module);
+		
+		public abstract void beginModuleConditions(Module module);
+		
+		public abstract void processModuleCondition(String conditionName, Expression condition);
+		
+		public abstract void endModuleConditions(Module module);
+		
+		public abstract void beginModuleFacts(Module module);
+		
+		public abstract void processModuleFact(String factName, Expression fact);
+		
+		public abstract void beginModuleFactProof();
+		
+		public abstract void processModuleFactProof(Command command);
+		
+		public abstract void endModuleFactProof();
+		
+		public abstract void endModuleFacts(Module module);
+		
+		public abstract void processCurrentGoal(Expression currentGoal);
 		
 	}
 	

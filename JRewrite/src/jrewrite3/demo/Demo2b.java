@@ -68,12 +68,12 @@ public final class Demo2b {
 		session.suppose("definition_of_matrix_product", $$("∀X,Y,n ((X∈≀C_n) ∧ (Y∈≀R_n)) → (∀i,j,k (XY)_(i,j)=((Σ_(k=0)^(n-1)) (X_(i,k))(Y_(k,j))))"));
 		session.suppose("definition_of_ᵀ", $$("∀X (∀i,j (Xᵀ_(i,j)=X_(j,i)))"));
 		
-		session.new Exporter(System.out, true).printSession();
+		session.new Exporter(new Session.Printer(System.out), true).printSession();
 		
 		{
 			final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 			
-			session.new Exporter(new TexPrintStream(buffer), true).printSession();
+			session.new Exporter(new Session.Printer(new TexPrintStream(buffer)), true).printSession();
 			
 //			final String s = $$("∀P (¬P = (P→`false))").accept(new TexExporter()) + "\\\\2+2";
 			final String s = buffer.toString();
