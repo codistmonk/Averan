@@ -34,10 +34,14 @@ public final class ExpressionTools {
 		}
 		
 		if (objects.length == 2 && objects[0] instanceof List) {
-			final Module rule = cast(Module.class, objects[1]);
+			final Module module = cast(Module.class, objects[1]);
 			
-			if (rule != null) {
-				return (E) new Module(null, (List<Symbol>) objects[0], rule.getConditions(), rule.getFacts());
+			if (module != null) {
+				final List<Symbol> newParameters = new ArrayList<>((List<Symbol>) objects[0]);
+				
+				newParameters.addAll(module.getParameters());
+				
+				return (E) new Module(null, newParameters, module.getConditions(), module.getFacts());
 			}
 			
 			return (E) new Module(null, (List<Symbol>) objects[0], new ArrayList<>(),
