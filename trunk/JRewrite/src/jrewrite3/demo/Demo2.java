@@ -51,7 +51,8 @@ public final class Demo2 {
 		session.suppose("definition_of_¬", $$("∀P ¬P = (P→≀false)"));
 		session.suppose("definition_of_∃", $$("∀P,x (∃x P x) = ¬(∀y ¬(P y))"));
 		session.suppose("definition_of_∩", $$("∀A,B,x (x∈A∩B) = (x∈A ∧ x∈B)"));
-		session.suppose("definition_of_Σ", $$("∀f ((Σ 0) f) = (f 0) ∧ (∀n (0<n) → ((Σ n) f) = (f n)+((Σ (n-1)) f))"));
+//		session.suppose("definition_of_Σ", $$("∀f ((Σ 0) f) = (f 0) ∧ (∀n (0<n) → ((Σ n) f) = (f n)+((Σ (n-1)) f))"));
+		session.suppose("definition_of_Σ", $$("∀e,a,b,i ((b<a)→((Σi_a,b e)=0)) ∧ ((a=b)→((Σi_a,b e)=e{i=a})) ∧ ((a<b)→((Σi_a,b e)=(Σi_a,b-1 e)+e{i=b}))"));
 		session.suppose("definition_of_matrix_product", $$("∀A,B,C,m,p,n,f (A∈≀M_m,p ∧ B∈≀M_p,n) → (C∈≀M_m,n ∧ ∀i,j (0≤i<m ∧ 0≤j<n ∧ ∀k (0≤k<p) → (((f i) j) k) = A_i,kB_k,j) → C_i,j=(Σ (p-1)) f)"));
 		
 		session.suppose("definition_of_≀M", $$("∀M,m,n (M∈≀M_m,n → ∀i,j (0≤i<m ∧ 0≤j<n) → M_i,j∈ℝ)"));
@@ -263,6 +264,8 @@ public final class Demo2 {
 		        verbatimTokenRule("∩",        /* -> */ '∩'),
 		        
 		        verbatimTokenRule("Σ",        /* -> */ 'Σ'),
+
+		        nontokenRule(     '.',        /* -> */ zeroOrMore('.')),
 		        
 			};
 			
@@ -273,6 +276,8 @@ public final class Demo2 {
 				leftAssociative('∧', 5),
 				
 				leftAssociative('→', 5),
+				
+				leftAssociative(',', 8),
 				
 				leftAssociative('=', 10),
 				
@@ -367,6 +372,8 @@ public final class Demo2 {
 				namedRule("operation",               "OPERATION",  /* -> */ ' ', "EXPRESSION"),
 				
 				namedRule("operation",               "OPERATION",  /* -> */ '∩', "EXPRESSION"),
+				
+				namedRule("operation",               "OPERATION",  /* -> */ ',', "EXPRESSION"),
 				
 				namedRule("operation",               "OPERATION",  /* -> */ "EXPRESSION"),
 				
@@ -491,6 +498,10 @@ public final class Demo2 {
 								return append(array(values[0]), values1.getChildren().toArray());
 							}
 						}
+					}
+					
+					if (values[0].equals(',')) {
+						return array(values[1]);
 					}
 				}
 				

@@ -1,6 +1,7 @@
 package jrewrite3.core;
 
 import static net.sourceforge.aprog.tools.Tools.cast;
+import static net.sourceforge.aprog.tools.Tools.join;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -56,10 +57,24 @@ public final class Composite implements Expression, Iterable<Expression> {
 	
 	@Override
 	public final String toString() {
+		final List<Expression> children = this.getChildren();
 		final StringBuilder resultBuilder = new StringBuilder();
 		final boolean thisIsBraced = isBracedComposite(this);
 		
-		for (final Expression child : this.getChildren()) {
+		if (!thisIsBraced && Module.isSubstitution(this)) {
+			final Composite equalities = (Composite) children.get(1);
+					
+			resultBuilder.append(children.get(0)).append('{').append(join(",", equalities.getChildren().toArray())).append('}');
+			
+			if (children.size() == 3) {
+				final Composite indices = (Composite) children.get(2);
+				resultBuilder.append(children.get(0)).append('[').append(join(",", indices.getChildren().toArray())).append(']');
+			}
+			
+			return resultBuilder.toString();
+		}
+		
+		for (final Expression child : children) {
 			if (thisIsBraced || child instanceof Symbol || isBracedComposite(child)) {
 				resultBuilder.append(child);
 			} else {
