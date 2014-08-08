@@ -51,9 +51,10 @@ public final class Composite implements Expression {
 	@Override
 	public final String toString() {
 		final StringBuilder resultBuilder = new StringBuilder();
+		final boolean thisIsBraced = isBracedComposite(this);
 		
 		for (final Expression child : this.getChildren()) {
-			if (child instanceof Symbol) {
+			if (thisIsBraced || child instanceof Symbol || isBracedComposite(child)) {
 				resultBuilder.append(child);
 			} else {
 				resultBuilder.append('(').append(child).append(')');
@@ -67,5 +68,21 @@ public final class Composite implements Expression {
 	 * {@value}.
 	 */
 	private static final long serialVersionUID = -280050093929737583L;
+	
+	public static final boolean isBracedComposite(final Object object) {
+		final Composite composite = cast(Composite.class, object);
+		
+		if (composite == null || composite.getChildren().size() < 2) {
+			return false;
+		}
+		
+		final List<Expression> children = composite.getChildren();
+		
+		final Symbol left = cast(Symbol.class, children.get(0));
+		final Symbol right = cast(Symbol.class, children.get(children.size() - 1));
+		
+		return left != null && right != null && ("[".equals(left.toString()) && "]".equals(right.toString())
+				|| "{".equals(left.toString()) && "}".equals(right.toString()));
+	}
 	
 }
