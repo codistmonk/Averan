@@ -23,7 +23,6 @@ import jrewrite3.core.Module.Symbol;
 import jrewrite3.core.Session;
 import jrewrite3.modules.Standard;
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
-import net.sourceforge.aprog.tools.Tools;
 import net.sourceforge.aurochs.AbstractLRParser.GeneratedToken;
 import net.sourceforge.aurochs.AbstractLRParser.Listener;
 import net.sourceforge.aurochs.LRParser;
@@ -108,7 +107,7 @@ public final class Demo2 {
 			}
 		}
 		
-		session.printTo(System.out, true);
+		new Session.Printer(System.out, true).printSession(session);
 	}
 	
 	/**
