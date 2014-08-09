@@ -142,12 +142,12 @@ public final class Session implements Serializable {
 	}
 	
 	public final Session claim(final Expression proposition) {
-		return this.claim(null, proposition);
+		return this.claim(this.getCurrentContext().getModule().newPropositionName(), proposition);
 	}
 	
 	public final Session claim(final String factName, final Expression proposition) {
 		final ProofContext proofContext = new ProofContext(factName,
-				new Module(this.getCurrentContext().getModule()), proposition);
+				new Module(this.getCurrentContext().getModule(), factName), proposition);
 		
 		this.getStack().add(0, proofContext);
 		
@@ -261,6 +261,7 @@ public final class Session implements Serializable {
 				
 				this.setCurrentGoal(new Module(
 						goal.getParent(),
+						this.getName(),
 						newGoalParameters,
 						new ArrayList<>(conditions),
 						new ArrayList<>(goal.getFacts())).accept(new Rewriter().rewrite(parameter, introducedParameter)));
@@ -271,6 +272,7 @@ public final class Session implements Serializable {
 				
 				this.setCurrentGoal(new Module(
 						goal.getParent(),
+						this.getName(),
 						new ArrayList<>(parameters),
 						newConditions,
 						new ArrayList<>(goal.getFacts())));

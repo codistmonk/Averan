@@ -110,7 +110,7 @@ public final class Rewriter implements Visitor<Expression> {
 				}
 			}
 			
-			final Module result = new Module(module.getParent(), newParameters,
+			final Module result = new Module(module.getParent(), module.getName(), newParameters,
 					conditionVisits.get(), factVisits.get());
 			
 			result.getConditionIndices().putAll(module.getConditionIndices());
