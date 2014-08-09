@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import net.sourceforge.aprog.tools.Tools;
 import jrewrite3.core.Module.Claim;
 import jrewrite3.core.Module.Command;
 import jrewrite3.core.Module.Symbol;
@@ -157,8 +158,9 @@ public final class Session implements Serializable {
 		while (1 < this.getStack().size() && this.getCurrentContext().isGoalReached()) {
 			final ProofContext previous = this.getStack().remove(0);
 			final Module proof = previous.getModule();
-			final Expression fact = previous.getInitialGoal() instanceof Module ?
-					proof : previous.getInitialGoal();
+//			final Expression fact = previous.getInitialGoal() instanceof Module ?
+//					proof : previous.getInitialGoal();
+			final Expression fact = previous.getInitialGoal();
 			
 			this.getCurrentContext().getModule().new Claim(previous.getName(), fact, proof).execute();
 		}

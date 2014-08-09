@@ -522,8 +522,29 @@ public final class Module implements Expression {
 			this.proofContext = proofContext;
 			
 			if (fact instanceof Module) {
+				final Module factAsModule = (Module) fact;
+				
 				if (!fact.equals(proofContext)) {
-					throw new IllegalArgumentException("Invalid proof");
+					if (!proofContext.getFacts().contains(factAsModule)
+							&& !proofContext.getFacts().containsAll(factAsModule.getFacts())) {
+						final Rewriter rewriter = new Rewriter();
+						
+						for (final Symbol parameter : proofContext.getParameters()) {
+							rewriter.rewrite(factAsModule.getParameter(parameter.toString()), parameter);
+						}
+						
+						final Expression rewrittenFact = fact.accept(rewriter);
+						
+						if (!proofContext.getFacts().contains(rewrittenFact)
+								&& !(rewrittenFact instanceof Module
+										&& proofContext.getFacts().containsAll(((Module) rewrittenFact).getFacts()))) {
+							// TODO
+							Tools.debugError(proofContext.getFacts().get(proofContext.getFacts().size() - 1));
+							Tools.debugError(fact);
+							
+							throw new IllegalArgumentException("Invalid proof");
+						}
+					}
 				}
 			} else if (!Module.this.canAccess(proofContext)
 					|| !proofContext.getParameters().isEmpty()
@@ -787,7 +808,8 @@ public final class Module implements Expression {
 		
 		@Override
 		public final String toString() {
-			return "Bind (" + this.getModule().getPropositionName() + ") using " + this.getBinder().getRewrites();
+			return "Bind (" + this.getModule().getPropositionName() + ")"
+					+ (this.getBinder().getRewrites().isEmpty() ? "" : " using " + this.getBinder().getRewrites());
 		}
 		
 		/**
