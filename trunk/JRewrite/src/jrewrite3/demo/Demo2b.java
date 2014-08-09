@@ -69,6 +69,8 @@ public final class Demo2b {
 		
 		session.suppose("definition_of_conjunction",
 				$$("∀P,Q (P → (Q → (P ∧ Q)))"));
+		session.suppose("definition_of_proposition_equality",
+				$$("∀P,Q ((P=Q) = ((P→Q) ∧ (Q→P)))"));
 		session.suppose("definition_of_negation",
 				$$("∀P (¬P = (P→`false))"));
 		session.suppose("definition_of_existence",
@@ -96,49 +98,101 @@ public final class Demo2b {
 		session.suppose("definition_of_transposition",
 				$$("∀X (∀i,j (Xᵀ_(i,j)=X_(j,i)))"));
 		
-		session.claim("transposition_of_addition", $$("∀X,Y ((`size_X=`size_Y) → ((X+Y)ᵀ=Xᵀ+Yᵀ))"));
+		session.claim("commutativity_of_conjunction",
+				$$("∀P,Q ((P ∧ Q) = (Q ∧ P))"));
 		
 		{
 			session.introduce();
 			session.introduce();
-			session.introduce();
 			
-			final Symbol x = session.getParameter("X");
-			final Symbol y = session.getParameter("Y");
-			final Expression xt = $(x, "ᵀ");
-			final Expression yt = $(y, "ᵀ");
+			final Symbol p = session.getParameter("P");
+			final Symbol q = session.getParameter("Q");
+			final Expression pq = $(p, "&", q);
+			final Expression qp = $(q, "&", p);
+			final Expression pq2qp = $(pq, "->", qp);
+			final Expression qp2pq = $(qp, "->", pq);
 			
-			session.bind("definition_of_transposition", (Expression) $(x, "+", y));
-			session.bind("definition_of_matrix_addition", x, y);
-			session.apply("#2", "#0");
+			session.bind("definition_of_proposition_equality", pq, qp);
 			
-			final Module m = (Module) session.getCurrentContext().getModule().getProposition("#1");
-			final Symbol i = m.getParameter("i");
-			final Symbol j = m.getParameter("j");
-			
-			session.bind("#3", j, i);
+			session.claim(pq2qp);
 			
 			{
-				session.bind("definition_of_transposition", x, i, j);
-				rewriteRight(session, "#4", "#5");
+				session.introduce();
+				session.bind("#0");
+				session.bind("definition_of_conjunction", q, p);
+				session.apply("#3", "null/#1");
+				session.apply("#4", "null/#0");
 			}
+			
+			session.claim(qp2pq);
 			
 			{
-				session.bind("definition_of_transposition", y, i, j);
-				rewriteRight(session, "#8", "#9");
+				session.introduce();
+				session.bind("#0");
+				session.bind("definition_of_conjunction", p, q);
+				session.apply("#3", "null/#1");
+				session.apply("#4", "null/#0");
 			}
 			
-			session.rewrite("#1", "#12");
-			session.bind("definition_of_matrix_addition", xt, yt);
+			session.claim($(pq2qp, "&", qp2pq));
 			
-			session.bind("definition_of_matrix_size_equality", xt, yt);
-			session.bind("definition_of_matrix_size_equality", x, y);
-			session.rewrite("#0", "#16");
-			session.bind("definition_of_transposition_rowCount", x);
-			session.bind("definition_of_transposition_columnCount", x);
-			session.bind("definition_of_transposition_rowCount", y);
-			session.bind("definition_of_transposition_columnCount", y);
+			{
+				session.bind("definition_of_conjunction", pq2qp, qp2pq);
+				session.apply("#0", "#1");
+				session.apply("#1", "#2");
+			}
+			
+			rewriteRight(session, "#3", "#0");
 		}
+		
+//		session.claim("transposition_of_addition", $$("∀X,Y ((`size_X=`size_Y) → ((X+Y)ᵀ=Xᵀ+Yᵀ))"));
+//		
+//		{
+//			session.introduce();
+//			session.introduce();
+//			session.introduce();
+//			
+//			final Symbol x = session.getParameter("X");
+//			final Symbol y = session.getParameter("Y");
+//			final Expression xt = $(x, "ᵀ");
+//			final Expression yt = $(y, "ᵀ");
+//			
+//			session.bind("definition_of_transposition", (Expression) $(x, "+", y));
+//			session.bind("definition_of_matrix_addition", x, y);
+//			session.apply("#2", "#0");
+//			
+//			final Module m = (Module) session.getCurrentContext().getModule().getProposition("#1");
+//			final Symbol i = m.getParameter("i");
+//			final Symbol j = m.getParameter("j");
+//			
+//			session.bind("#3", j, i);
+//			
+//			{
+//				session.bind("definition_of_transposition", x, i, j);
+//				rewriteRight(session, "#4", "#5");
+//			}
+//			
+//			{
+//				session.bind("definition_of_transposition", y, i, j);
+//				rewriteRight(session, "#8", "#9");
+//			}
+//			
+//			session.rewrite("#1", "#12");
+//			session.bind("definition_of_matrix_addition", xt, yt);
+//			
+//			session.bind("definition_of_matrix_size_equality", xt, yt);
+//			session.bind("definition_of_matrix_size_equality", x, y);
+//			session.rewrite("#0", "#16");
+//			session.bind("definition_of_transposition_rowCount", x);
+//			session.bind("definition_of_transposition_columnCount", x);
+//			session.bind("definition_of_transposition_rowCount", y);
+//			session.bind("definition_of_transposition_columnCount", y);
+//			rewriteRight(session, "#17", "#18");
+//			rewriteRight(session, "#24", "#19");
+//			rewriteRight(session, "#27", "#20");
+//			rewriteRight(session, "#30", "#21");
+//			rewriteRight(session, "#33", "#15");
+//		}
 		
 		session.new Exporter(true).exportSession();
 		
@@ -352,10 +406,14 @@ public final class Demo2b {
 		    			if (("<".equals(right[0].toString()) || "≤".equals(right[0].toString()))) {
 		    				return $(append(left.getChildren().toArray(), right));
 		    			}
-		    			
-		    			if ("→".equals(right[0].toString())) {
-		    				return rule(left, right[1]);
-		    			}
+		    		}
+		    		
+		    		if ("→".equals(right[0].toString())) {
+		    			return rule(values[0], right[1]);
+		    		}
+		    		
+		    		if ("∧".equals(right[0].toString())) {
+		    			return $(values[0], "&", right[1]);
 		    		}
 		    		
 		    		return $(append(array(values[0]), right));
