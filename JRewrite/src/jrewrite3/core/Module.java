@@ -761,7 +761,7 @@ public final class Module implements Expression {
 		
 		@Override
 		public final String toString() {
-			return "Bind " + this.getModule().getPropositionName() + " using " + this.getBinder().getRewrites();
+			return "Bind (" + this.getModule().getPropositionName() + ") using " + this.getBinder().getRewrites();
 		}
 		
 		/**
