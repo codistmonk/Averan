@@ -52,6 +52,11 @@ public final class Session implements Serializable {
 		return this.getStack().get(0);
 	}
 	
+	@SuppressWarnings("unchecked")
+	public final <E extends Expression> E getProposition(final String name) {
+		return (E) this.getCurrentContext().getModule().getProposition(name);
+	}
+	
 	public final Expression getCurrentGoal() {
 		return this.getCurrentContext().getCurrentGoal();
 	}

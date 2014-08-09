@@ -32,6 +32,11 @@ public final class Composite implements Expression, Iterable<Expression> {
 		return this.children;
 	}
 	
+	@SuppressWarnings("unchecked")
+	public final <E extends Expression> E get(final int index) {
+		return (E) this.getChildren().get(index);
+	}
+	
 	@Override
 	public final Iterator<Expression> iterator() {
 		return this.getChildren().iterator();

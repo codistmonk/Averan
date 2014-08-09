@@ -107,6 +107,25 @@ public final class Demo2b {
 			final Symbol j = m.getParameter("j");
 			
 			session.bind("#3", j, i);
+			
+			{
+				session.bind("definition_of_transposition", x, i, j);
+				final Composite equality5 = session.getProposition("#5");
+				
+				session.bind(Standard.SYMMETRY_OF_EQUALITY, (Expression) equality5.get(0), equality5.get(2));
+				session.apply("#6", "#5");
+			}
+			
+			{
+				session.bind("definition_of_transposition", y, i, j);
+				final Composite equality8 = session.getProposition("#8");
+				
+				session.bind(Standard.SYMMETRY_OF_EQUALITY, (Expression) equality8.get(0), equality8.get(2));
+				session.apply("#9", "#8");
+				session.rewrite("#4", "#7");
+				session.rewrite("#11", "#10");
+				session.rewrite("#1", "#12");
+			}
 		}
 		
 		session.new Exporter(true).exportSession();

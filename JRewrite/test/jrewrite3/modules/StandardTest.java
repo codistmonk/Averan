@@ -31,7 +31,7 @@ public final class StandardTest {
 			session.claim($("2", "=", "1"));
 			
 			{
-				session.bind("1=2->2=1", Standard.SYMMETRY_OF_IDENTITY, (Expression) $("1"), $("2"));
+				session.bind("1=2->2=1", Standard.SYMMETRY_OF_EQUALITY, (Expression) $("1"), $("2"));
 				session.apply("1=2->2=1", "1=2");
 			}
 		}
