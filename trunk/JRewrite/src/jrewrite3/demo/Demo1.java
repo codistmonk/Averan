@@ -38,7 +38,7 @@ public final class Demo1 {
 			}
 		}
 		
-		session.new Exporter(true).exportSession();
+		session.new Exporter(-1).exportSession();
 	}
 	
 }

@@ -107,7 +107,7 @@ public final class Demo2 {
 			}
 		}
 		
-		session.new Exporter(true).exportSession();
+		session.new Exporter(1).exportSession();
 	}
 	
 	/**
