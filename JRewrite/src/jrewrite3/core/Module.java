@@ -580,7 +580,8 @@ public final class Module implements Expression {
 		
 		@Override
 		public final String toString() {
-			return "Claim in " + this.getProofContext().getFacts().size() + " step(s)";
+			final int n = this.getProofContext().getFacts().size();
+			return "Claim in " + n + " step" + (n == 1 ? "" : "s");
 		}
 		
 		/**

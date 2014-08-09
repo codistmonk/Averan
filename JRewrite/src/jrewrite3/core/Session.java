@@ -328,24 +328,24 @@ public final class Session implements Serializable {
 		}
 		
 		public final void exportSession() {
-			final Session session = Session.this;
-			final int n = session.getStack().size();
-			
 			this.output.beginSession();
 			
-			for (int i = n - 1; 0 <= i; --i) {
-				this.exportContext(session.getStack().get(i));
-			}
+			this.exportContext(Session.this.getStack().size() - 1);
 			
 			this.output.endSession();
 		}
 		
-		private final void exportContext(final ProofContext context) {
+		private final void exportContext(final int i) {
+			final ProofContext context = Session.this.getStack().get(i);
 			final Module module = context.getModule();
 			
 			this.output.subcontext(context.getName());
 			
 			this.exportModule(module, 0);
+			
+			if (0 < i) {
+				this.exportContext(i - 1);
+			}
 			
 			final Expression currentGoal = context.getCurrentGoal();
 			
