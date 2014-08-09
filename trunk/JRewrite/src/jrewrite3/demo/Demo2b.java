@@ -67,6 +67,8 @@ public final class Demo2b {
 	static {
 		final Session session = new Session(MODULE);
 		
+		session.suppose("definition_of_conjunction",
+				$$("∀P,Q (P → (Q → (P ∧ Q)))"));
 		session.suppose("definition_of_negation",
 				$$("∀P (¬P = (P→`false))"));
 		session.suppose("definition_of_existence",
@@ -79,12 +81,18 @@ public final class Demo2b {
 				$$("∀X,m,n (X∈≀M_(m,n) = (`rowCount_X = m ∧ `columnCount_X = n ∧ ∀i,j (0≤i<m ∧ 0≤j<n) → X_(i,j)∈ℝ))"));
 		session.suppose("definition_of_matrix_size_equality",
 				$$("∀X,Y ((`size_X=`size_Y) = ((`columnCount_X = `columnCount_Y) ∧ (`rowCount_X = `rowCount_Y)))"));
+		session.suppose("definition_of_matrix_equality",
+				$$("∀X,Y ((X=Y) = (∀i,j ((X)_(i,j)=(Y_(i,j)))))"));
 		session.suppose("definition_of_matrix_addition",
 				$$("∀X,Y ((`size_X=`size_Y) → (∀i,j ((X+Y)_(i,j)=(X_(i,j))+(Y_(i,j)))))"));
 		session.suppose("definition_of_matrix_subtraction",
 				$$("∀X,Y ((`size_X=`size_Y) → (∀i,j ((X-Y)_(i,j)=(X_(i,j))-(Y_(i,j)))))"));
 		session.suppose("definition_of_matrix_multiplication",
 				$$("∀X,Y,n ((`columnCount_X = n) ∧ (`rowCount_Y = n)) → (∀i,j,k (XY)_(i,j)=((Σ_(k=0)^(n-1)) (X_(i,k))(Y_(k,j))))"));
+		session.suppose("definition_of_transposition_rowCount",
+				$$("∀X (`rowCount_(Xᵀ)=`columnCount_X)"));
+		session.suppose("definition_of_transposition_columnCount",
+				$$("∀X (`columnCount_(Xᵀ)=`rowCount_X)"));
 		session.suppose("definition_of_transposition",
 				$$("∀X (∀i,j (Xᵀ_(i,j)=X_(j,i)))"));
 		
@@ -97,6 +105,8 @@ public final class Demo2b {
 			
 			final Symbol x = session.getParameter("X");
 			final Symbol y = session.getParameter("Y");
+			final Expression xt = $(x, "ᵀ");
+			final Expression yt = $(y, "ᵀ");
 			
 			session.bind("definition_of_transposition", (Expression) $(x, "+", y));
 			session.bind("definition_of_matrix_addition", x, y);
@@ -125,6 +135,7 @@ public final class Demo2b {
 				session.rewrite("#4", "#7");
 				session.rewrite("#11", "#10");
 				session.rewrite("#1", "#12");
+				session.bind("definition_of_matrix_addition", xt, yt);
 			}
 		}
 		
