@@ -315,9 +315,13 @@ public final class Session implements Serializable {
 			final Session session = Session.this;
 			final int n = session.getStack().size();
 			
+			this.output.beginSession();
+			
 			for (int i = n - 1; 0 <= i; --i) {
 				this.exportContext(session.getStack().get(i));
 			}
+			
+			this.output.endSession();
 		}
 		
 		private final void exportContext(final ProofContext context) {
@@ -409,6 +413,11 @@ public final class Session implements Serializable {
 		}
 		
 		@Override
+		public final void beginSession() {
+			// NOP
+		}
+		
+		@Override
 		public final void subcontext(final String name) {
 			this.indent = join("", nCopies(++this.indentLevel, ATOMIC_INDENT).toArray());
 			
@@ -478,6 +487,11 @@ public final class Session implements Serializable {
 			this.output.println(this.indent + ATOMIC_INDENT + currentGoal);
 		}
 		
+		@Override
+		public final void endSession() {
+			this.output.flush();
+		}
+		
 		/**
 		 * {@value}.
 		 */
@@ -489,6 +503,8 @@ public final class Session implements Serializable {
 	 * @author codistmonk (creation 2014-08-08)
 	 */
 	public static interface ExporterOutput extends Serializable {
+		
+		public abstract void beginSession();
 		
 		public abstract void subcontext(String name);
 		
@@ -513,6 +529,8 @@ public final class Session implements Serializable {
 		public abstract void endModuleFacts(Module module);
 		
 		public abstract void processCurrentGoal(Expression currentGoal);
+		
+		public abstract void endSession();
 		
 	}
 	
