@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import net.sourceforge.aprog.tools.Tools;
 
@@ -58,7 +57,7 @@ public final class Module implements Expression {
 			final List<Expression> conditions, final List<Expression> facts) {
 		this.parent = parent;
 		
-		if (true) {
+		{
 			final Rewriter rewriter = new Rewriter();
 			
 			this.parameters = parameters.stream()
@@ -74,13 +73,6 @@ public final class Module implements Expression {
 			}
 			
 			// XXX the proofs may also need to be rewritten
-		} else {
-			// XXX there may or may not be an issue with the fact that
-			//     existing parameters won't reference this module;
-			//     likewise for existing submodule's parents 
-			this.parameters = parameters;
-			this.conditions = conditions;
-			this.facts = facts;
 		}
 		
 		this.conditionIndices = new LinkedHashMap<>(conditions.size());
@@ -704,8 +696,8 @@ public final class Module implements Expression {
 		
 		@Override
 		public final String toString() {
-			return "Rewrite " + this.getSource().getPropositionName()
-					+ " using " + this.getEquality().getPropositionName()
+			return "Rewrite (" + this.getSource().getPropositionName()
+					+ ") using (" + this.getEquality().getPropositionName() + ")"
 					+ (this.getIndices().isEmpty() ? "" : " at indices " + this.getIndices());
 		}
 		
