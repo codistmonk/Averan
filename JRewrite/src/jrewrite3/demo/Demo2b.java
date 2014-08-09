@@ -120,23 +120,24 @@ public final class Demo2b {
 			
 			{
 				session.bind("definition_of_transposition", x, i, j);
-				final Composite equality5 = session.getProposition("#5");
-				
-				session.bind(Standard.SYMMETRY_OF_EQUALITY, (Expression) equality5.get(0), equality5.get(2));
-				session.apply("#6", "#5");
+				rewriteRight(session, "#4", "#5");
 			}
 			
 			{
 				session.bind("definition_of_transposition", y, i, j);
-				final Composite equality8 = session.getProposition("#8");
-				
-				session.bind(Standard.SYMMETRY_OF_EQUALITY, (Expression) equality8.get(0), equality8.get(2));
-				session.apply("#9", "#8");
-				session.rewrite("#4", "#7");
-				session.rewrite("#11", "#10");
-				session.rewrite("#1", "#12");
-				session.bind("definition_of_matrix_addition", xt, yt);
+				rewriteRight(session, "#8", "#9");
 			}
+			
+			session.rewrite("#1", "#12");
+			session.bind("definition_of_matrix_addition", xt, yt);
+			
+			session.bind("definition_of_matrix_size_equality", xt, yt);
+			session.bind("definition_of_matrix_size_equality", x, y);
+			session.rewrite("#0", "#16");
+			session.bind("definition_of_transposition_rowCount", x);
+			session.bind("definition_of_transposition_columnCount", x);
+			session.bind("definition_of_transposition_rowCount", y);
+			session.bind("definition_of_transposition_columnCount", y);
 		}
 		
 		session.new Exporter(true).exportSession();
@@ -148,6 +149,18 @@ public final class Demo2b {
 			
 			new TeXFormula(buffer.toString()).createPNG(0, 16F, "view.png", WHITE, BLACK);
 		}
+	}
+	
+	public static final void rewriteRight(final Session session, final String sourceName, final String equalityName) {
+		final Composite equality = session.getProposition(equalityName);
+		final String ruleName = session.getCurrentContext().getModule().newPropositionName();
+		
+		session.bind(ruleName, Standard.SYMMETRY_OF_EQUALITY, (Expression) equality.get(0), equality.get(2));
+		
+		final String reversedEqualityName = session.getCurrentContext().getModule().newPropositionName();
+		
+		session.apply(reversedEqualityName, ruleName, equalityName);
+		session.rewrite(sourceName, reversedEqualityName);
 	}
 	
 	/**
