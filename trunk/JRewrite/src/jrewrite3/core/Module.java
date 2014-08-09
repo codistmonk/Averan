@@ -254,6 +254,10 @@ public final class Module implements Expression {
 	}
 	
 	final void newProposition(final Map<String, Integer> indices, final String propositionName) {
+		if (this.getPropositionOrNull(propositionName) != null) {
+			throw new IllegalArgumentException("Name already in use: " + propositionName);
+		}
+		
 		indices.put(propositionName == null ? this.newPropositionName() : propositionName, indices.size());
 	}
 	

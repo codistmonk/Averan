@@ -65,15 +65,20 @@ public final class Demo2b {
 	static {
 		final Session session = new Session(MODULE);
 		
-		session.suppose("definition_of_negation", $$("∀P (¬P = (P→`false))"));
-		session.suppose("definition_of_existence", $$("∀P,x (∃x (P x)) = ¬(∀y ¬(P y))"));
-		session.suppose("definition_of_intersection", $$("∀A,B,x (x∈A∩B) = (x∈A ∧ x∈B)"));
-		session.suppose("definition_of_summation", $$("∀i,a,b,e,s ((s=((Σ_(i=a)^b) e)) → (((b<a) → (s=0)) ∧ ((a≤b) → (s=(s{b=(b-1)})+(e{i=b})))))"));
-		session.suppose("definition_of_matrices", $$("∀X,m,n (X∈≀M_(m,n) = ∀i,j (0≤i<m ∧ 0≤j<n) → X_(i,j)∈ℝ)"));
-		session.suppose("definition_of_column_count", $$("∀X,n (X∈≀C_n) = ∃m (X∈≀M_(m,n))"));
-		session.suppose("definition_of_row_count", $$("∀X,m (X∈≀R_m) = ∃n (X∈≀M_(m,n))"));
-		session.suppose("definition_of_matrix_product", $$("∀X,Y,n ((X∈≀C_n) ∧ (Y∈≀R_n)) → (∀i,j,k (XY)_(i,j)=((Σ_(k=0)^(n-1)) (X_(i,k))(Y_(k,j))))"));
-		session.suppose("definition_of_transposition", $$("∀X (∀i,j (Xᵀ_(i,j)=X_(j,i)))"));
+		session.suppose("definition_of_negation",
+				$$("∀P (¬P = (P→`false))"));
+		session.suppose("definition_of_existence",
+				$$("∀P,x (∃x (P x)) = ¬(∀y ¬(P y))"));
+		session.suppose("definition_of_intersection",
+				$$("∀A,B,x (x∈A∩B) = (x∈A ∧ x∈B)"));
+		session.suppose("definition_of_summation",
+				$$("∀i,a,b,e,s ((s=((Σ_(i=a)^b) e)) → (((b<a) → (s=0)) ∧ ((a≤b) → (s=(s{b=(b-1)})+(e{i=b})))))"));
+		session.suppose("definition_of_matrices",
+				$$("∀X,m,n (X∈≀M_(m,n) = (`rowCount_X = m ∧ `columnCount_X = n ∧ ∀i,j (0≤i<m ∧ 0≤j<n) → X_(i,j)∈ℝ))"));
+		session.suppose("definition_of_matrix_product",
+				$$("∀X,Y,n ((`columnCount_X = n) ∧ (`rowCount_Y = n)) → (∀i,j,k (XY)_(i,j)=((Σ_(k=0)^(n-1)) (X_(i,k))(Y_(k,j))))"));
+		session.suppose("definition_of_transposition",
+				$$("∀X (∀i,j (Xᵀ_(i,j)=X_(j,i)))"));
 		
 		session.new Exporter(true).exportSession();
 		
@@ -81,12 +86,8 @@ public final class Demo2b {
 			final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 			
 			session.new Exporter(new TexPrinter(buffer), true).exportSession();
-//			session.new Exporter(new TexPrinter(System.out), true).exportSession();
 			
-			final String s = buffer.toString();
-			
-			final TeXFormula formula = new TeXFormula(s);
-			formula.createPNG(0, 16F, "view.png", WHITE, BLACK);
+			new TeXFormula(buffer.toString()).createPNG(0, 16F, "view.png", WHITE, BLACK);
 		}
 	}
 	
