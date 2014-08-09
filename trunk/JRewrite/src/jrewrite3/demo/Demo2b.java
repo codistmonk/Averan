@@ -40,7 +40,6 @@ import jrewrite3.core.Module.Symbol;
 import jrewrite3.core.Session;
 import jrewrite3.core.Visitor;
 import jrewrite3.modules.Standard;
-
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 import net.sourceforge.aprog.tools.Tools;
 import net.sourceforge.aurochs.LRParser;
@@ -66,15 +65,15 @@ public final class Demo2b {
 	static {
 		final Session session = new Session(MODULE);
 		
-		session.suppose("definition_of_¬", $$("∀P (¬P = (P→`false))"));
-		session.suppose("definition_of_∃", $$("∀P,x (∃x (P x)) = ¬(∀y ¬(P y))"));
-		session.suppose("definition_of_∩", $$("∀A,B,x (x∈A∩B) = (x∈A ∧ x∈B)"));
-		session.suppose("definition_of_Σ", $$("∀i,a,b,e,s ((s=((Σ_(i=a)^b) e)) → (((b<a) → (s=0)) ∧ ((a≤b) → (s=(s{b=(b-1)})+(e{i=b})))))"));
-		session.suppose("definition_of_≀M", $$("∀X,m,n (X∈≀M_(m,n) = ∀i,j (0≤i<m ∧ 0≤j<n) → X_(i,j)∈ℝ)"));
-		session.suppose("definition_of_≀C", $$("∀X,n (X∈≀C_n) = ∃m (X∈≀M_(m,n))"));
-		session.suppose("definition_of_≀R", $$("∀X,m (X∈≀R_m) = ∃n (X∈≀M_(m,n))"));
+		session.suppose("definition_of_negation", $$("∀P (¬P = (P→`false))"));
+		session.suppose("definition_of_existence", $$("∀P,x (∃x (P x)) = ¬(∀y ¬(P y))"));
+		session.suppose("definition_of_intersection", $$("∀A,B,x (x∈A∩B) = (x∈A ∧ x∈B)"));
+		session.suppose("definition_of_summation", $$("∀i,a,b,e,s ((s=((Σ_(i=a)^b) e)) → (((b<a) → (s=0)) ∧ ((a≤b) → (s=(s{b=(b-1)})+(e{i=b})))))"));
+		session.suppose("definition_of_matrices", $$("∀X,m,n (X∈≀M_(m,n) = ∀i,j (0≤i<m ∧ 0≤j<n) → X_(i,j)∈ℝ)"));
+		session.suppose("definition_of_column_count", $$("∀X,n (X∈≀C_n) = ∃m (X∈≀M_(m,n))"));
+		session.suppose("definition_of_row_count", $$("∀X,m (X∈≀R_m) = ∃n (X∈≀M_(m,n))"));
 		session.suppose("definition_of_matrix_product", $$("∀X,Y,n ((X∈≀C_n) ∧ (Y∈≀R_n)) → (∀i,j,k (XY)_(i,j)=((Σ_(k=0)^(n-1)) (X_(i,k))(Y_(k,j))))"));
-		session.suppose("definition_of_ᵀ", $$("∀X (∀i,j (Xᵀ_(i,j)=X_(j,i)))"));
+		session.suppose("definition_of_transposition", $$("∀X (∀i,j (Xᵀ_(i,j)=X_(j,i)))"));
 		
 		session.new Exporter(true).exportSession();
 		
@@ -183,13 +182,15 @@ public final class Demo2b {
 			 */
 			private static final long serialVersionUID = 2607977220438106247L;
 			
+			static final Object[] verbatims = { "+", "-", "/", "=", "(", ")", "{", "}", "[", "]", ",", "∀", "∃", "¬", "→", "`", "≀", "∧", "∈", "∩", "<", "≤", "Σ", "_", "^", "ℕ", "ℝ", "ᵀ" };
+			
 			static final LexerRule[] lexerRules = appendVerbatims(array(
 					tokenRule("VARIABLE", /* -> */ union(range('A', 'Z'), range('a', 'z'))),
 					tokenRule("NATURAL",  /* -> */ oneOrMore(range('0', '9'))),
 					nontokenRule(" *",     /* -> */ zeroOrMore(' '))
-			), "+", "-", "/", "=", "(", ")", "{", "}", "[", "]", ",", "∀", "∃", "¬", "→", "`", "≀", "∧", "∈", "∩", "<", "≤", "Σ", "_", "^", "ℕ", "ℝ", "ᵀ");
+			), verbatims);
 			
-			static final ParserRule[] parserRules = {
+			static final ParserRule[] parserRules = append(array(
 				leftAssociative("∧", 5),
 				leftAssociative("→", 5),
 				leftAssociative(",", 8),
@@ -246,16 +247,19 @@ public final class Demo2b {
 		        namedRule("expression",        "EXPRESSION", /* -> */  "Σ"),
 		        namedRule("expression",        "EXPRESSION", /* -> */  "ℕ"),
 		        namedRule("expression",        "EXPRESSION", /* -> */  "ℝ"),
-		        namedRule("concatenation",     "IDENTIFIER", /* -> */  "≀", "WORD"),
-		        namedRule("concatenation",     "IDENTIFIER", /* -> */  "≀", "VARIABLE"),
-		        namedRule("concatenation",     "IDENTIFIER", /* -> */  "WORD"),
-		        namedRule("concatenation",     "IDENTIFIER", /* -> */  "VARIABLE"),
-		        namedRule("concatenation",     "WORD",       /* -> */  "WORD", "VARIABLE"),
-		        namedRule("concatenation",     "WORD",       /* -> */  "`", "VARIABLE"),
 		        namedRule("list",              "PARAMETERS", /* -> */ "PARAMETERS", ",", "VARIABLE"),
 		        namedRule("list",              "PARAMETERS", /* -> */ "VARIABLE"),
-				
-			};
+		        namedRule("identifier",        "IDENTIFIER", /* -> */  "≀", "WORD"),
+		        namedRule("identifier",        "IDENTIFIER", /* -> */  "≀", "VARIABLE"),
+		        namedRule("identifier",        "IDENTIFIER", /* -> */  "WORD"),
+		        namedRule("identifier",        "IDENTIFIER", /* -> */  "VARIABLE"),
+		        namedRule("concatenation",     "WORD",       /* -> */  "WORD", "VARIABLE"),
+		        namedRule("concatenation",     "WORD",       /* -> */  "`", "VARIABLE")
+			), verbatimWordRules());
+			
+			static final ParserRule[] verbatimWordRules() {
+				return Arrays.stream(verbatims).map(v -> namedRule("concatenation", "WORD", "`", v)).toArray(ParserRule[]::new);
+			}
 			
 		    final Object expression(final Object[] values) {
 		    	if ("∀".equals(values[0].toString())) {
@@ -283,6 +287,18 @@ public final class Demo2b {
 		    
 		    final Object verbatim(final Object[] values) {
 		    	return values;
+		    }
+		    
+		    final Object identifier(final Object[] values) {
+		    	String result = join("", values);
+		    	
+		    	if (result.startsWith("`")) {
+		    		return result.substring(1);
+		    	} else if (2 <= result.length() && result.charAt(1) == '`') {
+		    		return result.charAt(0) + result.substring(2);
+		    	}
+		    	
+		    	return result;
 		    }
 		    
 		    final Object concatenation(final Object[] values) {
@@ -430,7 +446,15 @@ public final class Demo2b {
 		}
 		
 		public static final String word(final Object object) {
-			return "\\mbox{" + object + "}";
+			String string = object.toString();
+			String fontType = "mbox";
+			
+			if (object.toString().startsWith("≀")) {
+				string = string.substring(1);
+				fontType = "mathcal";
+			}
+			
+			return "\\" + fontType + group(string);
 		}
 		
 		/**
@@ -490,7 +514,9 @@ public final class Demo2b {
 			
 			@Override
 			public final String visit(final Symbol symbol) {
-				return symbol.toString();
+				final String string = symbol.toString();
+				
+				return string.length() == 1 ? string : word(string);
 			}
 			
 			public final Object[] transform(final Collection<? extends Expression> elements) {
