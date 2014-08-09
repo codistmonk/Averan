@@ -247,11 +247,11 @@ public final class Demo2b {
 		        namedRule("expression",        "EXPRESSION", /* -> */  "ℕ"),
 		        namedRule("expression",        "EXPRESSION", /* -> */  "ℝ"),
 		        namedRule("concatenation",     "IDENTIFIER", /* -> */  "≀", "WORD"),
-		        namedRule("concatenation",     "IDENTIFIER", /* -> */  "≀", "`", "WORD"),
-		        namedRule("concatenation",     "IDENTIFIER", /* -> */  "`", "WORD"),
+		        namedRule("concatenation",     "IDENTIFIER", /* -> */  "≀", "VARIABLE"),
+		        namedRule("concatenation",     "IDENTIFIER", /* -> */  "WORD"),
 		        namedRule("concatenation",     "IDENTIFIER", /* -> */  "VARIABLE"),
 		        namedRule("concatenation",     "WORD",       /* -> */  "WORD", "VARIABLE"),
-		        namedRule("concatenation",     "WORD",       /* -> */  "VARIABLE"),
+		        namedRule("concatenation",     "WORD",       /* -> */  "`", "VARIABLE"),
 		        namedRule("list",              "PARAMETERS", /* -> */ "PARAMETERS", ",", "VARIABLE"),
 		        namedRule("list",              "PARAMETERS", /* -> */ "VARIABLE"),
 				
@@ -444,7 +444,9 @@ public final class Demo2b {
 					final Pattern summation = newSummationPattern1();
 					
 					if (summation.equals(composite)) {
-						return "\\sum_" + group(summation.get("i=a")) + "^" + group(summation.get("b")) + " " + group(summation.get("e"));
+						return "\\sum_" + group(summation.get("i=a").accept(this))
+								+ "^" + group(summation.get("b").accept(this)) + " "
+								+ group(summation.get("e").accept(this));
 					}
 				}
 				
@@ -539,7 +541,7 @@ public final class Demo2b {
 			 */
 			public static final class Pattern implements Serializable {
 				
-				private final Map<String, Object> bindings; 
+				private final Map<String, Expression> bindings; 
 				
 				private final Expression template;
 				
@@ -548,7 +550,7 @@ public final class Demo2b {
 					this.template = template.accept(new SetupAny());
 				}
 				
-				public final Map<String, Object> getBindings() {
+				public final Map<String, Expression> getBindings() {
 					return this.bindings;
 				}
 				
@@ -563,8 +565,8 @@ public final class Demo2b {
 				}
 				
 				@SuppressWarnings("unchecked")
-				public final <T> T get(final String anyName) {
-					return (T) this.getBindings().get(anyName);
+				public final <E extends Expression> E get(final String anyName) {
+					return (E) this.getBindings().get(anyName);
 				}
 				
 				/**
@@ -597,7 +599,7 @@ public final class Demo2b {
 						return symbol;
 					}
 					
-					public final Map<String, Object> getBindings() {
+					public final Map<String, Expression> getBindings() {
 						return Pattern.this.getBindings();
 					}
 					
@@ -622,7 +624,7 @@ public final class Demo2b {
 				 */
 				public static final class Any implements Expression {
 					
-					private Map<String, Object> bindings;
+					private Map<String, Expression> bindings;
 					
 					private final String name;
 					
@@ -639,10 +641,10 @@ public final class Demo2b {
 					
 					@Override
 					public final boolean equals(final Object object) {
-						final Object alreadyBound = this.bindings.get(this.toString());
+						final Expression alreadyBound = this.bindings.get(this.toString());
 						
 						if (alreadyBound == null) {
-							this.bindings.put(this.toString(), object);
+							this.bindings.put(this.toString(), (Expression) object);
 							
 							return true;
 						}
@@ -655,7 +657,7 @@ public final class Demo2b {
 						return this.name;
 					}
 					
-					final void setBindings(final Map<String, Object> bindings) {
+					final void setBindings(final Map<String, Expression> bindings) {
 						this.bindings = bindings;
 					}
 					
