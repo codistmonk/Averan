@@ -6,6 +6,7 @@ import static java.util.Arrays.copyOfRange;
 import static jrewrite3.core.Composite.isBracedComposite;
 import static jrewrite3.core.ExpressionTools.$;
 import static jrewrite3.core.ExpressionTools.facts;
+import static jrewrite3.core.ExpressionTools.rule;
 import static jrewrite3.demo.Demo2b.ExpressionParser.$$;
 import static jrewrite3.demo.Demo2b.TexPrinter.TexStringGenerator.Pattern.any;
 import static net.sourceforge.aprog.tools.Tools.append;
@@ -34,6 +35,7 @@ import org.scilab.forge.jlatexmath.TeXFormula;
 
 import jrewrite3.core.Composite;
 import jrewrite3.core.Expression;
+import jrewrite3.core.ExpressionTools;
 import jrewrite3.core.Module;
 import jrewrite3.core.Module.Command;
 import jrewrite3.core.Module.Symbol;
@@ -75,16 +77,29 @@ public final class Demo2b {
 				$$("∀i,a,b,e,s ((s=((Σ_(i=a)^b) e)) → (((b<a) → (s=0)) ∧ ((a≤b) → (s=(s{b=(b-1)})+(e{i=b})))))"));
 		session.suppose("definition_of_matrices",
 				$$("∀X,m,n (X∈≀M_(m,n) = (`rowCount_X = m ∧ `columnCount_X = n ∧ ∀i,j (0≤i<m ∧ 0≤j<n) → X_(i,j)∈ℝ))"));
+		session.suppose("definition_of_matrix_size_equality",
+				$$("∀X,Y ((`size_X=`size_Y) = ((`columnCount_X = `columnCount_Y) ∧ (`rowCount_X = `rowCount_Y)))"));
 		session.suppose("definition_of_matrix_addition",
-				$$("∀X,Y (((`columnCount_X = `columnCount_Y) ∧ (`rowCount_X = `rowCount_Y)) → (∀i,j ((X+Y)_(i,j)=(X_(i,j))+(Y_(i_j)))))"));
+				$$("∀X,Y ((`size_X=`size_Y) → (∀i,j ((X+Y)_(i,j)=(X_(i,j))+(Y_(i_j)))))"));
 		session.suppose("definition_of_matrix_subtraction",
-				$$("∀X,Y (((`columnCount_X = `columnCount_Y) ∧ (`rowCount_X = `rowCount_Y)) → (∀i,j ((X-Y)_(i,j)=(X_(i,j))-(Y_(i_j)))))"));
+				$$("∀X,Y ((`size_X=`size_Y) → (∀i,j ((X-Y)_(i,j)=(X_(i,j))-(Y_(i_j)))))"));
 		session.suppose("definition_of_matrix_multiplication",
 				$$("∀X,Y,n ((`columnCount_X = n) ∧ (`rowCount_Y = n)) → (∀i,j,k (XY)_(i,j)=((Σ_(k=0)^(n-1)) (X_(i,k))(Y_(k,j))))"));
 		session.suppose("definition_of_transposition",
 				$$("∀X (∀i,j (Xᵀ_(i,j)=X_(j,i)))"));
 		
-		session.claim("transposition_of_addition", $$("∀X,Y ((X+Y)ᵀ=Xᵀ+Yᵀ)"));
+		session.claim("transposition_of_addition", $$("∀X,Y ((`size_X=`size_Y) → ((X+Y)ᵀ=Xᵀ+Yᵀ))"));
+		
+		{
+			session.introduce();
+			session.introduce();
+			session.introduce();
+			
+			final Symbol x = session.getParameter("X");
+			final Symbol y = session.getParameter("Y");
+			
+			session.bind("definition_of_transposition", (Expression) $(x, "+", y));
+		}
 		
 		session.new Exporter(true).exportSession();
 		
@@ -282,8 +297,14 @@ public final class Demo2b {
 		    	if (right != null) {
 		    		final Composite left = cast(Composite.class, values[0]);
 		    		
-		    		if (left != null && ("<".equals(right[0].toString()) || "≤".equals(right[0].toString()))) {
-		    			return $(append(left.getChildren().toArray(), right));
+		    		if (left != null) {
+		    			if (("<".equals(right[0].toString()) || "≤".equals(right[0].toString()))) {
+		    				return $(append(left.getChildren().toArray(), right));
+		    			}
+		    			
+		    			if ("→".equals(right[0].toString())) {
+		    				return rule(left, right[1]);
+		    			}
 		    		}
 		    		
 		    		return $(append(array(values[0]), right));
@@ -360,8 +381,16 @@ public final class Demo2b {
 			this.output = output instanceof PrintStream ? (PrintStream) output : new PrintStream(output);
 		}
 		
-		public final void println(final Object object) {
+		public final void left(final Object object) {
 			this.output.println(object + "\\cr");
+		}
+		
+		public final void center(final Object object) {
+			this.left("\\multicolumn{1}{|c|}" + group(object));
+		}
+		
+		public final void hline() {
+			this.output.println("\\hline");
 		}
 		
 		@Override
@@ -371,23 +400,26 @@ public final class Demo2b {
 		
 		@Override
 		public final void subcontext(final String name) {
-			this.println(pgroup(pgroup(word("MODULE " + name))));
+			this.hline();
+			this.hline();
+			this.center(pgroup(pgroup(word("MODULE " + name))));
 		}
 		
 		@Override
 		public final void processModuleParameters(final Module module) {
-			this.println("\\forall" + join(",", module.getParameters().stream().map(s -> word(s.toString())).toArray()));
+			this.center("\\forall" + join(",", module.getParameters().stream().map(s -> word(s.toString())).toArray()));
 		}
 		
 		@Override
 		public final void beginModuleConditions(final Module module) {
-			this.println(pgroup(pgroup(word("CONDITIONS"))));
+			this.left("\\;");
+			this.center(pgroup(pgroup(word("CONDITIONS"))));
 		}
 		
 		@Override
 		public final void processModuleCondition(final String conditionName, final Expression condition) {
-			this.println(pgroup(word(conditionName)));
-			this.println("\\multicolumn{1}{|c|}{" + condition.accept(TexStringGenerator.INSTANCE) + "}");
+			this.left(pgroup(word(conditionName)));
+			this.center(condition.accept(TexStringGenerator.INSTANCE));
 		}
 		
 		@Override
@@ -396,33 +428,31 @@ public final class Demo2b {
 		}
 		
 		@Override
-		public void beginModuleFacts(Module module) {
-			// TODO Auto-generated method stub
-			
+		public final void beginModuleFacts(final Module module) {
+			this.left("\\;");
+			this.center(pgroup(pgroup(word("FACTS"))));
 		}
 		
 		@Override
-		public void processModuleFact(String factName, Expression fact) {
-			// TODO Auto-generated method stub
-			
+		public final void processModuleFact(final String factName, final Expression fact) {
+			this.left(pgroup(word(factName)));
+			this.center(fact.accept(TexStringGenerator.INSTANCE));
 		}
 		
 		@Override
-		public void beginModuleFactProof() {
-			// TODO Auto-generated method stub
-			
+		public final void beginModuleFactProof() {
+			this.left("\\;");
+			this.center(pgroup(pgroup(word("PROOF"))));
 		}
 		
 		@Override
-		public void processModuleFactProof(Command command) {
-			// TODO Auto-generated method stub
-			
+		public final void processModuleFactProof(final Command command) {
+			this.center(word(command));
 		}
 		
 		@Override
-		public void endModuleFactProof() {
-			// TODO Auto-generated method stub
-			
+		public final void endModuleFactProof() {
+			// NOP
 		}
 		
 		@Override
@@ -431,9 +461,10 @@ public final class Demo2b {
 		}
 		
 		@Override
-		public void processCurrentGoal(Expression currentGoal) {
-			// TODO Auto-generated method stub
-			
+		public final void processCurrentGoal(final Expression currentGoal) {
+			this.hline();
+			this.center(pgroup(pgroup(word("GOAL"))));
+			this.center(currentGoal.accept(TexStringGenerator.INSTANCE));
 		}
 		
 		@Override
@@ -465,7 +496,7 @@ public final class Demo2b {
 		
 		public static final String word(final Object object) {
 			String string = object.toString();
-			String fontType = "mbox";
+			String fontType = "text";
 			
 			if (object.toString().startsWith("≀")) {
 				string = string.substring(1);
