@@ -120,8 +120,8 @@ public final class Demo2b {
 				session.introduce();
 				session.bind("commutativity_of_conjunction#1#0");
 				session.bind("definition_of_conjunction", q, p);
-				session.apply("commutativity_of_conjunction#1#3", "null/#1");
-				session.apply("commutativity_of_conjunction#1#4", "null/#0");
+				session.apply("commutativity_of_conjunction#1#3", "commutativity_of_conjunction#1#1/#1");
+				session.apply("commutativity_of_conjunction#1#4", "commutativity_of_conjunction#1#1/#0");
 			}
 			
 			session.claim(qp2pq);
@@ -130,8 +130,9 @@ public final class Demo2b {
 				session.introduce();
 				session.bind("commutativity_of_conjunction#2#0");
 				session.bind("definition_of_conjunction", p, q);
-				session.apply("commutativity_of_conjunction#2#3", "null/#1");
-				session.apply("commutativity_of_conjunction#2#4", "null/#0");
+				session.new Exporter(true).exportSession();
+				session.apply("commutativity_of_conjunction#2#3", "commutativity_of_conjunction#2#1/#1");
+				session.apply("commutativity_of_conjunction#2#4", "commutativity_of_conjunction#2#1/#0");
 			}
 			
 			session.claim($(pq2qp, "&", qp2pq));

@@ -74,7 +74,7 @@ public final class Session implements Serializable {
 	}
 	
 	public final Session suppose(final Expression condition) {
-		return this.suppose(null, condition);
+		return this.suppose(this.newPropositionName(), condition);
 	}
 	
 	public final Session suppose(final String conditionName, final Expression condition) {
@@ -96,7 +96,7 @@ public final class Session implements Serializable {
 	}
 	
 	public final Session apply(final String moduleName, final String conditionName) {
-		return this.apply(null, moduleName, conditionName);
+		return this.apply(this.newPropositionName(), moduleName, conditionName);
 	}
 	
 	public final Session apply(final String factName, final String moduleName, final String conditionName) {
@@ -108,7 +108,7 @@ public final class Session implements Serializable {
 	}
 	
 	public final Session bind(final String moduleName, final Expression... expressions) {
-		return this.bind(null, moduleName, expressions);
+		return this.bind(this.newPropositionName(), moduleName, expressions);
 	}
 	
 	public final Session bind(final String factName, final String moduleName, final Expression... expressions) {
@@ -142,7 +142,11 @@ public final class Session implements Serializable {
 	}
 	
 	public final Session claim(final Expression proposition) {
-		return this.claim(this.getCurrentContext().getModule().newPropositionName(), proposition);
+		return this.claim(this.newPropositionName(), proposition);
+	}
+	
+	public final String newPropositionName() {
+		return this.getCurrentContext().getModule().newPropositionName();
 	}
 	
 	public final Session claim(final String factName, final Expression proposition) {
