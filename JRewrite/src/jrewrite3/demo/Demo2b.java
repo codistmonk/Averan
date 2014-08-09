@@ -75,10 +75,16 @@ public final class Demo2b {
 				$$("∀i,a,b,e,s ((s=((Σ_(i=a)^b) e)) → (((b<a) → (s=0)) ∧ ((a≤b) → (s=(s{b=(b-1)})+(e{i=b})))))"));
 		session.suppose("definition_of_matrices",
 				$$("∀X,m,n (X∈≀M_(m,n) = (`rowCount_X = m ∧ `columnCount_X = n ∧ ∀i,j (0≤i<m ∧ 0≤j<n) → X_(i,j)∈ℝ))"));
-		session.suppose("definition_of_matrix_product",
+		session.suppose("definition_of_matrix_addition",
+				$$("∀X,Y (((`columnCount_X = `columnCount_Y) ∧ (`rowCount_X = `rowCount_Y)) → (∀i,j ((X+Y)_(i,j)=(X_(i,j))+(Y_(i_j)))))"));
+		session.suppose("definition_of_matrix_subtraction",
+				$$("∀X,Y (((`columnCount_X = `columnCount_Y) ∧ (`rowCount_X = `rowCount_Y)) → (∀i,j ((X-Y)_(i,j)=(X_(i,j))-(Y_(i_j)))))"));
+		session.suppose("definition_of_matrix_multiplication",
 				$$("∀X,Y,n ((`columnCount_X = n) ∧ (`rowCount_Y = n)) → (∀i,j,k (XY)_(i,j)=((Σ_(k=0)^(n-1)) (X_(i,k))(Y_(k,j))))"));
 		session.suppose("definition_of_transposition",
 				$$("∀X (∀i,j (Xᵀ_(i,j)=X_(j,i)))"));
+		
+		session.claim("transposition_of_addition", $$("∀X,Y ((X+Y)ᵀ=Xᵀ+Yᵀ)"));
 		
 		session.new Exporter(true).exportSession();
 		
@@ -355,7 +361,12 @@ public final class Demo2b {
 		}
 		
 		public final void println(final Object object) {
-			this.output.println(object + "\\\\");
+			this.output.println(object + "\\cr");
+		}
+		
+		@Override
+		public final void beginSession() {
+			this.output.println("\\begin{array}{l}");
 		}
 		
 		@Override
@@ -376,7 +387,7 @@ public final class Demo2b {
 		@Override
 		public final void processModuleCondition(final String conditionName, final Expression condition) {
 			this.println(pgroup(word(conditionName)));
-			this.println(condition.accept(TexStringGenerator.INSTANCE));
+			this.println("\\multicolumn{1}{|c|}{" + condition.accept(TexStringGenerator.INSTANCE) + "}");
 		}
 		
 		@Override
@@ -423,6 +434,12 @@ public final class Demo2b {
 		public void processCurrentGoal(Expression currentGoal) {
 			// TODO Auto-generated method stub
 			
+		}
+		
+		@Override
+		public final void endSession() {
+			this.output.println("\\end{array}");
+			this.output.flush();
 		}
 		
 		/**
