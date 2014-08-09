@@ -25,6 +25,8 @@ public final class Module implements Expression {
 	
 	private final Module parent;
 	
+	private final String name;
+	
 	private final List<Symbol> parameters;
 	
 	private final List<Expression> conditions;
@@ -38,24 +40,17 @@ public final class Module implements Expression {
 	private final List<Command> proofs;
 	
 	public Module(final Module parent) {
-		this(parent, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+		this(parent, "");
 	}
 	
-	private final Symbol localParameter(final Rewriter rewriter, final Symbol parameter) {
-		if (parameter.getModule() == this) {
-			return parameter;
-		}
-		
-		final Symbol result = this.new Symbol(parameter.toString());
-		
-		rewriter.rewrite(parameter, result);
-		
-		return result;
+	public Module(final Module parent, final String name) {
+		this(parent, name, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
 	}
 	
-	Module(final Module parent, final List<Symbol> parameters,
+	Module(final Module parent, final String name, final List<Symbol> parameters,
 			final List<Expression> conditions, final List<Expression> facts) {
 		this.parent = parent;
+		this.name = name;
 		
 		{
 			final Rewriter rewriter = new Rewriter();
@@ -148,6 +143,10 @@ public final class Module implements Expression {
 		return this.parent;
 	}
 	
+	public final String getName() {
+		return this.name;
+	}
+	
 	public final List<Symbol> getParameters() {
 		return this.parameters;
 	}
@@ -177,7 +176,7 @@ public final class Module implements Expression {
 	}
 	
 	public final String newPropositionName() {
-		return "#" + this.getPropositionCount();
+		return this.getName() + "#" + this.getPropositionCount();
 	}
 	
 	@Override
@@ -285,6 +284,18 @@ public final class Module implements Expression {
 		}
 		
 		indices.put(propositionName == null ? this.newPropositionName() : propositionName, indices.size());
+	}
+	
+	private final Symbol localParameter(final Rewriter rewriter, final Symbol parameter) {
+		if (parameter.getModule() == this) {
+			return parameter;
+		}
+		
+		final Symbol result = this.new Symbol(parameter.toString());
+		
+		rewriter.rewrite(parameter, result);
+		
+		return result;
 	}
 	
 	/**
@@ -888,7 +899,7 @@ public final class Module implements Expression {
 			}
 			
 			if (remainingConditions.size() != allConditions.size()) {
-				final Module newFact = new Module(protofact.getParent(), protofact.getParameters(),
+				final Module newFact = new Module(protofact.getParent(), protofact.getName(), protofact.getParameters(),
 						remainingConditions, protofact.getFacts());
 				
 				for (final Map.Entry<String, Integer> entry : protofact.getConditionIndices().entrySet()) {

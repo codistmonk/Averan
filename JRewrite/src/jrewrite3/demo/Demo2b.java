@@ -118,31 +118,31 @@ public final class Demo2b {
 			
 			{
 				session.introduce();
-				session.bind("#0");
+				session.bind("commutativity_of_conjunction#1#0");
 				session.bind("definition_of_conjunction", q, p);
-				session.apply("#3", "null/#1");
-				session.apply("#4", "null/#0");
+				session.apply("commutativity_of_conjunction#1#3", "null/#1");
+				session.apply("commutativity_of_conjunction#1#4", "null/#0");
 			}
 			
 			session.claim(qp2pq);
 			
 			{
 				session.introduce();
-				session.bind("#0");
+				session.bind("commutativity_of_conjunction#2#0");
 				session.bind("definition_of_conjunction", p, q);
-				session.apply("#3", "null/#1");
-				session.apply("#4", "null/#0");
+				session.apply("commutativity_of_conjunction#2#3", "null/#1");
+				session.apply("commutativity_of_conjunction#2#4", "null/#0");
 			}
 			
 			session.claim($(pq2qp, "&", qp2pq));
 			
 			{
 				session.bind("definition_of_conjunction", pq2qp, qp2pq);
-				session.apply("#0", "#1");
-				session.apply("#1", "#2");
+				session.apply("commutativity_of_conjunction#3#0", "commutativity_of_conjunction#1");
+				session.apply("commutativity_of_conjunction#3#1", "commutativity_of_conjunction#2");
 			}
 			
-			rewriteRight(session, "#3", "#0");
+			rewriteRight(session, "commutativity_of_conjunction#3", "commutativity_of_conjunction#0");
 		}
 		
 //		session.claim("transposition_of_addition", $$("∀X,Y ((`size_X=`size_Y) → ((X+Y)ᵀ=Xᵀ+Yᵀ))"));

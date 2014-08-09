@@ -41,10 +41,10 @@ public final class ExpressionTools {
 				
 				newParameters.addAll(module.getParameters());
 				
-				return (E) new Module(null, newParameters, module.getConditions(), module.getFacts());
+				return (E) new Module(null, "", newParameters, module.getConditions(), module.getFacts());
 			}
 			
-			return (E) new Module(null, (List<Symbol>) objects[0], new ArrayList<>(),
+			return (E) new Module(null, "", (List<Symbol>) objects[0], new ArrayList<>(),
 					new ArrayList<>(Arrays.asList($(objects[1]))));
 		}
 		
