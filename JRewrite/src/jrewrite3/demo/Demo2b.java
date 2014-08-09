@@ -91,60 +91,14 @@ public final class Demo2b {
 				$$("∀X,Y ((`size_X=`size_Y) → (∀i,j ((X-Y)_(i,j)=(X_(i,j))-(Y_(i,j)))))"));
 		session.suppose("definition_of_matrix_multiplication",
 				$$("∀X,Y,n ((`columnCount_X = n) ∧ (`rowCount_Y = n)) → (∀i,j,k (XY)_(i,j)=((Σ_(k=0)^(n-1)) (X_(i,k))(Y_(k,j))))"));
+		session.suppose("definition_of_transposition",
+				$$("∀X (∀i,j (Xᵀ_(i,j)=X_(j,i)))"));
 		session.suppose("definition_of_transposition_rowCount",
 				$$("∀X (`rowCount_(Xᵀ)=`columnCount_X)"));
 		session.suppose("definition_of_transposition_columnCount",
 				$$("∀X (`columnCount_(Xᵀ)=`rowCount_X)"));
-		session.suppose("definition_of_transposition",
-				$$("∀X (∀i,j (Xᵀ_(i,j)=X_(j,i)))"));
 		
-		session.claim("commutativity_of_conjunction",
-				$$("∀P,Q ((P ∧ Q) = (Q ∧ P))"));
-		
-		{
-			session.introduce();
-			session.introduce();
-			
-			final Symbol p = session.getParameter("P");
-			final Symbol q = session.getParameter("Q");
-			final Expression pq = $(p, "&", q);
-			final Expression qp = $(q, "&", p);
-			final Expression pq2qp = $(pq, "->", qp);
-			final Expression qp2pq = $(qp, "->", pq);
-			
-			session.bind("definition_of_proposition_equality", pq, qp);
-			
-			session.claim(pq2qp);
-			
-			{
-				session.introduce();
-				session.bind("commutativity_of_conjunction#1#0");
-				session.bind("definition_of_conjunction", q, p);
-				session.apply("commutativity_of_conjunction#1#3", "commutativity_of_conjunction#1#1/#1");
-				session.apply("commutativity_of_conjunction#1#4", "commutativity_of_conjunction#1#1/#0");
-			}
-			
-			session.claim(qp2pq);
-			
-			{
-				session.introduce();
-				session.bind("commutativity_of_conjunction#2#0");
-				session.bind("definition_of_conjunction", p, q);
-				session.new Exporter(true).exportSession();
-				session.apply("commutativity_of_conjunction#2#3", "commutativity_of_conjunction#2#1/#1");
-				session.apply("commutativity_of_conjunction#2#4", "commutativity_of_conjunction#2#1/#0");
-			}
-			
-			session.claim($(pq2qp, "&", qp2pq));
-			
-			{
-				session.bind("definition_of_conjunction", pq2qp, qp2pq);
-				session.apply("commutativity_of_conjunction#3#0", "commutativity_of_conjunction#1");
-				session.apply("commutativity_of_conjunction#3#1", "commutativity_of_conjunction#2");
-			}
-			
-			rewriteRight(session, "commutativity_of_conjunction#3", "commutativity_of_conjunction#0");
-		}
+		claimCommutativityOfConjunction(session);
 		
 //		session.claim("transposition_of_addition", $$("∀X,Y ((`size_X=`size_Y) → ((X+Y)ᵀ=Xᵀ+Yᵀ))"));
 //		
@@ -195,14 +149,63 @@ public final class Demo2b {
 //			rewriteRight(session, "#33", "#15");
 //		}
 		
-		session.new Exporter(true).exportSession();
+		session.new Exporter(0).exportSession();
 		
 		{
 			final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 			
-			session.new Exporter(new TexPrinter(buffer), true).exportSession();
+			session.new Exporter(new TexPrinter(buffer), 0).exportSession();
 			
 			new TeXFormula(buffer.toString()).createPNG(0, 16F, "view.png", WHITE, BLACK);
+		}
+	}
+	
+	public static final void claimCommutativityOfConjunction(final Session session) {
+		session.claim("commutativity_of_conjunction",
+				$$("∀P,Q ((P ∧ Q) = (Q ∧ P))"));
+		
+		{
+			session.introduce();
+			session.introduce();
+			
+			final Symbol p = session.getParameter("P");
+			final Symbol q = session.getParameter("Q");
+			final Expression pq = $(p, "&", q);
+			final Expression qp = $(q, "&", p);
+			final Expression pq2qp = $(pq, "->", qp);
+			final Expression qp2pq = $(qp, "->", pq);
+			
+			session.bind("definition_of_proposition_equality", pq, qp);
+			
+			session.claim(pq2qp);
+			
+			{
+				session.introduce();
+				session.bind("commutativity_of_conjunction#1#0");
+				session.bind("definition_of_conjunction", q, p);
+				session.apply("commutativity_of_conjunction#1#3", "commutativity_of_conjunction#1#1/#1");
+				session.apply("commutativity_of_conjunction#1#4", "commutativity_of_conjunction#1#1/#0");
+			}
+			
+			session.claim(qp2pq);
+			
+			{
+				session.introduce();
+				session.bind("commutativity_of_conjunction#2#0");
+				session.bind("definition_of_conjunction", p, q);
+				session.apply("commutativity_of_conjunction#2#3", "commutativity_of_conjunction#2#1/#1");
+				session.apply("commutativity_of_conjunction#2#4", "commutativity_of_conjunction#2#1/#0");
+			}
+			
+			session.claim($(pq2qp, "&", qp2pq));
+			
+			{
+				session.bind("definition_of_conjunction", pq2qp, qp2pq);
+				session.apply("commutativity_of_conjunction#3#0", "commutativity_of_conjunction#1");
+				session.apply("commutativity_of_conjunction#3#1", "commutativity_of_conjunction#2");
+			}
+			
+			rewriteRight(session, "commutativity_of_conjunction#3", "commutativity_of_conjunction#0");
 		}
 	}
 	

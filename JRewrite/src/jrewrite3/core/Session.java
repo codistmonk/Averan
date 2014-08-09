@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import net.sourceforge.aprog.tools.Tools;
 import jrewrite3.core.Module.Claim;
 import jrewrite3.core.Module.Command;
 import jrewrite3.core.Module.Symbol;
@@ -313,15 +312,19 @@ public final class Session implements Serializable {
 		
 		private final ExporterOutput output;
 		
-		private final boolean printProofs;
+		private final int maximumProofDepth;
 		
-		public Exporter(final boolean printProofs) {
-			this(new Printer(), printProofs);
+		public Exporter() {
+			this(0);
 		}
 		
-		public Exporter(final ExporterOutput output, final boolean printProofs) {
+		public Exporter(final int maximumProofDepth) {
+			this(new Printer(), maximumProofDepth);
+		}
+		
+		public Exporter(final ExporterOutput output, final int maximumProofDepth) {
 			this.output = output;
-			this.printProofs = printProofs;
+			this.maximumProofDepth = maximumProofDepth;
 		}
 		
 		public final void exportSession() {
@@ -342,7 +345,7 @@ public final class Session implements Serializable {
 			
 			this.output.subcontext(context.getName());
 			
-			this.exportModule(module);
+			this.exportModule(module, 0);
 			
 			final Expression currentGoal = context.getCurrentGoal();
 			
@@ -351,7 +354,7 @@ public final class Session implements Serializable {
 			}
 		}
 		
-		private final void exportModule(final Module module) {
+		private final void exportModule(final Module module, final int currentProofDepth) {
 			if (!module.getParameters().isEmpty()) {
 				this.output.processModuleParameters(module);
 			}
@@ -377,16 +380,16 @@ public final class Session implements Serializable {
 				for (final Map.Entry<String, Integer> entry : module.getFactIndices().entrySet()) {
 					this.output.processModuleFact(entry.getKey(), facts.get(entry.getValue()));
 					
-					if (this.printProofs) {
+					if (currentProofDepth <= this.maximumProofDepth) {
 						this.output.beginModuleFactProof();
 						
 						final Command command = proofs.get(entry.getValue());
 						final Claim claim = cast(Claim.class, command);
 						
-						if (claim == null) {
+						if (claim == null || currentProofDepth == this.maximumProofDepth) {
 							this.output.processModuleFactProof(command);
-						} else {
-							this.exportModule(claim.getProofContext());
+						} else  {
+							this.exportModule(claim.getProofContext(), currentProofDepth + 1);
 						}
 						
 						this.output.endModuleFactProof();
