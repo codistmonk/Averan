@@ -6,7 +6,6 @@ import static java.util.Arrays.copyOfRange;
 import static jrewrite3.core.Composite.isBracedComposite;
 import static jrewrite3.core.ExpressionTools.$;
 import static jrewrite3.core.ExpressionTools.facts;
-import static jrewrite3.core.Module.formatConjunction;
 import static jrewrite3.demo.Demo2b.ExpressionParser.$$;
 import static jrewrite3.demo.Demo2b.TexPrinter.TexStringGenerator.Pattern.any;
 import static net.sourceforge.aprog.tools.Tools.append;
@@ -41,6 +40,7 @@ import jrewrite3.core.Module.Symbol;
 import jrewrite3.core.Session;
 import jrewrite3.core.Visitor;
 import jrewrite3.modules.Standard;
+
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 import net.sourceforge.aprog.tools.Tools;
 import net.sourceforge.aurochs.LRParser;
@@ -69,7 +69,7 @@ public final class Demo2b {
 		session.suppose("definition_of_¬", $$("∀P (¬P = (P→`false))"));
 		session.suppose("definition_of_∃", $$("∀P,x (∃x (P x)) = ¬(∀y ¬(P y))"));
 		session.suppose("definition_of_∩", $$("∀A,B,x (x∈A∩B) = (x∈A ∧ x∈B)"));
-		session.suppose("definition_of_Σ", $$("∀i,a,b,e,s ((s=((Σ_(i=a)^b) e)) → (((b<a) → (s=0)) ∧ ((a≤b) → (s=(s{b=(b-1)})+e{i=b}))))"));
+		session.suppose("definition_of_Σ", $$("∀i,a,b,e,s ((s=((Σ_(i=a)^b) e)) → (((b<a) → (s=0)) ∧ ((a≤b) → (s=(s{b=(b-1)})+(e{i=b})))))"));
 		session.suppose("definition_of_≀M", $$("∀X,m,n (X∈≀M_(m,n) = ∀i,j (0≤i<m ∧ 0≤j<n) → X_(i,j)∈ℝ)"));
 		session.suppose("definition_of_≀C", $$("∀X,n (X∈≀C_n) = ∃m (X∈≀M_(m,n))"));
 		session.suppose("definition_of_≀R", $$("∀X,m (X∈≀R_m) = ∃n (X∈≀M_(m,n))"));
@@ -438,6 +438,98 @@ public final class Demo2b {
 		 */
 		public static final class TexStringGenerator implements Visitor<String> {
 			
+			@Override
+			public final String beginVisit(final Composite composite) {
+				{
+					final Pattern summation = newSummationPattern1();
+					
+					if (summation.equals(composite)) {
+						return "\\sum_" + group(summation.get("i=a")) + "^" + group(summation.get("b")) + " " + group(summation.get("e"));
+					}
+				}
+				
+				final List<Expression> children = composite.getChildren();
+				final StringBuilder resultBuilder = new StringBuilder();
+				final boolean thisIsBraced = isBracedComposite(composite);
+				
+				if (!thisIsBraced && Module.isSubstitution(composite)) {
+					final Composite equalities = (Composite) children.get(1);
+					
+					resultBuilder.append(children.get(0)).append(
+							cgroup(Tools.join(",", this.transform(equalities.getChildren()))));
+					
+					if (children.size() == 3) {
+						final Composite indices = (Composite) children.get(2);
+						
+						resultBuilder.append(children.get(0)).append(
+								sgroup(Tools.join(",", this.transform(indices.getChildren()))));
+					}
+					
+					return resultBuilder.toString();
+				}
+				
+				for (final Expression child : children) {
+					if (thisIsBraced || child instanceof Symbol || isBracedComposite(child)) {
+						resultBuilder.append(child.accept(this));
+					} else {
+						resultBuilder.append(pgroup(child.accept(this)));
+					}
+				}
+				
+				return group(resultBuilder.toString());
+			}
+			
+			@Override
+			public final String beginVisit(final Module module) {
+				return group(module.getParameters().isEmpty() ? "" : "∀" + Tools.join(",", this.transform(module.getParameters())) + "\\;")
+						+ (module.getConditions().isEmpty() ? "" : formatConjunction(this.transform(module.getConditions())) + " → ")
+						+ formatConjunction(this.transform(module.getFacts()));
+			}
+			
+			@Override
+			public final String visit(final Symbol symbol) {
+				return symbol.toString();
+			}
+			
+			public final Object[] transform(final Collection<? extends Expression> elements) {
+				return elements.stream().map(e -> e.accept(this)).toArray();
+			}
+			
+			/**
+			 * {@value}.
+			 */
+			private static final long serialVersionUID = 3004635190043687534L;
+			
+			public static final TexStringGenerator INSTANCE = new TexStringGenerator();
+			
+			public static final String formatConjunction(final List<Expression> propositions) {
+				if (propositions.size() == 1) {
+					final Expression proposition = propositions.get(0);
+					
+					if (proposition instanceof Symbol) {
+						return proposition.toString();
+					}
+				}
+				
+				return pgroup(join(" ∧ ", propositions));
+			}
+			
+			public static final String formatConjunction(final Object... propositions) {
+				if (propositions.length == 1) {
+					final Object proposition = propositions[0];
+					
+					if (proposition instanceof Symbol) {
+						return proposition.toString();
+					}
+				}
+				
+				return pgroup(Tools.join(" ∧ ", propositions));
+			}
+			
+			public static final String join(final String separator, final Iterable<?> elements) {
+				return Tools.join(separator, list(elements).toArray());
+			}
+			
 			public static final Pattern newSummationPattern1() {
 				return new Pattern($($($("Σ", "_", any("i=a")), "^", any("b")), any("e")));
 			}
@@ -579,98 +671,6 @@ public final class Demo2b {
 					
 				}
 				
-			}
-			
-			@Override
-			public final String beginVisit(final Composite composite) {
-				{
-					final Pattern summation = newSummationPattern1();
-					
-					if (summation.equals(composite)) {
-						return "\\sum_" + group(summation.get("i=a")) + "^" + group(summation.get("b")) + " " + group(summation.get("e"));
-					}
-				}
-				
-				final List<Expression> children = composite.getChildren();
-				final StringBuilder resultBuilder = new StringBuilder();
-				final boolean thisIsBraced = isBracedComposite(composite);
-				
-				if (!thisIsBraced && Module.isSubstitution(composite)) {
-					final Composite equalities = (Composite) children.get(1);
-					
-					resultBuilder.append(children.get(0)).append(
-							cgroup(Tools.join(",", this.transform(equalities.getChildren()))));
-					
-					if (children.size() == 3) {
-						final Composite indices = (Composite) children.get(2);
-						
-						resultBuilder.append(children.get(0)).append(
-								sgroup(Tools.join(",", this.transform(indices.getChildren()))));
-					}
-					
-					return resultBuilder.toString();
-				}
-				
-				for (final Expression child : children) {
-					if (thisIsBraced || child instanceof Symbol || isBracedComposite(child)) {
-						resultBuilder.append(child.accept(this));
-					} else {
-						resultBuilder.append(pgroup(child.accept(this)));
-					}
-				}
-				
-				return group(resultBuilder.toString());
-			}
-			
-			@Override
-			public final String beginVisit(final Module module) {
-				return group(module.getParameters().isEmpty() ? "" : "∀" + Tools.join(",", this.transform(module.getParameters())) + "\\;")
-						+ (module.getConditions().isEmpty() ? "" : formatConjunction(this.transform(module.getConditions())) + " → ")
-						+ formatConjunction(this.transform(module.getFacts()));
-			}
-			
-			@Override
-			public final String visit(final Symbol symbol) {
-				return symbol.toString();
-			}
-			
-			public final Object[] transform(final Collection<? extends Expression> elements) {
-				return elements.stream().map(e -> e.accept(this)).toArray();
-			}
-			
-			/**
-			 * {@value}.
-			 */
-			private static final long serialVersionUID = 3004635190043687534L;
-			
-			public static final TexStringGenerator INSTANCE = new TexStringGenerator();
-			
-			public static final String formatConjunction(final List<Expression> propositions) {
-				if (propositions.size() == 1) {
-					final Expression proposition = propositions.get(0);
-					
-					if (proposition instanceof Symbol) {
-						return proposition.toString();
-					}
-				}
-				
-				return pgroup(join(" ∧ ", propositions));
-			}
-			
-			public static final String formatConjunction(final Object... propositions) {
-				if (propositions.length == 1) {
-					final Object proposition = propositions[0];
-					
-					if (proposition instanceof Symbol) {
-						return proposition.toString();
-					}
-				}
-				
-				return pgroup(Tools.join(" ∧ ", propositions));
-			}
-			
-			public static final String join(final String separator, final Iterable<?> elements) {
-				return Tools.join(separator, list(elements).toArray());
 			}
 			
 		}
