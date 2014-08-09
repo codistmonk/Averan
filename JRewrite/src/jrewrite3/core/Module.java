@@ -1,6 +1,7 @@
 package jrewrite3.core;
 
 import static java.lang.Integer.parseInt;
+import static java.util.stream.Collectors.toCollection;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.list;
 
@@ -14,6 +15,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import net.sourceforge.aprog.tools.Tools;
 
@@ -40,16 +42,49 @@ public final class Module implements Expression {
 		this(parent, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
 	}
 	
+	private final Symbol localParameter(final Rewriter rewriter, final Symbol parameter) {
+		if (parameter.getModule() == this) {
+			return parameter;
+		}
+		
+		final Symbol result = this.new Symbol(parameter.toString());
+		
+		rewriter.rewrite(parameter, result);
+		
+		return result;
+	}
+	
 	Module(final Module parent, final List<Symbol> parameters,
 			final List<Expression> conditions, final List<Expression> facts) {
 		this.parent = parent;
-		// XXX there may or may not be an issue with the fact that
-		//     existing parameters won't reference this module;
-		//     likewise for existing submodule's parents 
-		this.parameters = parameters;
-		this.conditions = conditions;
+		
+		if (true) {
+			final Rewriter rewriter = new Rewriter();
+			
+			this.parameters = parameters.stream()
+					.map(s -> this.localParameter(rewriter, s))
+					.collect(toCollection(ArrayList::new));
+			
+			if (!rewriter.getRewrites().isEmpty()) {
+				Tools.debugPrint(rewriter.getRewrites());
+				this.conditions = Expression.listAcceptor(conditions, rewriter).get();
+				this.facts = Expression.listAcceptor(facts, rewriter).get();
+			} else {
+				this.conditions = conditions;
+				this.facts = facts;
+			}
+			
+			// XXX the proofs may also need to be rewritten
+		} else {
+			// XXX there may or may not be an issue with the fact that
+			//     existing parameters won't reference this module;
+			//     likewise for existing submodule's parents 
+			this.parameters = parameters;
+			this.conditions = conditions;
+			this.facts = facts;
+		}
+		
 		this.conditionIndices = new LinkedHashMap<>(conditions.size());
-		this.facts = facts;
 		this.factIndices = new LinkedHashMap<>(facts.size());
 		this.proofs = new ArrayList<>(facts.size());
 	}
@@ -860,8 +895,8 @@ public final class Module implements Expression {
 		
 		@Override
 		public final String toString() {
-			return "Apply " + this.getModule().getPropositionName()
-					+ " using " + this.getProposition().getPropositionName();
+			return "Apply (" + this.getModule().getPropositionName()
+					+ ") using (" + this.getProposition().getPropositionName() + ")";
 		}
 		
 		/**

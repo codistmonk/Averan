@@ -80,9 +80,9 @@ public final class Demo2b {
 		session.suppose("definition_of_matrix_size_equality",
 				$$("∀X,Y ((`size_X=`size_Y) = ((`columnCount_X = `columnCount_Y) ∧ (`rowCount_X = `rowCount_Y)))"));
 		session.suppose("definition_of_matrix_addition",
-				$$("∀X,Y ((`size_X=`size_Y) → (∀i,j ((X+Y)_(i,j)=(X_(i,j))+(Y_(i_j)))))"));
+				$$("∀X,Y ((`size_X=`size_Y) → (∀i,j ((X+Y)_(i,j)=(X_(i,j))+(Y_(i,j)))))"));
 		session.suppose("definition_of_matrix_subtraction",
-				$$("∀X,Y ((`size_X=`size_Y) → (∀i,j ((X-Y)_(i,j)=(X_(i,j))-(Y_(i_j)))))"));
+				$$("∀X,Y ((`size_X=`size_Y) → (∀i,j ((X-Y)_(i,j)=(X_(i,j))-(Y_(i,j)))))"));
 		session.suppose("definition_of_matrix_multiplication",
 				$$("∀X,Y,n ((`columnCount_X = n) ∧ (`rowCount_Y = n)) → (∀i,j,k (XY)_(i,j)=((Σ_(k=0)^(n-1)) (X_(i,k))(Y_(k,j))))"));
 		session.suppose("definition_of_transposition",
@@ -99,6 +99,14 @@ public final class Demo2b {
 			final Symbol y = session.getParameter("Y");
 			
 			session.bind("definition_of_transposition", (Expression) $(x, "+", y));
+			session.bind("definition_of_matrix_addition", x, y);
+			session.apply("#2", "#0");
+			
+			final Module m = (Module) session.getCurrentContext().getModule().getProposition("#1");
+			final Symbol i = m.getParameter("i");
+			final Symbol j = m.getParameter("j");
+			
+			session.bind("#3", j, i);
 		}
 		
 		session.new Exporter(true).exportSession();
