@@ -23,7 +23,7 @@ public final class Standard {
 	/**
 	 * {@value}.
 	 */
-	public static final String SYMMETRY_OF_IDENTITY = "symmetry_of_identity";
+	public static final String SYMMETRY_OF_EQUALITY = "symmetry_of_equality";
 
 	/**
 	 * {@value}.
@@ -83,7 +83,7 @@ public final class Standard {
 			
 			symmetryOfIdentity.new Claim("then y=x", equality(y, x), yEqualsX).execute();
 			
-			MODULE.new Claim(SYMMETRY_OF_IDENTITY, symmetryOfIdentity).execute();
+			MODULE.new Claim(SYMMETRY_OF_EQUALITY, symmetryOfIdentity).execute();
 		}
 	}
 	

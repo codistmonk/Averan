@@ -66,7 +66,6 @@ public final class Module implements Expression {
 					.collect(toCollection(ArrayList::new));
 			
 			if (!rewriter.getRewrites().isEmpty()) {
-				Tools.debugPrint(rewriter.getRewrites());
 				this.conditions = Expression.listAcceptor(conditions, rewriter).get();
 				this.facts = Expression.listAcceptor(facts, rewriter).get();
 			} else {
