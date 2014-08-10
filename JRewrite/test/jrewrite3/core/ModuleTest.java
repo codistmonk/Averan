@@ -8,6 +8,7 @@ import static jrewrite3.core.Module.equality;
 import static jrewrite3.modules.Standard.IDENTITY;
 import static net.sourceforge.aprog.tools.Tools.array;
 import static org.junit.Assert.*;
+
 import jrewrite3.core.Expression;
 import jrewrite3.core.Module;
 import jrewrite3.core.Module.Symbol;
@@ -64,6 +65,45 @@ public final class ModuleTest {
 		}
 		
 		assertEquals(module1, module2);
+	}
+	
+	@Test
+	public final void testImplies() {
+		final Module module1 = new Module(null);
+		final Module module2 = new Module(null);
+		
+		assertTrue(module1.implies(module2));
+		
+		final Symbol x = $("x");
+		
+		module1.new Admit(x).execute();
+		
+		assertTrue(module1.implies(x));
+		assertFalse(module2.implies(x));
+		assertTrue(module1.implies(module2));
+		assertFalse(module2.implies(module1));
+		
+		final Symbol y = $("y");
+		
+		module1.new Admit(y).execute();
+		module2.new Admit(y).execute();
+		
+		assertTrue(module1.implies(y));
+		assertTrue(module2.implies(y));
+		assertTrue(module1.implies(module2));
+		assertFalse(module2.implies(module1));
+		
+		final Symbol z = $("z");
+		
+		module1.new Suppose(z).execute();
+		
+		assertTrue(module1.implies(module2));
+		assertFalse(module2.implies(module1));
+		
+		module2.new Suppose(z).execute();
+		
+		assertTrue(module1.implies(module2));
+		assertFalse(module2.implies(module1));
 	}
 	
 	@Test

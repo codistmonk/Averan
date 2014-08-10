@@ -82,8 +82,20 @@ public final class Session implements Serializable {
 		return this.pop();
 	}
 	
+	public final Session recall(final String propositionName) {
+		return this.recall(this.newPropositionName(), propositionName);
+	}
+	
+	public final Session recall(final String factName, final String propositionName) {
+		final Module module = this.getCurrentContext().getModule();
+		
+		module.new Recall(factName, module, propositionName).execute();
+		
+		return this.pop();
+	}
+	
 	public final Session rewrite(final String sourceName, final String equalityName, final Integer... indices) {
-		return this.rewrite(null, sourceName, equalityName, indices);
+		return this.rewrite(this.newPropositionName(), sourceName, equalityName, indices);
 	}
 	
 	public final Session rewrite(final String factName, final String sourceName, final String equalityName, final Integer... indices) {
@@ -161,8 +173,6 @@ public final class Session implements Serializable {
 		while (1 < this.getStack().size() && this.getCurrentContext().isGoalReached()) {
 			final ProofContext previous = this.getStack().remove(0);
 			final Module proof = previous.getModule();
-//			final Expression fact = previous.getInitialGoal() instanceof Module ?
-//					proof : previous.getInitialGoal();
 			final Expression fact = previous.getInitialGoal();
 			
 			this.getCurrentContext().getModule().new Claim(previous.getName(), fact, proof).execute();
@@ -193,10 +203,6 @@ public final class Session implements Serializable {
 		
 		private boolean goalReached;
 		
-		private int uncheckedConditionIndex;
-		
-		private int uncheckedFactIndex;
-		
 		public ProofContext(final String name, final Module module, final Expression goal) {
 			this.name = name;
 			this.module = module;
@@ -218,31 +224,8 @@ public final class Session implements Serializable {
 		
 		public final boolean isGoalReached() {
 			if (!this.goalReached) {
-				final List<Expression> conditions = this.getModule().getConditions();
-				final int conditionCount = conditions.size();
-				
-				while (this.uncheckedConditionIndex < conditionCount) {
-					if (!this.goalReached
-							&& this.getCurrentGoal().equals(conditions.get(this.uncheckedConditionIndex))) {
-						this.goalReached = true;
-					}
-					
-					++this.uncheckedConditionIndex;
-				}
-			}
-			
-			if (!this.goalReached) {
-				final List<Expression> facts = this.getModule().getFacts();
-				final int factCount = facts.size();
-				
-				while (this.uncheckedFactIndex < factCount) {
-					if (!this.goalReached
-							&& this.getCurrentGoal().equals(facts.get(this.uncheckedFactIndex))) {
-						this.goalReached = true;
-					}
-					
-					++this.uncheckedFactIndex;
-				}
+//				this.goalReached = this.getModule().impliesGoal(this.getCurrentGoal());
+				this.goalReached = this.getModule().implies(this.getInitialGoal());
 			}
 			
 			return this.goalReached;

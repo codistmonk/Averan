@@ -1,6 +1,7 @@
 package jrewrite3.core;
 
 import static java.lang.Integer.parseInt;
+import static java.lang.Math.min;
 import static java.util.stream.Collectors.toCollection;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.list;
@@ -8,6 +9,7 @@ import static net.sourceforge.aprog.tools.Tools.list;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -203,16 +205,33 @@ public final class Module implements Expression {
 			return false;
 		}
 		
+		that = this.bind(that);
+		
+		return this.getConditions().equals(that.getConditions())
+				&& this.getFacts().equals(that.getFacts());
+	}
+	
+	public final Module bind(final Module that) {
+		if (that == null) {
+			return that;
+		}
+		
+		final int n = min(this.getParameters().size(), that.getParameters().size());
 		final Rewriter rewriter = new Rewriter();
 		
 		for (int i = 0; i < n; ++i) {
 			rewriter.rewrite(that.getParameters().get(i), this.getParameters().get(i));
 		}
 		
-		that = (Module) that.accept(rewriter);
+		@SuppressWarnings("unchecked")
+		final List<Symbol> newParameters = (List<Symbol>) (Object) Expression.listAcceptor(
+				that.getParameters(), rewriter).get();
 		
-		return this.getConditions().equals(that.getConditions())
-				&& this.getFacts().equals(that.getFacts());
+		newParameters.removeAll(this.getParameters());
+		
+		return new Module(that.getParent(), that.getName(), newParameters,
+			Expression.listAcceptor(that.getConditions(), rewriter).get(),
+			Expression.listAcceptor(that.getFacts(), rewriter).get());
 	}
 	
 	@Override
@@ -276,6 +295,44 @@ public final class Module implements Expression {
 		} while (parent != null);
 		
 		return false;
+	}
+	
+	public final boolean implies(final Expression proposition) {
+		if (this.isFree() && this.getFacts().contains(proposition)) {
+			return true;
+		}
+		
+		final Module that = this.bind(cast(Module.class, proposition));
+		
+		return that != null && that.getParameters().isEmpty()
+				&& join(this.getConditions(), this.getFacts()).containsAll(that.getConditions())
+				&& this.getFacts().containsAll(that.getFacts());
+	}
+	
+	public static final <T> List<T> join(final Collection<T> left, final Collection<T> right) {
+		final List<T> result = new ArrayList<>(left);
+		
+		result.addAll(right);
+		
+		return result;
+	}
+	
+	public final boolean impliesGoal(final Expression proposition) {
+		if (this.getFacts().contains(proposition)) {
+			return true;
+		}
+		
+		final Module that = this.bind(cast(Module.class, proposition));
+		
+		if (that != null) {
+			Tools.debugPrint(this.getFacts());
+			Tools.debugPrint(that.getFacts());
+			Tools.debugPrint(this.getFacts().containsAll(that.getFacts()));
+		}
+		
+		return that != null && that.getParameters().isEmpty()
+				&& this.getConditions().containsAll(that.getConditions())
+				&& this.getFacts().containsAll(that.getFacts());
 	}
 	
 	final void newProposition(final Map<String, Integer> indices, final String propositionName) {
@@ -498,6 +555,11 @@ public final class Module implements Expression {
 			return this.addFact(this.getProposition().getProposition());
 		}
 		
+		@Override
+		public final String toString() {
+			return "Recall (" + this.getProposition().getPropositionName() + ")";
+		}
+		
 		/**
 		 * {@value}.
 		 */
@@ -533,29 +595,10 @@ public final class Module implements Expression {
 			this.proofContext = proofContext;
 			
 			if (fact instanceof Module) {
-				final Module factAsModule = (Module) fact;
-				
-				if (!fact.equals(proofContext)) {
-					if (!proofContext.getFacts().contains(factAsModule)
-							&& !proofContext.getFacts().containsAll(factAsModule.getFacts())) {
-						final Rewriter rewriter = new Rewriter();
-						
-						for (final Symbol parameter : proofContext.getParameters()) {
-							rewriter.rewrite(factAsModule.getParameter(parameter.toString()), parameter);
-						}
-						
-						final Expression rewrittenFact = fact.accept(rewriter);
-						
-						if (!proofContext.getFacts().contains(rewrittenFact)
-								&& !(rewrittenFact instanceof Module
-										&& proofContext.getFacts().containsAll(((Module) rewrittenFact).getFacts()))) {
-							// TODO
-							Tools.debugError(proofContext.getFacts().get(proofContext.getFacts().size() - 1));
-							Tools.debugError(fact);
-							
-							throw new IllegalArgumentException("Invalid proof");
-						}
-					}
+				if (!proofContext.implies(fact)) {
+					Tools.debugError(proofContext);
+					Tools.debugError(fact);
+					throw new IllegalArgumentException("Invalid proof");
 				}
 			} else if (!Module.this.canAccess(proofContext)
 					|| !proofContext.getParameters().isEmpty()
