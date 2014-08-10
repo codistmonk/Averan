@@ -297,17 +297,96 @@ public final class Module implements Expression {
 		return false;
 	}
 	
+	public final Module canonical() {
+		return new Module(this.getParent(), this.getName(),
+				this.collectParameters(), this.collectConditions(), this.collectTerminalFacts());
+	}
+	
+	public final List<Symbol> collectParameters() {
+		final List<Symbol> result = new ArrayList<>(this.getParameters());
+		final List<Expression> facts = this.getFacts();
+		
+		if (facts.size() == 1) {
+			final Module fact = cast(Module.class, facts.get(0));
+			
+			if (fact != null) {
+				result.addAll(fact.collectParameters());
+			}
+		}
+		
+		return result;
+	}
+	
+	public final List<Expression> collectConditions() {
+		final List<Expression> result = flattenFreeFacts(this.getConditions());
+		final List<Expression> facts = this.getFacts();
+		
+		if (facts.size() == 1) {
+			final Module fact = cast(Module.class, facts.get(0));
+			
+			if (fact != null) {
+				result.addAll(fact.collectConditions());
+			}
+		}
+		
+		return result;
+	}
+	
+	public final List<Expression> collectTerminalFacts() {
+		final List<Expression> result = new ArrayList<>();
+		final List<Expression> facts = this.getFacts();
+		
+		if (facts.size() == 1) {
+			final Module fact = cast(Module.class, facts.get(0));
+			
+			if (fact != null) {
+				result.addAll(fact.collectTerminalFacts());
+			} else {
+				result.addAll(flattenFreeFacts(facts));
+			}
+		} else {
+			result.addAll(flattenFreeFacts(facts));
+		}
+		
+		return result;
+	}
+	
 	public final boolean implies(final Expression proposition) {
 		if (this.isFree() && this.getFacts().contains(proposition)) {
 			return true;
 		}
 		
-		final Module that = this.bind(cast(Module.class, proposition));
+		{
+			Module that = cast(Module.class, proposition);
+			
+			if (that == null) {
+				return false;
+			}
+			
+			final Module thisCanonical = this.canonical();
+			final Module thatCanonical = thisCanonical.bind(that.canonical());
+			final List<Expression> thisPropositions = join(thisCanonical.getConditions(), thisCanonical.getFacts());
+			
+//			Tools.debugPrint();
+//			Tools.debugPrint(thisPropositions, thatCanonical.getConditions(), thisPropositions.containsAll(thatCanonical.getConditions()));
+//			Tools.debugPrint(thisCanonical.getFacts(), thatCanonical.getFacts(), thisCanonical.getFacts().containsAll(thatCanonical.getFacts()));
+			
+			return thisPropositions.containsAll(thatCanonical.getConditions()) && thisCanonical.getFacts().containsAll(thatCanonical.getFacts());
+		}
+	}
+	
+	public static final List<Expression> collectConditions(final Module module) {
+		final List<Expression> result = flattenFreeFacts(module.getConditions());
 		
-		return that != null && that.getParameters().isEmpty()
-				&& join(this.getConditions(), this.getFacts()).containsAll(that.getConditions())
-//				&& this.getFacts().containsAll(that.getFacts());
-				&& flattenFreeFacts(this.getFacts()).containsAll(flattenFreeFacts(that.getFacts()));
+		if (module.getFacts().size() == 1) {
+			final Module fact = cast(Module.class, module.getFacts().get(0));
+			
+			if (fact != null) {
+				result.addAll(collectConditions(fact));
+			}
+		}
+		
+		return result;
 	}
 	
 	public static final List<Expression> flattenFreeFacts(final List<Expression> facts) {
@@ -327,6 +406,22 @@ public final class Module implements Expression {
 			}
 			
 			n = result.size();
+		}
+		
+		return result;
+	}
+	
+	public static final List<Expression> flattenTerminalFacts(final List<Expression> facts) {
+		final List<Expression> result = new ArrayList<>();
+		
+		for (final Expression fact : facts) {
+			final Module module = cast(Module.class, fact);
+			
+			if (module != null) {
+				result.addAll(flattenTerminalFacts(module.getFacts()));
+			} else {
+				result.add(fact);
+			}
 		}
 		
 		return result;

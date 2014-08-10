@@ -126,7 +126,6 @@ public final class Demo2b {
 				final Expression xy = $(x, y);
 				final Expression xyt = $(xy, "ᵀ");
 				final Expression ytxt = $(yt, xt);
-				final Expression goal = $(xyt, "=", ytxt);
 				
 				session.bind("definition_of_matrix_equality", xyt, ytxt);
 				
@@ -343,12 +342,6 @@ public final class Demo2b {
 			{
 				session.introduce();
 				session.bind("commutativity_of_conjunction#1#0");
-//				session.recall("commutativity_of_conjunction#1#1/#1");
-//				session.recall("commutativity_of_conjunction#1#1/#0");
-//				if (true) throw new RuntimeException();
-				session.bind("definition_of_conjunction", q, p);
-				session.apply("commutativity_of_conjunction#1#3", "commutativity_of_conjunction#1#1/#1");
-				session.apply("commutativity_of_conjunction#1#4", "commutativity_of_conjunction#1#1/#0");
 			}
 			
 			session.claim(qp2pq);
@@ -356,17 +349,13 @@ public final class Demo2b {
 			{
 				session.introduce();
 				session.bind("commutativity_of_conjunction#2#0");
-				session.bind("definition_of_conjunction", p, q);
-				session.apply("commutativity_of_conjunction#2#3", "commutativity_of_conjunction#2#1/#1");
-				session.apply("commutativity_of_conjunction#2#4", "commutativity_of_conjunction#2#1/#0");
 			}
 			
 			session.claim($(pq2qp, "&", qp2pq));
 			
 			{
-				session.bind("definition_of_conjunction", pq2qp, qp2pq);
-				session.apply("commutativity_of_conjunction#3#0", "commutativity_of_conjunction#1");
-				session.apply("commutativity_of_conjunction#3#1", "commutativity_of_conjunction#2");
+				session.recall("commutativity_of_conjunction#1");
+				session.recall("commutativity_of_conjunction#2");
 			}
 			
 			rewriteRight(session, "commutativity_of_conjunction#3", "commutativity_of_conjunction#0");
