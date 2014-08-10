@@ -97,7 +97,7 @@ public final class ModuleTest {
 		
 		module1.new Suppose(z).execute();
 		
-		assertTrue(module1.implies(module2));
+		assertFalse(module1.implies(module2));
 		assertFalse(module2.implies(module1));
 		
 		module2.new Suppose(z).execute();

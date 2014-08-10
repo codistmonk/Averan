@@ -371,7 +371,8 @@ public final class Module implements Expression {
 //			Tools.debugPrint(thisPropositions, thatCanonical.getConditions(), thisPropositions.containsAll(thatCanonical.getConditions()));
 //			Tools.debugPrint(thisCanonical.getFacts(), thatCanonical.getFacts(), thisCanonical.getFacts().containsAll(thatCanonical.getFacts()));
 			
-			return thisPropositions.containsAll(thatCanonical.getConditions()) && thisCanonical.getFacts().containsAll(thatCanonical.getFacts());
+//			return thisPropositions.containsAll(thatCanonical.getConditions()) && thisCanonical.getFacts().containsAll(thatCanonical.getFacts());
+			return thatCanonical.getConditions().containsAll(thisCanonical.getConditions()) && thisCanonical.getFacts().containsAll(thatCanonical.getFacts());
 		}
 	}
 	
