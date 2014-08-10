@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import net.sourceforge.aprog.tools.Tools;
 import jrewrite3.core.Module.Claim;
 import jrewrite3.core.Module.Command;
 import jrewrite3.core.Module.Symbol;
@@ -54,7 +55,7 @@ public final class Session implements Serializable {
 	
 	@SuppressWarnings("unchecked")
 	public final <E extends Expression> E getProposition(final String name) {
-		return (E) this.getCurrentContext().getModule().getProposition(name);
+		return (E) this.getCurrentModule().getProposition(name);
 	}
 	
 	public final Expression getCurrentGoal() {
@@ -62,11 +63,11 @@ public final class Session implements Serializable {
 	}
 	
 	public final Symbol getParameter(final String name) {
-		return this.getCurrentContext().getModule().findParameter(name);
+		return this.getCurrentModule().findParameter(name);
 	}
 	
 	public final Symbol getParameter(final int index) {
-		final List<Symbol> parameters = this.getCurrentContext().getModule().getParameters();
+		final List<Symbol> parameters = this.getCurrentModule().getParameters();
 		final int n = parameters.size();
 		
 		return parameters.get((index + n) % n);
@@ -77,19 +78,19 @@ public final class Session implements Serializable {
 	}
 	
 	public final Session suppose(final String conditionName, final Expression condition) {
-		this.getCurrentContext().getModule().new Suppose(conditionName, condition).execute();
+		this.getCurrentModule().new Suppose(conditionName, condition).execute();
 		
 		return this.pop();
 	}
 	
 	public final Session admit(final Expression fact) {
-		this.getCurrentContext().getModule().new Suppose(this.newPropositionName(), fact).execute();
+		this.getCurrentModule().new Suppose(this.newPropositionName(), fact).execute();
 		
 		return this.pop();
 	}
 	
 	public final Session admit(final String factName, final Expression fact) {
-		this.getCurrentContext().getModule().new Admit(factName, fact).execute();
+		this.getCurrentModule().new Admit(factName, fact).execute();
 		
 		return this.pop();
 	}
@@ -99,7 +100,7 @@ public final class Session implements Serializable {
 	}
 	
 	public final Session recall(final String factName, final String propositionName) {
-		final Module module = this.getCurrentContext().getModule();
+		final Module module = this.getCurrentModule();
 		
 		module.new Recall(factName, module, propositionName).execute();
 		
@@ -111,7 +112,7 @@ public final class Session implements Serializable {
 	}
 	
 	public final Session rewrite(final String factName, final String sourceName, final String equalityName, final Integer... indices) {
-		final Module module = this.getCurrentContext().getModule();
+		final Module module = this.getCurrentModule();
 		
 		module.new Rewrite(factName, module, sourceName, module, equalityName).atIndices(indices).execute();
 		
@@ -123,7 +124,7 @@ public final class Session implements Serializable {
 	}
 	
 	public final Session apply(final String factName, final String moduleName, final String conditionName) {
-		final Module module = this.getCurrentContext().getModule();
+		final Module module = this.getCurrentModule();
 		
 		module.new Apply(factName, module, moduleName, module, conditionName).execute();
 		
@@ -134,8 +135,26 @@ public final class Session implements Serializable {
 		return this.bind(this.newPropositionName(), moduleName, expressions);
 	}
 	
+	public final <E extends Expression> E getLastFact() {
+		final List<Expression> facts = this.getCurrentModule().getFacts();
+		
+		return (E) facts.get(facts.size() - 1);
+	}
+	
+	public final Module getCurrentModule() {
+		return this.getCurrentContext().getModule();
+	}
+	
+	public final String getLastFactName() {
+		final Map<String, Integer> factIndices = this.getCurrentModule().getFactIndices();
+		final int i = factIndices.size() - 1;
+		
+		return factIndices.entrySet().stream().reduce(
+				"", (old, entry) -> entry.getValue().equals(i) ? entry.getKey() : old, (u, t) -> t);
+	}
+	
 	public final Session bind(final String factName, final String moduleName, final Expression... expressions) {
-		Module module = this.getCurrentContext().getModule();
+		Module module = this.getCurrentModule();
 		
 		if (module.getPropositionOrNull(moduleName) == null) {
 			module = null;
@@ -148,7 +167,7 @@ public final class Session implements Serializable {
 			}
 		}
 		
-		this.getCurrentContext().getModule().new Bind(
+		this.getCurrentModule().new Bind(
 				factName, module, moduleName).bind(expressions).execute();
 		
 		return this.pop();
@@ -169,12 +188,12 @@ public final class Session implements Serializable {
 	}
 	
 	public final String newPropositionName() {
-		return this.getCurrentContext().getModule().newPropositionName();
+		return this.getCurrentModule().newPropositionName();
 	}
 	
 	public final Session claim(final String factName, final Expression proposition) {
 		final ProofContext proofContext = new ProofContext(factName,
-				new Module(this.getCurrentContext().getModule(), factName), proposition);
+				new Module(this.getCurrentModule(), factName), proposition);
 		
 		this.getStack().add(0, proofContext);
 		
@@ -187,7 +206,7 @@ public final class Session implements Serializable {
 			final Module proof = previous.getModule();
 			final Expression fact = previous.getInitialGoal();
 			
-			this.getCurrentContext().getModule().new Claim(previous.getName(), fact, proof).execute();
+			this.getCurrentModule().new Claim(previous.getName(), fact, proof).execute();
 		}
 		
 		return this;
@@ -236,7 +255,20 @@ public final class Session implements Serializable {
 		
 		public final boolean isGoalReached() {
 			if (!this.goalReached) {
-//				this.goalReached = this.getModule().impliesGoal(this.getCurrentGoal());
+				if (!this.getModule().getFacts().isEmpty() && this.getInitialGoal() instanceof Module) {
+					Tools.debugPrint(this.getModule());
+					final Module initialModule = (Module) this.getInitialGoal();
+					
+					final List<Expression> f1 = Module.flattenFreeFacts(this.getModule().getFacts());
+					final List<Expression> f2 = Module.flattenFreeFacts(initialModule.getFacts());
+					Tools.debugPrint(f1);
+					Tools.debugPrint(f2);
+					final Expression l1 = f1.get(f1.size() - 1);
+					final Expression l2 = f2.get(f2.size() - 1);
+					Tools.debugPrint(l1);
+					Tools.debugPrint(l2);
+				}
+				
 				this.goalReached = this.getModule().implies(this.getInitialGoal());
 			}
 			

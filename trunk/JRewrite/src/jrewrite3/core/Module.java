@@ -306,7 +306,30 @@ public final class Module implements Expression {
 		
 		return that != null && that.getParameters().isEmpty()
 				&& join(this.getConditions(), this.getFacts()).containsAll(that.getConditions())
-				&& this.getFacts().containsAll(that.getFacts());
+//				&& this.getFacts().containsAll(that.getFacts());
+				&& flattenFreeFacts(this.getFacts()).containsAll(flattenFreeFacts(that.getFacts()));
+	}
+	
+	public static final List<Expression> flattenFreeFacts(final List<Expression> facts) {
+		final List<Expression> result = new ArrayList<>(facts);
+		int i = 0;
+		int n = result.size();
+		
+		while (i < n) {
+			while (i < n) {
+				final Module module = cast(Module.class, result.get(i));
+				
+				if (module != null && module.isFree()) {
+					result.addAll(module.getFacts());
+				}
+				
+				++i;
+			}
+			
+			n = result.size();
+		}
+		
+		return result;
 	}
 	
 	public static final <T> List<T> join(final Collection<T> left, final Collection<T> right) {
@@ -323,12 +346,6 @@ public final class Module implements Expression {
 		}
 		
 		final Module that = this.bind(cast(Module.class, proposition));
-		
-		if (that != null) {
-			Tools.debugPrint(this.getFacts());
-			Tools.debugPrint(that.getFacts());
-			Tools.debugPrint(this.getFacts().containsAll(that.getFacts()));
-		}
 		
 		return that != null && that.getParameters().isEmpty()
 				&& this.getConditions().containsAll(that.getConditions())
@@ -828,6 +845,8 @@ public final class Module implements Expression {
 			
 			for (final Expression expression : expressions) {
 				if (this.bound < 0 || parameters.size() <= this.bound) {
+					Tools.debugError(this.bound);
+					Tools.debugError(parameters.size());
 					throw new IllegalStateException("Inconsistent binding");
 				}
 				

@@ -67,6 +67,7 @@ public final class Demo2b {
 	static {
 		final Session session = new Session(MODULE);
 		
+		block:
 		try {
 			session.suppose("definition_of_conjunction",
 					$$("∀P,Q (P → (Q → (P ∧ Q)))"));
@@ -81,7 +82,7 @@ public final class Demo2b {
 			session.suppose("definition_of_summation",
 					$$("∀i,a,b,e,s ((s=((Σ_(i=a)^b) e)) → (((b<a) → (s=0)) ∧ ((a≤b) → (s=(s{b=(b-1)})+(e{i=b})))))"));
 			session.suppose("definition_of_matrices",
-					$$("∀X,m,n (X∈≀M_(m,n) = (`rowCount_X = m ∧ `columnCount_X = n ∧ ∀i,j (0≤i<m ∧ 0≤j<n) → X_(i,j)∈ℝ))"));
+					$$("∀X,m,n (X∈≀M_(m,n) = (`rowCount_X = m ∧ `columnCount_X = n ∧ ∀i,j (X_(i,j)∈ℝ)))"));
 			session.suppose("definition_of_matrix_size_equality",
 					$$("∀X,Y ((`size_X=`size_Y) = ((`columnCount_X = `columnCount_Y) ∧ (`rowCount_X = `rowCount_Y)))"));
 			session.suppose("definition_of_matrix_equality",
@@ -91,7 +92,7 @@ public final class Demo2b {
 			session.suppose("definition_of_matrix_subtraction",
 					$$("∀X,Y ((`size_X=`size_Y) → (∀i,j ((X-Y)_(i,j)=(X_(i,j))-(Y_(i,j)))))"));
 			session.suppose("definition_of_matrix_multiplication",
-					$$("∀X,Y,n ((`columnCount_X = n) ∧ (`rowCount_Y = n)) → (∀i,j,k (XY)_(i,j)=((Σ_(k=0)^(n-1)) (X_(i,k))(Y_(k,j))))"));
+					$$("∀X,Y,n (((`columnCount_X = n) ∧ (`rowCount_Y = n)) → (∀i,j,k ((XY)_(i,j)=((Σ_(k=0)^(n-1)) (X_(i,k))(Y_(k,j))))))"));
 			session.suppose("definition_of_transposition",
 					$$("∀X (∀i,j (Xᵀ_(i,j)=X_(j,i)))"));
 			session.suppose("definition_of_transposition_rowCount",
@@ -103,10 +104,86 @@ public final class Demo2b {
 			session.suppose("definition_of_U_columnCount", $$("∀n (`columnCount_(U_n)=1)"));
 			session.suppose("definition_of_U", $$("∀n (0<n → (∀i (U_n_(i,1)=1/n)))"));
 			
+			session.admit("commutativity_of_multiplication",
+					$$("∀x,y ((x∈ℝ ∧ y∈ℝ) → ((xy)=(yx)))"));
+			
 			claimCommutativityOfConjunction(session);
 			claimTranspositionOfAddition(session);
 			
-			session.admit("transposition_of_multiplication", $$("∀X,Y ((`size_X=`size_Y) → ((XY)ᵀ=YᵀXᵀ))"));
+			session.claim("transposition_of_multiplication", $$("∀X,Y ((`columnCount_X=`rowCount_Y) → ((XY)ᵀ=YᵀXᵀ))"));
+			
+			{
+				session.introduce();
+				session.introduce();
+				session.introduce();
+				
+				final Symbol x = session.getParameter("X");
+				final Symbol y = session.getParameter("Y");
+				final Expression xt = $(x, "ᵀ");
+				final Expression yt = $(y, "ᵀ");
+				final Expression xy = $(x, y);
+				final Expression xyt = $(xy, "ᵀ");
+				final Expression ytxt = $(yt, xt);
+				final Expression goal = $(xyt, "=", ytxt);
+				
+				session.bind("definition_of_matrix_equality", xyt, ytxt);
+				
+				session.claim(((Composite) session.getLastFact()).get(2));
+				
+				{
+					session.introduce();
+					session.introduce();
+					
+					final Symbol i = session.getParameter("i");
+					final Symbol j = session.getParameter("j");
+					final Symbol k = session.getCurrentModule().new Symbol("k");
+					final Expression columnCountX = $("columnCount", "_", x);
+					
+					session.bind(Standard.IDENTITY, k);
+					session.bind("definition_of_transposition", xy, i, j);
+					session.bind("definition_of_matrix_multiplication", x, y, columnCountX);
+					session.claim(((Module) session.getLastFact()).getConditions().get(0));
+					
+					{
+						session.bind(Standard.IDENTITY, columnCountX);
+						session.rewrite(session.getLastFactName(), "transposition_of_multiplication#0", 0);
+					}
+					
+					session.apply("transposition_of_multiplication#2#2", session.getLastFactName());
+					session.bind(session.getLastFactName(), j, i, k);
+					session.rewrite("transposition_of_multiplication#2#1", session.getLastFactName());
+					
+					session.bind("definition_of_matrix_multiplication", yt, xt, $("columnCount", "_", x));
+					session.claim(((Module) session.getLastFact()).getConditions().get(0));
+					
+					{
+						session.bind("definition_of_transposition_columnCount", y);
+						rewriteRight(session, session.getLastFactName(), "transposition_of_multiplication#0");
+						session.bind("definition_of_transposition_rowCount", x);
+					}
+					
+					session.apply("transposition_of_multiplication#2#7", session.getLastFactName());
+					session.bind(session.getLastFactName(), i, j, k);
+					
+					session.bind("definition_of_transposition", x);
+					session.bind(session.getLastFactName(), k, j);
+					session.rewrite("transposition_of_multiplication#2#10", session.getLastFactName());
+					
+					session.bind("definition_of_transposition", y);
+					session.bind(session.getLastFactName(), i, k);
+					session.rewrite("transposition_of_multiplication#2#13", session.getLastFactName());
+					
+//					session.bind("definition_of_matrix_multiplication", x, y, $("columnCount", "_", x));
+//					rewriteRight(session, session.getLastFactName(), "transposition_of_multiplication#0");
+//					session.claim(((Module) session.getLastFact()).getConditions().get(0));
+//					session.bind(Standard.IDENTITY, (Expression) $("columnCount", "_", x));
+//					session.apply("transposition_of_multiplication#2#1", session.getLastFactName());
+				}
+			}
+			
+			if (true) break block;
+			
+			session.admit("transposition_of_multiplication", $$("∀X,Y ((`columnCount_X=`rowCount_Y) → ((XY)ᵀ=YᵀXᵀ))"));
 			session.admit("definition_of_replicated_means", $$("∀X,n ((`columnCount_X=n) → (M_X)=X(U_n)(U_n)ᵀ)"));
 			session.admit("simplified_definition_of_variance", $$("∀X ((`Var_X)=(XXᵀ)-((M_X)(M_X)ᵀ))"));
 			session.admit("definition_of_problem_dimension", $$("0<D"));
@@ -118,17 +195,16 @@ public final class Demo2b {
 			session.admit("simplified_definition_of_objective", $$("∀w,i ((J_w)=⟨wᵀVw⟩/⟨wᵀSw⟩)"));
 			session.admit("equation_to_solve_to_optimize_objective", $$("∀w (((SwwᵀV)=(VwwᵀS)) → `optimalityOf_(J_w))"));
 			session.admit("regularization", $$("∀B,ω,w ((w=Bω) → (((SwwᵀV)=(VwwᵀS)) → `constrainedOptimalityOf_(J_(Bω))))"));
-			
 		} finally {
-			session.new Exporter(0).exportSession();
+			session.new Exporter(-1).exportSession();
 		}
 		
 		{
 			final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 			
-			session.new Exporter(new TexPrinter(buffer), 0).exportSession();
+			session.new Exporter(new TexPrinter(buffer), -1).exportSession();
 			
-			new TeXFormula(buffer.toString()).createPNG(0, 16F, "view.png", WHITE, BLACK);
+			new TeXFormula(buffer.toString()).createPNG(0, 18F, "view.png", WHITE, BLACK);
 		}
 	}
 	
