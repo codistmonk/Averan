@@ -9,7 +9,6 @@ import static net.sourceforge.aprog.tools.Tools.list;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -365,13 +364,7 @@ public final class Module implements Expression {
 			
 			final Module thisCanonical = this.canonical();
 			final Module thatCanonical = thisCanonical.bind(that.canonical());
-			final List<Expression> thisPropositions = join(thisCanonical.getConditions(), thisCanonical.getFacts());
 			
-//			Tools.debugPrint();
-//			Tools.debugPrint(thisPropositions, thatCanonical.getConditions(), thisPropositions.containsAll(thatCanonical.getConditions()));
-//			Tools.debugPrint(thisCanonical.getFacts(), thatCanonical.getFacts(), thisCanonical.getFacts().containsAll(thatCanonical.getFacts()));
-			
-//			return thisPropositions.containsAll(thatCanonical.getConditions()) && thisCanonical.getFacts().containsAll(thatCanonical.getFacts());
 			return thatCanonical.getConditions().containsAll(thisCanonical.getConditions()) && thisCanonical.getFacts().containsAll(thatCanonical.getFacts());
 		}
 	}
@@ -426,26 +419,6 @@ public final class Module implements Expression {
 		}
 		
 		return result;
-	}
-	
-	public static final <T> List<T> join(final Collection<T> left, final Collection<T> right) {
-		final List<T> result = new ArrayList<>(left);
-		
-		result.addAll(right);
-		
-		return result;
-	}
-	
-	public final boolean impliesGoal(final Expression proposition) {
-		if (this.getFacts().contains(proposition)) {
-			return true;
-		}
-		
-		final Module that = this.bind(cast(Module.class, proposition));
-		
-		return that != null && that.getParameters().isEmpty()
-				&& this.getConditions().containsAll(that.getConditions())
-				&& this.getFacts().containsAll(that.getFacts());
 	}
 	
 	final void newProposition(final Map<String, Integer> indices, final String propositionName) {
