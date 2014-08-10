@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import net.sourceforge.aprog.tools.Tools;
 import jrewrite3.core.Module.Claim;
 import jrewrite3.core.Module.Command;
 import jrewrite3.core.Module.Symbol;
@@ -187,10 +186,6 @@ public final class Session implements Serializable {
 		return this.claim(this.newPropositionName(), proposition);
 	}
 	
-	public final String newPropositionName() {
-		return this.getCurrentModule().newPropositionName();
-	}
-	
 	public final Session claim(final String factName, final Expression proposition) {
 		final ProofContext proofContext = new ProofContext(factName,
 				new Module(this.getCurrentModule(), factName), proposition);
@@ -198,6 +193,10 @@ public final class Session implements Serializable {
 		this.getStack().add(0, proofContext);
 		
 		return this.pop();
+	}
+	
+	public final String newPropositionName() {
+		return this.getCurrentModule().newPropositionName();
 	}
 	
 	private final Session pop() {
@@ -255,19 +254,20 @@ public final class Session implements Serializable {
 		
 		public final boolean isGoalReached() {
 			if (!this.goalReached) {
-				if (!this.getModule().getFacts().isEmpty() && this.getInitialGoal() instanceof Module) {
-					Tools.debugPrint(this.getModule());
-					final Module initialModule = (Module) this.getInitialGoal();
-					
-					final List<Expression> f1 = Module.flattenFreeFacts(this.getModule().getFacts());
-					final List<Expression> f2 = Module.flattenFreeFacts(initialModule.getFacts());
-					Tools.debugPrint(f1);
-					Tools.debugPrint(f2);
-					final Expression l1 = f1.get(f1.size() - 1);
-					final Expression l2 = f2.get(f2.size() - 1);
-					Tools.debugPrint(l1);
-					Tools.debugPrint(l2);
-				}
+//				if (!this.getModule().getFacts().isEmpty() && this.getInitialGoal() instanceof Module) {
+//					Tools.debugPrint(this.getModule());
+//					Tools.debugPrint(this.getInitialGoal());
+//					final Module initialModule = (Module) this.getInitialGoal();
+//					
+//					final List<Expression> f1 = Module.flattenFreeFacts(this.getModule().getFacts());
+//					final List<Expression> f2 = Module.flattenFreeFacts(initialModule.getFacts());
+//					Tools.debugPrint(f1);
+//					Tools.debugPrint(f2);
+//					final Expression l1 = f1.get(f1.size() - 1);
+//					final Expression l2 = f2.get(f2.size() - 1);
+//					Tools.debugPrint(l1);
+//					Tools.debugPrint(l2);
+//				}
 				
 				this.goalReached = this.getModule().implies(this.getInitialGoal());
 			}
