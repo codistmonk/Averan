@@ -518,6 +518,11 @@ public final class Module implements Expression {
 			return this.addFact(this.getFact());
 		}
 		
+		@Override
+		public final String toString() {
+			return "Admit";
+		}
+		
 		/**
 		 * {@value}.
 		 */

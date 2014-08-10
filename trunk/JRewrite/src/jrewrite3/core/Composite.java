@@ -107,8 +107,10 @@ public final class Composite implements Expression, Iterable<Expression> {
 		final Symbol left = cast(Symbol.class, children.get(0));
 		final Symbol right = cast(Symbol.class, children.get(children.size() - 1));
 		
-		return left != null && right != null && ("[".equals(left.toString()) && "]".equals(right.toString())
-				|| "{".equals(left.toString()) && "}".equals(right.toString()));
+		return left != null && right != null
+				&& ("[".equals(left.toString()) && "]".equals(right.toString())
+				|| "{".equals(left.toString()) && "}".equals(right.toString())
+				|| "⟨".equals(left.toString()) && "⟩".equals(right.toString()));
 	}
 	
 }

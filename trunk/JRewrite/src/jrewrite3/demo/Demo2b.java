@@ -99,8 +99,26 @@ public final class Demo2b {
 			session.suppose("definition_of_transposition_columnCount",
 					$$("∀X (`columnCount_(Xᵀ)=`rowCount_X)"));
 			
+			session.suppose("definition_of_U_rowCount", $$("∀n (`rowCount_(U_n)=n)"));
+			session.suppose("definition_of_U_columnCount", $$("∀n (`columnCount_(U_n)=1)"));
+			session.suppose("definition_of_U", $$("∀n (0<n → (∀i (U_n_(i,1)=1/n)))"));
+			
 			claimCommutativityOfConjunction(session);
 			claimTranspositionOfAddition(session);
+			
+			session.admit("transposition_of_multiplication", $$("∀X,Y ((`size_X=`size_Y) → ((XY)ᵀ=YᵀXᵀ))"));
+			session.admit("definition_of_replicated_means", $$("∀X,n ((`columnCount_X=n) → (M_X)=X(U_n)(U_n)ᵀ)"));
+			session.admit("simplified_definition_of_variance", $$("∀X ((`Var_X)=(XXᵀ)-((M_X)(M_X)ᵀ))"));
+			session.admit("definition_of_problem_dimension", $$("0<D"));
+			session.admit("definition_of_class_count", $$("1<N"));
+			session.admit("definition_of_class_means", $$("∀i,j,n ((n=`columnCount_(C_j)) → (((M_C)_(i,j))=((C_j)(U_n))_(i,1)))"));
+			session.admit("definition_of_class_rowCount", $$("∀i ((`rowCount_(C_i)) = D)"));
+			session.admit("definition_of_V", $$("V = `Var_(M_C)"));
+			session.admit("definition_of_S", $$("∀i (S = (Σ_(i=0)^(N-1) (`Var_(C_i))))"));
+			session.admit("simplified_definition_of_objective", $$("∀w,i ((J_w)=⟨wᵀVw⟩/⟨wᵀSw⟩)"));
+			session.admit("equation_to_solve_to_optimize_objective", $$("∀w (((SwwᵀV)=(VwwᵀS)) → `optimalityOf_(J_w))"));
+			session.admit("regularization", $$("∀B,ω,w ((w=Bω) → (((SwwᵀV)=(VwwᵀS)) → `constrainedOptimalityOf_(J_(Bω))))"));
+			
 		} finally {
 			session.new Exporter(0).exportSession();
 		}
@@ -352,10 +370,14 @@ public final class Demo2b {
 			 */
 			private static final long serialVersionUID = 2607977220438106247L;
 			
-			static final Object[] verbatims = { "+", "-", "/", "=", "(", ")", "{", "}", "[", "]", ",", "∀", "∃", "¬", "→", "`", "≀", "∧", "∈", "∩", "<", "≤", "Σ", "_", "^", "ℕ", "ℝ", "ᵀ" };
+			static final Object[] verbatims = {
+				"+", "-", "/", "=", "(", ")", "{", "}", "[", "]",
+				",", "∀", "∃", "¬", "→", "`", "≀", "∧", "∈", "∩",
+				"<", "≤", "Σ", "_", "^", "ℕ", "ℝ", "ᵀ", "⟨", "⟩",
+			};
 			
 			static final LexerRule[] lexerRules = appendVerbatims(array(
-					tokenRule("VARIABLE", /* -> */ union(range('A', 'Z'), range('a', 'z'))),
+					tokenRule("VARIABLE", /* -> */ union(range('A', 'Z'), range('a', 'z'), range('Α', 'Ω'), range('α', 'ω'))),
 					tokenRule("NATURAL",  /* -> */ oneOrMore(range('0', '9'))),
 					nontokenRule(" *",     /* -> */ zeroOrMore(' '))
 			), verbatims);
@@ -371,6 +393,7 @@ public final class Demo2b {
 				leftAssociative("(", 100),
 				leftAssociative("{", 100),
 				leftAssociative("[", 100),
+				leftAssociative("⟨", 100),
 				leftAssociative("+", 100),
 				leftAssociative("-", 100),
 				leftAssociative("∩", 125),
@@ -391,7 +414,7 @@ public final class Demo2b {
 				
 		        namedRule("expression",        "ALL",        /* -> */  "EXPRESSION"),
 		        namedRule("expression",        "EXPRESSION", /* -> */  "∀", "PARAMETERS", "EXPRESSION"),
-		        namedRule("expression",        "EXPRESSION", /* -> */  "∃", "VARIABLE", "EXPRESSION"),
+		        namedRule("expression",        "EXPRESSION", /* -> */  "∃", "IDENTIFIER", "EXPRESSION"),
 		        namedRule("expression",        "EXPRESSION", /* -> */  "¬", "EXPRESSION"),
 		        namedRule("expression",        "EXPRESSION", /* -> */  "EXPRESSION", "ᵀ"),
 		        namedRule("operation",         "EXPRESSION", /* -> */  "EXPRESSION", "OPERATION"),
@@ -412,13 +435,14 @@ public final class Demo2b {
 		        namedRule("grouping",          "EXPRESSION", /* -> */  "(", "EXPRESSION", ")"),
 		        namedRule("expression",        "EXPRESSION", /* -> */  "{", "EXPRESSION", "}"),
 		        namedRule("expression",        "EXPRESSION", /* -> */  "[", "EXPRESSION", "]"),
+		        namedRule("expression",        "EXPRESSION", /* -> */  "⟨", "EXPRESSION", "⟩"),
 		        namedRule("expression",        "EXPRESSION", /* -> */  "NATURAL"),
 		        namedRule("expression",        "EXPRESSION", /* -> */  "IDENTIFIER"),
 		        namedRule("expression",        "EXPRESSION", /* -> */  "Σ"),
 		        namedRule("expression",        "EXPRESSION", /* -> */  "ℕ"),
 		        namedRule("expression",        "EXPRESSION", /* -> */  "ℝ"),
-		        namedRule("list",              "PARAMETERS", /* -> */ "PARAMETERS", ",", "VARIABLE"),
-		        namedRule("list",              "PARAMETERS", /* -> */ "VARIABLE"),
+		        namedRule("list",              "PARAMETERS", /* -> */ "PARAMETERS", ",", "IDENTIFIER"),
+		        namedRule("list",              "PARAMETERS", /* -> */ "IDENTIFIER"),
 		        namedRule("identifier",        "IDENTIFIER", /* -> */  "≀", "WORD"),
 		        namedRule("identifier",        "IDENTIFIER", /* -> */  "≀", "VARIABLE"),
 		        namedRule("identifier",        "IDENTIFIER", /* -> */  "WORD"),
@@ -678,6 +702,7 @@ public final class Demo2b {
 				final List<Expression> children = composite.getChildren();
 				final StringBuilder resultBuilder = new StringBuilder();
 				final boolean thisIsBraced = isBracedComposite(composite);
+				final int n = children.size();
 				
 				if (!thisIsBraced && Module.isSubstitution(composite)) {
 					final Composite equalities = (Composite) children.get(1);
@@ -685,7 +710,7 @@ public final class Demo2b {
 					resultBuilder.append(children.get(0)).append(
 							cgroup(Tools.join(",", this.transform(equalities.getChildren()))));
 					
-					if (children.size() == 3) {
+					if (n == 3) {
 						final Composite indices = (Composite) children.get(2);
 						
 						resultBuilder.append(children.get(0)).append(
@@ -695,8 +720,18 @@ public final class Demo2b {
 					return resultBuilder.toString();
 				}
 				
+				if (thisIsBraced) {
+					return "\\left" + children.get(0)
+							+ join("", Expression.listAcceptor(children.subList(1, n - 1), this).get())
+							+ "\\right" + children.get(n - 1);
+				}
+				
+				if (n == 3 && "/".equals(children.get(1).toString())) {
+					return group("\\frac" + group(children.get(0).accept(this)) + group(children.get(2).accept(this)));
+				}
+				
 				for (final Expression child : children) {
-					if (thisIsBraced || child instanceof Symbol || isBracedComposite(child)) {
+					if (child instanceof Symbol || isBracedComposite(child)) {
 						resultBuilder.append(child.accept(this));
 					} else {
 						resultBuilder.append(pgroup(child.accept(this)));
