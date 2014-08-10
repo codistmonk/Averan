@@ -82,6 +82,18 @@ public final class Session implements Serializable {
 		return this.pop();
 	}
 	
+	public final Session admit(final Expression fact) {
+		this.getCurrentContext().getModule().new Suppose(this.newPropositionName(), fact).execute();
+		
+		return this.pop();
+	}
+	
+	public final Session admit(final String factName, final Expression fact) {
+		this.getCurrentContext().getModule().new Admit(factName, fact).execute();
+		
+		return this.pop();
+	}
+	
 	public final Session recall(final String propositionName) {
 		return this.recall(this.newPropositionName(), propositionName);
 	}
