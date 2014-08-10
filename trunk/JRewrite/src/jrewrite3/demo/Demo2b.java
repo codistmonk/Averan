@@ -42,7 +42,6 @@ import jrewrite3.core.Rewriter;
 import jrewrite3.core.Session;
 import jrewrite3.core.Visitor;
 import jrewrite3.modules.Standard;
-
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 import net.sourceforge.aprog.tools.Tools;
 import net.sourceforge.aurochs.LRParser;
@@ -68,41 +67,43 @@ public final class Demo2b {
 	static {
 		final Session session = new Session(MODULE);
 		
-		session.suppose("definition_of_conjunction",
-				$$("∀P,Q (P → (Q → (P ∧ Q)))"));
-		session.suppose("definition_of_proposition_equality",
-				$$("∀P,Q ((P=Q) = ((P→Q) ∧ (Q→P)))"));
-		session.suppose("definition_of_negation",
-				$$("∀P (¬P = (P→`false))"));
-		session.suppose("definition_of_existence",
-				$$("∀P,x (∃x (P x)) = ¬(∀y ¬(P y))"));
-		session.suppose("definition_of_intersection",
-				$$("∀A,B,x (x∈A∩B) = (x∈A ∧ x∈B)"));
-		session.suppose("definition_of_summation",
-				$$("∀i,a,b,e,s ((s=((Σ_(i=a)^b) e)) → (((b<a) → (s=0)) ∧ ((a≤b) → (s=(s{b=(b-1)})+(e{i=b})))))"));
-		session.suppose("definition_of_matrices",
-				$$("∀X,m,n (X∈≀M_(m,n) = (`rowCount_X = m ∧ `columnCount_X = n ∧ ∀i,j (0≤i<m ∧ 0≤j<n) → X_(i,j)∈ℝ))"));
-		session.suppose("definition_of_matrix_size_equality",
-				$$("∀X,Y ((`size_X=`size_Y) = ((`columnCount_X = `columnCount_Y) ∧ (`rowCount_X = `rowCount_Y)))"));
-		session.suppose("definition_of_matrix_equality",
-				$$("∀X,Y ((X=Y) = (∀i,j ((X)_(i,j)=(Y_(i,j)))))"));
-		session.suppose("definition_of_matrix_addition",
-				$$("∀X,Y ((`size_X=`size_Y) → (∀i,j ((X+Y)_(i,j)=(X_(i,j))+(Y_(i,j)))))"));
-		session.suppose("definition_of_matrix_subtraction",
-				$$("∀X,Y ((`size_X=`size_Y) → (∀i,j ((X-Y)_(i,j)=(X_(i,j))-(Y_(i,j)))))"));
-		session.suppose("definition_of_matrix_multiplication",
-				$$("∀X,Y,n ((`columnCount_X = n) ∧ (`rowCount_Y = n)) → (∀i,j,k (XY)_(i,j)=((Σ_(k=0)^(n-1)) (X_(i,k))(Y_(k,j))))"));
-		session.suppose("definition_of_transposition",
-				$$("∀X (∀i,j (Xᵀ_(i,j)=X_(j,i)))"));
-		session.suppose("definition_of_transposition_rowCount",
-				$$("∀X (`rowCount_(Xᵀ)=`columnCount_X)"));
-		session.suppose("definition_of_transposition_columnCount",
-				$$("∀X (`columnCount_(Xᵀ)=`rowCount_X)"));
-		
-		claimCommutativityOfConjunction(session);
-		claimTranspositionOfAddition(session);
-		
-		session.new Exporter(0).exportSession();
+		try {
+			session.suppose("definition_of_conjunction",
+					$$("∀P,Q (P → (Q → (P ∧ Q)))"));
+			session.suppose("definition_of_proposition_equality",
+					$$("∀P,Q ((P=Q) = ((P→Q) ∧ (Q→P)))"));
+			session.suppose("definition_of_negation",
+					$$("∀P (¬P = (P→`false))"));
+			session.suppose("definition_of_existence",
+					$$("∀P,x (∃x (P x)) = ¬(∀y ¬(P y))"));
+			session.suppose("definition_of_intersection",
+					$$("∀A,B,x (x∈A∩B) = (x∈A ∧ x∈B)"));
+			session.suppose("definition_of_summation",
+					$$("∀i,a,b,e,s ((s=((Σ_(i=a)^b) e)) → (((b<a) → (s=0)) ∧ ((a≤b) → (s=(s{b=(b-1)})+(e{i=b})))))"));
+			session.suppose("definition_of_matrices",
+					$$("∀X,m,n (X∈≀M_(m,n) = (`rowCount_X = m ∧ `columnCount_X = n ∧ ∀i,j (0≤i<m ∧ 0≤j<n) → X_(i,j)∈ℝ))"));
+			session.suppose("definition_of_matrix_size_equality",
+					$$("∀X,Y ((`size_X=`size_Y) = ((`columnCount_X = `columnCount_Y) ∧ (`rowCount_X = `rowCount_Y)))"));
+			session.suppose("definition_of_matrix_equality",
+					$$("∀X,Y ((X=Y) = (∀i,j ((X)_(i,j)=(Y_(i,j)))))"));
+			session.suppose("definition_of_matrix_addition",
+					$$("∀X,Y ((`size_X=`size_Y) → (∀i,j ((X+Y)_(i,j)=(X_(i,j))+(Y_(i,j)))))"));
+			session.suppose("definition_of_matrix_subtraction",
+					$$("∀X,Y ((`size_X=`size_Y) → (∀i,j ((X-Y)_(i,j)=(X_(i,j))-(Y_(i,j)))))"));
+			session.suppose("definition_of_matrix_multiplication",
+					$$("∀X,Y,n ((`columnCount_X = n) ∧ (`rowCount_Y = n)) → (∀i,j,k (XY)_(i,j)=((Σ_(k=0)^(n-1)) (X_(i,k))(Y_(k,j))))"));
+			session.suppose("definition_of_transposition",
+					$$("∀X (∀i,j (Xᵀ_(i,j)=X_(j,i)))"));
+			session.suppose("definition_of_transposition_rowCount",
+					$$("∀X (`rowCount_(Xᵀ)=`columnCount_X)"));
+			session.suppose("definition_of_transposition_columnCount",
+					$$("∀X (`columnCount_(Xᵀ)=`rowCount_X)"));
+			
+			claimCommutativityOfConjunction(session);
+			claimTranspositionOfAddition(session);
+		} finally {
+			session.new Exporter(0).exportSession();
+		}
 		
 		{
 			final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
@@ -208,10 +209,12 @@ public final class Demo2b {
 			session.bind("definition_of_proposition_equality", pq, qp);
 			
 			session.claim(pq2qp);
-			
 			{
 				session.introduce();
 				session.bind("commutativity_of_conjunction#1#0");
+//				session.recall("commutativity_of_conjunction#1#1/#1");
+//				session.recall("commutativity_of_conjunction#1#1/#0");
+//				if (true) throw new RuntimeException();
 				session.bind("definition_of_conjunction", q, p);
 				session.apply("commutativity_of_conjunction#1#3", "commutativity_of_conjunction#1#1/#1");
 				session.apply("commutativity_of_conjunction#1#4", "commutativity_of_conjunction#1#1/#0");
