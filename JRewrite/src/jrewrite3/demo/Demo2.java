@@ -53,6 +53,8 @@ public final class Demo2 {
 					$$("∀X,Y ((`size_X=`size_Y) = ((`columnCount_X = `columnCount_Y) ∧ (`rowCount_X = `rowCount_Y)))"));
 			session.suppose("definition_of_matrix_equality",
 					$$("∀X,Y ((X=Y) = (∀i,j ((X)_(i,j)=(Y_(i,j)))))"));
+			session.suppose("definition_of_matrix_scalarization",
+					$$("∀X ((X∈≀M_(1,1)) → (⟨X⟩=X_(1,1)))"));
 			session.suppose("definition_of_matrix_addition",
 					$$("∀X,Y ((`size_X=`size_Y) → (∀i,j ((X+Y)_(i,j)=(X_(i,j))+(Y_(i,j)))))"));
 			session.suppose("definition_of_matrix_subtraction",
