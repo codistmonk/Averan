@@ -9,11 +9,13 @@ import static net.sourceforge.aprog.tools.Tools.list;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import averan.core.Composite;
 import averan.core.Expression;
@@ -22,6 +24,7 @@ import averan.core.Session;
 import averan.core.Visitor;
 import averan.core.Module.Command;
 import averan.core.Module.Symbol;
+import net.sourceforge.aprog.tools.Pair;
 import net.sourceforge.aprog.tools.Tools;
 
 /**
@@ -31,12 +34,21 @@ public final class TexPrinter implements Session.ExporterOutput {
 	
 	private final PrintStream output;
 	
+	private final TexStringGenerator texStringGenerator;
+	
 	public TexPrinter() {
 		this(System.out);
 	}
 	
 	public TexPrinter(final OutputStream output) {
 		this.output = output instanceof PrintStream ? (PrintStream) output : new PrintStream(output);
+		this.texStringGenerator = new TexStringGenerator();
+	}
+	
+	public final TexPrinter hint(final Object object, final DisplayHint hint) {
+		this.texStringGenerator.getDisplayHints().put(object, hint);
+		
+		return this;
 	}
 	
 	public final void left(final Object object) {
@@ -77,7 +89,7 @@ public final class TexPrinter implements Session.ExporterOutput {
 	@Override
 	public final void processModuleCondition(final String conditionName, final Expression condition) {
 		this.left(pgroup(word(conditionName)));
-		this.center(condition.accept(TexStringGenerator.INSTANCE));
+		this.center(condition.accept(this.texStringGenerator).getFirst());
 	}
 	
 	@Override
@@ -94,7 +106,7 @@ public final class TexPrinter implements Session.ExporterOutput {
 	@Override
 	public final void processModuleFact(final String factName, final Expression fact) {
 		this.left(pgroup(word(factName)));
-		this.center(fact.accept(TexStringGenerator.INSTANCE));
+		this.center(fact.accept(this.texStringGenerator).getFirst());
 	}
 	
 	@Override
@@ -122,7 +134,7 @@ public final class TexPrinter implements Session.ExporterOutput {
 	public final void processCurrentGoal(final Expression currentGoal) {
 		this.hline();
 		this.center(pgroup(pgroup(word("GOAL"))));
-		this.center(currentGoal.accept(TexStringGenerator.INSTANCE));
+		this.center(currentGoal.accept(this.texStringGenerator));
 	}
 	
 	@Override
@@ -167,17 +179,23 @@ public final class TexPrinter implements Session.ExporterOutput {
 	/**
 	 * @author codistmonk (creation 2014-08-09)
 	 */
-	public static final class TexStringGenerator implements Visitor<String> {
+	public static final class TexStringGenerator implements Visitor<Pair<String, DisplayHint>> {
+		
+		private final Map<Object, DisplayHint> displayHints = new HashMap<>();
+		
+		public final Map<Object, DisplayHint> getDisplayHints() {
+			return this.displayHints;
+		}
 		
 		@Override
-		public final String beginVisit(final Composite composite) {
+		public final Pair<String, DisplayHint> beginVisit(final Composite composite) {
 			{
 				final Pattern summation = newSummationPattern1();
 				
 				if (summation.equals(composite)) {
-					return "\\sum_" + group(summation.get("i=a").accept(this))
-							+ "^" + group(summation.get("b").accept(this)) + " "
-							+ group(summation.get("e").accept(this));
+					return DisplayHint.DEFAULT.hint("\\sum_" + group(summation.get("i=a").accept(this).getFirst())
+							+ "^" + group(summation.get("b").accept(this).getFirst()) + " "
+							+ group(summation.get("e").accept(this).getFirst()));
 				}
 			}
 			
@@ -190,63 +208,64 @@ public final class TexPrinter implements Session.ExporterOutput {
 				final Composite equalities = (Composite) children.get(1);
 				
 				resultBuilder.append(children.get(0)).append(
-						cgroup(Tools.join(",", this.transform(equalities.getChildren()))));
+						cgroup(Tools.join(",", Arrays.stream(this.transform(equalities.getChildren())).map(p -> p.getFirst()).toArray())));
 				
 				if (n == 3) {
 					final Composite indices = (Composite) children.get(2);
 					
 					resultBuilder.append(children.get(0)).append(
-							sgroup(Tools.join(",", this.transform(indices.getChildren()))));
+							sgroup(Tools.join(",", Arrays.stream(this.transform(indices.getChildren())).map(p -> p.getFirst()).toArray())));
 				}
 				
-				return resultBuilder.toString();
+				return DisplayHint.DEFAULT.hint(resultBuilder.toString());
 			}
 			
 			if (thisIsBraced) {
-				return "\\left" + children.get(0)
-						+ join("", Expression.listAcceptor(children.subList(1, n - 1), this).get())
-						+ "\\right" + children.get(n - 1);
+				return DisplayHint.DEFAULT.hint("\\left" + children.get(0)
+						+ join("", Expression.listAcceptor(children.subList(1, n - 1), this).get().stream().map(p -> p.getFirst()).collect(Collectors.toList()))
+						+ "\\right" + children.get(n - 1));
 			}
 			
 			if (n == 3 && "/".equals(children.get(1).toString())) {
-				return group("\\frac" + group(children.get(0).accept(this)) + group(children.get(2).accept(this)));
+				return DisplayHint.DEFAULT.hint(group("\\frac"
+						+ group(children.get(0).accept(this).getFirst())
+						+ group(children.get(2).accept(this).getFirst())));
 			}
 			
 			for (final Expression child : children) {
 				if (child instanceof Symbol || isBracedComposite(child)) {
-					resultBuilder.append(child.accept(this));
+					resultBuilder.append(child.accept(this).getFirst());
 				} else {
-					resultBuilder.append(pgroup(child.accept(this)));
+					resultBuilder.append(pgroup(child.accept(this).getFirst()));
 				}
 			}
 			
-			return group(resultBuilder.toString());
+			return DisplayHint.DEFAULT.hint(group(resultBuilder.toString()));
 		}
 		
 		@Override
-		public final String beginVisit(final Module module) {
-			return group(module.getParameters().isEmpty() ? "" : "∀" + Tools.join(",", this.transform(module.getParameters())) + "\\;")
+		public final Pair<String, DisplayHint> beginVisit(final Module module) {
+			return DisplayHint.DEFAULT.hint(group(module.getParameters().isEmpty() ? "" : "∀" + Tools.join(",", Arrays.stream(this.transform(module.getParameters())).map(p -> p.getFirst()).toArray()) + "\\;")
 					+ (module.getConditions().isEmpty() ? "" : formatConjunction(this.transform(module.getConditions())) + " → ")
-					+ formatConjunction(this.transform(module.getFacts()));
+					+ formatConjunction(this.transform(module.getFacts())));
 		}
 		
 		@Override
-		public final String visit(final Symbol symbol) {
+		public final Pair<String, DisplayHint> visit(final Symbol symbol) {
 			final String string = symbol.toString();
 			
-			return string.length() == 1 ? string : word(string);
+			return DisplayHint.DEFAULT.hint(string.length() == 1 ? string : word(string));
 		}
 		
-		public final Object[] transform(final Collection<? extends Expression> elements) {
-			return elements.stream().map(e -> e.accept(this)).toArray();
+		@SuppressWarnings("unchecked")
+		public final Pair<String, DisplayHint>[] transform(final Collection<? extends Expression> elements) {
+			return elements.stream().map(e -> e.accept(this)).toArray(Pair[]::new);
 		}
 		
 		/**
 		 * {@value}.
 		 */
 		private static final long serialVersionUID = 3004635190043687534L;
-		
-		public static final TexStringGenerator INSTANCE = new TexStringGenerator();
 		
 		public static final String formatConjunction(final List<Expression> propositions) {
 			if (propositions.size() == 1) {
@@ -260,7 +279,7 @@ public final class TexPrinter implements Session.ExporterOutput {
 			return pgroup(join(" ∧ ", propositions));
 		}
 		
-		public static final String formatConjunction(final Object... propositions) {
+		public static final String formatConjunction(final Pair<String, DisplayHint>... propositions) {
 			if (propositions.length == 1) {
 				final Object proposition = propositions[0];
 				
@@ -269,7 +288,7 @@ public final class TexPrinter implements Session.ExporterOutput {
 				}
 			}
 			
-			return pgroup(Tools.join(" ∧ ", propositions));
+			return pgroup(Tools.join(" ∧ ", Arrays.stream(propositions).map(p -> p.getFirst()).toArray()));
 		}
 		
 		public static final String join(final String separator, final Iterable<?> elements) {
@@ -418,6 +437,33 @@ public final class TexPrinter implements Session.ExporterOutput {
 				
 			}
 			
+		}
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-08-11)
+	 */
+	public static enum DisplayHint {
+		
+		DEFAULT(0),
+		APPLICATION(150),
+		ADDITION(200),
+		MULTIPLICATION(250),
+		;
+		
+		private final int priority;
+		
+		private DisplayHint(final int priority) {
+			this.priority = priority;
+		}
+		
+		public final int getPriority() {
+			return this.priority;
+		}
+		
+		public final <T> Pair<T, DisplayHint> hint(final T object) {
+			return new Pair<>(object, this);
 		}
 		
 	}
