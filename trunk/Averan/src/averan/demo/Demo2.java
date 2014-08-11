@@ -4,15 +4,8 @@ import static averan.core.ExpressionTools.$;
 import static averan.demo.ExpressionParser.$$;
 import static java.awt.Color.BLACK;
 import static java.awt.Color.WHITE;
-import static net.sourceforge.aprog.tools.Tools.ignore;
-import static net.sourceforge.aprog.tools.Tools.unchecked;
 
 import java.io.ByteArrayOutputStream;
-import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.scilab.forge.jlatexmath.TeXFormula;
 
 import averan.core.Composite;
@@ -22,89 +15,6 @@ import averan.core.Rewriter;
 import averan.core.Session;
 import averan.core.Module.Symbol;
 import averan.modules.Standard;
-import net.sourceforge.aprog.tools.IllegalInstantiationException;
-import net.sourceforge.aprog.tools.Tools;
-
-/**
- * @author codistmonk (creation 2014-08-11)
- */
-abstract class SessionTools {
-	
-	protected SessionTools() {
-		throw new IllegalInstantiationException();
-	}
-	
-	private static final Map<Class<?>, Session> sessions = new HashMap<>();
-	
-	@SuppressWarnings("unchecked")
-	protected static final <E extends Expression> E introduce() {
-		final Session session = getOrCreateSession();
-		final List<Symbol> parameters = session.getCurrentModule().getParameters();
-		final List<Expression> conditions = session.getCurrentModule().getConditions();
-		final int oldParameterCount = parameters.size();
-		final int oldConditionCount = conditions.size();
-		
-		session.introduce();
-		
-		if (oldParameterCount < parameters.size()) {
-			return (E) session.getParameter(-1);
-		}
-		
-		if (oldConditionCount < conditions.size()) {
-			return session.getCondition(-1);
-		}
-		
-		throw new IllegalStateException();
-	}
-	
-	protected static final void suppose(final Expression condition) {
-		getOrCreateSession().suppose(condition);
-	}
-	
-	protected static final void suppose(final String conditionName, final Expression proposition) {
-		getOrCreateSession().suppose(conditionName, proposition);
-	}
-	
-	protected static final void admit(final Expression fact) {
-		getOrCreateSession().admit(fact);
-	}
-	
-	protected static final void admit(final String factName, final Expression fact) {
-		getOrCreateSession().admit(factName, fact);
-	}
-	
-	protected static final Session getOrCreateSession() {
-		final StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-		
-		for (int i = stackTrace.length - 1; 0 <= i; --i) {
-			try {
-				final Class<?> cls = Class.forName(stackTrace[i].getClassName());
-				final Field moduleField = cls.getDeclaredField("MODULE");
-				
-				return sessions.compute(cls, (k, v) -> v == null ?
-						new Session((Module) getStaticFieldValue(moduleField)) : v);
-			} catch (final ClassNotFoundException exception) {
-				exception.printStackTrace();
-			} catch (final NoSuchFieldException exception) {
-				ignore(exception);
-			}
-		}
-		
-		throw new IllegalStateException();
-	}
-	
-	@SuppressWarnings("unchecked")
-	public static final <T> T getStaticFieldValue(final Field field) {
-		try {
-			field.setAccessible(true);
-			
-			return (T) field.get(null);
-		} catch (final Exception exception) {
-			throw unchecked(exception);
-		}
-	}
-	
-}
 
 /**
  * @author codistmonk (creation 2014-08-08)
@@ -114,7 +24,6 @@ public final class Demo2 extends SessionTools {
 	public static final Module MODULE = new Module(Standard.MODULE);
 	
 	static {
-		final Session session = getOrCreateSession();
 		String sessionBreakPoint = "";
 		
 		try {
@@ -161,9 +70,9 @@ public final class Demo2 extends SessionTools {
 			admit("commutativity_of_multiplication",
 					$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((xy)=(yx))))"));
 			
-			claimCommutativityOfConjunction(session);
-			claimTranspositionOfAddition(session);
-			claimTranspositionOfMultiplication(session);
+			claimCommutativityOfConjunction();
+			claimTranspositionOfAddition();
+			claimTranspositionOfMultiplication();
 			
 			suppose("definition_of_replicated_means",
 					$$("∀X,n ((`columnCount_X=n) → (M_X)=X(U_n)(U_n)ᵀ)"));
@@ -192,7 +101,7 @@ public final class Demo2 extends SessionTools {
 		} catch (final BreakSessionException exception) {
 			sessionBreakPoint = exception.getStackTrace()[1].toString();
 		} finally {
-			session.new Exporter(-1).exportSession();
+			getOrCreateSession().new Exporter(-1).exportSession();
 			
 			System.out.println(sessionBreakPoint);
 		}
@@ -200,14 +109,14 @@ public final class Demo2 extends SessionTools {
 		{
 			final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 			
-			session.new Exporter(new TexPrinter(buffer), 0).exportSession();
+			getOrCreateSession().new Exporter(new TexPrinter(buffer), 0).exportSession();
 			
 			new TeXFormula(buffer.toString()).createPNG(0, 18F, "view.png", WHITE, BLACK);
 		}
 	}
 	
-	public static final void claimTranspositionOfMultiplication(final Session session) {
-		session.claim("transposition_of_multiplication",
+	public static final void claimTranspositionOfMultiplication() {
+		claim("transposition_of_multiplication",
 				$$("∀X,Y ((X∈≀M_(`rowCount_X,`columnCount_X)) → ((Y∈≀M_(`rowCount_Y,`columnCount_Y)) → ((`columnCount_X=`rowCount_Y) → ((XY)ᵀ=YᵀXᵀ))))"));
 		
 		{
@@ -224,248 +133,238 @@ public final class Demo2 extends SessionTools {
 			final Expression xyt = $(xy, "ᵀ");
 			final Expression ytxt = $(yt, xt);
 			
-			session.bind("definition_of_matrix_equality", xyt, ytxt);
+			bind("definition_of_matrix_equality", xyt, ytxt);
 			
-			session.claim(((Composite) session.getFact(-1)).get(2));
+			claim(((Composite) getFact(-1)).get(2));
 			
 			{
-				introduce();
-				introduce();
-				
-				final Symbol i = session.getParameter("i");
-				final Symbol j = session.getParameter("j");
-				final Symbol k = session.getCurrentModule().parameter("k");
+				final Symbol i = introduce();
+				final Symbol j = introduce();
+				final Symbol k = parameter("k");
 				final Expression rowCountX = $("rowCount", "_", x);
 				final Expression columnCountX = $("columnCount", "_", x);
 				final Expression rowCountY = $("rowCount", "_", y);
 				final Expression columnCountY = $("columnCount", "_", y);
 				
-				session.bind(Standard.IDENTITY, k);
-				session.bind("definition_of_transposition", xy, i, j);
-				session.bind("definition_of_matrix_multiplication", x, y, columnCountX);
-				session.claim(((Module) session.getFact(-1)).getConditions().get(0));
+				bind(Standard.IDENTITY, k);
+				bind("definition_of_transposition", xy, i, j);
+				bind("definition_of_matrix_multiplication", x, y, columnCountX);
+				claim(((Module) getFact(-1)).getConditions().get(0));
 				
 				{
-					session.bind(Standard.IDENTITY, columnCountX);
-					session.rewrite(session.getFactName(-1), "transposition_of_multiplication#2", 0);
+					bind(Standard.IDENTITY, columnCountX);
+					rewrite(getFactName(-1), "transposition_of_multiplication#2", 0);
 				}
 				
-				session.apply("transposition_of_multiplication#4#2", session.getFactName(-1));
-				session.bind(session.getFactName(-1), j, i, k);
-				session.rewrite("transposition_of_multiplication#4#1", session.getFactName(-1));
+				apply("transposition_of_multiplication#4#2", getFactName(-1));
+				bind(getFactName(-1), j, i, k);
+				rewrite("transposition_of_multiplication#4#1", getFactName(-1));
 				
-				session.bind("definition_of_matrix_multiplication", yt, xt, $("columnCount", "_", x));
-				session.claim(((Module) session.getFact(-1)).getConditions().get(0));
+				bind("definition_of_matrix_multiplication", yt, xt, $("columnCount", "_", x));
+				claim(((Module) getFact(-1)).getConditions().get(0));
 				
 				{
-					session.bind("definition_of_transposition_columnCount", y);
-					rewriteRight(session, session.getFactName(-1), "transposition_of_multiplication#2");
-					session.bind("definition_of_transposition_rowCount", x);
+					bind("definition_of_transposition_columnCount", y);
+					rewriteRight(getFactName(-1), "transposition_of_multiplication#2");
+					bind("definition_of_transposition_rowCount", x);
 				}
 				
-				session.apply("transposition_of_multiplication#4#7", session.getFactName(-1));
-				session.bind(session.getFactName(-1), i, j, k);
+				apply("transposition_of_multiplication#4#7", getFactName(-1));
+				bind(getFactName(-1), i, j, k);
 				
-				session.bind("definition_of_transposition", x);
-				session.bind(session.getFactName(-1), k, j);
-				session.rewrite("transposition_of_multiplication#4#10", session.getFactName(-1));
+				bind("definition_of_transposition", x);
+				bind(getFactName(-1), k, j);
+				rewrite("transposition_of_multiplication#4#10", getFactName(-1));
 				
-				session.bind("definition_of_transposition", y);
-				session.bind(session.getFactName(-1), i, k);
-				session.rewrite("transposition_of_multiplication#4#13", session.getFactName(-1));
+				bind("definition_of_transposition", y);
+				bind(getFactName(-1), i, k);
+				rewrite("transposition_of_multiplication#4#13", getFactName(-1));
 				
 				final Expression xjk = $(x, "_", $(j, ",", k));
 				final Expression yki = $(y, "_", $(k, ",", i));
 				final Expression xjkyki = $(xjk, yki);
 				final Expression ykixjk = $(yki, xjk);
 				
-				session.claim($(ykixjk, "=", xjkyki));
+				claim($(ykixjk, "=", xjkyki));
 				
 				{
-					session.claim($(xjk, "∈", "ℝ"));
+					claim($(xjk, "∈", "ℝ"));
 					
 					{
-						session.bind("definition_of_matrices", x, rowCountX, columnCountX);
-						session.rewrite("transposition_of_multiplication#0", session.getFactName(-1));
-						session.bind(session.getFactName(-1));
-						session.bind(session.getFactName(-1), j, k);
+						bind("definition_of_matrices", x, rowCountX, columnCountX);
+						rewrite("transposition_of_multiplication#0", getFactName(-1));
+						bind(getFactName(-1));
+						bind(getFactName(-1), j, k);
 					}
 					
-					session.claim($(yki, "∈", "ℝ"));
+					claim($(yki, "∈", "ℝ"));
 					
 					{
-						session.bind("definition_of_matrices", y, rowCountY, columnCountY);
-						session.rewrite("transposition_of_multiplication#1", session.getFactName(-1));
-						session.bind(session.getFactName(-1));
-						session.bind(session.getFactName(-1), k, i);
+						bind("definition_of_matrices", y, rowCountY, columnCountY);
+						rewrite("transposition_of_multiplication#1", getFactName(-1));
+						bind(getFactName(-1));
+						bind(getFactName(-1), k, i);
 					}
 					
-					session.bind("commutativity_of_multiplication", yki, xjk);
-					session.apply(session.getFactName(-1), "transposition_of_multiplication#4#17#1");
-					session.apply(session.getFactName(-1), "transposition_of_multiplication#4#17#0");
+					bind("commutativity_of_multiplication", yki, xjk);
+					apply(getFactName(-1), "transposition_of_multiplication#4#17#1");
+					apply(getFactName(-1), "transposition_of_multiplication#4#17#0");
 				}
 				
-				session.rewrite("transposition_of_multiplication#4#16", session.getFactName(-1));
-				rewriteRight(session, "transposition_of_multiplication#4#6", session.getFactName(-1));
+				rewrite("transposition_of_multiplication#4#16", getFactName(-1));
+				rewriteRight("transposition_of_multiplication#4#6", getFactName(-1));
 				
 			}
 			
-			rewriteRight(session, session.getFactName(-1), "transposition_of_multiplication#3");
+			rewriteRight(getFactName(-1), "transposition_of_multiplication#3");
 		}
 	}
 	
-	public static final void claimTranspositionOfAddition(final Session session) {
-		session.claim("transposition_of_addition", $$("∀X,Y ((`size_X=`size_Y) → ((X+Y)ᵀ=Xᵀ+Yᵀ))"));
+	public static final void claimTranspositionOfAddition() {
+		claim("transposition_of_addition", $$("∀X,Y ((`size_X=`size_Y) → ((X+Y)ᵀ=Xᵀ+Yᵀ))"));
 		
 		{
-			introduce();
-			introduce();
+			final Symbol x = introduce();
+			final Symbol y = introduce();
 			introduce();
 			
-			final Symbol x = session.getParameter("X");
-			final Symbol y = session.getParameter("Y");
 			final Expression xt = $(x, "ᵀ");
 			final Expression yt = $(y, "ᵀ");
 			final Expression xy = $(x, "+", y);
 			final Expression xyt = $(xy, "ᵀ");
 			final Expression xtyt = $(xt, "+", yt);
 			
-			session.bind("definition_of_matrix_equality", xyt, xtyt);
-			session.claim(((Composite) session.getFact(-1)).get(2));
+			bind("definition_of_matrix_equality", xyt, xtyt);
+			claim(((Composite) getFact(-1)).get(2));
 			
 			{
-				introduce();
-				introduce();
+				final Symbol i = introduce();
+				final Symbol j = introduce();
 				
-				final Symbol i = session.getParameter("i");
-				final Symbol j = session.getParameter("j");
-				
-				session.bind("definition_of_transposition", xy, i, j);
-				session.claim($(((Composite) session.getFact(-1)).get(2), "=", ((Composite) session.getCurrentGoal()).get(2)));
+				bind("definition_of_transposition", xy, i, j);
+				claim($(((Composite) getFact(-1)).get(2), "=", ((Composite) getCurrentGoal()).get(2)));
 				
 				{
-					session.bind("definition_of_matrix_addition", x, y);
-					session.apply(session.getFactName(-1), "transposition_of_addition#0");
-					session.bind(session.getFactName(-1), j, i);
+					bind("definition_of_matrix_addition", x, y);
+					apply(getFactName(-1), "transposition_of_addition#0");
+					bind(getFactName(-1), j, i);
 					
-					session.bind("definition_of_transposition", x, i, j);
-					rewriteRight(session, session.getFactName(-2), session.getFactName(-1));
+					bind("definition_of_transposition", x, i, j);
+					rewriteRight(getFactName(-2), getFactName(-1));
 					
-					session.bind("definition_of_transposition", y, i, j);
-					rewriteRight(session, session.getFactName(-2), session.getFactName(-1));
+					bind("definition_of_transposition", y, i, j);
+					rewriteRight(getFactName(-2), getFactName(-1));
 					
-					final Composite eq1 = session.getFact(-1);
-					final Composite eq2 = (Composite) session.getCurrentGoal();
+					final Composite eq1 = getFact(-1);
+					final Composite eq2 = (Composite) getCurrentGoal();
 					
-					session.claim($(eq2.get(2), "=", eq1.get(2)));
+					claim($(eq2.get(2), "=", eq1.get(2)));
 					
 					{
-						session.bind("definition_of_matrix_addition", xt, yt);
-						session.claim(((Module) session.getFact(-1)).getConditions().get(0));
+						bind("definition_of_matrix_addition", xt, yt);
+						claim(((Module) getFact(-1)).getConditions().get(0));
 						
 						{
-							session.bind("definition_of_matrix_size_equality", xt, yt);
-							session.claim(((Composite) session.getFact(-1)).get(2));
+							bind("definition_of_matrix_size_equality", xt, yt);
+							claim(((Composite) getFact(-1)).get(2));
 							
 							{
-								session.claim(((Module) session.getCurrentGoal()).getFacts().get(0));
+								claim(((Module) getCurrentGoal()).getFacts().get(0));
 								
 								{
-									session.bind("definition_of_matrix_size_equality", x, y);
-									session.rewrite("transposition_of_addition#0", session.getFactName(-1));
-									session.bind(session.getFactName(-1));
-									session.bind("definition_of_transposition_columnCount", x);
-									session.rewrite(session.getFactName(-1), session.getFactName(-2));
-									session.bind("definition_of_transposition_columnCount", y);
-									rewriteRight(session, session.getFactName(-2), session.getFactName(-1));
+									bind("definition_of_matrix_size_equality", x, y);
+									rewrite("transposition_of_addition#0", getFactName(-1));
+									bind(getFactName(-1));
+									bind("definition_of_transposition_columnCount", x);
+									rewrite(getFactName(-1), getFactName(-2));
+									bind("definition_of_transposition_columnCount", y);
+									rewriteRight(getFactName(-2), getFactName(-1));
 								}
 								
-								session.claim(((Module) session.getCurrentGoal()).getFacts().get(1));
+								claim(((Module) getCurrentGoal()).getFacts().get(1));
 								
 								{
-									session.bind("definition_of_matrix_size_equality", x, y);
-									session.rewrite("transposition_of_addition#0", session.getFactName(-1));
-									session.bind(session.getFactName(-1));
-									session.bind("definition_of_transposition_rowCount", x);
-									session.rewrite(session.getFactName(-1), session.getFactName(-3));
-									session.bind("definition_of_transposition_rowCount", y);
-									rewriteRight(session, session.getFactName(-2), session.getFactName(-1));
+									bind("definition_of_matrix_size_equality", x, y);
+									rewrite("transposition_of_addition#0", getFactName(-1));
+									bind(getFactName(-1));
+									bind("definition_of_transposition_rowCount", x);
+									rewrite(getFactName(-1), getFactName(-3));
+									bind("definition_of_transposition_rowCount", y);
+									rewriteRight(getFactName(-2), getFactName(-1));
 								}
 							}
 							
-							rewriteRight(session, session.getFactName(-1), session.getFactName(-2));
+							rewriteRight(getFactName(-1), getFactName(-2));
 						}
 						
-						session.apply(session.getFactName(-2), session.getFactName(-1));
-						session.bind(session.getFactName(-1), i, j);
+						apply(getFactName(-2), getFactName(-1));
+						bind(getFactName(-1), i, j);
 					}
 					
-					rewriteRight(session, session.getFactName(-2), session.getFactName(-1));
+					rewriteRight(getFactName(-2), getFactName(-1));
 				}
 				
-				session.rewrite(session.getFactName(-2), session.getFactName(-1));
+				rewrite(getFactName(-2), getFactName(-1));
 			}
 			
-			rewriteRight(session, session.getFactName(-1), session.getFactName(-2));
+			rewriteRight(getFactName(-1), getFactName(-2));
 		}
 	}
 	
-	public static final void claimCommutativityOfConjunction(final Session session) {
-		session.claim("commutativity_of_conjunction",
+	public static final void claimCommutativityOfConjunction() {
+		claim("commutativity_of_conjunction",
 				$$("∀P,Q ((P ∧ Q) = (Q ∧ P))"));
 		
 		{
-			introduce();
-			introduce();
-			
-			final Symbol p = session.getParameter("P");
-			final Symbol q = session.getParameter("Q");
+			final Symbol p = introduce();
+			final Symbol q = introduce();
 			final Expression pq = $(p, "&", q);
 			final Expression qp = $(q, "&", p);
 			final Expression pq2qp = $(pq, "->", qp);
 			final Expression qp2pq = $(qp, "->", pq);
 			
-			session.bind("definition_of_proposition_equality", pq, qp);
+			bind("definition_of_proposition_equality", pq, qp);
 			
-			session.claim(pq2qp);
+			claim(pq2qp);
 			{
 				introduce();
-				session.bind("commutativity_of_conjunction#1#0");
+				bind("commutativity_of_conjunction#1#0");
 			}
 			
-			session.claim(qp2pq);
+			claim(qp2pq);
 			
 			{
 				introduce();
-				session.bind("commutativity_of_conjunction#2#0");
+				bind("commutativity_of_conjunction#2#0");
 			}
 			
-			session.claim($(pq2qp, "&", qp2pq));
+			claim($(pq2qp, "&", qp2pq));
 			
 			{
-				session.recall("commutativity_of_conjunction#1");
-				session.recall("commutativity_of_conjunction#2");
+				recall("commutativity_of_conjunction#1");
+				recall("commutativity_of_conjunction#2");
 			}
 			
-			rewriteRight(session, "commutativity_of_conjunction#3", "commutativity_of_conjunction#0");
+			rewriteRight("commutativity_of_conjunction#3", "commutativity_of_conjunction#0");
 		}
 	}
 	
-	public static final void rewriteRight(final Session session, final String sourceName, final String equalityName) {
+	public static final void rewriteRight(final String sourceName, final String equalityName) {
+		final Session session = getOrCreateSession();
 		final Composite equality = session.getProposition(equalityName);
 		
-		session.claim(session.getProposition(sourceName).accept(new Rewriter().rewrite(equality.get(2), equality.get(0))));
+		claim(session.getProposition(sourceName).accept(new Rewriter().rewrite(equality.get(2), equality.get(0))));
 		
 		{
 			final String ruleName = session.getCurrentContext().getModule().newPropositionName();
 			
-			session.bind(ruleName, Standard.SYMMETRY_OF_EQUALITY, (Expression) equality.get(0), equality.get(2));
+			bind(ruleName, Standard.SYMMETRY_OF_EQUALITY, (Expression) equality.get(0), equality.get(2));
 			
 			final String reversedEqualityName = session.getCurrentContext().getModule().newPropositionName();
 			
-			session.apply(reversedEqualityName, ruleName, equalityName);
+			apply(reversedEqualityName, ruleName, equalityName);
 			
-			session.rewrite(sourceName, reversedEqualityName);
+			rewrite(sourceName, reversedEqualityName);
 		}
 	}
 	

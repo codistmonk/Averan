@@ -128,8 +128,12 @@ public final class Session implements Serializable {
 		return this.pop();
 	}
 	
-	public final Session bind(final String moduleName, final Expression... expressions) {
-		return this.bind(this.newPropositionName(), moduleName, expressions);
+	@SuppressWarnings("unchecked")
+	public final <E extends Expression> E getCondition(final int index) {
+		final List<Expression> conditions = this.getCurrentModule().getConditions();
+		final int n = conditions.size();
+		
+		return (E) conditions.get((n + index) % n);
 	}
 	
 	public final String getConditionName(final int index) {
@@ -139,14 +143,6 @@ public final class Session implements Serializable {
 		
 		return conditionIndices.entrySet().stream().reduce(
 				"", (old, entry) -> entry.getValue().equals(i) ? entry.getKey() : old, (u, t) -> t);
-	}
-	
-	@SuppressWarnings("unchecked")
-	public final <E extends Expression> E getCondition(final int index) {
-		final List<Expression> conditions = this.getCurrentModule().getConditions();
-		final int n = conditions.size();
-		
-		return (E) conditions.get((n + index) % n);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -168,6 +164,10 @@ public final class Session implements Serializable {
 	
 	public final Module getCurrentModule() {
 		return this.getCurrentContext().getModule();
+	}
+	
+	public final Session bind(final String moduleName, final Expression... expressions) {
+		return this.bind(this.newPropositionName(), moduleName, expressions);
 	}
 	
 	public final Session bind(final String factName, final String moduleName, final Expression... expressions) {
@@ -266,27 +266,13 @@ public final class Session implements Serializable {
 			return this.module;
 		}
 		
-		public final Expression getCurrentGoal() {
-			return this.currentGoal;
+		@SuppressWarnings("unchecked")
+		public final <E extends Expression> E getCurrentGoal() {
+			return (E) this.currentGoal;
 		}
 		
 		public final boolean isGoalReached() {
 			if (!this.goalReached) {
-//				if (!this.getModule().getFacts().isEmpty() && this.getInitialGoal() instanceof Module) {
-//					Tools.debugPrint(this.getModule());
-//					Tools.debugPrint(this.getInitialGoal());
-//					final Module initialModule = (Module) this.getInitialGoal();
-//					
-//					final List<Expression> f1 = Module.flattenFreeFacts(this.getModule().getFacts());
-//					final List<Expression> f2 = Module.flattenFreeFacts(initialModule.getFacts());
-//					Tools.debugPrint(f1);
-//					Tools.debugPrint(f2);
-//					final Expression l1 = f1.get(f1.size() - 1);
-//					final Expression l2 = f2.get(f2.size() - 1);
-//					Tools.debugPrint(l1);
-//					Tools.debugPrint(l2);
-//				}
-				
 				this.goalReached = this.getModule().implies(this.getInitialGoal());
 			}
 			
