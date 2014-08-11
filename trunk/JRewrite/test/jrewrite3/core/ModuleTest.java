@@ -8,7 +8,6 @@ import static jrewrite3.core.Module.equality;
 import static jrewrite3.modules.Standard.IDENTITY;
 import static net.sourceforge.aprog.tools.Tools.array;
 import static org.junit.Assert.*;
-
 import jrewrite3.core.Expression;
 import jrewrite3.core.Module;
 import jrewrite3.core.Module.Symbol;
@@ -68,7 +67,7 @@ public final class ModuleTest {
 	}
 	
 	@Test
-	public final void testImplies() {
+	public final void testImplies1() {
 		final Module module1 = new Module(null);
 		final Module module2 = new Module(null);
 		
@@ -104,6 +103,26 @@ public final class ModuleTest {
 		
 		assertTrue(module1.implies(module2));
 		assertFalse(module2.implies(module1));
+	}
+	
+	@Test
+	public final void testImplies2() {
+		final Module module1 = new Module(null);
+		final Module module2 = new Module(null);
+		final Symbol z = $("z");
+		
+		module1.new Admit(module1.parameter("x")).execute();
+		module1.new Admit(z).execute();
+		module2.new Admit(module2.new Symbol("y")).execute();
+		module2.new Admit(z).execute();
+		
+		assertFalse(module1.implies(module2));
+		assertFalse(module2.implies(module1));
+		
+		module2.parameter("y");
+		
+		assertTrue(module1.implies(module2));
+		assertTrue(module2.implies(module1));
 	}
 	
 	@Test
