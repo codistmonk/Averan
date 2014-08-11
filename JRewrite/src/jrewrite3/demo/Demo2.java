@@ -148,7 +148,7 @@ public final class Demo2 {
 				
 				final Symbol i = session.getParameter("i");
 				final Symbol j = session.getParameter("j");
-				final Symbol k = session.getCurrentModule().new Symbol("k");
+				final Symbol k = session.getCurrentModule().parameter("k");
 				final Expression rowCountX = $("rowCount", "_", x);
 				final Expression columnCountX = $("columnCount", "_", x);
 				final Expression rowCountY = $("rowCount", "_", y);
