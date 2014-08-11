@@ -2,6 +2,7 @@ package averan.demo;
 
 import static averan.core.ExpressionTools.$;
 import static averan.demo.ExpressionParser.$$;
+import static averan.demo.SessionTools.*;
 import static java.awt.Color.BLACK;
 import static java.awt.Color.WHITE;
 
@@ -19,7 +20,7 @@ import averan.modules.Standard;
 /**
  * @author codistmonk (creation 2014-08-08)
  */
-public final class Demo2 extends SessionTools {
+public final class Demo2 {
 	
 	public static final Module MODULE = new Module(Standard.MODULE);
 	
@@ -101,7 +102,7 @@ public final class Demo2 extends SessionTools {
 		} catch (final BreakSessionException exception) {
 			sessionBreakPoint = exception.getStackTrace()[1].toString();
 		} finally {
-			getOrCreateSession().new Exporter(-1).exportSession();
+			session().new Exporter(-1).exportSession();
 			
 			System.out.println(sessionBreakPoint);
 		}
@@ -109,7 +110,7 @@ public final class Demo2 extends SessionTools {
 		{
 			final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 			
-			getOrCreateSession().new Exporter(new TexPrinter(buffer), 0).exportSession();
+			session().new Exporter(new TexPrinter(buffer), 0).exportSession();
 			
 			new TeXFormula(buffer.toString()).createPNG(0, 18F, "view.png", WHITE, BLACK);
 		}
@@ -135,7 +136,7 @@ public final class Demo2 extends SessionTools {
 			
 			bind("definition_of_matrix_equality", xyt, ytxt);
 			
-			claim(((Composite) getFact(-1)).get(2));
+			claim(((Composite) fact(-1)).get(2));
 			
 			{
 				final Symbol i = introduce();
@@ -149,36 +150,36 @@ public final class Demo2 extends SessionTools {
 				bind(Standard.IDENTITY, k);
 				bind("definition_of_transposition", xy, i, j);
 				bind("definition_of_matrix_multiplication", x, y, columnCountX);
-				claim(((Module) getFact(-1)).getConditions().get(0));
+				claim(((Module) fact(-1)).getConditions().get(0));
 				
 				{
 					bind(Standard.IDENTITY, columnCountX);
-					rewrite(getFactName(-1), "transposition_of_multiplication#2", 0);
+					rewrite(factName(-1), "transposition_of_multiplication#2", 0);
 				}
 				
-				apply("transposition_of_multiplication#4#2", getFactName(-1));
-				bind(getFactName(-1), j, i, k);
-				rewrite("transposition_of_multiplication#4#1", getFactName(-1));
+				apply("transposition_of_multiplication#4#2", factName(-1));
+				bind(factName(-1), j, i, k);
+				rewrite("transposition_of_multiplication#4#1", factName(-1));
 				
 				bind("definition_of_matrix_multiplication", yt, xt, $("columnCount", "_", x));
-				claim(((Module) getFact(-1)).getConditions().get(0));
+				claim(((Module) fact(-1)).getConditions().get(0));
 				
 				{
 					bind("definition_of_transposition_columnCount", y);
-					rewriteRight(getFactName(-1), "transposition_of_multiplication#2");
+					rewriteRight(factName(-1), "transposition_of_multiplication#2");
 					bind("definition_of_transposition_rowCount", x);
 				}
 				
-				apply("transposition_of_multiplication#4#7", getFactName(-1));
-				bind(getFactName(-1), i, j, k);
+				apply("transposition_of_multiplication#4#7", factName(-1));
+				bind(factName(-1), i, j, k);
 				
 				bind("definition_of_transposition", x);
-				bind(getFactName(-1), k, j);
-				rewrite("transposition_of_multiplication#4#10", getFactName(-1));
+				bind(factName(-1), k, j);
+				rewrite("transposition_of_multiplication#4#10", factName(-1));
 				
 				bind("definition_of_transposition", y);
-				bind(getFactName(-1), i, k);
-				rewrite("transposition_of_multiplication#4#13", getFactName(-1));
+				bind(factName(-1), i, k);
+				rewrite("transposition_of_multiplication#4#13", factName(-1));
 				
 				final Expression xjk = $(x, "_", $(j, ",", k));
 				final Expression yki = $(y, "_", $(k, ",", i));
@@ -192,31 +193,31 @@ public final class Demo2 extends SessionTools {
 					
 					{
 						bind("definition_of_matrices", x, rowCountX, columnCountX);
-						rewrite("transposition_of_multiplication#0", getFactName(-1));
-						bind(getFactName(-1));
-						bind(getFactName(-1), j, k);
+						rewrite("transposition_of_multiplication#0", factName(-1));
+						bind(factName(-1));
+						bind(factName(-1), j, k);
 					}
 					
 					claim($(yki, "∈", "ℝ"));
 					
 					{
 						bind("definition_of_matrices", y, rowCountY, columnCountY);
-						rewrite("transposition_of_multiplication#1", getFactName(-1));
-						bind(getFactName(-1));
-						bind(getFactName(-1), k, i);
+						rewrite("transposition_of_multiplication#1", factName(-1));
+						bind(factName(-1));
+						bind(factName(-1), k, i);
 					}
 					
 					bind("commutativity_of_multiplication", yki, xjk);
-					apply(getFactName(-1), "transposition_of_multiplication#4#17#1");
-					apply(getFactName(-1), "transposition_of_multiplication#4#17#0");
+					apply(factName(-1), "transposition_of_multiplication#4#17#1");
+					apply(factName(-1), "transposition_of_multiplication#4#17#0");
 				}
 				
-				rewrite("transposition_of_multiplication#4#16", getFactName(-1));
-				rewriteRight("transposition_of_multiplication#4#6", getFactName(-1));
+				rewrite("transposition_of_multiplication#4#16", factName(-1));
+				rewriteRight("transposition_of_multiplication#4#6", factName(-1));
 				
 			}
 			
-			rewriteRight(getFactName(-1), "transposition_of_multiplication#3");
+			rewriteRight(factName(-1), "transposition_of_multiplication#3");
 		}
 	}
 	
@@ -235,79 +236,79 @@ public final class Demo2 extends SessionTools {
 			final Expression xtyt = $(xt, "+", yt);
 			
 			bind("definition_of_matrix_equality", xyt, xtyt);
-			claim(((Composite) getFact(-1)).get(2));
+			claim(((Composite) fact(-1)).get(2));
 			
 			{
 				final Symbol i = introduce();
 				final Symbol j = introduce();
 				
 				bind("definition_of_transposition", xy, i, j);
-				claim($(((Composite) getFact(-1)).get(2), "=", ((Composite) getCurrentGoal()).get(2)));
+				claim($(((Composite) fact(-1)).get(2), "=", ((Composite) getCurrentGoal()).get(2)));
 				
 				{
 					bind("definition_of_matrix_addition", x, y);
-					apply(getFactName(-1), "transposition_of_addition#0");
-					bind(getFactName(-1), j, i);
+					apply(factName(-1), "transposition_of_addition#0");
+					bind(factName(-1), j, i);
 					
 					bind("definition_of_transposition", x, i, j);
-					rewriteRight(getFactName(-2), getFactName(-1));
+					rewriteRight(factName(-2), factName(-1));
 					
 					bind("definition_of_transposition", y, i, j);
-					rewriteRight(getFactName(-2), getFactName(-1));
+					rewriteRight(factName(-2), factName(-1));
 					
-					final Composite eq1 = getFact(-1);
+					final Composite eq1 = fact(-1);
 					final Composite eq2 = (Composite) getCurrentGoal();
 					
 					claim($(eq2.get(2), "=", eq1.get(2)));
 					
 					{
 						bind("definition_of_matrix_addition", xt, yt);
-						claim(((Module) getFact(-1)).getConditions().get(0));
+						claim(((Module) fact(-1)).getConditions().get(0));
 						
 						{
 							bind("definition_of_matrix_size_equality", xt, yt);
-							claim(((Composite) getFact(-1)).get(2));
+							claim(((Composite) fact(-1)).get(2));
 							
 							{
 								claim(((Module) getCurrentGoal()).getFacts().get(0));
 								
 								{
 									bind("definition_of_matrix_size_equality", x, y);
-									rewrite("transposition_of_addition#0", getFactName(-1));
-									bind(getFactName(-1));
+									rewrite("transposition_of_addition#0", factName(-1));
+									bind(factName(-1));
 									bind("definition_of_transposition_columnCount", x);
-									rewrite(getFactName(-1), getFactName(-2));
+									rewrite(factName(-1), factName(-2));
 									bind("definition_of_transposition_columnCount", y);
-									rewriteRight(getFactName(-2), getFactName(-1));
+									rewriteRight(factName(-2), factName(-1));
 								}
 								
 								claim(((Module) getCurrentGoal()).getFacts().get(1));
 								
 								{
 									bind("definition_of_matrix_size_equality", x, y);
-									rewrite("transposition_of_addition#0", getFactName(-1));
-									bind(getFactName(-1));
+									rewrite("transposition_of_addition#0", factName(-1));
+									bind(factName(-1));
 									bind("definition_of_transposition_rowCount", x);
-									rewrite(getFactName(-1), getFactName(-3));
+									rewrite(factName(-1), factName(-3));
 									bind("definition_of_transposition_rowCount", y);
-									rewriteRight(getFactName(-2), getFactName(-1));
+									rewriteRight(factName(-2), factName(-1));
 								}
 							}
 							
-							rewriteRight(getFactName(-1), getFactName(-2));
+							rewriteRight(factName(-1), factName(-2));
 						}
 						
-						apply(getFactName(-2), getFactName(-1));
-						bind(getFactName(-1), i, j);
+						apply(factName(-2), factName(-1));
+						bind(factName(-1), i, j);
 					}
 					
-					rewriteRight(getFactName(-2), getFactName(-1));
+					rewriteRight(factName(-2), factName(-1));
 				}
 				
-				rewrite(getFactName(-2), getFactName(-1));
+				rewrite(factName(-2), factName(-1));
 			}
 			
-			rewriteRight(getFactName(-1), getFactName(-2));
+			rewriteRight(factName(-1), factName(-2));
 		}
 	}
 	
@@ -350,7 +351,7 @@ public final class Demo2 extends SessionTools {
 	}
 	
 	public static final void rewriteRight(final String sourceName, final String equalityName) {
-		final Session session = getOrCreateSession();
+		final Session session = session();
 		final Composite equality = session.getProposition(equalityName);
 		
 		claim(session.getProposition(sourceName).accept(new Rewriter().rewrite(equality.get(2), equality.get(0))));

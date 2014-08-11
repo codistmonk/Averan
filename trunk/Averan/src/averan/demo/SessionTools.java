@@ -17,41 +17,41 @@ import net.sourceforge.aprog.tools.IllegalInstantiationException;
 /**
  * @author codistmonk (creation 2014-08-11)
  */
-public abstract class SessionTools {
+public final class SessionTools {
 	
-	protected SessionTools() {
+	private SessionTools() {
 		throw new IllegalInstantiationException();
 	}
 	
 	private static final Map<Class<?>, Session> sessions = new HashMap<>();
 	
-	protected static final <E extends Expression> E getCurrentGoal() {
-		return getOrCreateSession().getCurrentContext().getCurrentGoal();
+	public static final <E extends Expression> E getCurrentGoal() {
+		return session().getCurrentContext().getCurrentGoal();
 	}
 	
-	protected static final Symbol parameter(final String name) {
-		return getOrCreateSession().getCurrentModule().parameter(name);
+	public static final Symbol parameter(final String name) {
+		return session().getCurrentModule().parameter(name);
 	}
 	
-	protected static final <E extends Expression> E getCondition(final int index) {
-		return getOrCreateSession().getCondition(index);
+	public static final <E extends Expression> E condition(final int index) {
+		return session().getCondition(index);
 	}
 	
-	protected static final String getConditionName(final int index) {
-		return getOrCreateSession().getConditionName(index);
+	public static final String conditionName(final int index) {
+		return session().getConditionName(index);
 	}
 	
-	protected static final <E extends Expression> E getFact(final int index) {
-		return getOrCreateSession().getFact(index);
+	public static final <E extends Expression> E fact(final int index) {
+		return session().getFact(index);
 	}
 	
-	protected static final String getFactName(final int index) {
-		return getOrCreateSession().getFactName(index);
+	public static final String factName(final int index) {
+		return session().getFactName(index);
 	}
 	
 	@SuppressWarnings("unchecked")
-	protected static final <E extends Expression> E introduce() {
-		final Session session = getOrCreateSession();
+	public static final <E extends Expression> E introduce() {
+		final Session session = session();
 		final List<Symbol> parameters = session.getCurrentModule().getParameters();
 		final List<Expression> conditions = session.getCurrentModule().getConditions();
 		final int oldParameterCount = parameters.size();
@@ -70,63 +70,63 @@ public abstract class SessionTools {
 		throw new IllegalStateException();
 	}
 	
-	protected static final void suppose(final Expression condition) {
-		getOrCreateSession().suppose(condition);
+	public static final void suppose(final Expression condition) {
+		session().suppose(condition);
 	}
 	
-	protected static final void suppose(final String conditionName, final Expression proposition) {
-		getOrCreateSession().suppose(conditionName, proposition);
+	public static final void suppose(final String conditionName, final Expression proposition) {
+		session().suppose(conditionName, proposition);
 	}
 	
-	protected static final void admit(final Expression fact) {
-		getOrCreateSession().admit(fact);
+	public static final void admit(final Expression fact) {
+		session().admit(fact);
 	}
 	
-	protected static final void admit(final String factName, final Expression fact) {
-		getOrCreateSession().admit(factName, fact);
+	public static final void admit(final String factName, final Expression fact) {
+		session().admit(factName, fact);
 	}
 	
-	protected static final void recall(final String propositionName) {
-		getOrCreateSession().recall(propositionName);
+	public static final void recall(final String propositionName) {
+		session().recall(propositionName);
 	}
 	
-	protected static final void recall(final String factName, final String propositionName) {
-		getOrCreateSession().recall(factName, propositionName);
+	public static final void recall(final String factName, final String propositionName) {
+		session().recall(factName, propositionName);
 	}
 	
-	protected static final void claim(final Expression fact) {
-		getOrCreateSession().claim(fact);
+	public static final void claim(final Expression fact) {
+		session().claim(fact);
 	}
 	
-	protected static final void claim(final String factName, final Expression fact) {
-		getOrCreateSession().claim(factName, fact);
+	public static final void claim(final String factName, final Expression fact) {
+		session().claim(factName, fact);
 	}
 	
-	protected static final void bind(final String moduleName, final Expression... expressions) {
-		getOrCreateSession().bind(moduleName, expressions);
+	public static final void bind(final String moduleName, final Expression... expressions) {
+		session().bind(moduleName, expressions);
 	}
 	
-	protected static final void bind(final String factName, final String moduleName, final Expression... expressions) {
-		getOrCreateSession().bind(factName, moduleName, expressions);
+	public static final void bind(final String factName, final String moduleName, final Expression... expressions) {
+		session().bind(factName, moduleName, expressions);
 	}
 	
-	protected static final void apply(final String moduleName, final String conditionName) {
-		getOrCreateSession().apply(moduleName, conditionName);
+	public static final void apply(final String moduleName, final String conditionName) {
+		session().apply(moduleName, conditionName);
 	}
 	
-	protected static final void apply(final String factName, final String moduleName, final String conditionName) {
-		getOrCreateSession().apply(factName, moduleName, conditionName);
+	public static final void apply(final String factName, final String moduleName, final String conditionName) {
+		session().apply(factName, moduleName, conditionName);
 	}
 	
-	protected static final void rewrite(final String sourceName, final String equalityName, final Integer... indices) {
-		getOrCreateSession().rewrite(sourceName, equalityName, indices);
+	public static final void rewrite(final String sourceName, final String equalityName, final Integer... indices) {
+		session().rewrite(sourceName, equalityName, indices);
 	}
 	
-	protected static final void rewrite(final String factName, final String sourceName, final String equalityName, final Integer... indices) {
-		getOrCreateSession().rewrite(factName, sourceName, equalityName, indices);
+	public static final void rewrite(final String factName, final String sourceName, final String equalityName, final Integer... indices) {
+		session().rewrite(factName, sourceName, equalityName, indices);
 	}
 	
-	protected static final Session getOrCreateSession() {
+	public static final Session session() {
 		final StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
 		
 		for (int i = stackTrace.length - 1; 0 <= i; --i) {
