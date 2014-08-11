@@ -7,6 +7,7 @@ import static java.awt.Color.BLACK;
 import static java.awt.Color.WHITE;
 
 import java.io.ByteArrayOutputStream;
+
 import org.scilab.forge.jlatexmath.TeXFormula;
 
 import averan.core.Composite;
@@ -15,6 +16,7 @@ import averan.core.Module;
 import averan.core.Rewriter;
 import averan.core.Session;
 import averan.core.Module.Symbol;
+import averan.demo.TexPrinter.DisplayHint;
 import averan.modules.Standard;
 
 /**
@@ -96,7 +98,7 @@ public final class Demo2 {
 			admit("simplified_definition_of_objective",
 					$$("∀w,i ((J_w)=⟨wᵀVw⟩/⟨wᵀSw⟩)"));
 			admit("equation_to_solve_to_optimize_objective",
-					$$("∀w (((SwwᵀV)=(VwwᵀS)) → `optimality_(J_w))"));
+					$$("∀w (((SwwᵀV)=(VwwᵀS)) → `optimality(J_w))"));
 			admit("regularization",
 					$$("∀B,ω,w ((w=Bω) → (((SwwᵀV)=(VwwᵀS)) → `constrainedOptimality_(J_(Bω))))"));
 		} catch (final BreakSessionException exception) {
@@ -110,7 +112,9 @@ public final class Demo2 {
 		{
 			final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 			
-			session().new Exporter(new TexPrinter(buffer), 0).exportSession();
+			session().new Exporter(new TexPrinter(buffer)
+				.hint($("optimality"), DisplayHint.APPLICATION)
+			, 0).exportSession();
 			
 			new TeXFormula(buffer.toString()).createPNG(0, 18F, "view.png", WHITE, BLACK);
 		}
