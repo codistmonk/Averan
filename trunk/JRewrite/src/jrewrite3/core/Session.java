@@ -134,6 +134,7 @@ public final class Session implements Serializable {
 		return this.bind(this.newPropositionName(), moduleName, expressions);
 	}
 	
+	@SuppressWarnings("unchecked")
 	public final <E extends Expression> E getLastFact() {
 		final List<Expression> facts = this.getCurrentModule().getFacts();
 		
