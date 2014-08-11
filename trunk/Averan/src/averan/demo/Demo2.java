@@ -4,8 +4,14 @@ import static averan.core.ExpressionTools.$;
 import static averan.demo.ExpressionParser.$$;
 import static java.awt.Color.BLACK;
 import static java.awt.Color.WHITE;
+import static net.sourceforge.aprog.tools.Tools.ignore;
+import static net.sourceforge.aprog.tools.Tools.unchecked;
 
 import java.io.ByteArrayOutputStream;
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.scilab.forge.jlatexmath.TeXFormula;
 
@@ -17,93 +23,171 @@ import averan.core.Session;
 import averan.core.Module.Symbol;
 import averan.modules.Standard;
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
+import net.sourceforge.aprog.tools.Tools;
+
+/**
+ * @author codistmonk (creation 2014-08-11)
+ */
+abstract class SessionTools {
+	
+	protected SessionTools() {
+		throw new IllegalInstantiationException();
+	}
+	
+	private static final Map<Class<?>, Session> sessions = new HashMap<>();
+	
+	@SuppressWarnings("unchecked")
+	protected static final <E extends Expression> E introduce() {
+		final Session session = getOrCreateSession();
+		final List<Symbol> parameters = session.getCurrentModule().getParameters();
+		final List<Expression> conditions = session.getCurrentModule().getConditions();
+		final int oldParameterCount = parameters.size();
+		final int oldConditionCount = conditions.size();
+		
+		session.introduce();
+		
+		if (oldParameterCount < parameters.size()) {
+			return (E) session.getParameter(-1);
+		}
+		
+		if (oldConditionCount < conditions.size()) {
+			return session.getCondition(-1);
+		}
+		
+		throw new IllegalStateException();
+	}
+	
+	protected static final void suppose(final Expression condition) {
+		getOrCreateSession().suppose(condition);
+	}
+	
+	protected static final void suppose(final String conditionName, final Expression proposition) {
+		getOrCreateSession().suppose(conditionName, proposition);
+	}
+	
+	protected static final void admit(final Expression fact) {
+		getOrCreateSession().admit(fact);
+	}
+	
+	protected static final void admit(final String factName, final Expression fact) {
+		getOrCreateSession().admit(factName, fact);
+	}
+	
+	protected static final Session getOrCreateSession() {
+		final StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+		
+		for (int i = stackTrace.length - 1; 0 <= i; --i) {
+			try {
+				final Class<?> cls = Class.forName(stackTrace[i].getClassName());
+				final Field moduleField = cls.getDeclaredField("MODULE");
+				
+				return sessions.compute(cls, (k, v) -> v == null ?
+						new Session((Module) getStaticFieldValue(moduleField)) : v);
+			} catch (final ClassNotFoundException exception) {
+				exception.printStackTrace();
+			} catch (final NoSuchFieldException exception) {
+				ignore(exception);
+			}
+		}
+		
+		throw new IllegalStateException();
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static final <T> T getStaticFieldValue(final Field field) {
+		try {
+			field.setAccessible(true);
+			
+			return (T) field.get(null);
+		} catch (final Exception exception) {
+			throw unchecked(exception);
+		}
+	}
+	
+}
 
 /**
  * @author codistmonk (creation 2014-08-08)
  */
-public final class Demo2 {
-	
-	private Demo2() {
-		throw new IllegalInstantiationException();
-	}
+public final class Demo2 extends SessionTools {
 	
 	public static final Module MODULE = new Module(Standard.MODULE);
 	
 	static {
-		final Session session = new Session(MODULE);
+		final Session session = getOrCreateSession();
 		String sessionBreakPoint = "";
 		
 		try {
-			session.suppose("definition_of_conjunction",
+			suppose("definition_of_conjunction",
 					$$("∀P,Q (P → (Q → (P ∧ Q)))"));
-			session.suppose("definition_of_proposition_equality",
+			suppose("definition_of_proposition_equality",
 					$$("∀P,Q ((P=Q) = ((P→Q) ∧ (Q→P)))"));
-			session.suppose("definition_of_negation",
+			suppose("definition_of_negation",
 					$$("∀P (¬P = (P→`false))"));
-			session.suppose("definition_of_existence",
+			suppose("definition_of_existence",
 					$$("∀P,x (∃x (P x)) = ¬(∀y ¬(P y))"));
-			session.suppose("definition_of_intersection",
+			suppose("definition_of_intersection",
 					$$("∀A,B,x (x∈A∩B) = (x∈A ∧ x∈B)"));
-			session.suppose("definition_of_summation",
+			suppose("definition_of_summation",
 					$$("∀i,a,b,e,s ((s=((Σ_(i=a)^b) e)) → (((b<a) → (s=0)) ∧ ((a≤b) → (s=(s{b=(b-1)})+(e{i=b})))))"));
-			session.suppose("definition_of_matrices",
+			suppose("definition_of_matrices",
 					$$("∀X,m,n (X∈≀M_(m,n) = (`rowCount_X = m ∧ `columnCount_X = n ∧ ∀i,j (X_(i,j)∈ℝ)))"));
-			session.suppose("definition_of_matrix_size_equality",
+			suppose("definition_of_matrix_size_equality",
 					$$("∀X,Y ((`size_X=`size_Y) = ((`columnCount_X = `columnCount_Y) ∧ (`rowCount_X = `rowCount_Y)))"));
-			session.suppose("definition_of_matrix_equality",
+			suppose("definition_of_matrix_equality",
 					$$("∀X,Y ((X=Y) = (∀i,j ((X)_(i,j)=(Y_(i,j)))))"));
-			session.suppose("definition_of_matrix_scalarization",
+			suppose("definition_of_matrix_scalarization",
 					$$("∀X ((X∈≀M_(1,1)) → (⟨X⟩=X_(1,1)))"));
-			session.suppose("definition_of_matrix_addition",
+			suppose("definition_of_matrix_addition",
 					$$("∀X,Y ((`size_X=`size_Y) → (∀i,j ((X+Y)_(i,j)=(X_(i,j))+(Y_(i,j)))))"));
-			session.suppose("definition_of_matrix_subtraction",
+			suppose("definition_of_matrix_subtraction",
 					$$("∀X,Y ((`size_X=`size_Y) → (∀i,j ((X-Y)_(i,j)=(X_(i,j))-(Y_(i,j)))))"));
-			session.suppose("definition_of_matrix_multiplication",
+			suppose("definition_of_matrix_multiplication",
 					$$("∀X,Y,n (((`columnCount_X = n) ∧ (`rowCount_Y = n)) → (∀i,j,k ((XY)_(i,j)=((Σ_(k=0)^(n-1)) (X_(i,k))(Y_(k,j))))))"));
-			session.suppose("definition_of_transposition",
+			suppose("definition_of_transposition",
 					$$("∀X (∀i,j (Xᵀ_(i,j)=X_(j,i)))"));
-			session.suppose("definition_of_transposition_rowCount",
+			suppose("definition_of_transposition_rowCount",
 					$$("∀X (`rowCount_(Xᵀ)=`columnCount_X)"));
-			session.suppose("definition_of_transposition_columnCount",
+			suppose("definition_of_transposition_columnCount",
 					$$("∀X (`columnCount_(Xᵀ)=`rowCount_X)"));
 			
-			session.suppose("definition_of_U_rowCount",
+			suppose("definition_of_U_rowCount",
 					$$("∀n (`rowCount_(U_n)=n)"));
-			session.suppose("definition_of_U_columnCount",
+			suppose("definition_of_U_columnCount",
 					$$("∀n (`columnCount_(U_n)=1)"));
-			session.suppose("definition_of_U",
+			suppose("definition_of_U",
 					$$("∀n (0<n → (∀i (U_n_(i,1)=1/n)))"));
 			
-			session.admit("commutativity_of_multiplication",
+			admit("commutativity_of_multiplication",
 					$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((xy)=(yx))))"));
 			
 			claimCommutativityOfConjunction(session);
 			claimTranspositionOfAddition(session);
 			claimTranspositionOfMultiplication(session);
 			
-			session.suppose("definition_of_replicated_means",
+			suppose("definition_of_replicated_means",
 					$$("∀X,n ((`columnCount_X=n) → (M_X)=X(U_n)(U_n)ᵀ)"));
-			session.suppose("definition_of_problem_dimension",
+			suppose("definition_of_problem_dimension",
 					$$("0<D"));
-			session.suppose("definition_of_class_count",
+			suppose("definition_of_class_count",
 					$$("1<N"));
-			session.suppose("definition_of_class_means",
+			suppose("definition_of_class_means",
 					$$("∀i,j,n ((n=`columnCount_(C_j)) → (((M_C)_(i,j))=((C_j)(U_n))_(i,1)))"));
-			session.suppose("definition_of_class_rowCount",
+			suppose("definition_of_class_rowCount",
 					$$("∀i ((`rowCount_(C_i)) = D)"));
-			session.suppose("definition_of_V",
+			suppose("definition_of_V",
 					$$("V = `Var_(M_C)"));
-			session.suppose("definition_of_S",
+			suppose("definition_of_S",
 					$$("∀i (S = (Σ_(i=0)^(N-1) (`Var_(C_i))))"));
 			
 			// TODO claim
-			session.admit("simplified_definition_of_variance",
+			admit("simplified_definition_of_variance",
 					$$("∀X ((`Var_X)=(XXᵀ)-((M_X)(M_X)ᵀ))"));
-			session.admit("simplified_definition_of_objective",
+			admit("simplified_definition_of_objective",
 					$$("∀w,i ((J_w)=⟨wᵀVw⟩/⟨wᵀSw⟩)"));
-			session.admit("equation_to_solve_to_optimize_objective",
+			admit("equation_to_solve_to_optimize_objective",
 					$$("∀w (((SwwᵀV)=(VwwᵀS)) → `optimality_(J_w))"));
-			session.admit("regularization",
+			admit("regularization",
 					$$("∀B,ω,w ((w=Bω) → (((SwwᵀV)=(VwwᵀS)) → `constrainedOptimality_(J_(Bω))))"));
 		} catch (final BreakSessionException exception) {
 			sessionBreakPoint = exception.getStackTrace()[1].toString();
@@ -127,14 +211,13 @@ public final class Demo2 {
 				$$("∀X,Y ((X∈≀M_(`rowCount_X,`columnCount_X)) → ((Y∈≀M_(`rowCount_Y,`columnCount_Y)) → ((`columnCount_X=`rowCount_Y) → ((XY)ᵀ=YᵀXᵀ))))"));
 		
 		{
-			session.introduce();
-			session.introduce();
-			session.introduce();
-			session.introduce();
-			session.introduce();
+			final Symbol x = introduce();
+			final Symbol y = introduce();
 			
-			final Symbol x = session.getParameter("X");
-			final Symbol y = session.getParameter("Y");
+			introduce();
+			introduce();
+			introduce();
+			
 			final Expression xt = $(x, "ᵀ");
 			final Expression yt = $(y, "ᵀ");
 			final Expression xy = $(x, y);
@@ -146,8 +229,8 @@ public final class Demo2 {
 			session.claim(((Composite) session.getFact(-1)).get(2));
 			
 			{
-				session.introduce();
-				session.introduce();
+				introduce();
+				introduce();
 				
 				final Symbol i = session.getParameter("i");
 				final Symbol j = session.getParameter("j");
@@ -235,9 +318,9 @@ public final class Demo2 {
 		session.claim("transposition_of_addition", $$("∀X,Y ((`size_X=`size_Y) → ((X+Y)ᵀ=Xᵀ+Yᵀ))"));
 		
 		{
-			session.introduce();
-			session.introduce();
-			session.introduce();
+			introduce();
+			introduce();
+			introduce();
 			
 			final Symbol x = session.getParameter("X");
 			final Symbol y = session.getParameter("Y");
@@ -251,8 +334,8 @@ public final class Demo2 {
 			session.claim(((Composite) session.getFact(-1)).get(2));
 			
 			{
-				session.introduce();
-				session.introduce();
+				introduce();
+				introduce();
 				
 				final Symbol i = session.getParameter("i");
 				final Symbol j = session.getParameter("j");
@@ -332,8 +415,8 @@ public final class Demo2 {
 				$$("∀P,Q ((P ∧ Q) = (Q ∧ P))"));
 		
 		{
-			session.introduce();
-			session.introduce();
+			introduce();
+			introduce();
 			
 			final Symbol p = session.getParameter("P");
 			final Symbol q = session.getParameter("Q");
@@ -346,14 +429,14 @@ public final class Demo2 {
 			
 			session.claim(pq2qp);
 			{
-				session.introduce();
+				introduce();
 				session.bind("commutativity_of_conjunction#1#0");
 			}
 			
 			session.claim(qp2pq);
 			
 			{
-				session.introduce();
+				introduce();
 				session.bind("commutativity_of_conjunction#2#0");
 			}
 			

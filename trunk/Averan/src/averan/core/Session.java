@@ -132,6 +132,23 @@ public final class Session implements Serializable {
 		return this.bind(this.newPropositionName(), moduleName, expressions);
 	}
 	
+	public final String getConditionName(final int index) {
+		final Map<String, Integer> conditionIndices = this.getCurrentModule().getConditionIndices();
+		final int n = conditionIndices.size();
+		final int i = (n + index) % n;
+		
+		return conditionIndices.entrySet().stream().reduce(
+				"", (old, entry) -> entry.getValue().equals(i) ? entry.getKey() : old, (u, t) -> t);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public final <E extends Expression> E getCondition(final int index) {
+		final List<Expression> conditions = this.getCurrentModule().getConditions();
+		final int n = conditions.size();
+		
+		return (E) conditions.get((n + index) % n);
+	}
+	
 	@SuppressWarnings("unchecked")
 	public final <E extends Expression> E getFact(final int index) {
 		final List<Expression> facts = this.getCurrentModule().getFacts();
