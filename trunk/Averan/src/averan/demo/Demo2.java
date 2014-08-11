@@ -98,9 +98,9 @@ public final class Demo2 {
 			admit("simplified_definition_of_objective",
 					$$("∀w,i ((J_w)=⟨wᵀVw⟩/⟨wᵀSw⟩)"));
 			admit("equation_to_solve_to_optimize_objective",
-					$$("∀w (((SwwᵀV)=(VwwᵀS)) → `optimality(J_w))"));
+					$$("∀w (((SwwᵀV)=(VwwᵀS)) → `optimality (J_w))"));
 			admit("regularization",
-					$$("∀B,ω,w ((w=Bω) → (((SwwᵀV)=(VwwᵀS)) → `constrainedOptimality_(J_(Bω))))"));
+					$$("∀B,ω,w ((w=Bω) → (((SwwᵀV)=(VwwᵀS)) → `constrainedOptimality (J_(Bω))))"));
 		} catch (final BreakSessionException exception) {
 			sessionBreakPoint = exception.getStackTrace()[1].toString();
 		} finally {
@@ -113,7 +113,8 @@ public final class Demo2 {
 			final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 			
 			session().new Exporter(new TexPrinter(buffer)
-				.hint($("optimality"), DisplayHint.APPLICATION)
+				.hint($("optimality"), new DisplayHint(50, "", "\\;"))
+				.hint($("constrainedOptimality"), new DisplayHint(50, "", "\\;"))
 			, 0).exportSession();
 			
 			new TeXFormula(buffer.toString()).createPNG(0, 18F, "view.png", WHITE, BLACK);

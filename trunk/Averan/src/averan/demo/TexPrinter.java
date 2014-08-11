@@ -254,12 +254,18 @@ public final class TexPrinter implements Session.ExporterOutput {
 		public final Pair<String, DisplayHint> visit(final Symbol symbol) {
 			final String string = symbol.toString();
 			
-			return DisplayHint.DEFAULT.hint(string.length() == 1 ? string : word(string));
+			return this.getHint(symbol).hint(string.length() == 1 ? string : word(string));
 		}
 		
 		@SuppressWarnings("unchecked")
 		public final Pair<String, DisplayHint>[] transform(final Collection<? extends Expression> elements) {
 			return elements.stream().map(e -> e.accept(this)).toArray(Pair[]::new);
+		}
+		
+		public final DisplayHint getHint(final Object object) {
+			final DisplayHint result = this.getDisplayHints().get(object);
+			
+			return result != null ? result : DisplayHint.DEFAULT;
 		}
 		
 		/**
@@ -444,27 +450,46 @@ public final class TexPrinter implements Session.ExporterOutput {
 	/**
 	 * @author codistmonk (creation 2014-08-11)
 	 */
-	public static enum DisplayHint {
-		
-		DEFAULT(0),
-		APPLICATION(150),
-		ADDITION(200),
-		MULTIPLICATION(250),
-		;
+	public static final class DisplayHint implements Serializable {
 		
 		private final int priority;
 		
-		private DisplayHint(final int priority) {
+		private final String prefix;
+		
+		private final String postfix;
+		
+		public DisplayHint() {
+			this(0, "", "");
+		}
+		
+		public DisplayHint(final int priority, final String prefix, final String postfix) {
 			this.priority = priority;
+			this.prefix = prefix;
+			this.postfix = postfix;
+		}
+		
+		public final String getPrefix() {
+			return this.prefix;
+		}
+		
+		public final String getPostfix() {
+			return this.postfix;
 		}
 		
 		public final int getPriority() {
 			return this.priority;
 		}
 		
-		public final <T> Pair<T, DisplayHint> hint(final T object) {
-			return new Pair<>(object, this);
+		public final Pair<String, DisplayHint> hint(final String string) {
+			return new Pair<>(this.getPrefix() + string + this.getPostfix(), this);
 		}
+		
+		public static final DisplayHint DEFAULT = new DisplayHint();
+		
+		/**
+		 * {@value}.
+		 */
+		private static final long serialVersionUID = 8176839660157109283L;
 		
 	}
 	
