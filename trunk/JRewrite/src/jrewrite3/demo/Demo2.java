@@ -32,8 +32,8 @@ public final class Demo2 {
 	
 	static {
 		final Session session = new Session(MODULE);
+		String sessionBreakPoint = "";
 		
-		block:
 		try {
 			session.suppose("definition_of_conjunction",
 					$$("∀P,Q (P → (Q → (P ∧ Q)))"));
@@ -106,8 +106,12 @@ public final class Demo2 {
 					$$("∀w (((SwwᵀV)=(VwwᵀS)) → `optimality_(J_w))"));
 			session.admit("regularization",
 					$$("∀B,ω,w ((w=Bω) → (((SwwᵀV)=(VwwᵀS)) → `constrainedOptimality_(J_(Bω))))"));
+		} catch (final BreakSessionException exception) {
+			sessionBreakPoint = exception.getStackTrace()[1].toString();
 		} finally {
 			session.new Exporter(-1).exportSession();
+			
+			System.out.println(sessionBreakPoint);
 		}
 		
 		{
@@ -140,7 +144,7 @@ public final class Demo2 {
 			
 			session.bind("definition_of_matrix_equality", xyt, ytxt);
 			
-			session.claim(((Composite) session.getLastFact()).get(2));
+			session.claim(((Composite) session.getFact(-1)).get(2));
 			
 			{
 				session.introduce();
@@ -157,36 +161,36 @@ public final class Demo2 {
 				session.bind(Standard.IDENTITY, k);
 				session.bind("definition_of_transposition", xy, i, j);
 				session.bind("definition_of_matrix_multiplication", x, y, columnCountX);
-				session.claim(((Module) session.getLastFact()).getConditions().get(0));
+				session.claim(((Module) session.getFact(-1)).getConditions().get(0));
 				
 				{
 					session.bind(Standard.IDENTITY, columnCountX);
-					session.rewrite(session.getLastFactName(), "transposition_of_multiplication#2", 0);
+					session.rewrite(session.getFactName(-1), "transposition_of_multiplication#2", 0);
 				}
 				
-				session.apply("transposition_of_multiplication#4#2", session.getLastFactName());
-				session.bind(session.getLastFactName(), j, i, k);
-				session.rewrite("transposition_of_multiplication#4#1", session.getLastFactName());
+				session.apply("transposition_of_multiplication#4#2", session.getFactName(-1));
+				session.bind(session.getFactName(-1), j, i, k);
+				session.rewrite("transposition_of_multiplication#4#1", session.getFactName(-1));
 				
 				session.bind("definition_of_matrix_multiplication", yt, xt, $("columnCount", "_", x));
-				session.claim(((Module) session.getLastFact()).getConditions().get(0));
+				session.claim(((Module) session.getFact(-1)).getConditions().get(0));
 				
 				{
 					session.bind("definition_of_transposition_columnCount", y);
-					rewriteRight(session, session.getLastFactName(), "transposition_of_multiplication#2");
+					rewriteRight(session, session.getFactName(-1), "transposition_of_multiplication#2");
 					session.bind("definition_of_transposition_rowCount", x);
 				}
 				
-				session.apply("transposition_of_multiplication#4#7", session.getLastFactName());
-				session.bind(session.getLastFactName(), i, j, k);
+				session.apply("transposition_of_multiplication#4#7", session.getFactName(-1));
+				session.bind(session.getFactName(-1), i, j, k);
 				
 				session.bind("definition_of_transposition", x);
-				session.bind(session.getLastFactName(), k, j);
-				session.rewrite("transposition_of_multiplication#4#10", session.getLastFactName());
+				session.bind(session.getFactName(-1), k, j);
+				session.rewrite("transposition_of_multiplication#4#10", session.getFactName(-1));
 				
 				session.bind("definition_of_transposition", y);
-				session.bind(session.getLastFactName(), i, k);
-				session.rewrite("transposition_of_multiplication#4#13", session.getLastFactName());
+				session.bind(session.getFactName(-1), i, k);
+				session.rewrite("transposition_of_multiplication#4#13", session.getFactName(-1));
 				
 				final Expression xjk = $(x, "_", $(j, ",", k));
 				final Expression yki = $(y, "_", $(k, ",", i));
@@ -200,31 +204,31 @@ public final class Demo2 {
 					
 					{
 						session.bind("definition_of_matrices", x, rowCountX, columnCountX);
-						session.rewrite("transposition_of_multiplication#0", session.getLastFactName());
-						session.bind(session.getLastFactName());
-						session.bind(session.getLastFactName(), j, k);
+						session.rewrite("transposition_of_multiplication#0", session.getFactName(-1));
+						session.bind(session.getFactName(-1));
+						session.bind(session.getFactName(-1), j, k);
 					}
 					
 					session.claim($(yki, "∈", "ℝ"));
 					
 					{
 						session.bind("definition_of_matrices", y, rowCountY, columnCountY);
-						session.rewrite("transposition_of_multiplication#1", session.getLastFactName());
-						session.bind(session.getLastFactName());
-						session.bind(session.getLastFactName(), k, i);
+						session.rewrite("transposition_of_multiplication#1", session.getFactName(-1));
+						session.bind(session.getFactName(-1));
+						session.bind(session.getFactName(-1), k, i);
 					}
 					
 					session.bind("commutativity_of_multiplication", yki, xjk);
-					session.apply(session.getLastFactName(), "transposition_of_multiplication#4#17#1");
-					session.apply(session.getLastFactName(), "transposition_of_multiplication#4#17#0");
+					session.apply(session.getFactName(-1), "transposition_of_multiplication#4#17#1");
+					session.apply(session.getFactName(-1), "transposition_of_multiplication#4#17#0");
 				}
 				
-				session.rewrite("transposition_of_multiplication#4#16", session.getLastFactName());
-				rewriteRight(session, "transposition_of_multiplication#4#6", session.getLastFactName());
+				session.rewrite("transposition_of_multiplication#4#16", session.getFactName(-1));
+				rewriteRight(session, "transposition_of_multiplication#4#6", session.getFactName(-1));
 				
 			}
 			
-			rewriteRight(session, session.getLastFactName(), "transposition_of_multiplication#3");
+			rewriteRight(session, session.getFactName(-1), "transposition_of_multiplication#3");
 		}
 	}
 	
@@ -240,68 +244,87 @@ public final class Demo2 {
 			final Symbol y = session.getParameter("Y");
 			final Expression xt = $(x, "ᵀ");
 			final Expression yt = $(y, "ᵀ");
+			final Expression xy = $(x, "+", y);
+			final Expression xyt = $(xy, "ᵀ");
+			final Expression xtyt = $(xt, "+", yt);
 			
-			session.bind("definition_of_transposition", (Expression) $(x, "+", y));
-			session.bind("definition_of_matrix_addition", x, y);
-			session.apply("transposition_of_addition#2", "transposition_of_addition#0");
+			session.bind("definition_of_matrix_equality", xyt, xtyt);
+			session.claim(((Composite) session.getFact(-1)).get(2));
 			
 			{
-				final Module m = (Module) session.getCurrentContext().getModule().getProposition("transposition_of_addition#1");
-				final Symbol i = m.getParameter("i");
-				final Symbol j = m.getParameter("j");
+				session.introduce();
+				session.introduce();
 				
-				session.bind("transposition_of_addition#3", j, i);
+				final Symbol i = session.getParameter("i");
+				final Symbol j = session.getParameter("j");
+				
+				session.bind("definition_of_transposition", xy, i, j);
+				session.claim($(((Composite) session.getFact(-1)).get(2), "=", ((Composite) session.getCurrentGoal()).get(2)));
 				
 				{
+					session.bind("definition_of_matrix_addition", x, y);
+					session.apply(session.getFactName(-1), "transposition_of_addition#0");
+					session.bind(session.getFactName(-1), j, i);
+					
 					session.bind("definition_of_transposition", x, i, j);
-					rewriteRight(session, "transposition_of_addition#4", "transposition_of_addition#5");
-				}
-				
-				{
+					rewriteRight(session, session.getFactName(-2), session.getFactName(-1));
+					
 					session.bind("definition_of_transposition", y, i, j);
-					rewriteRight(session, "transposition_of_addition#6", "transposition_of_addition#7");
+					rewriteRight(session, session.getFactName(-2), session.getFactName(-1));
+					
+					final Composite eq1 = session.getFact(-1);
+					final Composite eq2 = (Composite) session.getCurrentGoal();
+					
+					session.claim($(eq2.get(2), "=", eq1.get(2)));
+					
+					{
+						session.bind("definition_of_matrix_addition", xt, yt);
+						session.claim(((Module) session.getFact(-1)).getConditions().get(0));
+						
+						{
+							session.bind("definition_of_matrix_size_equality", xt, yt);
+							session.claim(((Composite) session.getFact(-1)).get(2));
+							
+							{
+								session.claim(((Module) session.getCurrentGoal()).getFacts().get(0));
+								
+								{
+									session.bind("definition_of_matrix_size_equality", x, y);
+									session.rewrite("transposition_of_addition#0", session.getFactName(-1));
+									session.bind(session.getFactName(-1));
+									session.bind("definition_of_transposition_columnCount", x);
+									session.rewrite(session.getFactName(-1), session.getFactName(-2));
+									session.bind("definition_of_transposition_columnCount", y);
+									rewriteRight(session, session.getFactName(-2), session.getFactName(-1));
+								}
+								
+								session.claim(((Module) session.getCurrentGoal()).getFacts().get(1));
+								
+								{
+									session.bind("definition_of_matrix_size_equality", x, y);
+									session.rewrite("transposition_of_addition#0", session.getFactName(-1));
+									session.bind(session.getFactName(-1));
+									session.bind("definition_of_transposition_rowCount", x);
+									session.rewrite(session.getFactName(-1), session.getFactName(-3));
+									session.bind("definition_of_transposition_rowCount", y);
+									rewriteRight(session, session.getFactName(-2), session.getFactName(-1));
+								}
+							}
+							
+							rewriteRight(session, session.getFactName(-1), session.getFactName(-2));
+						}
+						
+						session.apply(session.getFactName(-2), session.getFactName(-1));
+						session.bind(session.getFactName(-1), i, j);
+					}
+					
+					rewriteRight(session, session.getFactName(-2), session.getFactName(-1));
 				}
 				
-				session.rewrite("transposition_of_addition#1", "transposition_of_addition#8");
+				session.rewrite(session.getFactName(-2), session.getFactName(-1));
 			}
 			
-			session.bind("definition_of_matrix_addition", xt, yt);
-			
-			session.claim($($("size", "_", xt), "=", $("size", "_", yt)));
-			
-			{
-				session.bind("definition_of_matrix_size_equality", xt, yt);
-				session.bind("definition_of_matrix_size_equality", x, y);
-				session.rewrite("transposition_of_addition#0", "transposition_of_addition#11#1");
-				session.bind("definition_of_transposition_rowCount", x);
-				session.bind("definition_of_transposition_columnCount", x);
-				session.bind("definition_of_transposition_rowCount", y);
-				session.bind("definition_of_transposition_columnCount", y);
-				rewriteRight(session, "transposition_of_addition#11#2", "transposition_of_addition#11#3");
-				rewriteRight(session, "transposition_of_addition#11#7", "transposition_of_addition#11#4");
-				rewriteRight(session, "transposition_of_addition#11#8", "transposition_of_addition#11#5");
-				rewriteRight(session, "transposition_of_addition#11#9", "transposition_of_addition#11#6");
-				
-				final Module conjunction1110 = session.getProposition("transposition_of_addition#11#10");
-				
-				session.bind("commutativity_of_conjunction", conjunction1110.getFacts().get(0), conjunction1110.getFacts().get(1));
-				session.rewrite("transposition_of_addition#11#10", "transposition_of_addition#11#11");
-				rewriteRight(session, "transposition_of_addition#11#12", "transposition_of_addition#11#0");
-			}
-			
-			session.apply("transposition_of_addition#10", "transposition_of_addition#11");
-			
-			{
-				final Module m = (Module) session.getCurrentContext().getModule().getProposition("transposition_of_addition#9");
-				final Symbol i = m.getParameter("i");
-				final Symbol j = m.getParameter("j");
-				
-				session.bind("transposition_of_addition#12", i, j);
-				rewriteRight(session, "transposition_of_addition#9", "transposition_of_addition#13");
-			}
-			
-			session.bind("definition_of_matrix_equality", (Expression) $($(x, "+", y), "ᵀ"), $(xt, "+", yt));
-			rewriteRight(session, "transposition_of_addition#14", "transposition_of_addition#15");
+			rewriteRight(session, session.getFactName(-1), session.getFactName(-2));
 		}
 	}
 	
@@ -370,6 +393,22 @@ public final class Demo2 {
 	 */
 	public static final void main(final String[] commandLineArguments) {
 		// NOP
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-08-11)
+	 */
+	public static final class BreakSessionException extends RuntimeException {
+		
+		/**
+		 * {@value}.
+		 */
+		private static final long serialVersionUID = -6958775377557504848L;
+		
+		public static final void breakSession() {
+			throw new BreakSessionException();
+		}
+		
 	}
 	
 }

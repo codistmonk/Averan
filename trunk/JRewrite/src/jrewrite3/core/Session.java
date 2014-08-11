@@ -83,9 +83,7 @@ public final class Session implements Serializable {
 	}
 	
 	public final Session admit(final Expression fact) {
-		this.getCurrentModule().new Suppose(this.newPropositionName(), fact).execute();
-		
-		return this.pop();
+		return this.admit(this.newPropositionName(), fact);
 	}
 	
 	public final Session admit(final String factName, final Expression fact) {
@@ -135,22 +133,24 @@ public final class Session implements Serializable {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public final <E extends Expression> E getLastFact() {
+	public final <E extends Expression> E getFact(final int index) {
 		final List<Expression> facts = this.getCurrentModule().getFacts();
+		final int n = facts.size();
 		
-		return (E) facts.get(facts.size() - 1);
+		return (E) facts.get((n + index) % n);
+	}
+	
+	public final String getFactName(final int index) {
+		final Map<String, Integer> factIndices = this.getCurrentModule().getFactIndices();
+		final int n = factIndices.size();
+		final int i = (n + index) % n;
+		
+		return factIndices.entrySet().stream().reduce(
+				"", (old, entry) -> entry.getValue().equals(i) ? entry.getKey() : old, (u, t) -> t);
 	}
 	
 	public final Module getCurrentModule() {
 		return this.getCurrentContext().getModule();
-	}
-	
-	public final String getLastFactName() {
-		final Map<String, Integer> factIndices = this.getCurrentModule().getFactIndices();
-		final int i = factIndices.size() - 1;
-		
-		return factIndices.entrySet().stream().reduce(
-				"", (old, entry) -> entry.getValue().equals(i) ? entry.getKey() : old, (u, t) -> t);
 	}
 	
 	public final Session bind(final String factName, final String moduleName, final Expression... expressions) {
