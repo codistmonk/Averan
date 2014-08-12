@@ -291,7 +291,7 @@ public final class Session implements Serializable {
 			Symbol result = module.getParameter(name);
 			
 			if (result == null) {
-				result = module.new Parameter(name).executeAndGet();
+				result = module.new Parametrize(name).executeAndGet();
 			}
 			
 			return result;

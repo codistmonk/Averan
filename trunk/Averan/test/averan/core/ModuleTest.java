@@ -28,7 +28,7 @@ public final class ModuleTest {
 		
 		assertEquals(0, module1.getParameters().size());
 		
-		module1.new Parameter("x").executeAndGet();
+		module1.new Parametrize("x").executeAndGet();
 		
 		assertEquals(1, module1.getParameters().size());
 		
@@ -36,7 +36,7 @@ public final class ModuleTest {
 		
 		assertEquals(1, module1.getParameters().size());
 		
-		module1.new Parameter("y").executeAndGet();
+		module1.new Parametrize("y").executeAndGet();
 		
 		assertEquals(2, module1.getParameters().size());
 	}
@@ -52,16 +52,16 @@ public final class ModuleTest {
 		assertEquals(module1, module2);
 		
 		{
-			final Symbol x = module1.new Parameter("x").executeAndGet();
-			final Symbol y = module1.new Parameter("y").executeAndGet();
+			final Symbol x = module1.new Parametrize("x").executeAndGet();
+			final Symbol y = module1.new Parametrize("y").executeAndGet();
 			module1.new Admit(Module.equality(x, y)).execute();
 		}
 		
 		assertNotEquals(module1, module2);
 		
 		{
-			final Symbol y = module2.new Parameter("y").executeAndGet();
-			final Symbol x = module2.new Parameter("x").executeAndGet();
+			final Symbol y = module2.new Parametrize("y").executeAndGet();
+			final Symbol x = module2.new Parametrize("x").executeAndGet();
 			module2.new Admit(Module.equality(y, x)).execute();
 		}
 		
@@ -113,7 +113,7 @@ public final class ModuleTest {
 		final Module module2 = new Module(null);
 		final Symbol z = $("z");
 		
-		module1.new Admit(module1.new Parameter("x").executeAndGet()).execute();
+		module1.new Admit(module1.new Parametrize("x").executeAndGet()).execute();
 		module1.new Admit(z).execute();
 		module2.new Admit(module2.new Symbol("y")).execute();
 		module2.new Admit(z).execute();
@@ -121,7 +121,7 @@ public final class ModuleTest {
 		assertFalse(module1.implies(module2));
 		assertFalse(module2.implies(module1));
 		
-		module2.new Parameter("y").executeAndGet();
+		module2.new Parametrize("y").executeAndGet();
 		
 		assertTrue(module1.implies(module2));
 		assertTrue(module2.implies(module1));
@@ -174,7 +174,7 @@ public final class ModuleTest {
 	@Test
 	public final void testClaim() {
 		final Module module1 = new Module(null);
-		final Symbol x = module1.new Parameter("x").executeAndGet();
+		final Symbol x = module1.new Parametrize("x").executeAndGet();
 		final Module module2 = new Module(ROOT);
 		
 		module2.new Bind(Standard.MODULE, IDENTITY).bind(x).execute();
