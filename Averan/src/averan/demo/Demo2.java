@@ -113,8 +113,8 @@ public final class Demo2 {
 			final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 			
 			session().new Exporter(new TexPrinter(buffer)
-				.hint($("optimality"), new DisplayHint(50, "", "\\;"))
-				.hint($("constrainedOptimality"), new DisplayHint(50, "", "\\;"))
+				.hint($("optimality"), new DisplayHint(50, "", "\\;", 1))
+				.hint($("constrainedOptimality"), new DisplayHint(50, "", "\\;", 1))
 			, 0).exportSession();
 			
 			new TeXFormula(buffer.toString()).createPNG(0, 18F, "view.png", WHITE, BLACK);
