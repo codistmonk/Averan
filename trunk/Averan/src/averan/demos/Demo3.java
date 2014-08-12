@@ -6,11 +6,7 @@ import static averan.tactics.SessionTools.*;
 import static averan.tactics.StandardTools.rewriteRight;
 import static java.awt.Color.BLACK;
 import static java.awt.Color.WHITE;
-
-import java.io.ByteArrayOutputStream;
-import java.util.Arrays;
-
-import org.scilab.forge.jlatexmath.TeXFormula;
+import static net.sourceforge.aprog.tools.Tools.ignore;
 
 import averan.core.Composite;
 import averan.core.Expression;
@@ -21,7 +17,11 @@ import averan.io.SessionExporter;
 import averan.io.TexPrinter;
 import averan.modules.Standard;
 import averan.tactics.Session;
-import averan.tactics.StandardTools;
+
+import java.io.ByteArrayOutputStream;
+import java.util.Arrays;
+
+import org.scilab.forge.jlatexmath.TeXFormula;
 
 /**
  * @author codistmonk (creation 2014-08-12)
@@ -42,6 +42,9 @@ public final class Demo3 {
 				final Symbol x = introduce();
 				final Composite goal = goal();
 				
+				ignore(p);
+				ignore(x);
+				
 				bind("notation", (Expression) goal.get(0), goal.get(2));
 				claim(((Composite) fact(-1)).get(2));
 				{
@@ -56,6 +59,9 @@ public final class Demo3 {
 				final Symbol q = introduce();
 				final Composite goal = goal();
 				
+				ignore(p);
+				ignore(q);
+				
 				bind("notation", (Expression) goal.get(0), goal.get(2));
 				claim(((Composite) fact(-1)).get(2));
 				{
@@ -68,6 +74,8 @@ public final class Demo3 {
 			{
 				final Symbol p = introduce();
 				final Composite goal = goal();
+				
+				ignore(p);
 				
 				bind("notation", (Expression) goal.get(0), goal.get(2));
 				claim(((Composite) fact(-1)).get(2));
@@ -107,9 +115,44 @@ public final class Demo3 {
 				}
 				rewriteRight(factName(-1), factName(-2));
 			}
-			BreakSessionException.breakSession();
-			admit("apply", $$("∀P,Q ((P ∧ (P→Q))/Q)"));
-			admit("bind", $$("∀P,X,Y ((∀X P)/(P{X=Y}))"));
+			claim("apply", $$("∀P,Q ((P ∧ (P→Q))/Q)"));
+			{
+				final Symbol p = introduce();
+				final Symbol q = introduce();
+				final Composite goal = goal();
+				
+				ignore(p);
+				ignore(q);
+				
+				bind("notation", (Expression) goal.get(0), goal.get(2));
+				claim(((Composite) fact(-1)).get(2));
+				{
+					introduce();
+					bind(conditionName(-1));
+					apply(factName(-1), factName(-2));
+				}
+				rewriteRight(factName(-1), factName(-2));
+			}
+			claim("bind", $$("∀P,X,Y ((∀X P)/(P{X=Y}))"));
+			{
+				final Symbol p = introduce();
+				final Symbol x = introduce();
+				final Symbol y = introduce();
+				final Composite goal = goal();
+				
+				ignore(p);
+				ignore(y);
+				
+				bind("notation", (Expression) goal.get(0), goal.get(2));
+				claim(((Composite) fact(-1)).get(2));
+				{
+					introduce();
+					bind(conditionName(-1), x);
+					substitute(goal());
+					rewriteRight(factName(-2), factName(-1));
+				}
+				rewriteRight(factName(-1), factName(-2));
+			}
 			claim("rewrite", $$("∀P,X,Y ((P ∧ (X=Y))/(P{X=Y}))"));
 			{
 				final Symbol p = introduce();
