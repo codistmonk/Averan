@@ -3,6 +3,7 @@ package averan.demo;
 import static averan.core.Composite.isBracedComposite;
 import static averan.core.ExpressionTools.$;
 import static averan.demo.TexPrinter.TexStringGenerator.Pattern.any;
+import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.join;
 import static net.sourceforge.aprog.tools.Tools.list;
 
@@ -232,29 +233,95 @@ public final class TexPrinter implements Session.ExporterOutput {
 						+ group(children.get(2).accept(this).getFirst())));
 			}
 			
-			for (final Expression child : children) {
-				if (child instanceof Symbol || isBracedComposite(child)) {
-					resultBuilder.append(child.accept(this).getFirst());
+			if (isSubscripted(composite)) {
+				final Expression child0 = children.get(0);
+				final Pair<String, DisplayHint> pair1 = child0.accept(this);
+				final Pair<String, DisplayHint> pair2 = children.get(2).accept(this);
+				
+				if (pair1.getSecond().getPriority() < DisplayHint.GROUP.getPriority()
+						|| (child0 instanceof Composite && !isBracedComposite(child0))) {
+					resultBuilder.append(pgroup(pair1.getFirst()));
 				} else {
-					resultBuilder.append(pgroup(child.accept(this).getFirst()));
+					resultBuilder.append(group(pair1.getFirst()));
+				}
+				
+				resultBuilder.append('_').append(group(pair2.getFirst()));
+				
+				return DisplayHint.GROUP.hint(group(resultBuilder));
+			}
+			
+			final DisplayHint resultHint = n == 2 ? DisplayHint.GROUP
+					: n == 3 ? this.getHintOrDefault(children.get(1)) : DisplayHint.DEFAULT;
+			
+			for (final Expression child : children) {
+				final Pair<String, DisplayHint> childPair = child.accept(this);
+				
+				if (child instanceof Symbol || isBracedComposite(child)) {
+					resultBuilder.append(childPair.getFirst());
+				} else {
+					if (childPair.getSecond().getPriority() < resultHint.getPriority()) {
+						resultBuilder.append(pgroup(childPair.getFirst()));
+					} else {
+						resultBuilder.append(group(childPair.getFirst()));
+					}
 				}
 			}
 			
-			return DisplayHint.DEFAULT.hint(group(resultBuilder.toString()));
+			return resultHint.hint(group(resultBuilder.toString()));
+		}
+		
+		public static final boolean isSubscripted(final Expression expression) {
+			final Composite composite = cast(Composite.class, expression);
+			
+			if (composite == null) {
+				return false;
+			}
+			
+			final List<Expression> children = composite.getChildren();
+			
+			return (children.size() == 3 && "_".equals(children.get(1).toString()));
 		}
 		
 		@Override
 		public final Pair<String, DisplayHint> beginVisit(final Module module) {
-			return DisplayHint.DEFAULT.hint(group(module.getParameters().isEmpty() ? "" : "∀" + Tools.join(",", Arrays.stream(this.transform(module.getParameters())).map(p -> p.getFirst()).toArray()) + "\\;")
-					+ (module.getConditions().isEmpty() ? "" : formatConjunction(this.transform(module.getConditions())) + " → ")
-					+ formatConjunction(this.transform(module.getFacts())));
+			final StringBuilder resultBuilder = new StringBuilder();
+			
+			if (!module.getParameters().isEmpty()) {
+				resultBuilder.append("∀").append(Tools.join(",",
+						Arrays.stream(this.transform(module.getParameters())).map(p -> p.getFirst()).toArray()))
+						.append("\\;");
+			}
+			
+			if (!module.getConditions().isEmpty()) {
+				final Pair<String, DisplayHint> conjunction = formatConjunction(this.transform(module.getConditions()));
+				
+				if (conjunction.getSecond().getPriority() < DisplayHint.IMPLICATION.getPriority()) {
+					resultBuilder.append(pgroup(conjunction.getFirst()));
+				} else {
+					resultBuilder.append(group(conjunction.getFirst()));
+				}
+				
+				resultBuilder.append(" → ");
+			}
+			
+			if (!module.getFacts().isEmpty()) {
+				final Pair<String, DisplayHint> conjunction = formatConjunction(this.transform(module.getFacts()));
+				
+				if (conjunction.getSecond().getPriority() < DisplayHint.IMPLICATION.getPriority()) {
+					resultBuilder.append(pgroup(conjunction.getFirst()));
+				} else {
+					resultBuilder.append(group(conjunction.getFirst()));
+				}
+			}
+			
+			return DisplayHint.DEFAULT.hint(resultBuilder.toString());
 		}
 		
 		@Override
 		public final Pair<String, DisplayHint> visit(final Symbol symbol) {
 			final String string = symbol.toString();
 			
-			return this.getHint(symbol).hint(string.length() == 1 ? string : word(string));
+			return getHintOrGroup(symbol).hint(string.length() == 1 ? string : word(string));
 		}
 		
 		@SuppressWarnings("unchecked")
@@ -262,10 +329,16 @@ public final class TexPrinter implements Session.ExporterOutput {
 			return elements.stream().map(e -> e.accept(this)).toArray(Pair[]::new);
 		}
 		
-		public final DisplayHint getHint(final Object object) {
+		public final DisplayHint getHintOrDefault(final Object object) {
 			final DisplayHint result = this.getDisplayHints().get(object);
 			
 			return result != null ? result : DisplayHint.DEFAULT;
+		}
+		
+		public final DisplayHint getHintOrGroup(final Object object) {
+			final DisplayHint result = this.getDisplayHints().get(object);
+			
+			return result != null ? result : DisplayHint.GROUP;
 		}
 		
 		/**
@@ -273,28 +346,13 @@ public final class TexPrinter implements Session.ExporterOutput {
 		 */
 		private static final long serialVersionUID = 3004635190043687534L;
 		
-		public static final String formatConjunction(final List<Expression> propositions) {
-			if (propositions.size() == 1) {
-				final Expression proposition = propositions.get(0);
-				
-				if (proposition instanceof Symbol) {
-					return proposition.toString();
-				}
-			}
-			
-			return pgroup(join(" ∧ ", propositions));
-		}
-		
-		public static final String formatConjunction(final Pair<String, DisplayHint>... propositions) {
+		public static final Pair<String, DisplayHint> formatConjunction(final Pair<String, DisplayHint>... propositions) {
 			if (propositions.length == 1) {
-				final Object proposition = propositions[0];
-				
-				if (proposition instanceof Symbol) {
-					return proposition.toString();
-				}
+				return propositions[0];
 			}
 			
-			return pgroup(Tools.join(" ∧ ", Arrays.stream(propositions).map(p -> p.getFirst()).toArray()));
+			return DisplayHint.GROUP.hint(pgroup(Tools.join(" ∧ ",
+					Arrays.stream(propositions).map(p -> p.getFirst()).toArray())));
 		}
 		
 		public static final String join(final String separator, final Iterable<?> elements) {
@@ -458,14 +516,17 @@ public final class TexPrinter implements Session.ExporterOutput {
 		
 		private final String postfix;
 		
+		private final int application;
+		
 		public DisplayHint() {
-			this(0, "", "");
+			this(0, "", "", 0);
 		}
 		
-		public DisplayHint(final int priority, final String prefix, final String postfix) {
+		public DisplayHint(final int priority, final String prefix, final String postfix, final int application) {
 			this.priority = priority;
 			this.prefix = prefix;
 			this.postfix = postfix;
+			this.application = application;
 		}
 		
 		public final String getPrefix() {
@@ -480,11 +541,22 @@ public final class TexPrinter implements Session.ExporterOutput {
 			return this.priority;
 		}
 		
+		public final int getApplication() {
+			return this.application;
+		}
+		
 		public final Pair<String, DisplayHint> hint(final String string) {
-			return new Pair<>(this.getPrefix() + string + this.getPostfix(), this);
+			final DisplayHint newHint = this.getApplication() == 0 ? this : new DisplayHint(
+					this.getPriority(), this.getPrefix(), this.getPostfix(), this.getApplication() - 1);
+			
+			return new Pair<>(this.getPrefix() + string + this.getPostfix(), newHint);
 		}
 		
 		public static final DisplayHint DEFAULT = new DisplayHint();
+		
+		public static final DisplayHint IMPLICATION = new DisplayHint(5, "", "", 0);
+		
+		public static final DisplayHint GROUP = new DisplayHint(1000, "", "", 0);
 		
 		/**
 		 * {@value}.
