@@ -76,7 +76,7 @@ public final class Session implements Serializable {
 	public final Session suppose(final String conditionName, final Expression condition) {
 		this.getCurrentModule().new Suppose(conditionName, condition).execute();
 		
-		return this.pop();
+		return this.tryToPop();
 	}
 	
 	public final Session admit(final Expression fact) {
@@ -86,7 +86,7 @@ public final class Session implements Serializable {
 	public final Session admit(final String factName, final Expression fact) {
 		this.getCurrentModule().new Admit(factName, fact).execute();
 		
-		return this.pop();
+		return this.tryToPop();
 	}
 	
 	public final Session recall(final String propositionName) {
@@ -98,7 +98,7 @@ public final class Session implements Serializable {
 		
 		module.new Recall(factName, module, propositionName).execute();
 		
-		return this.pop();
+		return this.tryToPop();
 	}
 	
 	public final Session rewrite(final String sourceName, final String equalityName, final Integer... indices) {
@@ -110,7 +110,7 @@ public final class Session implements Serializable {
 		
 		module.new Rewrite(factName, module, sourceName, module, equalityName).atIndices(indices).execute();
 		
-		return this.pop();
+		return this.tryToPop();
 	}
 	
 	public final Session apply(final String moduleName, final String conditionName) {
@@ -122,7 +122,7 @@ public final class Session implements Serializable {
 		
 		module.new Apply(factName, module, moduleName, module, conditionName).execute();
 		
-		return this.pop();
+		return this.tryToPop();
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -184,7 +184,7 @@ public final class Session implements Serializable {
 		this.getCurrentModule().new Bind(
 				factName, module, moduleName).bind(expressions).execute();
 		
-		return this.pop();
+		return this.tryToPop();
 	}
 	
 	public final Session introduce() {
@@ -194,7 +194,7 @@ public final class Session implements Serializable {
 	public final Session introduce(final String parameterOrConditionName) {
 		this.getCurrentContext().introduce(parameterOrConditionName);
 		
-		return this.pop();
+		return this.tryToPop();
 	}
 	
 	public final Session claim(final Expression proposition) {
@@ -207,14 +207,14 @@ public final class Session implements Serializable {
 		
 		this.getStack().add(0, proofContext);
 		
-		return this.pop();
+		return this.tryToPop();
 	}
 	
 	public final String newPropositionName() {
 		return this.getCurrentModule().newPropositionName();
 	}
 	
-	private final Session pop() {
+	private final Session tryToPop() {
 		while (1 < this.getStack().size() && this.getCurrentContext().isGoalReached()) {
 			final ProofContext previous = this.getStack().remove(0);
 			final Module proof = previous.getModule();
