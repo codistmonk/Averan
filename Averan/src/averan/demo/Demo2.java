@@ -51,9 +51,9 @@ public final class Demo2 {
 			suppose("definition_of_matrix_scalarization",
 					$$("∀X ((X∈≀M_(1,1)) → (⟨X⟩=X_(1,1)))"));
 			suppose("definition_of_matrix_addition",
-					$$("∀X,Y ((`size_X=`size_Y) → (∀i,j ((X+Y)_(i,j)=(X_(i,j))+(Y_(i,j)))))"));
+					$$("∀X,Y,i,j (((X+Y)_(i,j)=(X_(i,j))+(Y_(i,j))))"));
 			suppose("definition_of_matrix_subtraction",
-					$$("∀X,Y ((`size_X=`size_Y) → (∀i,j ((X-Y)_(i,j)=(X_(i,j))-(Y_(i,j)))))"));
+					$$("∀X,Y,i,j (((X-Y)_(i,j)=(X_(i,j))-(Y_(i,j))))"));
 			suppose("definition_of_matrix_multiplication",
 					$$("∀X,Y,n (((`columnCount_X = n) ∧ (`rowCount_Y = n)) → (∀i,j,k ((XY)_(i,j)=((Σ_(k=0)^(n-1)) (X_(i,k))(Y_(k,j))))))"));
 			suppose("definition_of_transposition",
@@ -72,6 +72,7 @@ public final class Demo2 {
 			
 			admit("commutativity_of_multiplication",
 					$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((xy)=(yx))))"));
+			
 			
 			claimCommutativityOfConjunction();
 			claimTranspositionOfAddition();
@@ -227,12 +228,11 @@ public final class Demo2 {
 	}
 	
 	public static final void claimTranspositionOfAddition() {
-		claim("transposition_of_addition", $$("∀X,Y ((`size_X=`size_Y) → ((X+Y)ᵀ=Xᵀ+Yᵀ))"));
+		claim("transposition_of_addition", $$("∀X,Y ((X+Y)ᵀ=Xᵀ+Yᵀ)"));
 		
 		{
 			final Symbol x = introduce();
 			final Symbol y = introduce();
-			introduce();
 			
 			final Expression xt = $(x, "ᵀ");
 			final Expression yt = $(y, "ᵀ");
@@ -251,61 +251,14 @@ public final class Demo2 {
 				claim($(((Composite) fact(-1)).get(2), "=", ((Composite) getCurrentGoal()).get(2)));
 				
 				{
-					bind("definition_of_matrix_addition", x, y);
-					apply(factName(-1), "transposition_of_addition#0");
-					bind(factName(-1), j, i);
-					
+					bind("definition_of_matrix_addition", x, y, j, i);
 					bind("definition_of_transposition", x, i, j);
 					rewriteRight(factName(-2), factName(-1));
 					
 					bind("definition_of_transposition", y, i, j);
 					rewriteRight(factName(-2), factName(-1));
 					
-					final Composite eq1 = fact(-1);
-					final Composite eq2 = (Composite) getCurrentGoal();
-					
-					claim($(eq2.get(2), "=", eq1.get(2)));
-					
-					{
-						bind("definition_of_matrix_addition", xt, yt);
-						claim(((Module) fact(-1)).getConditions().get(0));
-						
-						{
-							bind("definition_of_matrix_size_equality", xt, yt);
-							claim(((Composite) fact(-1)).get(2));
-							
-							{
-								claim(((Module) getCurrentGoal()).getFacts().get(0));
-								
-								{
-									bind("definition_of_matrix_size_equality", x, y);
-									rewrite("transposition_of_addition#0", factName(-1));
-									bind(factName(-1));
-									bind("definition_of_transposition_columnCount", x);
-									rewrite(factName(-1), factName(-2));
-									bind("definition_of_transposition_columnCount", y);
-									rewriteRight(factName(-2), factName(-1));
-								}
-								
-								claim(((Module) getCurrentGoal()).getFacts().get(1));
-								
-								{
-									bind("definition_of_matrix_size_equality", x, y);
-									rewrite("transposition_of_addition#0", factName(-1));
-									bind(factName(-1));
-									bind("definition_of_transposition_rowCount", x);
-									rewrite(factName(-1), factName(-3));
-									bind("definition_of_transposition_rowCount", y);
-									rewriteRight(factName(-2), factName(-1));
-								}
-							}
-							
-							rewriteRight(factName(-1), factName(-2));
-						}
-						
-						apply(factName(-2), factName(-1));
-						bind(factName(-1), i, j);
-					}
+					bind("definition_of_matrix_addition", xt, yt, i, j);
 					
 					rewriteRight(factName(-2), factName(-1));
 				}
