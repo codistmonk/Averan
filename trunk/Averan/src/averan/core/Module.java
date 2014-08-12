@@ -77,20 +77,6 @@ public final class Module implements Expression {
 		this.statements = new ArrayList<>(facts.size());
 	}
 	
-	public final Symbol parameter(final String name) {
-		Symbol result = this.getParameter(name);
-		
-		if (result != null) {
-			return result;
-		}
-		
-		result = this.new Symbol(name);
-		
-		this.getParameters().add(result);
-		
-		return result;
-	}
-	
 	public final Symbol findParameter(final String name) {
 		Symbol result = this.getParameter(name);
 		
@@ -551,6 +537,45 @@ public final class Module implements Expression {
 		 * {@value}.
 		 */
 		private static final long serialVersionUID = 5756077527983505640L;
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-08-12)
+	 */
+	public final class Parameter implements Statement {
+		
+		private final String name;
+		
+		public Parameter(final String name) {
+			this.name = name;
+			
+			if (Module.this.getParameter(name) != null) {
+				throw new IllegalArgumentException("Duplicate parameter: " + name);
+			}
+		}
+		
+		public final String getName() {
+			return this.name;
+		}
+		
+		public final Symbol executeAndGet() {
+			return this.execute().getParameter(this.getName());
+		}
+		
+		@Override
+		public final Module execute() {
+			final Module result = Module.this;
+			
+			result.getParameters().add(result.new Symbol(this.getName()));
+			
+			return result;
+		}
+		
+		/**
+		 * {@value}.
+		 */
+		private static final long serialVersionUID = 1492936934188936877L;
 		
 	}
 	

@@ -29,7 +29,7 @@ public final class SessionTools {
 	}
 	
 	public static final Symbol parameter(final String name) {
-		return session().getCurrentModule().parameter(name);
+		return session().getCurrentContext().parameter(name);
 	}
 	
 	public static final <E extends Expression> E condition(final int index) {

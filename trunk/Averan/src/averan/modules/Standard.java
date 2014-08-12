@@ -44,7 +44,7 @@ public final class Standard {
 	static {
 		{
 			final Module identity = new Module(MODULE);
-			final Symbol x = identity.parameter("x");
+			final Symbol x = identity.new Parameter("x").executeAndGet();
 			
 			identity.new Admit(equality(x, x)).execute();
 			
@@ -61,7 +61,7 @@ public final class Standard {
 			eliminationOfFalse.new Suppose(FALSE);
 			
 			final Module anythingIsTrue = new Module(eliminationOfFalse);
-			final Symbol p = anythingIsTrue.parameter("P");
+			final Symbol p = anythingIsTrue.new Parameter("P").executeAndGet();
 			
 			anythingIsTrue.new Admit("truthness_of_P", p).execute();
 			eliminationOfFalse.new Claim("anything_is_true", anythingIsTrue).execute();
@@ -71,8 +71,8 @@ public final class Standard {
 		
 		{
 			final Module symmetryOfIdentity = new Module(MODULE);
-			final Symbol x = symmetryOfIdentity.parameter("x");
-			final Symbol y = symmetryOfIdentity.parameter("y");
+			final Symbol x = symmetryOfIdentity.new Parameter("x").executeAndGet();
+			final Symbol y = symmetryOfIdentity.new Parameter("y").executeAndGet();
 			
 			symmetryOfIdentity.new Suppose("if x=y", equality(x, y)).execute();
 			
