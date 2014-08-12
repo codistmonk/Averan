@@ -90,16 +90,16 @@ public final class SessionExporter implements Serializable {
 			for (final Map.Entry<String, Integer> entry : module.getFactIndices().entrySet()) {
 				this.output.processModuleFact(entry.getKey(), facts.get(entry.getValue()));
 				
-				if (currentProofDepth <= this.maximumProofDepth) {
+				if (currentProofDepth < this.maximumProofDepth) {
 					this.output.beginModuleFactProof();
 					
 					final Statement command = statements.get(entry.getValue());
 					final Claim claim = cast(Claim.class, command);
 					
-					if (claim == null || currentProofDepth == this.maximumProofDepth) {
+					if (claim == null || currentProofDepth + 1 == this.maximumProofDepth) {
 						this.output.processModuleFactProof(command);
 					} else  {
-						this.exportModule(claim.getProofContext(), currentProofDepth + 1);
+						this.exportModule(claim.getProofContext(), currentProofDepth + 2);
 					}
 					
 					this.output.endModuleFactProof();
