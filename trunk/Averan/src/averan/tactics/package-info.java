@@ -1,8 +1,4 @@
 /**
- * 
- */
-/**
- * @author codistmonk (creation 2014)
- *
+ * @author codistmonk (creation 2014-08-12)
  */
 package averan.tactics;
