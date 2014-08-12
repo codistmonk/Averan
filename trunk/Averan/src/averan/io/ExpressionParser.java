@@ -1,4 +1,4 @@
-package averan.demos;
+package averan.io;
 
 import static averan.tactics.ExpressionTools.$;
 import static averan.tactics.ExpressionTools.facts;
@@ -13,13 +13,14 @@ import static net.sourceforge.aurochs.AurochsTools.input;
 import static net.sourceforge.aurochs.LRParserTools.*;
 import static net.sourceforge.aurochs.RegularTools.*;
 
+import averan.core.Composite;
+import averan.core.Expression;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import averan.core.Composite;
-import averan.core.Expression;
 import net.sourceforge.aurochs.LRParser;
 import net.sourceforge.aurochs.LRParserTools;
 import net.sourceforge.aurochs.AbstractLRParser.GeneratedToken;

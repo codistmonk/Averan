@@ -1,4 +1,4 @@
-package averan.demos;
+package averan.io;
 
 import static averan.core.Composite.isBracedComposite;
 import static averan.core.Pattern.any;
@@ -17,8 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import net.sourceforge.aprog.tools.Pair;
-import net.sourceforge.aprog.tools.Tools;
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Module;
@@ -27,6 +25,9 @@ import averan.core.Module.Symbol;
 import averan.core.Pattern;
 import averan.core.Visitor;
 import averan.tactics.Session;
+
+import net.sourceforge.aprog.tools.Pair;
+import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2014-08-09)
