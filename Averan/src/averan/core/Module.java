@@ -543,11 +543,11 @@ public final class Module implements Expression {
 	/**
 	 * @author codistmonk (creation 2014-08-12)
 	 */
-	public final class Parameter implements Statement {
+	public final class Parametrize implements Statement {
 		
 		private final String name;
 		
-		public Parameter(final String name) {
+		public Parametrize(final String name) {
 			this.name = name;
 			
 			if (Module.this.getParameter(name) != null) {
