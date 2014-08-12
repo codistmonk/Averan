@@ -9,14 +9,7 @@ import java.util.function.Supplier;
  */
 public abstract interface Visitor<R> extends Serializable {
 	
-	public default R beginVisit(final Composite composite) {
-		return null;
-	}
-	
-	public default R endVisit(final Composite composite, final R compositeVisit,
-			final Supplier<List<R>> childVisits) {
-		return compositeVisit;
-	}
+	public abstract R visit(final Composite composite);
 	
 	public abstract R visit(Module.Symbol symbol);
 	

@@ -119,9 +119,8 @@ public final class Pattern implements Serializable {
 		}
 		
 		@Override
-		public final Expression endVisit(final Composite composite, final Expression compositeVisit,
-				final Supplier<List<Expression>> childVisits) {
-			childVisits.get();
+		public final Expression visit(final Composite composite) {
+			composite.childrenAccept(this);
 			
 			return composite;
 		}
