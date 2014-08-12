@@ -35,9 +35,34 @@ public final class Demo3 {
 		String sessionBreakPoint = "";
 		
 		try {
-			admit("notation", $$("∀P,Q ((P/Q) = (P→Q))"));
-			admit("parametrize", $$("∀P,X (P/(∀X P))"));
-			admit("suppose", $$("∀P,Q (Q/(P→Q))"));
+			suppose("notation", $$("∀P,Q ((P/Q) = (P→Q))"));
+			claim("parametrize", $$("∀P,X (P/(∀X P))"));
+			{
+				final Symbol p = introduce();
+				final Symbol x = introduce();
+				
+				bind("notation", (Expression) p, $(forAll(x), p));
+				claim(((Composite) fact(-1)).get(2));
+				{
+					introduce();
+					recall(conditionName(-1));
+				}
+				rewriteRight(factName(-1), factName(-2));
+			}
+			claim("suppose", $$("∀P,Q (Q/(P→Q))"));
+			{
+				final Symbol p = introduce();
+				final Symbol q = introduce();
+				
+				bind("notation", (Expression) q, rule(p, q));
+				claim(((Composite) fact(-1)).get(2));
+				{
+					introduce();
+					recall(conditionName(-1));
+				}
+				rewriteRight(factName(-1), factName(-2));
+			}
+			BreakSessionException.breakSession();
 			admit("recall", $$("∀P (P/(P→P))"));
 			admit("admit", $$("∀P (' '/P)"));
 			admit("claim", $$("∀P,Q ((P ∧(P/Q))/Q)"));
