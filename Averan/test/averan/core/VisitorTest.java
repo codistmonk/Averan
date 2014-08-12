@@ -6,7 +6,6 @@ import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
 
 import org.junit.Test;
 
@@ -82,17 +81,15 @@ public final class VisitorTest {
 		}
 		
 		@Override
-		public final Expression endVisit(final Module module, final Expression moduleVisit,
-				final Supplier<List<Expression>> parameterVisits, final Supplier<List<Expression>> conditionVisits) {
+		public final Expression endVisit(final Module module, final Expression moduleVisit) {
 			assertEquals(module, moduleVisit);
-			assertEquals(module.getParameters(), parameterVisits.get());
-			assertEquals(module.getConditions(), conditionVisits.get());
+			assertEquals(module.getParameters(), module.parametersAcceptor(this).get());
+			assertEquals(module.getConditions(), module.conditionsAcceptor(this).get());
 			assertEquals(module.getFacts(), module.factsAcceptor(this).get());
 			
 			this.getEvents().add(Event.MODULE_AFTER_FACTS);
 			
-			return Visitor.super.endVisit(module, moduleVisit, parameterVisits,
-					conditionVisits);
+			return module;
 		}
 		
 		/**
