@@ -13,7 +13,7 @@ import java.io.PrintStream;
 /**
  * @author codistmonk (creation 2014-08-08)
  */
-public final class Printer implements SessionExporter.Output {
+public final class SimplePrinter implements SessionExporter.Output {
 	
 	private final PrintStream output;
 	
@@ -21,11 +21,11 @@ public final class Printer implements SessionExporter.Output {
 	
 	private String indent;
 	
-	public Printer() {
+	public SimplePrinter() {
 		this(System.out);
 	}
 	
-	public Printer(final PrintStream output) {
+	public SimplePrinter(final PrintStream output) {
 		this.output = output;
 		this.indentLevel = -1;
 		this.indent = "";

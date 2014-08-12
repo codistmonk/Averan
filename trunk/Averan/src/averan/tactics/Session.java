@@ -1,11 +1,7 @@
 package averan.tactics;
 
-import static java.lang.Math.max;
-import static java.util.Collections.nCopies;
 import static net.sourceforge.aprog.tools.Tools.cast;
-import static net.sourceforge.aprog.tools.Tools.join;
 
-import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,10 +10,7 @@ import java.util.Map;
 import averan.core.Expression;
 import averan.core.Module;
 import averan.core.Rewriter;
-import averan.core.Module.Claim;
-import averan.core.Module.Statement;
 import averan.core.Module.Symbol;
-import averan.io.Printer;
 
 /**
  * @author codistmonk (creation 2014-08-02)
