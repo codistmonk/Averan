@@ -90,9 +90,9 @@ public final class Rewriter implements Visitor<Expression> {
 	}
 	
 	@Override
-	public final Expression endVisit(final Module module, final Expression moduleVisit,
-			final Supplier<List<Expression>> parameterVisits,
-			final Supplier<List<Expression>> conditionVisits) {
+	public final Expression endVisit(final Module module, final Expression moduleVisit) {
+		final Supplier<List<Expression>> parameterVisits = module.parametersAcceptor(this);
+		final Supplier<List<Expression>> conditionVisits = module.conditionsAcceptor(this);
 		final Supplier<List<Expression>> factVisits = module.factsAcceptor(this);
 		
 		if (module == moduleVisit && (!module.getParameters().equals(parameterVisits.get()) ||

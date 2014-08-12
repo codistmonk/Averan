@@ -1,12 +1,10 @@
 package averan.core;
 
+import averan.core.Module.Symbol;
+
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
-
-import averan.core.Module.Symbol;
 
 /**
  * @author codistmonk (creation 2014-08-09)
@@ -126,11 +124,9 @@ public final class Pattern implements Serializable {
 		}
 		
 		@Override
-		public final Expression endVisit(final Module module, final Expression moduleVisit,
-				final Supplier<List<Expression>> parameterVisits,
-				final Supplier<List<Expression>> conditionVisits) {
-			parameterVisits.get();
-			conditionVisits.get();
+		public final Expression endVisit(final Module module, final Expression moduleVisit) {
+			module.parametersAcceptor(this).get();
+			module.conditionsAcceptor(this).get();
 			module.factsAcceptor(this).get();
 			
 			return module;
