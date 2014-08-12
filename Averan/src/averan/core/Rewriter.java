@@ -18,7 +18,7 @@ import averan.core.Module.Symbol;
  */
 public final class Rewriter implements Visitor<Expression> {
 	
-	private final Statement proof;
+	private final Statement statement;
 	
 	private final Map<Expression, Expression> rewrites;
 	
@@ -30,8 +30,8 @@ public final class Rewriter implements Visitor<Expression> {
 		this(null);
 	}
 	
-	public Rewriter(final Statement proof) {
-		this.proof = proof;
+	public Rewriter(final Statement statement) {
+		this.statement = statement;
 		this.rewrites = new LinkedHashMap<>();
 		this.indices = new TreeSet<>();
 		
@@ -115,7 +115,7 @@ public final class Rewriter implements Visitor<Expression> {
 			
 			result.getConditionIndices().putAll(module.getConditionIndices());
 			result.getFactIndices().putAll(module.getFactIndices());
-			result.getStatements().addAll(Collections.nCopies(module.getFacts().size(), this.proof));
+			result.getStatements().addAll(Collections.nCopies(module.getFacts().size(), this.statement));
 			
 			return result;
 		}
