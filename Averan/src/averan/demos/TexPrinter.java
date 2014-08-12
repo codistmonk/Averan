@@ -283,7 +283,7 @@ public final class TexPrinter implements Session.ExporterOutput {
 		}
 		
 		@Override
-		public final Pair<String, DisplayHint> beginVisit(final Module module) {
+		public final Pair<String, DisplayHint> visit(final Module module) {
 			final StringBuilder resultBuilder = new StringBuilder();
 			
 			if (!module.getParameters().isEmpty()) {
