@@ -3,18 +3,24 @@ package averan.demos;
 import static averan.io.ExpressionParser.$$;
 import static averan.tactics.ExpressionTools.*;
 import static averan.tactics.SessionTools.*;
+import static averan.tactics.StandardTools.rewriteRight;
 import static java.awt.Color.BLACK;
 import static java.awt.Color.WHITE;
 
 import java.io.ByteArrayOutputStream;
+import java.util.Arrays;
 
 import org.scilab.forge.jlatexmath.TeXFormula;
 
+import averan.core.Composite;
+import averan.core.Expression;
 import averan.core.Module;
+import averan.core.Module.Symbol;
 import averan.demos.Demo2.BreakSessionException;
 import averan.io.SessionExporter;
 import averan.io.TexPrinter;
 import averan.modules.Standard;
+import averan.tactics.StandardTools;
 
 /**
  * @author codistmonk (creation 2014-08-12)
@@ -35,8 +41,23 @@ public final class Demo3 {
 			admit("claim", $$("∀P,Q ((P ∧(P/Q))/Q)"));
 			admit("apply", $$("∀P,Q ((P ∧ (P→Q))/Q)"));
 			admit("bind", $$("∀P,X,Y ((∀X P)/(P{X=Y}))"));
-			admit("rewrite", $$("∀P,X,Y ((P ∧ (X=Y))/(P{X=Y}))"));
-			admit("substitute", $$("∀P,X,Y ((P'\\og\\{\\fg'X=Y'\\og\\}\\fg')/((P'\\og\\{\\fg'X=Y'\\og\\}\\fg')=(P{X=Y})))"));
+			claim("rewrite", $$("∀P,X,Y ((P ∧ (X=Y))/(P{X=Y}))"));
+			{
+				final Symbol p = introduce();
+				final Symbol x = introduce();
+				final Symbol y = introduce();
+				
+				bind("notation", (Expression) $(p, "&", $(x, "=", y)), $(p, new Composite(Arrays.asList($(x, "=", y)))));
+				claim(((Composite) fact(-1)).get(2));
+				{
+					introduce();
+					bind(conditionName(-1));
+					substitute(goal());
+					rewriteRight(factName(-3), factName(-1));
+				}
+				rewriteRight(factName(-1), factName(-2));
+			}
+//			admit("substitute", $$("∀P,X,Y ((P'\\og\\{\\fg'X=Y'\\og\\}\\fg')/((P'\\og\\{\\fg'X=Y'\\og\\}\\fg')=(P{X=Y})))"));
 		} catch (final BreakSessionException exception) {
 			sessionBreakPoint = exception.getStackTrace()[1].toString();
 		} finally {

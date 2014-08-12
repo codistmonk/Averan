@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Module;
 import averan.core.Rewriter;
@@ -206,6 +207,16 @@ public final class Session implements Serializable {
 				new Module(this.getCurrentModule(), factName), proposition);
 		
 		this.getStack().add(0, proofContext);
+		
+		return this.tryToPop();
+	}
+	
+	public final Session substitute(final Composite substitution) {
+		return this.substitute(this.newPropositionName(), substitution);
+	}
+	
+	public final Session substitute(final String factName, final Composite substitution) {
+		this.getCurrentModule().new Substitute(factName, substitution).execute();
 		
 		return this.tryToPop();
 	}
