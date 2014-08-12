@@ -1,6 +1,6 @@
 package averan.demos;
 
-import static averan.demos.ExpressionParser.$$;
+import static averan.io.ExpressionParser.$$;
 import static averan.tactics.ExpressionTools.$;
 import static averan.tactics.SessionTools.*;
 import static java.awt.Color.BLACK;
@@ -15,7 +15,8 @@ import averan.core.Expression;
 import averan.core.Module;
 import averan.core.Rewriter;
 import averan.core.Module.Symbol;
-import averan.demos.TexPrinter.DisplayHint;
+import averan.io.TexPrinter;
+import averan.io.TexPrinter.DisplayHint;
 import averan.modules.Standard;
 import averan.tactics.Session;
 
