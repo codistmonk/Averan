@@ -430,7 +430,7 @@ public final class Module implements Expression {
 	}
 	
 	private final Symbol localParameter(final Rewriter rewriter, final Symbol parameter) {
-		if (parameter.getModule() == this) {
+		if (parameter.getContext() == this) {
 			return parameter;
 		}
 		
@@ -452,7 +452,7 @@ public final class Module implements Expression {
 			this.string = string;
 		}
 		
-		public final Module getModule() {
+		public final Module getContext() {
 			return Module.this;
 		}
 		
@@ -466,7 +466,7 @@ public final class Module implements Expression {
 			final Symbol that = cast(this.getClass(), object);
 			
 			return that != null && this.toString().equals(that.toString())
-					&& this.getModule() == that.getModule();
+					&& this.getContext() == that.getContext();
 		}
 		
 		@Override
