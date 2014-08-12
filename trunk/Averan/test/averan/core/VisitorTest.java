@@ -74,15 +74,9 @@ public final class VisitorTest {
 		}
 		
 		@Override
-		public final Expression beginVisit(final Module module) {
+		public final Expression visit(final Module module) {
 			this.getEvents().add(Event.MODULE_BEFORE_PARAMETERS);
 			
-			return module;
-		}
-		
-		@Override
-		public final Expression endVisit(final Module module, final Expression moduleVisit) {
-			assertEquals(module, moduleVisit);
 			assertEquals(module.getParameters(), module.parametersAcceptor(this).get());
 			assertEquals(module.getConditions(), module.conditionsAcceptor(this).get());
 			assertEquals(module.getFacts(), module.factsAcceptor(this).get());

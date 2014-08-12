@@ -85,12 +85,8 @@ public final class Rewriter implements Visitor<Expression> {
 	}
 	
 	@Override
-	public final Expression beginVisit(final Module module) {
-		return this.tryToRewrite(module);
-	}
-	
-	@Override
-	public final Expression endVisit(final Module module, final Expression moduleVisit) {
+	public final Expression visit(final Module module) {
+		final Expression moduleVisit = this.tryToRewrite(module);
 		final Supplier<List<Expression>> parameterVisits = module.parametersAcceptor(this);
 		final Supplier<List<Expression>> conditionVisits = module.conditionsAcceptor(this);
 		final Supplier<List<Expression>> factVisits = module.factsAcceptor(this);

@@ -124,7 +124,7 @@ public final class Pattern implements Serializable {
 		}
 		
 		@Override
-		public final Expression endVisit(final Module module, final Expression moduleVisit) {
+		public final Expression visit(final Module module) {
 			module.parametersAcceptor(this).get();
 			module.conditionsAcceptor(this).get();
 			module.factsAcceptor(this).get();

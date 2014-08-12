@@ -183,7 +183,7 @@ public final class Module implements Expression {
 	
 	@Override
 	public final <R> R accept(final Visitor<R> visitor) {
-		return visitor.endVisit(this, visitor.beginVisit(this));
+		return visitor.visit(this);
 	}
 	
 	public final <R> Supplier<List<R>> parametersAcceptor(final Visitor<R> visitor) {
