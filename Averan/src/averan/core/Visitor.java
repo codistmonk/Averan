@@ -19,8 +19,7 @@ public abstract interface Visitor<R> extends Serializable {
 	
 	public default R endVisit(final Module module, final R moduleVisit,
 			final Supplier<List<R>> parameterVisits,
-			final Supplier<List<R>> conditionVisits,
-			final Supplier<List<R>> factVisits) {
+			final Supplier<List<R>> conditionVisits) {
 		return moduleVisit;
 	}
 	

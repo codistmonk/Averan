@@ -120,7 +120,7 @@ public final class Pattern implements Serializable {
 		
 		@Override
 		public final Expression visit(final Composite composite) {
-			composite.childrenAccept(this);
+			composite.childrenAcceptor(this).get();
 			
 			return composite;
 		}
@@ -128,11 +128,10 @@ public final class Pattern implements Serializable {
 		@Override
 		public final Expression endVisit(final Module module, final Expression moduleVisit,
 				final Supplier<List<Expression>> parameterVisits,
-				final Supplier<List<Expression>> conditionVisits,
-				final Supplier<List<Expression>> factVisits) {
+				final Supplier<List<Expression>> conditionVisits) {
 			parameterVisits.get();
 			conditionVisits.get();
-			factVisits.get();
+			module.factsAcceptor(this).get();
 			
 			return module;
 		}

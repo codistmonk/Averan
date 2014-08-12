@@ -69,7 +69,7 @@ public final class Rewriter implements Visitor<Expression> {
 		final Expression compositeVisit = this.tryToRewrite(composite);
 		
 		if (composite == compositeVisit) {
-			final List<Expression> childVisits = composite.childrenAccept(this);
+			final List<Expression> childVisits = composite.childrenAcceptor(this).get();
 			
 			if (!composite.getChildren().equals(childVisits)) {
 				return new Composite(childVisits);
@@ -92,8 +92,9 @@ public final class Rewriter implements Visitor<Expression> {
 	@Override
 	public final Expression endVisit(final Module module, final Expression moduleVisit,
 			final Supplier<List<Expression>> parameterVisits,
-			final Supplier<List<Expression>> conditionVisits,
-			final Supplier<List<Expression>> factVisits) {
+			final Supplier<List<Expression>> conditionVisits) {
+		final Supplier<List<Expression>> factVisits = module.factsAcceptor(this);
+		
 		if (module == moduleVisit && (!module.getParameters().equals(parameterVisits.get()) ||
 				!module.getConditions().equals(conditionVisits.get()) ||
 				!module.getFacts().equals(factVisits.get()))) {

@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 import net.sourceforge.aprog.tools.Tools;
@@ -184,8 +185,11 @@ public final class Module implements Expression {
 	public final <R> R accept(final Visitor<R> visitor) {
 		return visitor.endVisit(this, visitor.beginVisit(this),
 				Expression.listAcceptor(this.getParameters(), visitor),
-				Expression.listAcceptor(this.getConditions(), visitor),
-				Expression.listAcceptor(this.getFacts(), visitor));
+				Expression.listAcceptor(this.getConditions(), visitor));
+	}
+	
+	public final <R> Supplier<List<R>> factsAcceptor(final Visitor<R> visitor) {
+		return Expression.listAcceptor(this.getFacts(), visitor);
 	}
 	
 	@Override
