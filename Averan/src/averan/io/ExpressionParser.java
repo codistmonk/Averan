@@ -7,7 +7,6 @@ import static java.util.Arrays.copyOfRange;
 import static net.sourceforge.aprog.tools.Tools.append;
 import static net.sourceforge.aprog.tools.Tools.array;
 import static net.sourceforge.aprog.tools.Tools.cast;
-import static net.sourceforge.aprog.tools.Tools.ignore;
 import static net.sourceforge.aprog.tools.Tools.join;
 import static net.sourceforge.aurochs.AurochsTools.input;
 import static net.sourceforge.aurochs.LRParserTools.*;
@@ -21,6 +20,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import net.sourceforge.aprog.tools.Tools;
+import net.sourceforge.aurochs.Grammar;
+import net.sourceforge.aurochs.Grammar.Regular;
 import net.sourceforge.aurochs.LRParser;
 import net.sourceforge.aurochs.LRParserTools;
 import net.sourceforge.aurochs.AbstractLRParser.GeneratedToken;
@@ -40,13 +42,18 @@ public final class ExpressionParser implements Serializable {
 	private transient Object result;
 	
 	{
-		this.mathParser = LRParserTools.newParser(MathParser.class);
+		final LRParser parser = LRParserTools.newParser(MathParser.class);
+		this.mathParser = parser;
 		
 		this.mathParser.addListener(new Listener() {
 
 			@Override
 			public final void unexpectedSymbolErrorOccured(final UnexpectedSymbolErrorEvent event) {
-				ignore(event);
+				final Object inputSymbol = parser.getInputSymbol();
+				
+				if (!Grammar.SpecialSymbol.INITIAL_NONTERMINAL.equals(inputSymbol)) {
+					Tools.debugError(inputSymbol);
+				}
 			}
 			
 			@Override
@@ -120,10 +127,15 @@ public final class ExpressionParser implements Serializable {
 			"<", "≤", "Σ", "_", "^", "ℕ", "ℝ", "ᵀ", "⟨", "⟩",
 		};
 		
+		private static final Regular alpha = union(range('A', 'Z'), range('a', 'z'), range('Α', 'Ω'), range('α', 'ω'));
+		
 		static final LexerRule[] lexerRules = appendVerbatims(array(
-				tokenRule("VARIABLE", /* -> */ union(range('A', 'Z'), range('a', 'z'), range('Α', 'Ω'), range('α', 'ω'))),
+				tokenRule("VARIABLE", /* -> */ alpha),
 				tokenRule("NATURAL",  /* -> */ oneOrMore(range('0', '9'))),
-				nontokenRule(" *",     /* -> */ zeroOrMore(' '))
+				tokenRule("STRING",   /* -> */ sequence('\'', oneOrMore(union(append(
+						(Object[]) array(alpha, ' ', '\\'),
+						Arrays.stream(verbatims).map(s -> s.toString().charAt(0)).toArray()))), '\'')),
+				nontokenRule(" *",    /* -> */ zeroOrMore(' '))
 		), verbatims);
 		
 		static final ParserRule[] parserRules = append(array(
@@ -148,7 +160,7 @@ public final class ExpressionParser implements Serializable {
 			leftAssociative("∃", 300),
 			leftAssociative("_", 330),
 			leftAssociative("^", 330),
-			leftAssociative("`", 340),
+//			leftAssociative("`", 340),
 			leftAssociative("≀", 340),
 			leftAssociative("VARIABLE", 350),
 			leftAssociative("NATURAL", 350),
@@ -177,9 +189,13 @@ public final class ExpressionParser implements Serializable {
 	        namedRule("verbatim",          "OPERATION",  /* -> */  ",", "EXPRESSION"),
 	        namedRule("verbatim",          "OPERATION",  /* -> */  "EXPRESSION"),
 	        namedRule("grouping",          "EXPRESSION", /* -> */  "(", "EXPRESSION", ")"),
+	        namedRule("expression",        "EXPRESSION", /* -> */  "(", ")"),
 	        namedRule("expression",        "EXPRESSION", /* -> */  "{", "EXPRESSION", "}"),
+	        namedRule("expression",        "EXPRESSION", /* -> */  "{", "}"),
 	        namedRule("expression",        "EXPRESSION", /* -> */  "[", "EXPRESSION", "]"),
+	        namedRule("expression",        "EXPRESSION", /* -> */  "[", "]"),
 	        namedRule("expression",        "EXPRESSION", /* -> */  "⟨", "EXPRESSION", "⟩"),
+	        namedRule("expression",        "EXPRESSION", /* -> */  "⟨", "⟩"),
 	        namedRule("expression",        "EXPRESSION", /* -> */  "NATURAL"),
 	        namedRule("expression",        "EXPRESSION", /* -> */  "IDENTIFIER"),
 	        namedRule("expression",        "EXPRESSION", /* -> */  "Σ"),
@@ -187,18 +203,20 @@ public final class ExpressionParser implements Serializable {
 	        namedRule("expression",        "EXPRESSION", /* -> */  "ℝ"),
 	        namedRule("list",              "PARAMETERS", /* -> */ "PARAMETERS", ",", "IDENTIFIER"),
 	        namedRule("list",              "PARAMETERS", /* -> */ "IDENTIFIER"),
-	        namedRule("identifier",        "IDENTIFIER", /* -> */  "≀", "WORD"),
+//	        namedRule("identifier",        "IDENTIFIER", /* -> */  "≀", "WORD"),
+	        namedRule("identifier",        "IDENTIFIER", /* -> */  "≀", "CWORD"),
 	        namedRule("identifier",        "IDENTIFIER", /* -> */  "≀", "VARIABLE"),
-	        namedRule("identifier",        "IDENTIFIER", /* -> */  "WORD"),
+//	        namedRule("identifier",        "IDENTIFIER", /* -> */  "WORD"),
 	        namedRule("identifier",        "IDENTIFIER", /* -> */  "VARIABLE"),
-	        namedRule("concatenation",     "WORD",       /* -> */  "WORD", "VARIABLE"),
-	        namedRule("concatenation",     "WORD",       /* -> */  "`", "VARIABLE")
-		), verbatimWordRules());
+	        namedRule("identifier",        "IDENTIFIER", /* -> */  "STRING")
+//	        namedRule("concatenation",     "WORD",       /* -> */  "WORD", "VARIABLE"),
+//	        namedRule("concatenation",     "WORD",       /* -> */  "`", "VARIABLE")
+		)/*, verbatimWordRules()*/);
 		
-		static final ParserRule[] verbatimWordRules() {
-			return Arrays.stream(verbatims).map(v -> namedRule("concatenation", "WORD", "`", v)).toArray(ParserRule[]::new);
-		}
-
+//		static final ParserRule[] verbatimWordRules() {
+//			return Arrays.stream(verbatims).map(v -> namedRule("concatenation", "WORD", "`", v)).toArray(ParserRule[]::new);
+//		}
+		
 		public static final LexerRule[] appendVerbatims(final LexerRule[] lexerRules, final Object... verbatims) {
 			final int m = lexerRules.length;
 			final int n = m + verbatims.length;
@@ -253,10 +271,10 @@ public final class ExpressionParser implements Serializable {
 	    final Object identifier(final Object[] values) {
 	    	String result = join("", values);
 	    	
-	    	if (result.startsWith("`")) {
-	    		return result.substring(1);
-	    	} else if (2 <= result.length() && result.charAt(1) == '`') {
-	    		return result.charAt(0) + result.substring(2);
+	    	if (result.startsWith("'")) {
+	    		return result.substring(1, result.length() - 1);
+	    	} else if (2 <= result.length() && result.charAt(1) == '\'') {
+	    		return result.charAt(0) + result.substring(2, result.length() - 1);
 	    	}
 	    	
 	    	return result;

@@ -37,7 +37,7 @@ public final class Demo2 {
 			suppose("definition_of_proposition_equality",
 					$$("∀P,Q ((P=Q) = ((P→Q) ∧ (Q→P)))"));
 			suppose("definition_of_negation",
-					$$("∀P (¬P = (P→`false))"));
+					$$("∀P (¬P = (P→'false'))"));
 			suppose("definition_of_existence",
 					$$("∀P,x (∃x (P x)) = ¬(∀y ¬(P y))"));
 			suppose("definition_of_intersection",
@@ -45,9 +45,9 @@ public final class Demo2 {
 			suppose("definition_of_summation",
 					$$("∀i,a,b,e,s ((s=((Σ_(i=a)^b) e)) → (((b<a) → (s=0)) ∧ ((a≤b) → (s=(s{b=(b-1)})+(e{i=b})))))"));
 			suppose("definition_of_matrices",
-					$$("∀X,m,n (X∈≀M_(m,n) = (`rowCount_X = m ∧ `columnCount_X = n ∧ ∀i,j (X_(i,j)∈ℝ)))"));
+					$$("∀X,m,n (X∈≀M_(m,n) = ('rowCount'_X = m ∧ 'columnCount'_X = n ∧ ∀i,j (X_(i,j)∈ℝ)))"));
 			suppose("definition_of_matrix_size_equality",
-					$$("∀X,Y ((`size_X=`size_Y) = ((`columnCount_X = `columnCount_Y) ∧ (`rowCount_X = `rowCount_Y)))"));
+					$$("∀X,Y (('size'_X='size'_Y) = (('columnCount'_X = 'columnCount'_Y) ∧ ('rowCount'_X = 'rowCount'_Y)))"));
 			suppose("definition_of_matrix_equality",
 					$$("∀X,Y ((X=Y) = (∀i,j ((X)_(i,j)=(Y_(i,j)))))"));
 			suppose("definition_of_matrix_scalarization",
@@ -57,18 +57,18 @@ public final class Demo2 {
 			suppose("definition_of_matrix_subtraction",
 					$$("∀X,Y,i,j (((X-Y)_(i,j)=(X_(i,j))-(Y_(i,j))))"));
 			suppose("definition_of_matrix_multiplication",
-					$$("∀X,Y,n (((`columnCount_X = n) ∧ (`rowCount_Y = n)) → (∀i,j,k ((XY)_(i,j)=((Σ_(k=0)^(n-1)) (X_(i,k))(Y_(k,j))))))"));
+					$$("∀X,Y,n ((('columnCount'_X = n) ∧ ('rowCount'_Y = n)) → (∀i,j,k ((XY)_(i,j)=((Σ_(k=0)^(n-1)) (X_(i,k))(Y_(k,j))))))"));
 			suppose("definition_of_transposition",
 					$$("∀X (∀i,j (Xᵀ_(i,j)=X_(j,i)))"));
 			suppose("definition_of_transposition_rowCount",
-					$$("∀X (`rowCount_(Xᵀ)=`columnCount_X)"));
+					$$("∀X ('rowCount'_(Xᵀ)='columnCount'_X)"));
 			suppose("definition_of_transposition_columnCount",
-					$$("∀X (`columnCount_(Xᵀ)=`rowCount_X)"));
+					$$("∀X ('columnCount'_(Xᵀ)='rowCount'_X)"));
 			
 			suppose("definition_of_U_rowCount",
-					$$("∀n (`rowCount_(U_n)=n)"));
+					$$("∀n ('rowCount'_(U_n)=n)"));
 			suppose("definition_of_U_columnCount",
-					$$("∀n (`columnCount_(U_n)=1)"));
+					$$("∀n ('columnCount'_(U_n)=1)"));
 			suppose("definition_of_U",
 					$$("∀n (0<n → (∀i (U_n_(i,1)=1/n)))"));
 			
@@ -80,29 +80,29 @@ public final class Demo2 {
 			claimTranspositionOfMultiplication();
 			
 			suppose("definition_of_replicated_means",
-					$$("∀X,n ((`columnCount_X=n) → (M_X)=X(U_n)(U_n)ᵀ)"));
+					$$("∀X,n (('columnCount'_X=n) → (M_X)=X(U_n)(U_n)ᵀ)"));
 			suppose("definition_of_problem_dimension",
 					$$("0<D"));
 			suppose("definition_of_class_count",
 					$$("1<N"));
 			suppose("definition_of_class_means",
-					$$("∀i,j,n ((n=`columnCount_(C_j)) → (((M_C)_(i,j))=((C_j)(U_n))_(i,1)))"));
+					$$("∀i,j,n ((n='columnCount'_(C_j)) → (((M_C)_(i,j))=((C_j)(U_n))_(i,1)))"));
 			suppose("definition_of_class_rowCount",
-					$$("∀i ((`rowCount_(C_i)) = D)"));
+					$$("∀i (('rowCount'_(C_i)) = D)"));
 			suppose("definition_of_V",
-					$$("V = `Var_(M_C)"));
+					$$("V = 'Var'_(M_C)"));
 			suppose("definition_of_S",
-					$$("∀i (S = (Σ_(i=0)^(N-1) (`Var_(C_i))))"));
+					$$("∀i (S = (Σ_(i=0)^(N-1) ('Var'_(C_i))))"));
 			
 			// TODO claim
 			admit("simplified_definition_of_variance",
-					$$("∀X ((`Var_X)=(XXᵀ)-((M_X)(M_X)ᵀ))"));
+					$$("∀X (('Var'_X)=(XXᵀ)-((M_X)(M_X)ᵀ))"));
 			admit("simplified_definition_of_objective",
 					$$("∀w,i ((J_w)=⟨wᵀVw⟩/⟨wᵀSw⟩)"));
 			admit("equation_to_solve_to_optimize_objective",
-					$$("∀w (((SwwᵀV)=(VwwᵀS)) → `optimality (J_w))"));
+					$$("∀w (((SwwᵀV)=(VwwᵀS)) → 'optimality' (J_w))"));
 			admit("regularization",
-					$$("∀B,ω,w ((w=Bω) → (((SwwᵀV)=(VwwᵀS)) → `constrainedOptimality (J_(Bω))))"));
+					$$("∀B,ω,w ((w=Bω) → (((SwwᵀV)=(VwwᵀS)) → 'constrainedOptimality' (J_(Bω))))"));
 		} catch (final BreakSessionException exception) {
 			sessionBreakPoint = exception.getStackTrace()[1].toString();
 		} finally {
@@ -125,7 +125,7 @@ public final class Demo2 {
 	
 	public static final void claimTranspositionOfMultiplication() {
 		claim("transposition_of_multiplication",
-				$$("∀X,Y ((X∈≀M_(`rowCount_X,`columnCount_X)) → ((Y∈≀M_(`rowCount_Y,`columnCount_Y)) → ((`columnCount_X=`rowCount_Y) → ((XY)ᵀ=YᵀXᵀ))))"));
+				$$("∀X,Y ((X∈≀M_('rowCount'_X,'columnCount'_X)) → ((Y∈≀M_('rowCount'_Y,'columnCount'_Y)) → (('columnCount'_X='rowCount'_Y) → ((XY)ᵀ=YᵀXᵀ))))"));
 		
 		{
 			final Symbol x = introduce();
