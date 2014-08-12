@@ -409,7 +409,7 @@ public final class Session implements Serializable {
 				this.output.beginModuleFacts(module);
 				
 				final List<Expression> facts = module.getFacts();
-				final List<Statement> proofs = module.getProofs();
+				final List<Statement> statements = module.getStatements();
 				
 				for (final Map.Entry<String, Integer> entry : module.getFactIndices().entrySet()) {
 					this.output.processModuleFact(entry.getKey(), facts.get(entry.getValue()));
@@ -417,7 +417,7 @@ public final class Session implements Serializable {
 					if (currentProofDepth <= this.maximumProofDepth) {
 						this.output.beginModuleFactProof();
 						
-						final Statement command = proofs.get(entry.getValue());
+						final Statement command = statements.get(entry.getValue());
 						final Claim claim = cast(Claim.class, command);
 						
 						if (claim == null || currentProofDepth == this.maximumProofDepth) {

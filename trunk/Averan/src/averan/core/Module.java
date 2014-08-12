@@ -38,7 +38,7 @@ public final class Module implements Expression {
 	
 	private final Map<String, Integer> factIndices;
 	
-	private final List<Statement> proofs;
+	private final List<Statement> statements;
 	
 	public Module(final Module parent) {
 		this(parent, "");
@@ -73,7 +73,7 @@ public final class Module implements Expression {
 		
 		this.conditionIndices = new LinkedHashMap<>(conditions.size());
 		this.factIndices = new LinkedHashMap<>(facts.size());
-		this.proofs = new ArrayList<>(facts.size());
+		this.statements = new ArrayList<>(facts.size());
 	}
 	
 	public final Symbol parameter(final String name) {
@@ -168,8 +168,8 @@ public final class Module implements Expression {
 		return this.factIndices;
 	}
 	
-	public final List<Statement> getProofs() {
-		return this.proofs;
+	public final List<Statement> getStatements() {
+		return this.statements;
 	}
 	
 	public final int getPropositionCount() {
@@ -515,7 +515,7 @@ public final class Module implements Expression {
 			final Module result = Module.this;
 			
 			this.addProposition(fact, factName, result.getFacts(), result.getFactIndices());
-			result.getProofs().add(this);
+			result.getStatements().add(this);
 			
 			return result;
 		}
@@ -1046,7 +1046,7 @@ public final class Module implements Expression {
 				}
 				
 				newFact.getFactIndices().putAll(protofact.getFactIndices());
-				newFact.getProofs().addAll(Collections.nCopies(protofact.getFacts().size(), this));
+				newFact.getStatements().addAll(Collections.nCopies(protofact.getFacts().size(), this));
 				
 				return this.addFact(newFact);
 			}
