@@ -28,7 +28,7 @@ public final class SessionExporter implements Serializable {
 	}
 	
 	public SessionExporter(final Session session, final int maximumProofDepth) {
-		this(session, new Printer(), maximumProofDepth);
+		this(session, new SimplePrinter(), maximumProofDepth);
 	}
 	
 	public SessionExporter(final Session session, final Output output, final int maximumProofDepth) {
