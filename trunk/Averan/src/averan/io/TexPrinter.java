@@ -31,7 +31,7 @@ import net.sourceforge.aprog.tools.Tools;
 /**
  * @author codistmonk (creation 2014-08-09)
  */
-public final class TexPrinter implements ExporterOutput {
+public final class TexPrinter implements SessionExporter.Output {
 	
 	private final PrintStream output;
 	

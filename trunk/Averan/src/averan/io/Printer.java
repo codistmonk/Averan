@@ -13,7 +13,7 @@ import java.io.PrintStream;
 /**
  * @author codistmonk (creation 2014-08-08)
  */
-public final class Printer implements ExporterOutput {
+public final class Printer implements SessionExporter.Output {
 	
 	private final PrintStream output;
 	

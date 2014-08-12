@@ -1,7 +1,6 @@
 package averan.io;
 
 import static net.sourceforge.aprog.tools.Tools.cast;
-
 import averan.core.Expression;
 import averan.core.Module;
 import averan.core.Module.Claim;
@@ -16,23 +15,23 @@ import java.util.Map;
 /**
  * @author codistmonk (creation 2014-08-08)
  */
-public final class Exporter implements Serializable {
+public final class SessionExporter implements Serializable {
 	
 	private final Session session;
 	
-	private final ExporterOutput output;
+	private final Output output;
 	
 	private final int maximumProofDepth;
 	
-	public Exporter(final Session session) {
+	public SessionExporter(final Session session) {
 		this(session, 0);
 	}
 	
-	public Exporter(final Session session, final int maximumProofDepth) {
+	public SessionExporter(final Session session, final int maximumProofDepth) {
 		this(session, new Printer(), maximumProofDepth);
 	}
 	
-	public Exporter(final Session session, final ExporterOutput output, final int maximumProofDepth) {
+	public SessionExporter(final Session session, final Output output, final int maximumProofDepth) {
 		this.session = session;
 		this.output = output;
 		this.maximumProofDepth = maximumProofDepth;
@@ -116,5 +115,39 @@ public final class Exporter implements Serializable {
 	 */
 	private static final long serialVersionUID = 2272468614566549833L;
 	
+	/**
+	 * @author codistmonk (creation 2014-08-08)
+	 */
+	public interface Output extends Serializable {
+		
+		public abstract void beginSession();
+		
+		public abstract void subcontext(String name);
+		
+		public abstract void processModuleParameters(Module module);
+		
+		public abstract void beginModuleConditions(Module module);
+		
+		public abstract void processModuleCondition(String conditionName, Expression condition);
+		
+		public abstract void endModuleConditions(Module module);
+		
+		public abstract void beginModuleFacts(Module module);
+		
+		public abstract void processModuleFact(String factName, Expression fact);
+		
+		public abstract void beginModuleFactProof();
+		
+		public abstract void processModuleFactProof(Statement command);
+		
+		public abstract void endModuleFactProof();
+		
+		public abstract void endModuleFacts(Module module);
+		
+		public abstract void processCurrentGoal(Expression currentGoal);
+		
+		public abstract void endSession();
+		
+	}
+	
 }
-

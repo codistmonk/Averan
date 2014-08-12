@@ -2,7 +2,7 @@ package averan.demos;
 
 import static averan.modules.Standard.IDENTITY;
 import static averan.tactics.ExpressionTools.*;
-import averan.io.Exporter;
+import averan.io.SessionExporter;
 import averan.modules.Standard;
 import averan.tactics.Session;
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
@@ -39,7 +39,7 @@ public final class Demo1 {
 			}
 		}
 		
-		new Exporter(session, -1).exportSession();
+		new SessionExporter(session, -1).exportSession();
 	}
 	
 }
