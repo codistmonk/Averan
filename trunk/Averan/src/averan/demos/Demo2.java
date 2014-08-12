@@ -3,23 +3,22 @@ package averan.demos;
 import static averan.io.ExpressionParser.$$;
 import static averan.tactics.ExpressionTools.$;
 import static averan.tactics.SessionTools.*;
+import static averan.tactics.StandardTools.rewriteRight;
 import static java.awt.Color.BLACK;
 import static java.awt.Color.WHITE;
-
-import java.io.ByteArrayOutputStream;
-
-import org.scilab.forge.jlatexmath.TeXFormula;
 
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Module;
-import averan.core.Rewriter;
 import averan.core.Module.Symbol;
 import averan.io.SessionExporter;
 import averan.io.TexPrinter;
 import averan.io.TexPrinter.DisplayHint;
 import averan.modules.Standard;
-import averan.tactics.Session;
+
+import java.io.ByteArrayOutputStream;
+
+import org.scilab.forge.jlatexmath.TeXFormula;
 
 /**
  * @author codistmonk (creation 2014-08-08)
@@ -306,25 +305,6 @@ public final class Demo2 {
 			}
 			
 			rewriteRight("commutativity_of_conjunction#3", "commutativity_of_conjunction#0");
-		}
-	}
-	
-	public static final void rewriteRight(final String sourceName, final String equalityName) {
-		final Session session = session();
-		final Composite equality = session.getProposition(equalityName);
-		
-		claim(session.getProposition(sourceName).accept(new Rewriter().rewrite(equality.get(2), equality.get(0))));
-		
-		{
-			final String ruleName = session.getCurrentContext().getModule().newPropositionName();
-			
-			bind(ruleName, Standard.SYMMETRY_OF_EQUALITY, (Expression) equality.get(0), equality.get(2));
-			
-			final String reversedEqualityName = session.getCurrentContext().getModule().newPropositionName();
-			
-			apply(reversedEqualityName, ruleName, equalityName);
-			
-			rewrite(sourceName, reversedEqualityName);
 		}
 	}
 	

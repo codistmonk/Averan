@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Module;
 import averan.core.Module.Symbol;
@@ -123,6 +124,19 @@ public final class SessionTools {
 	
 	public static final void rewrite(final String factName, final String sourceName, final String equalityName, final Integer... indices) {
 		session().rewrite(factName, sourceName, equalityName, indices);
+	}
+	
+	public static final void substitute(final Composite substitution) {
+		session().substitute(substitution);
+	}
+	
+	public static final void substitute(final String factName, final Composite substitution) {
+		session().substitute(factName, substitution);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static final <E extends Expression> E goal() {
+		return (E) session().getCurrentGoal();
 	}
 	
 	public static final Session session() {
