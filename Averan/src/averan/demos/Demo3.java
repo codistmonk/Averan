@@ -20,6 +20,7 @@ import averan.demos.Demo2.BreakSessionException;
 import averan.io.SessionExporter;
 import averan.io.TexPrinter;
 import averan.modules.Standard;
+import averan.tactics.Session;
 import averan.tactics.StandardTools;
 
 /**
@@ -30,6 +31,7 @@ public final class Demo3 {
 	public static final Module MODULE = new Module(Standard.MODULE);
 	
 	static {
+		final Session session = session();
 		String sessionBreakPoint = "";
 		
 		try {
@@ -57,11 +59,11 @@ public final class Demo3 {
 				}
 				rewriteRight(factName(-1), factName(-2));
 			}
-//			admit("substitute", $$("∀P,X,Y ((P'\\og\\{\\fg'X=Y'\\og\\}\\fg')/((P'\\og\\{\\fg'X=Y'\\og\\}\\fg')=(P{X=Y})))"));
+			admit("substitute", $$("∀P,X,Y ((P'\\og\\{\\fg'X=Y'\\og\\}\\fg')/((P'\\og\\{\\fg'X=Y'\\og\\}\\fg')=(P{X=Y})))"));
 		} catch (final BreakSessionException exception) {
 			sessionBreakPoint = exception.getStackTrace()[1].toString();
 		} finally {
-			new SessionExporter(session(), -1).exportSession();
+			new SessionExporter(session, -1).exportSession();
 			
 			System.out.println(sessionBreakPoint);
 			
@@ -70,8 +72,8 @@ public final class Demo3 {
 		{
 			final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 			
-			new SessionExporter(session(), new TexPrinter(buffer)
-			, -1).exportSession();
+			new SessionExporter(session, new TexPrinter(buffer)
+			, 1 < session.getStack().size() ? -1 : 0).exportSession();
 			
 			new TeXFormula(buffer.toString()).createPNG(0, 18F, "view.png", WHITE, BLACK);
 		}
