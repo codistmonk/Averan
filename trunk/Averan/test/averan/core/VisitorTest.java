@@ -60,7 +60,7 @@ public final class VisitorTest {
 		public final Expression visit(final Composite composite) {
 			this.getEvents().add(Event.COMPOSITE_BEFORE_CHILDREN);
 			
-			assertEquals(composite.getChildren(), composite.childrenAccept(this));
+			assertEquals(composite.getChildren(), composite.childrenAcceptor(this).get());
 			
 			this.getEvents().add(Event.COMPOSITE_AFTER_CHILDREN);
 			
@@ -83,17 +83,16 @@ public final class VisitorTest {
 		
 		@Override
 		public final Expression endVisit(final Module module, final Expression moduleVisit,
-				final Supplier<List<Expression>> parameterVisits, final Supplier<List<Expression>> conditionVisits,
-				final Supplier<List<Expression>> factVisits) {
+				final Supplier<List<Expression>> parameterVisits, final Supplier<List<Expression>> conditionVisits) {
 			assertEquals(module, moduleVisit);
 			assertEquals(module.getParameters(), parameterVisits.get());
 			assertEquals(module.getConditions(), conditionVisits.get());
-			assertEquals(module.getFacts(), factVisits.get());
+			assertEquals(module.getFacts(), module.factsAcceptor(this).get());
 			
 			this.getEvents().add(Event.MODULE_AFTER_FACTS);
 			
 			return Visitor.super.endVisit(module, moduleVisit, parameterVisits,
-					conditionVisits, factVisits);
+					conditionVisits);
 		}
 		
 		/**

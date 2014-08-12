@@ -6,6 +6,7 @@ import static net.sourceforge.aprog.tools.Tools.join;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Supplier;
 
 import averan.core.Module.Symbol;
 
@@ -47,8 +48,8 @@ public final class Composite implements Expression, Iterable<Expression> {
 		return visitor.visit(this);
 	}
 	
-	public final <R> List<R> childrenAccept(final Visitor<R> visitor) {
-		return Expression.listAcceptor(this.getChildren(), visitor).get();
+	public final <R> Supplier<List<R>> childrenAcceptor(final Visitor<R> visitor) {
+		return Expression.listAcceptor(this.getChildren(), visitor);
 	}
 	
 	@Override
