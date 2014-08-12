@@ -135,7 +135,7 @@ public final class TexPrinter implements Session.ExporterOutput {
 	public final void processCurrentGoal(final Expression currentGoal) {
 		this.hline();
 		this.center(pgroup(pgroup(word("GOAL"))));
-		this.center(currentGoal.accept(this.texStringGenerator));
+		this.center(currentGoal.accept(this.texStringGenerator).getFirst());
 	}
 	
 	@Override
