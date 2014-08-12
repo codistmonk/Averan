@@ -65,15 +65,15 @@ public final class Rewriter implements Visitor<Expression> {
 	}
 	
 	@Override
-	public final Expression beginVisit(final Composite composite) {
-		return this.tryToRewrite(composite);
-	}
-	
-	@Override
-	public final Expression endVisit(final Composite composite, final Expression compositeVisit,
-			final Supplier<List<Expression>> childVisits) {
-		if (composite == compositeVisit && !composite.getChildren().equals(childVisits.get())) {
-			return new Composite(childVisits.get());
+	public final Expression visit(final Composite composite) {
+		final Expression compositeVisit = this.tryToRewrite(composite);
+		
+		if (composite == compositeVisit) {
+			final List<Expression> childVisits = composite.childrenAccept(this);
+			
+			if (!composite.getChildren().equals(childVisits)) {
+				return new Composite(childVisits);
+			}
 		}
 		
 		return compositeVisit;

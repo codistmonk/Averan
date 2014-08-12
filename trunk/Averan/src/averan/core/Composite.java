@@ -44,8 +44,11 @@ public final class Composite implements Expression, Iterable<Expression> {
 	
 	@Override
 	public final <R> R accept(final Visitor<R> visitor) {
-		return visitor.endVisit(this, visitor.beginVisit(this),
-				Expression.listAcceptor(this.getChildren(), visitor));
+		return visitor.visit(this);
+	}
+	
+	public final <R> List<R> childrenAccept(final Visitor<R> visitor) {
+		return Expression.listAcceptor(this.getChildren(), visitor).get();
 	}
 	
 	@Override

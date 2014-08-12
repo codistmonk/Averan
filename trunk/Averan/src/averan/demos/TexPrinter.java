@@ -189,7 +189,7 @@ public final class TexPrinter implements Session.ExporterOutput {
 		}
 		
 		@Override
-		public final Pair<String, DisplayHint> beginVisit(final Composite composite) {
+		public final Pair<String, DisplayHint> visit(final Composite composite) {
 			{
 				final Pattern summation = newSummationPattern1();
 				
