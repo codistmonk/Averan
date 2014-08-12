@@ -71,6 +71,7 @@ public final class TexPrinter implements SessionExporter.Output {
 	
 	@Override
 	public final void subcontext(final String name) {
+		this.left("\\;");
 		this.hline();
 		this.hline();
 		this.center(pgroup(pgroup(word("MODULE " + name))));
@@ -89,6 +90,7 @@ public final class TexPrinter implements SessionExporter.Output {
 	
 	@Override
 	public final void processModuleCondition(final String conditionName, final Expression condition) {
+		this.left("\\;");
 		this.left(pgroup(word(conditionName)));
 		this.center(condition.accept(this.texStringGenerator).getFirst());
 	}
@@ -106,6 +108,7 @@ public final class TexPrinter implements SessionExporter.Output {
 	
 	@Override
 	public final void processModuleFact(final String factName, final Expression fact) {
+		this.left("\\;");
 		this.left(pgroup(word(factName)));
 		this.center(fact.accept(this.texStringGenerator).getFirst());
 	}
@@ -133,6 +136,7 @@ public final class TexPrinter implements SessionExporter.Output {
 	
 	@Override
 	public final void processCurrentGoal(final Expression currentGoal) {
+		this.left("\\;");
 		this.hline();
 		this.center(pgroup(pgroup(word("GOAL"))));
 		this.center(currentGoal.accept(this.texStringGenerator).getFirst());
