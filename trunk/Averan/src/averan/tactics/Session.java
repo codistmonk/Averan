@@ -1,4 +1,4 @@
-package averan.core;
+package averan.tactics;
 
 import static java.lang.Math.max;
 import static java.util.Collections.nCopies;
@@ -11,8 +11,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import averan.core.Expression;
+import averan.core.Module;
+import averan.core.Rewriter;
 import averan.core.Module.Claim;
-import averan.core.Module.Command;
+import averan.core.Module.Statement;
 import averan.core.Module.Symbol;
 
 /**
@@ -406,7 +409,7 @@ public final class Session implements Serializable {
 				this.output.beginModuleFacts(module);
 				
 				final List<Expression> facts = module.getFacts();
-				final List<Command> proofs = module.getProofs();
+				final List<Statement> proofs = module.getProofs();
 				
 				for (final Map.Entry<String, Integer> entry : module.getFactIndices().entrySet()) {
 					this.output.processModuleFact(entry.getKey(), facts.get(entry.getValue()));
@@ -414,7 +417,7 @@ public final class Session implements Serializable {
 					if (currentProofDepth <= this.maximumProofDepth) {
 						this.output.beginModuleFactProof();
 						
-						final Command command = proofs.get(entry.getValue());
+						final Statement command = proofs.get(entry.getValue());
 						final Claim claim = cast(Claim.class, command);
 						
 						if (claim == null || currentProofDepth == this.maximumProofDepth) {
@@ -514,7 +517,7 @@ public final class Session implements Serializable {
 		}
 		
 		@Override
-		public final void processModuleFactProof(final Command command) {
+		public final void processModuleFactProof(final Statement command) {
 			this.output.println(this.indent + ATOMIC_INDENT + command);
 		}
 		
@@ -569,7 +572,7 @@ public final class Session implements Serializable {
 		
 		public abstract void beginModuleFactProof();
 		
-		public abstract void processModuleFactProof(Command command);
+		public abstract void processModuleFactProof(Statement command);
 		
 		public abstract void endModuleFactProof();
 		

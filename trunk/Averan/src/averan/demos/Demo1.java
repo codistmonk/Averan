@@ -1,9 +1,9 @@
-package averan.demo;
+package averan.demos;
 
-import static averan.core.ExpressionTools.*;
 import static averan.modules.Standard.IDENTITY;
-import averan.core.Session;
+import static averan.tactics.ExpressionTools.*;
 import averan.modules.Standard;
+import averan.tactics.Session;
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 
 /**

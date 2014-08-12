@@ -1,8 +1,8 @@
-package averan.demo;
+package averan.demos;
 
-import static averan.core.ExpressionTools.$;
-import static averan.demo.ExpressionParser.$$;
-import static averan.demo.SessionTools.*;
+import static averan.demos.ExpressionParser.$$;
+import static averan.tactics.ExpressionTools.$;
+import static averan.tactics.SessionTools.*;
 import static java.awt.Color.BLACK;
 import static java.awt.Color.WHITE;
 
@@ -14,10 +14,10 @@ import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Module;
 import averan.core.Rewriter;
-import averan.core.Session;
 import averan.core.Module.Symbol;
-import averan.demo.TexPrinter.DisplayHint;
+import averan.demos.TexPrinter.DisplayHint;
 import averan.modules.Standard;
+import averan.tactics.Session;
 
 /**
  * @author codistmonk (creation 2014-08-08)

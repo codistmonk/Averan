@@ -1,4 +1,4 @@
-package averan.demo;
+package averan.tactics;
 
 import static net.sourceforge.aprog.tools.Tools.ignore;
 import static net.sourceforge.aprog.tools.Tools.unchecked;
@@ -10,7 +10,6 @@ import java.util.Map;
 
 import averan.core.Expression;
 import averan.core.Module;
-import averan.core.Session;
 import averan.core.Module.Symbol;
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 

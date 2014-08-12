@@ -1,8 +1,8 @@
-package averan.demo;
+package averan.demos;
 
 import static averan.core.Composite.isBracedComposite;
-import static averan.core.ExpressionTools.$;
-import static averan.demo.TexPrinter.TexStringGenerator.Pattern.any;
+import static averan.demos.TexPrinter.TexStringGenerator.Pattern.any;
+import static averan.tactics.ExpressionTools.$;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.join;
 import static net.sourceforge.aprog.tools.Tools.list;
@@ -21,10 +21,10 @@ import java.util.stream.Collectors;
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Module;
-import averan.core.Session;
 import averan.core.Visitor;
-import averan.core.Module.Command;
+import averan.core.Module.Statement;
 import averan.core.Module.Symbol;
+import averan.tactics.Session;
 import net.sourceforge.aprog.tools.Pair;
 import net.sourceforge.aprog.tools.Tools;
 
@@ -117,7 +117,7 @@ public final class TexPrinter implements Session.ExporterOutput {
 	}
 	
 	@Override
-	public final void processModuleFactProof(final Command command) {
+	public final void processModuleFactProof(final Statement command) {
 		this.center(word(command));
 	}
 	
