@@ -40,8 +40,9 @@ public final class Demo3 {
 			{
 				final Symbol p = introduce();
 				final Symbol x = introduce();
+				final Composite goal = goal();
 				
-				bind("notation", (Expression) p, $(forAll(x), p));
+				bind("notation", (Expression) goal.get(0), goal.get(2));
 				claim(((Composite) fact(-1)).get(2));
 				{
 					introduce();
@@ -53,8 +54,9 @@ public final class Demo3 {
 			{
 				final Symbol p = introduce();
 				final Symbol q = introduce();
+				final Composite goal = goal();
 				
-				bind("notation", (Expression) q, rule(p, q));
+				bind("notation", (Expression) goal.get(0), goal.get(2));
 				claim(((Composite) fact(-1)).get(2));
 				{
 					introduce();
@@ -62,10 +64,50 @@ public final class Demo3 {
 				}
 				rewriteRight(factName(-1), factName(-2));
 			}
+			claim("recall", $$("∀P (P/(P→P))"));
+			{
+				final Symbol p = introduce();
+				final Composite goal = goal();
+				
+				bind("notation", (Expression) goal.get(0), goal.get(2));
+				claim(((Composite) fact(-1)).get(2));
+				{
+					introduce();
+					recall(conditionName(-1));
+				}
+				rewriteRight(factName(-1), factName(-2));
+			}
+			claim("admit", $$("∀P (' '/P)"));
+			{
+				final Symbol p = introduce();
+				final Composite goal = goal();
+				
+				bind("notation", (Expression) goal.get(0), goal.get(2));
+				claim(((Composite) fact(-1)).get(2));
+				{
+					introduce();
+					admit(p);
+				}
+				rewriteRight(factName(-1), factName(-2));
+			}
+			claim("claim", $$("∀P,Q ((P ∧(P/Q))/Q)"));
+			{
+				final Symbol p = introduce();
+				final Symbol q = introduce();
+				final Composite goal = goal();
+				
+				bind("notation", (Expression) goal.get(0), goal.get(2));
+				claim(((Composite) fact(-1)).get(2));
+				{
+					introduce();
+					bind(conditionName(-1));
+					bind("notation", p, q);
+					rewrite(factName(-2), factName(-1));
+					apply(factName(-1), factName(-4));
+				}
+				rewriteRight(factName(-1), factName(-2));
+			}
 			BreakSessionException.breakSession();
-			admit("recall", $$("∀P (P/(P→P))"));
-			admit("admit", $$("∀P (' '/P)"));
-			admit("claim", $$("∀P,Q ((P ∧(P/Q))/Q)"));
 			admit("apply", $$("∀P,Q ((P ∧ (P→Q))/Q)"));
 			admit("bind", $$("∀P,X,Y ((∀X P)/(P{X=Y}))"));
 			claim("rewrite", $$("∀P,X,Y ((P ∧ (X=Y))/(P{X=Y}))"));
