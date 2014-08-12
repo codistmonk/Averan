@@ -73,7 +73,6 @@ public final class Demo2 {
 			admit("commutativity_of_multiplication",
 					$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((xy)=(yx))))"));
 			
-			
 			claimCommutativityOfConjunction();
 			claimTranspositionOfAddition();
 			claimTranspositionOfMultiplication();

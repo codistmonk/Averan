@@ -286,6 +286,17 @@ public final class Session implements Serializable {
 			return this.initialGoal;
 		}
 		
+		public final Symbol parameter(final String name) {
+			final Module module = this.getModule();
+			Symbol result = module.getParameter(name);
+			
+			if (result == null) {
+				result = module.new Parameter(name).executeAndGet();
+			}
+			
+			return result;
+		}
+		
 		public final void introduce(final String parameterOrConditionName) {
 			final Module goal = (Module) this.getCurrentGoal();
 			final List<Symbol> parameters = goal.getParameters();
@@ -294,7 +305,7 @@ public final class Session implements Serializable {
 			if (!parameters.isEmpty()) {
 				final List<Symbol> newGoalParameters = new ArrayList<>(parameters.subList(1, parameters.size()));
 				final Symbol parameter = parameters.get(0);
-				final Symbol introducedParameter = this.getModule().parameter(parameter.toString());
+				final Symbol introducedParameter = this.parameter(parameter.toString());
 				
 				this.setCurrentGoal(new Module(
 						goal.getParent(),

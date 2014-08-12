@@ -25,7 +25,7 @@ public final class VisitorTest {
 		final Recorder recorder = new Recorder();
 		
 		final Module module = new Module(null);
-		final Symbol x = module.parameter("x");
+		final Symbol x = module.new Parameter("x").executeAndGet();
 		
 		module.new Suppose(x).execute();
 		module.new Admit(Module.equality(x, x)).execute();
