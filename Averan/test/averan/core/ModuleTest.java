@@ -1,11 +1,11 @@
 package averan.core;
 
-import static averan.core.ExpressionTools.$;
-import static averan.core.ExpressionTools.rule;
 import static averan.core.Module.EQUAL;
 import static averan.core.Module.ROOT;
 import static averan.core.Module.equality;
 import static averan.modules.Standard.IDENTITY;
+import static averan.tactics.ExpressionTools.$;
+import static averan.tactics.ExpressionTools.rule;
 import static net.sourceforge.aprog.tools.Tools.array;
 import static org.junit.Assert.*;
 

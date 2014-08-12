@@ -38,7 +38,7 @@ public final class Module implements Expression {
 	
 	private final Map<String, Integer> factIndices;
 	
-	private final List<Command> proofs;
+	private final List<Statement> proofs;
 	
 	public Module(final Module parent) {
 		this(parent, "");
@@ -48,7 +48,7 @@ public final class Module implements Expression {
 		this(parent, name, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
 	}
 	
-	Module(final Module parent, final String name, final List<Symbol> parameters,
+	public Module(final Module parent, final String name, final List<Symbol> parameters,
 			final List<Expression> conditions, final List<Expression> facts) {
 		this.parent = parent;
 		this.name = name;
@@ -168,7 +168,7 @@ public final class Module implements Expression {
 		return this.factIndices;
 	}
 	
-	public final List<Command> getProofs() {
+	public final List<Statement> getProofs() {
 		return this.proofs;
 	}
 	
@@ -489,7 +489,7 @@ public final class Module implements Expression {
 	/**
 	 * @author codistmonk (creation 2014-08-02)
 	 */
-	public abstract class AddProposition implements Command {
+	public abstract class AddProposition implements Statement {
 		
 		private final String propositionName;
 		
@@ -1144,7 +1144,7 @@ public final class Module implements Expression {
 	/**
 	 * @author codistmonk (creation 2014-08-02)
 	 */
-	public static abstract interface Command extends Serializable {
+	public static abstract interface Statement extends Serializable {
 		
 		public abstract Module execute();
 		

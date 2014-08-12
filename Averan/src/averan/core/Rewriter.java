@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Supplier;
 
-import averan.core.Module.Command;
+import averan.core.Module.Statement;
 import averan.core.Module.Symbol;
 
 /**
@@ -18,7 +18,7 @@ import averan.core.Module.Symbol;
  */
 public final class Rewriter implements Visitor<Expression> {
 	
-	private final Command proof;
+	private final Statement proof;
 	
 	private final Map<Expression, Expression> rewrites;
 	
@@ -30,7 +30,7 @@ public final class Rewriter implements Visitor<Expression> {
 		this(null);
 	}
 	
-	public Rewriter(final Command proof) {
+	public Rewriter(final Statement proof) {
 		this.proof = proof;
 		this.rewrites = new LinkedHashMap<>();
 		this.indices = new TreeSet<>();

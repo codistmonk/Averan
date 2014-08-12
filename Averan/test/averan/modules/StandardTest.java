@@ -1,13 +1,13 @@
 package averan.modules;
 
-import static averan.core.ExpressionTools.*;
+import static averan.tactics.ExpressionTools.*;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
 
 import averan.core.Expression;
-import averan.core.Session;
 import averan.modules.Standard;
+import averan.tactics.Session;
 
 /**
  * @author codistmonk (creation 2014-08-04)
