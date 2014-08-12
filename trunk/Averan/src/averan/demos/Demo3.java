@@ -27,15 +27,15 @@ public final class Demo3 {
 		String sessionBreakPoint = "";
 		
 		try {
-			admit("tacticName", $$("'entitiesDeclaration' ('conditions'/'conclusion')"));
+			admit("notation", $$("∀P,Q ((P/Q) = (P→Q))"));
 			admit("parametrize", $$("∀P,X (P/(∀X P))"));
 			admit("suppose", $$("∀P,Q (Q/(P→Q))"));
 			admit("recall", $$("∀P (P/(P→P))"));
 			admit("admit", $$("∀P (' '/P)"));
-			admit("claim", $$("∀P,Q ((P,(P→Q))/Q)"));
-			admit("apply", $$("∀P,Q ((P,(P→Q))/Q)"));
+			admit("claim", $$("∀P,Q ((P ∧(P/Q))/Q)"));
+			admit("apply", $$("∀P,Q ((P ∧ (P→Q))/Q)"));
 			admit("bind", $$("∀P,X,Y ((∀X P)/(P{X=Y}))"));
-			admit("rewrite", $$("∀P,X,Y ((P, X=Y)/(P{X=Y}))"));
+			admit("rewrite", $$("∀P,X,Y ((P ∧ (X=Y))/(P{X=Y}))"));
 			admit("substitute", $$("∀P,X,Y ((P'\\og\\{\\fg'X=Y'\\og\\}\\fg')/((P'\\og\\{\\fg'X=Y'\\og\\}\\fg')=(P{X=Y})))"));
 		} catch (final BreakSessionException exception) {
 			sessionBreakPoint = exception.getStackTrace()[1].toString();
