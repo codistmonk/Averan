@@ -115,7 +115,7 @@ public final class Rewriter implements Visitor<Expression> {
 			
 			result.getConditionIndices().putAll(module.getConditionIndices());
 			result.getFactIndices().putAll(module.getFactIndices());
-			result.getProofs().addAll(Collections.nCopies(module.getFacts().size(), this.proof));
+			result.getStatements().addAll(Collections.nCopies(module.getFacts().size(), this.proof));
 			
 			return result;
 		}
