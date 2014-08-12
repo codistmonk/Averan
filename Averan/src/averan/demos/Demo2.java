@@ -15,6 +15,7 @@ import averan.core.Expression;
 import averan.core.Module;
 import averan.core.Rewriter;
 import averan.core.Module.Symbol;
+import averan.io.Exporter;
 import averan.io.TexPrinter;
 import averan.io.TexPrinter.DisplayHint;
 import averan.modules.Standard;
@@ -105,7 +106,7 @@ public final class Demo2 {
 		} catch (final BreakSessionException exception) {
 			sessionBreakPoint = exception.getStackTrace()[1].toString();
 		} finally {
-			session().new Exporter(-1).exportSession();
+			new Exporter(session(), -1).exportSession();
 			
 			System.out.println(sessionBreakPoint);
 		}
@@ -113,7 +114,7 @@ public final class Demo2 {
 		{
 			final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 			
-			session().new Exporter(new TexPrinter(buffer)
+			new Exporter(session(), new TexPrinter(buffer)
 				.hint($("optimality"), new DisplayHint(50, "", "\\;", 1))
 				.hint($("constrainedOptimality"), new DisplayHint(50, "", "\\;", 1))
 			, 0).exportSession();

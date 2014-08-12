@@ -24,7 +24,6 @@ import averan.core.Module.Statement;
 import averan.core.Module.Symbol;
 import averan.core.Pattern;
 import averan.core.Visitor;
-import averan.tactics.Session;
 
 import net.sourceforge.aprog.tools.Pair;
 import net.sourceforge.aprog.tools.Tools;
@@ -32,7 +31,7 @@ import net.sourceforge.aprog.tools.Tools;
 /**
  * @author codistmonk (creation 2014-08-09)
  */
-public final class TexPrinter implements Session.ExporterOutput {
+public final class TexPrinter implements ExporterOutput {
 	
 	private final PrintStream output;
 	
