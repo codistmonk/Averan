@@ -159,7 +159,7 @@ public final class Demo3 {
 				final Symbol x = introduce();
 				final Symbol y = introduce();
 				
-				bind("notation", (Expression) $(p, "&", $(x, "=", y)), $(p, new Composite(Arrays.asList($(x, "=", y)))));
+				bind("notation", (Expression) $(p, "&", $(x, "=", y)), $(p, composite($(x, "=", y))));
 				claim(((Composite) fact(-1)).get(2));
 				{
 					introduce();
