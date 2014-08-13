@@ -139,4 +139,8 @@ public final class ExpressionTools {
 		return result;
 	}
 	
+	public static final Composite composite(final Object... children) {
+		return new Composite(Arrays.stream(children).map(ExpressionTools::<Expression>$).collect(toList()));
+	}
+	
 }
