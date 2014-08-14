@@ -66,15 +66,14 @@ public final class TexPrinter implements SessionExporter.Output {
 	
 	@Override
 	public final void beginSession() {
-		this.output.println("\\begin{array}{l}");
+		this.output.println("\\begin{array}{|l|}");
 	}
 	
 	@Override
 	public final void subcontext(final String name) {
-		this.left("\\;");
-		this.hline();
 		this.hline();
 		this.center(pgroup(pgroup(word("MODULE " + name))));
+		this.hline();
 	}
 	
 	@Override
@@ -144,6 +143,7 @@ public final class TexPrinter implements SessionExporter.Output {
 	
 	@Override
 	public final void endSession() {
+		this.hline();
 		this.output.println("\\end{array}");
 		this.output.flush();
 	}
@@ -291,7 +291,7 @@ public final class TexPrinter implements SessionExporter.Output {
 			final StringBuilder resultBuilder = new StringBuilder();
 			
 			if (!module.getParameters().isEmpty()) {
-				resultBuilder.append("∀").append(Tools.join(",",
+				resultBuilder.append("\\forall ").append(Tools.join(",",
 						Arrays.stream(this.transform(module.getParameters())).map(p -> p.getFirst()).toArray()))
 						.append("\\;");
 			}
@@ -305,7 +305,7 @@ public final class TexPrinter implements SessionExporter.Output {
 					resultBuilder.append(group(conjunction.getFirst()));
 				}
 				
-				resultBuilder.append(" → ");
+				resultBuilder.append(" \\rightarrow ");
 			}
 			
 			if (!module.getFacts().isEmpty()) {
@@ -356,7 +356,7 @@ public final class TexPrinter implements SessionExporter.Output {
 				return propositions[0];
 			}
 			
-			return DisplayHint.GROUP.hint(pgroup(Tools.join(" ∧ ",
+			return DisplayHint.GROUP.hint(pgroup(Tools.join(" \\land ",
 					Arrays.stream(propositions).map(p -> p.getFirst()).toArray())));
 		}
 		
