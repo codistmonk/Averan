@@ -183,7 +183,9 @@ public final class Demo3 {
 			final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 			
 			new SessionExporter(session, new TexPrinter(buffer)
-			, 1 < session.getStack().size() ? 0 : 1).exportSession();
+			, 1 < session.getStack().size() ? 0 : 0).exportSession();
+			
+			System.out.println(buffer.toString());
 			
 			new TeXFormula(buffer.toString()).createPNG(0, 18F, "view.png", WHITE, BLACK);
 		}
