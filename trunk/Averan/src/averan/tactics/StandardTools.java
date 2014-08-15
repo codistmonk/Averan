@@ -25,7 +25,6 @@ public final class StandardTools {
 		final Expression right = equality.get(2);
 		
 		claim(source.accept(new Rewriter().rewrite(right, left)));
-		
 		{
 			bind(Standard.SYMMETRY_OF_EQUALITY, left, right);
 			apply(factName(-1), equalityName);
