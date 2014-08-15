@@ -3,9 +3,17 @@ package averan.io;
 import static averan.core.Composite.isBracedComposite;
 import static averan.core.Pattern.any;
 import static averan.tactics.ExpressionTools.$;
+import static java.util.regex.Matcher.quoteReplacement;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.join;
 import static net.sourceforge.aprog.tools.Tools.list;
+import averan.core.Composite;
+import averan.core.Expression;
+import averan.core.Module;
+import averan.core.Module.Statement;
+import averan.core.Module.Symbol;
+import averan.core.Pattern;
+import averan.core.Visitor;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -16,14 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import averan.core.Composite;
-import averan.core.Expression;
-import averan.core.Module;
-import averan.core.Module.Statement;
-import averan.core.Module.Symbol;
-import averan.core.Pattern;
-import averan.core.Visitor;
 
 import net.sourceforge.aprog.tools.Pair;
 import net.sourceforge.aprog.tools.Tools;
@@ -53,11 +53,15 @@ public final class TexPrinter implements SessionExporter.Output {
 	}
 	
 	public final void left(final Object object) {
-		this.output.println(object + "\\cr");
+		this.center("\\multicolumn{1}{|l|}" + group(object));
 	}
 	
 	public final void center(final Object object) {
-		this.left("\\multicolumn{1}{|c|}" + group(object));
+		this.output.println(escape(object) + "\\cr");
+	}
+	
+	public final void newLine() {
+		this.center(group("\\;"));
 	}
 	
 	public final void hline() {
@@ -66,7 +70,7 @@ public final class TexPrinter implements SessionExporter.Output {
 	
 	@Override
 	public final void beginSession() {
-		this.output.println("\\begin{array}{|l|}");
+		this.output.println("\\begin{array}{|c|}");
 	}
 	
 	@Override
@@ -83,13 +87,13 @@ public final class TexPrinter implements SessionExporter.Output {
 	
 	@Override
 	public final void beginModuleConditions(final Module module) {
-		this.left("\\;");
+		this.newLine();
 		this.center(pgroup(pgroup(word("CONDITIONS"))));
 	}
 	
 	@Override
 	public final void processModuleCondition(final String conditionName, final Expression condition) {
-		this.left("\\;");
+		this.newLine();
 		this.left(pgroup(word(conditionName)));
 		this.center(condition.accept(this.texStringGenerator).getFirst());
 	}
@@ -101,41 +105,48 @@ public final class TexPrinter implements SessionExporter.Output {
 	
 	@Override
 	public final void beginModuleFacts(final Module module) {
-		this.left("\\;");
+		this.newLine();
 		this.center(pgroup(pgroup(word("FACTS"))));
 	}
 	
 	@Override
 	public final void processModuleFact(final String factName, final Expression fact) {
-		this.left("\\;");
+		this.newLine();
 		this.left(pgroup(word(factName)));
 		this.center(fact.accept(this.texStringGenerator).getFirst());
 	}
 	
 	@Override
 	public final void beginModuleFactProof() {
-		this.left("\\;");
+		this.output.println("\\begin{array}{|c|}");
+		this.hline();
 		this.center(pgroup(pgroup(word("PROOF"))));
 	}
 	
 	@Override
 	public final void processModuleFactProof(final Statement command) {
-		this.center(word(command));
+		final Pair<String, Object[]> format = command.getFormatString(e -> "$" + e.accept(this.texStringGenerator).getFirst() + "$");
+		final String string = String.format(format.getFirst().replaceAll("_", quoteReplacement("\\_")), format.getSecond());
+		
+		this.center(word(string));
 	}
 	
 	@Override
 	public final void endModuleFactProof() {
-		// NOP
+		this.hline();
+		this.output.println("\\end{array}\\cr");
 	}
 	
 	@Override
 	public final void endModuleFacts(final Module module) {
-		// NOP
+		if (!module.getFacts().isEmpty()) {
+			this.newLine();
+		}
 	}
 	
 	@Override
 	public final void processCurrentGoal(final Expression currentGoal) {
-		this.left("\\;");
+		this.newLine();
 		this.hline();
 		this.center(pgroup(pgroup(word("GOAL"))));
 		this.center(currentGoal.accept(this.texStringGenerator).getFirst());
@@ -152,6 +163,14 @@ public final class TexPrinter implements SessionExporter.Output {
 	 * {@value}.
 	 */
 	private static final long serialVersionUID = 2589185560566140739L;
+	
+	public static final String escape(final Object object) {
+		return object.toString()
+				.replaceAll("#", quoteReplacement("\\#"))
+				.replaceAll("∀", quoteReplacement("\\forall "))
+				.replaceAll("→", quoteReplacement("\\rightarrow "))
+				.replaceAll("∧", quoteReplacement("\\land "));
+	}
 	
 	public static final String group(final Object object) {
 		return "{" + object + "}";
@@ -274,18 +293,6 @@ public final class TexPrinter implements SessionExporter.Output {
 			return resultHint.hint(group(resultBuilder.toString()));
 		}
 		
-		public static final boolean isSubscripted(final Expression expression) {
-			final Composite composite = cast(Composite.class, expression);
-			
-			if (composite == null) {
-				return false;
-			}
-			
-			final List<Expression> children = composite.getChildren();
-			
-			return (children.size() == 3 && "_".equals(children.get(1).toString()));
-		}
-		
 		@Override
 		public final Pair<String, DisplayHint> visit(final Module module) {
 			final StringBuilder resultBuilder = new StringBuilder();
@@ -349,6 +356,18 @@ public final class TexPrinter implements SessionExporter.Output {
 		 * {@value}.
 		 */
 		private static final long serialVersionUID = 3004635190043687534L;
+		
+		public static final boolean isSubscripted(final Expression expression) {
+			final Composite composite = cast(Composite.class, expression);
+			
+			if (composite == null) {
+				return false;
+			}
+			
+			final List<Expression> children = composite.getChildren();
+			
+			return (children.size() == 3 && "_".equals(children.get(1).toString()));
+		}
 		
 		public static final Pair<String, DisplayHint> formatConjunction(
 				final Pair<String, DisplayHint>... propositions) {
@@ -417,16 +436,16 @@ public final class TexPrinter implements SessionExporter.Output {
 			return new Pair<>(this.getPrefix() + string + this.getPostfix(), newHint);
 		}
 		
+		/**
+		 * {@value}.
+		 */
+		private static final long serialVersionUID = 8176839660157109283L;
+		
 		public static final DisplayHint DEFAULT = new DisplayHint();
 		
 		public static final DisplayHint IMPLICATION = new DisplayHint(5, "", "", 0);
 		
 		public static final DisplayHint GROUP = new DisplayHint(1000, "", "", 0);
-		
-		/**
-		 * {@value}.
-		 */
-		private static final long serialVersionUID = 8176839660157109283L;
 		
 	}
 	
