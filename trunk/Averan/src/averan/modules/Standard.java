@@ -2,8 +2,13 @@ package averan.modules;
 
 import static averan.core.Module.ROOT;
 import static averan.core.Module.equality;
+
+import java.util.Arrays;
+
+import averan.core.Composite;
 import averan.core.Module;
 import averan.core.Module.Symbol;
+
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 
 /**
@@ -45,10 +50,17 @@ public final class Standard {
 		{
 			final Module identity = new Module(MODULE);
 			final Symbol x = identity.new Parametrize("x").executeAndGet();
+			final Composite identityFact = equality(x, x);
+			final Module identityFactProof = new Module(identity);
 			
-			identity.new Admit(equality(x, x)).execute();
+			identityFactProof.new Substitute("identity_substitution",
+					new Composite(Arrays.asList(x, new Composite(Arrays.asList())))).execute();
+			identityFactProof.new Rewrite(identityFactProof, "identity_substitution",
+					identityFactProof, "identity_substitution").execute();
 			
-			MODULE.new Admit(IDENTITY, identity).execute();
+			identity.new Claim(identityFact, identityFactProof).execute();
+			
+			MODULE.new Claim(IDENTITY, identity).execute();
 		}
 		
 		{
