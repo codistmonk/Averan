@@ -16,11 +16,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
-import averan.core.Module.Statement;
 import net.sourceforge.aprog.tools.Pair;
 import net.sourceforge.aprog.tools.Tools;
 
@@ -556,6 +556,57 @@ public final class Module implements Expression {
 			
 			if (Module.this.getParameter(name) != null) {
 				throw new IllegalArgumentException("Duplicate parameter: " + name);
+			}
+			
+			final Symbol s = Module.this.new Symbol(name);
+			final AtomicBoolean alreadyInUse = new AtomicBoolean();
+			
+			Module.this.accept(new Visitor<Void>() {
+				
+				@Override
+				public final Void visit(final Composite composite) {
+					if (!alreadyInUse.get()) {
+						composite.childrenAcceptor(this).get();
+					}
+					
+					return null;
+				}
+				
+				@Override
+				public final Void visit(final Symbol symbol) {
+					if (!alreadyInUse.get() && s.equals(symbol)) {
+						alreadyInUse.set(true);
+					}
+					
+					return null;
+				}
+				
+				@Override
+				public final Void visit(final Module module) {
+					if (!alreadyInUse.get()) {
+						module.parametersAcceptor(this).get();
+					}
+					
+					if (!alreadyInUse.get()) {
+						module.conditionsAcceptor(this).get();
+					}
+					
+					if (!alreadyInUse.get()) {
+						module.factsAcceptor(this).get();
+					}
+					
+					return null;
+				}
+				
+				/**
+				 * {@value}.
+				 */
+				private static final long serialVersionUID = 4148000735632446839L;
+				
+			});
+			
+			if (alreadyInUse.get()) {
+				throw new IllegalArgumentException("Requested parameter already in use: " + name);
 			}
 		}
 		
