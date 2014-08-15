@@ -8,6 +8,7 @@ import static averan.tactics.ExpressionTools.$;
 import static averan.tactics.ExpressionTools.rule;
 import static net.sourceforge.aprog.tools.Tools.array;
 import static org.junit.Assert.*;
+import net.sourceforge.aprog.tools.Tools;
 
 import org.junit.Test;
 
@@ -23,7 +24,7 @@ import averan.modules.Standard;
 public final class ModuleTest {
 	
 	@Test
-	public final void testParameters() {
+	public final void testParametrize() {
 		final Module module1 = new Module(null);
 		
 		assertEquals(0, module1.getParameters().size());
@@ -121,10 +122,23 @@ public final class ModuleTest {
 		assertFalse(module1.implies(module2));
 		assertFalse(module2.implies(module1));
 		
-		module2.new Parametrize("y").executeAndGet();
+		module2.getFacts().clear();
+		module2.getFactIndices().clear();
+		module2.new Admit(module2.new Parametrize("y").executeAndGet()).execute();
 		
 		assertTrue(module1.implies(module2));
-		assertTrue(module2.implies(module1));
+		assertFalse(module2.implies(module1));
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public final void testImplies3() {
+		final Module module = new Module(null);
+		final Symbol x = module.new Symbol("x");
+		
+		module.new Admit(x).execute();
+		module.new Parametrize(x.toString()).execute();
+		
+		fail();
 	}
 	
 	@Test
