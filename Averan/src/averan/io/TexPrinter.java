@@ -93,9 +93,7 @@ public final class TexPrinter implements SessionExporter.Output {
 	
 	@Override
 	public final void processModuleCondition(final String conditionName, final Expression condition) {
-		this.newLine();
-		this.left(pgroup(word(conditionName)));
-		this.center(condition.accept(this.texStringGenerator).getFirst());
+		this.processModuleProposition(conditionName, condition);
 	}
 	
 	@Override
@@ -111,9 +109,7 @@ public final class TexPrinter implements SessionExporter.Output {
 	
 	@Override
 	public final void processModuleFact(final String factName, final Expression fact) {
-		this.newLine();
-		this.left(pgroup(word(factName)));
-		this.center(fact.accept(this.texStringGenerator).getFirst());
+		this.processModuleProposition(factName, fact);
 	}
 	
 	@Override
@@ -159,6 +155,12 @@ public final class TexPrinter implements SessionExporter.Output {
 		this.output.flush();
 	}
 	
+	private final void processModuleProposition(final String propositionName, final Expression proposition) {
+		this.newLine();
+		this.left(pgroup(bold(word(propositionName))));
+		this.center(proposition.accept(this.texStringGenerator).getFirst());
+	}
+	
 	/**
 	 * {@value}.
 	 */
@@ -186,6 +188,10 @@ public final class TexPrinter implements SessionExporter.Output {
 	
 	public static final String sgroup(final Object object) {
 		return "\\left[" + object + "\\right]";
+	}
+	
+	public static final String bold(final Object object) {
+		return "\\textbf" + group(object);
 	}
 	
 	public static final String word(final Object object) {
