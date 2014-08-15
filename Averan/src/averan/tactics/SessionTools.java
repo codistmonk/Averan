@@ -49,6 +49,10 @@ public final class SessionTools {
 		return session().getFactName(index);
 	}
 	
+	public static final <E extends Expression> E proposition(final String name) {
+		return session().getProposition(name);
+	}
+	
 	@SuppressWarnings("unchecked")
 	public static final <E extends Expression> E introduce() {
 		final Session session = session();
@@ -137,6 +141,10 @@ public final class SessionTools {
 	@SuppressWarnings("unchecked")
 	public static final <E extends Expression> E goal() {
 		return (E) session().getCurrentGoal();
+	}
+	
+	public static final Module module() {
+		return session().getCurrentModule();
 	}
 	
 	public static final Session session() {
