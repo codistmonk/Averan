@@ -19,7 +19,6 @@ import averan.modules.Standard;
 import averan.tactics.Session;
 
 import java.io.ByteArrayOutputStream;
-import java.util.Arrays;
 
 import org.scilab.forge.jlatexmath.TeXFormula;
 
@@ -53,6 +52,7 @@ public final class Demo3 {
 				}
 				rewriteRight(factName(-1), factName(-2));
 			}
+			
 			claim("suppose", $$("∀P,Q (Q/(P→Q))"));
 			{
 				final Symbol p = introduce();
@@ -70,6 +70,7 @@ public final class Demo3 {
 				}
 				rewriteRight(factName(-1), factName(-2));
 			}
+			
 			claim("recall", $$("∀P (P/(P→P))"));
 			{
 				final Symbol p = introduce();
@@ -85,6 +86,7 @@ public final class Demo3 {
 				}
 				rewriteRight(factName(-1), factName(-2));
 			}
+			
 			claim("admit", $$("∀P (' '/P)"));
 			{
 				final Symbol p = introduce();
@@ -98,6 +100,7 @@ public final class Demo3 {
 				}
 				rewriteRight(factName(-1), factName(-2));
 			}
+			
 			claim("claim", $$("∀P,Q ((P ∧(P/Q))/Q)"));
 			{
 				final Symbol p = introduce();
@@ -115,6 +118,7 @@ public final class Demo3 {
 				}
 				rewriteRight(factName(-1), factName(-2));
 			}
+			
 			claim("apply", $$("∀P,Q ((P ∧ (P→Q))/Q)"));
 			{
 				final Symbol p = introduce();
@@ -133,6 +137,7 @@ public final class Demo3 {
 				}
 				rewriteRight(factName(-1), factName(-2));
 			}
+			
 			claim("bind", $$("∀P,X,Y ((∀X P)/(P{X=Y}))"));
 			{
 				final Symbol p = introduce();
@@ -153,6 +158,7 @@ public final class Demo3 {
 				}
 				rewriteRight(factName(-1), factName(-2));
 			}
+			
 			claim("rewrite", $$("∀P,X,Y ((P ∧ (X=Y))/(P{X=Y}))"));
 			{
 				final Symbol p = introduce();
@@ -169,6 +175,7 @@ public final class Demo3 {
 				}
 				rewriteRight(factName(-1), factName(-2));
 			}
+			
 			admit("substitute", $$("∀P,X,Y ((P'\\og\\{\\fg'X=Y'\\og\\}\\fg')/((P'\\og\\{\\fg'X=Y'\\og\\}\\fg')=(P{X=Y})))"));
 		} catch (final BreakSessionException exception) {
 			sessionBreakPoint = exception.getStackTrace()[1].toString();
@@ -183,7 +190,7 @@ public final class Demo3 {
 			final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 			
 			new SessionExporter(session, new TexPrinter(buffer)
-			, 1 < session.getStack().size() ? 0 : 0).exportSession();
+			, 1 < session.getStack().size() ? 0 : 1).exportSession();
 			
 			System.out.println(buffer.toString());
 			

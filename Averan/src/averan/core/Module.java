@@ -3,6 +3,7 @@ package averan.core;
 import static java.lang.Integer.parseInt;
 import static java.lang.Math.min;
 import static java.util.stream.Collectors.toCollection;
+import static net.sourceforge.aprog.tools.Tools.array;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.list;
 
@@ -15,9 +16,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
+import averan.core.Module.Statement;
+import net.sourceforge.aprog.tools.Pair;
 import net.sourceforge.aprog.tools.Tools;
 
 /**
@@ -805,6 +809,18 @@ public final class Module implements Expression {
 			return this.addFact(equality(this.getExpression(), subsitution.get(0).accept(rewriter)));
 		}
 		
+		@Override
+		public final String toString() {
+			final Pair<String, Object[]> format = this.getFormatString(e -> e.toString());
+			
+			return String.format(format.getFirst(), format.getSecond());
+		}
+		
+		@Override
+		public final Pair<String, Object[]> getFormatString(final Function<? super Expression, String> f) {
+			return new Pair<>("Substitute %s", array(f.apply(this.getExpression())));
+		}
+		
 		/**
 		 * {@value}.
 		 */
@@ -910,6 +926,16 @@ public final class Module implements Expression {
 		
 	}
 	
+	public static final <T> Map<T, T> mapAccept(final Map<Expression, Expression> map, final Visitor<T> visitor) {
+		final Map<T, T> result = new LinkedHashMap<>();
+		
+		for (final Map.Entry<Expression, Expression> entry : map.entrySet()) {
+			result.put(entry.getKey().accept(visitor), entry.getValue().accept(visitor));
+		}
+		
+		return result;
+	}
+	
 	/**
 	 * @author codistmonk (creation 2014-08-02)
 	 */
@@ -991,8 +1017,21 @@ public final class Module implements Expression {
 		
 		@Override
 		public final String toString() {
-			return "Bind (" + this.getModule().getPropositionName() + ")"
-					+ (this.getBinder().getRewrites().isEmpty() ? "" : " using " + this.getBinder().getRewrites());
+			final Pair<String, Object[]> format = this.getFormatString(e -> e.toString());
+			
+			return String.format(format.getFirst(), format.getSecond());
+		}
+		
+		@Override
+		public final Pair<String, Object[]> getFormatString(final Function<? super Expression, String> f) {
+			final Map<String, String> map = new LinkedHashMap<>();
+			
+			for (final Map.Entry<Expression, Expression> entry : this.getBinder().getRewrites().entrySet()) {
+				map.put(f.apply(entry.getKey()), f.apply(entry.getValue()));
+			}
+			
+			return new Pair<>("Bind (" + this.getModule().getPropositionName() + ")"
+					+ (this.getBinder().getRewrites().isEmpty() ? "" : " using %s"), array(map.toString()));
 		}
 		
 		/**
@@ -1182,6 +1221,10 @@ public final class Module implements Expression {
 	public static abstract interface Statement extends Serializable {
 		
 		public abstract Module execute();
+		
+		public default Pair<String, Object[]> getFormatString(final Function<? super Expression, String> f) {
+			return new Pair<>(this.toString(), array());
+		}
 		
 	}
 	
