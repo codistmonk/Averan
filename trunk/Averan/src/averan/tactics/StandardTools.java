@@ -1,14 +1,12 @@
 package averan.tactics;
 
-import static averan.tactics.SessionTools.apply;
-import static averan.tactics.SessionTools.bind;
-import static averan.tactics.SessionTools.claim;
-import static averan.tactics.SessionTools.rewrite;
-import static averan.tactics.SessionTools.session;
+import static averan.tactics.SessionTools.*;
+
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Rewriter;
 import averan.modules.Standard;
+
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 
 /**
@@ -21,21 +19,17 @@ public final class StandardTools {
 	}
 	
 	public static final void rewriteRight(final String sourceName, final String equalityName) {
-		final Session session = session();
-		final Composite equality = session.getProposition(equalityName);
+		final Expression source = proposition(sourceName);
+		final Composite equality = proposition(equalityName);
+		final Expression left = equality.get(0);
+		final Expression right = equality.get(2);
 		
-		claim(session.getProposition(sourceName).accept(new Rewriter().rewrite(equality.get(2), equality.get(0))));
+		claim(source.accept(new Rewriter().rewrite(right, left)));
 		
 		{
-			final String ruleName = session.getCurrentContext().getModule().newPropositionName();
-			
-			bind(ruleName, Standard.SYMMETRY_OF_EQUALITY, (Expression) equality.get(0), equality.get(2));
-			
-			final String reversedEqualityName = session.getCurrentContext().getModule().newPropositionName();
-			
-			apply(reversedEqualityName, ruleName, equalityName);
-			
-			rewrite(sourceName, reversedEqualityName);
+			bind(Standard.SYMMETRY_OF_EQUALITY, left, right);
+			apply(factName(-1), equalityName);
+			rewrite(sourceName, factName(-1));
 		}
 	}
 	
