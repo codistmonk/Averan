@@ -7,6 +7,7 @@ import static averan.modules.Standard.*;
 import static java.awt.Color.BLACK;
 import static java.awt.Color.WHITE;
 import static net.sourceforge.aprog.tools.Tools.ignore;
+
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Module;

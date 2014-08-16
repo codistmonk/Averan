@@ -6,6 +6,7 @@ import static averan.io.ExpressionParser.$$;
 import static averan.modules.Standard.*;
 import static java.awt.Color.BLACK;
 import static java.awt.Color.WHITE;
+
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Module;
