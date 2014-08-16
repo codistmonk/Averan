@@ -1,6 +1,7 @@
 package averan.demos;
 
 import static averan.io.ExpressionParser.$$;
+import static averan.modules.Standard.*;
 import static averan.tactics.ExpressionTools.*;
 import static averan.tactics.SessionTools.*;
 import static averan.tactics.StandardTools.rewriteRight;
@@ -61,22 +62,6 @@ public final class Demo3 {
 				
 				ignore(p);
 				ignore(q);
-				
-				bind("notation", (Expression) goal.get(0), goal.get(2));
-				claim(((Composite) fact(-1)).get(2));
-				{
-					introduce();
-					recall(conditionName(-1));
-				}
-				rewriteRight(factName(-1), factName(-2));
-			}
-			
-			claim("recall", $$("∀P (P/(P→P))"));
-			{
-				final Symbol p = introduce();
-				final Composite goal = goal();
-				
-				ignore(p);
 				
 				bind("notation", (Expression) goal.get(0), goal.get(2));
 				claim(((Composite) fact(-1)).get(2));

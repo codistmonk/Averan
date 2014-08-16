@@ -2,14 +2,31 @@ package averan.modules;
 
 import static averan.core.Module.ROOT;
 import static averan.core.Module.equality;
+import static averan.tactics.ExpressionTools.*;
+import static averan.tactics.SessionTools.session;
+import static net.sourceforge.aprog.tools.Tools.ignore;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import averan.core.Composite;
+import averan.core.Expression;
 import averan.core.Module;
+import averan.core.Module.Bind;
+import averan.core.Rewriter;
+import averan.core.Visitor;
 import averan.core.Module.Symbol;
-
+import averan.core.Pattern;
+import averan.demos.Demo2.BreakSessionException;
+import averan.io.SessionExporter;
+import averan.tactics.ExpressionTools;
+import averan.tactics.Session;
+import averan.tactics.SessionTools;
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
+import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2014-08-04)
@@ -40,6 +57,11 @@ public final class Standard {
 	 */
 	public static final String ELIMINATION_OF_FALSE = "elimination_of_false";
 	
+	/**
+	 * {@value}.
+	 */
+	public static final String RECALL = "recall";
+	
 	public static final Module MODULE = new Module(ROOT);
 	
 	public static final Symbol TRUE = MODULE.new Symbol("true");
@@ -47,56 +69,145 @@ public final class Standard {
 	public static final Symbol FALSE = MODULE.new Symbol("false");
 	
 	static {
+		final Session session = new Session(MODULE);
+		
+		session.claim(IDENTITY, $(forAll("x"), equality("x", "x")));
 		{
-			final Module identity = new Module(MODULE);
-			final Symbol x = identity.new Parametrize("x").executeAndGet();
-			final Composite identityFact = equality(x, x);
-			final Module identityFactProof = new Module(identity);
+			final Symbol x = session.introduceAndGet();
 			
-			identityFactProof.new Substitute("identity_substitution",
-					new Composite(Arrays.asList(x, new Composite(Arrays.asList())))).execute();
-			identityFactProof.new Rewrite(identityFactProof, "identity_substitution",
-					identityFactProof, "identity_substitution").execute();
-			
-			identity.new Claim(identityFact, identityFactProof).execute();
-			
-			MODULE.new Claim(IDENTITY, identity).execute();
+			session.substitute(substitution(x));
+			session.rewrite(session.getFactName(-1), session.getFactName(-1));
 		}
 		
+		session.claim(SYMMETRY_OF_EQUALITY, $(forAll("x", "y"), $(equality("x", "y"), "->", equality("y", "x"))));
 		{
-			MODULE.new Admit(TRUTHNESS_OF_TRUE, TRUE).execute();
+			final Symbol x = session.introduceAndGet();
+			final Symbol y = session.introduceAndGet();
+			
+			ignore(y);
+			
+			session.introduce();
+			session.bind(IDENTITY, x);
+			session.rewrite(session.getFactName(-1), session.getConditionName(-1), 0);
 		}
 		
+		session.admit(TRUTHNESS_OF_TRUE, TRUE);
+		
+		session.admit(ELIMINATION_OF_FALSE, $(forAll("P"), $(FALSE, "->", "P")));
+		
+		session.claim(RECALL, $(forAll("P"), $("P", "->", "P")));
 		{
-			final Module eliminationOfFalse = new Module(MODULE);
+			final Symbol p = session.introduceAndGet();
 			
-			eliminationOfFalse.new Suppose(FALSE);
-			
-			final Module anythingIsTrue = new Module(eliminationOfFalse);
-			final Symbol p = anythingIsTrue.new Parametrize("P").executeAndGet();
-			
-			anythingIsTrue.new Admit("truthness_of_P", p).execute();
-			eliminationOfFalse.new Claim("anything_is_true", anythingIsTrue).execute();
-			
-			MODULE.new Claim(ELIMINATION_OF_FALSE, eliminationOfFalse).execute();
+			session.introduce();
+			session.bind(IDENTITY, p);
+			session.rewrite(session.getConditionName(-1), session.getFactName(-1));
+		}
+	}
+	
+	public static final void recall(final String propositionName) {
+		recall(session(), propositionName);
+	}
+	
+	public static final void recall(final Session session, final String propositionName) {
+		session.claim(session.getProposition(propositionName));
+		{
+			unifyAndApply(session, RECALL, propositionName);
+		}
+	}
+	
+	public static final void unifyAndApply(final String moduleName, final String conditionName) {
+		unifyAndApply(session(), moduleName, conditionName);
+	}
+	
+	public static final void unifyAndApply(final Session session, final String moduleName, final String conditionName) {
+		final Module module = session.getProposition(moduleName);
+		final Pattern anyfiedCondition = anyfy(module.getConditions().get(0));
+		
+		if (!anyfiedCondition.equals(session.getProposition(conditionName))) {
+			throw new IllegalArgumentException("Failed to unify (" + conditionName + ") with " + anyfiedCondition.getTemplate());
 		}
 		
-		{
-			final Module symmetryOfIdentity = new Module(MODULE);
-			final Symbol x = symmetryOfIdentity.new Parametrize("x").executeAndGet();
-			final Symbol y = symmetryOfIdentity.new Parametrize("y").executeAndGet();
+		computeBind(session.getCurrentModule(), module, moduleName, anyfiedCondition).execute();
+		
+		session.apply(session.getFactName(-1), conditionName);
+	}
+	
+	private static final Bind computeBind(final Module context, final Module module, final String moduleName, final Pattern anyfiedCondition) {
+		final Bind result = context.new Bind(context, moduleName);
+		
+		for (final Symbol parameter : module.getParameters()) {
+			final String parameterName = parameter.toString();
 			
-			symmetryOfIdentity.new Suppose("if x=y", equality(x, y)).execute();
-			
-			final Module yEqualsX = new Module(symmetryOfIdentity);
-			
-			yEqualsX.new Bind("as x=x", MODULE, IDENTITY).bind(x).execute();
-			yEqualsX.new Rewrite("then y=x", yEqualsX, "as x=x", symmetryOfIdentity, "if x=y").atIndices(0).execute();
-			
-			symmetryOfIdentity.new Claim("then y=x", equality(y, x), yEqualsX).execute();
-			
-			MODULE.new Claim(SYMMETRY_OF_EQUALITY, symmetryOfIdentity).execute();
+			result.bind(parameterName, anyfiedCondition.get(parameterName));
 		}
+		
+		return result;
+	}
+	
+	public static final Pattern anyfy(final Expression expression) {
+		final Map<String, List<Module>> parameterNameUsage = new HashMap<>();
+		final Pattern result = new Pattern(expression.accept(new Visitor<Expression>() {
+			
+			@Override
+			public final Expression visit(final Composite composite) {
+				return new Composite(composite.childrenAcceptor(this).get());
+			}
+			
+			@Override
+			public final Expression visit(final Symbol symbol) {
+				return Pattern.any(symbol.toString());
+			}
+			
+			@Override
+			public final Expression visit(final Module module) {
+				final Module result = new Module(module.getParent(), module.getName(),
+						new ArrayList<>(module.getParameters()), new ArrayList<>(module.getConditions()), new ArrayList<>(module.getFacts()));
+				final Rewriter rewriter = new Rewriter();
+				
+				{
+					final List<Symbol> parameters = result.getParameters();
+					final int n = parameters.size();
+					
+					for (int i = 0; i < n; ++i) {
+						final Symbol parameter = parameters.get(i);
+						final List<Module> usage = parameterNameUsage.compute(parameter.toString(), (k, v) -> v == null ? new ArrayList<>() : v );
+						
+						usage.add(result);
+						
+						rewriter.rewrite(parameter, Pattern.any(parameter.toString(), usage.size()));
+					}
+				}
+				
+				{
+					final List<Expression> conditions = result.getConditions();
+					final int n = conditions.size();
+					
+					for (int i = 0; i < n; ++i) {
+						conditions.set(i, conditions.get(i).accept(rewriter));
+					}
+				}
+				
+				{
+					final List<Expression> facts = result.getFacts();
+					final int n = facts.size();
+					
+					for (int i = 0; i < n; ++i) {
+						facts.set(i, facts.get(i).accept(rewriter));
+					}
+				}
+				
+				return result;
+			}
+			
+			/**
+			 * {@value}.
+			 */
+			private static final long serialVersionUID = -7233860227717949061L;
+			
+		}));
+		
+		return result;
 	}
 	
 }

@@ -174,15 +174,15 @@ public final class ModuleTest {
 		assertEquals(fact, module1.getProposition("fact"));
 	}
 	
-	@Test
-	public final void testRecall() {
-		final Module module1 = new Module(null);
-		
-		module1.new Suppose("ifA", $("A")).execute();
-		module1.new Recall("thenA", module1, "ifA").execute();
-		
-		assertEquals($("A"), module1.getProposition("thenA"));
-	}
+//	@Test
+//	public final void testRecall() {
+//		final Module module1 = new Module(null);
+//		
+//		module1.new Suppose("ifA", $("A")).execute();
+//		module1.new Recall("thenA", module1, "ifA").execute();
+//		
+//		assertEquals($("A"), module1.getProposition("thenA"));
+//	}
 	
 	@Test
 	public final void testClaim() {

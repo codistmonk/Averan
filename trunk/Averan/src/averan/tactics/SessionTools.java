@@ -53,25 +53,8 @@ public final class SessionTools {
 		return session().getProposition(name);
 	}
 	
-	@SuppressWarnings("unchecked")
 	public static final <E extends Expression> E introduce() {
-		final Session session = session();
-		final List<Symbol> parameters = session.getCurrentModule().getParameters();
-		final List<Expression> conditions = session.getCurrentModule().getConditions();
-		final int oldParameterCount = parameters.size();
-		final int oldConditionCount = conditions.size();
-		
-		session.introduce();
-		
-		if (oldParameterCount < parameters.size()) {
-			return (E) session.getParameter(-1);
-		}
-		
-		if (oldConditionCount < conditions.size()) {
-			return session.getCondition(-1);
-		}
-		
-		throw new IllegalStateException();
+		return session().introduceAndGet();
 	}
 	
 	public static final void suppose(final Expression condition) {
@@ -90,13 +73,13 @@ public final class SessionTools {
 		session().admit(factName, fact);
 	}
 	
-	public static final void recall(final String propositionName) {
-		session().recall(propositionName);
-	}
-	
-	public static final void recall(final String factName, final String propositionName) {
-		session().recall(factName, propositionName);
-	}
+//	public static final void recall(final String propositionName) {
+//		session().recall(propositionName);
+//	}
+//	
+//	public static final void recall(final String factName, final String propositionName) {
+//		session().recall(factName, propositionName);
+//	}
 	
 	public static final void claim(final Expression fact) {
 		session().claim(fact);
