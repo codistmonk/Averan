@@ -8,15 +8,14 @@ import static averan.tactics.ExpressionTools.$;
 import static averan.tactics.ExpressionTools.rule;
 import static net.sourceforge.aprog.tools.Tools.array;
 import static org.junit.Assert.*;
-import net.sourceforge.aprog.tools.Tools;
-
-import org.junit.Test;
 
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Module;
 import averan.core.Module.Symbol;
 import averan.modules.Standard;
+
+import org.junit.Test;
 
 /**
  * @author codistmonk (creation 2014-08-02)
