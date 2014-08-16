@@ -1,8 +1,8 @@
 package averan.io;
 
-import static averan.tactics.ExpressionTools.$;
-import static averan.tactics.ExpressionTools.facts;
-import static averan.tactics.ExpressionTools.rule;
+import static averan.core.ExpressionTools.$;
+import static averan.core.ExpressionTools.facts;
+import static averan.core.ExpressionTools.rule;
 import static java.util.Arrays.copyOfRange;
 import static net.sourceforge.aprog.tools.Tools.append;
 import static net.sourceforge.aprog.tools.Tools.array;
@@ -11,7 +11,6 @@ import static net.sourceforge.aprog.tools.Tools.join;
 import static net.sourceforge.aurochs.AurochsTools.input;
 import static net.sourceforge.aurochs.LRParserTools.*;
 import static net.sourceforge.aurochs.RegularTools.*;
-
 import averan.core.Composite;
 import averan.core.Expression;
 

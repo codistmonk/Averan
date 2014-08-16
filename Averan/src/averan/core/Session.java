@@ -1,4 +1,4 @@
-package averan.tactics;
+package averan.core;
 
 import static net.sourceforge.aprog.tools.Tools.cast;
 
@@ -7,10 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import averan.core.Composite;
-import averan.core.Expression;
-import averan.core.Module;
-import averan.core.Rewriter;
 import averan.core.Module.Symbol;
 
 /**
@@ -196,6 +192,7 @@ public final class Session implements Serializable {
 		return this.tryToPop();
 	}
 	
+	@SuppressWarnings("unchecked")
 	public final <E extends Expression> E introduceAndGet() {
 		final List<Symbol> parameters = this.getCurrentModule().getParameters();
 		final List<Expression> conditions = this.getCurrentModule().getConditions();

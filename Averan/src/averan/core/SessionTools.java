@@ -1,17 +1,14 @@
-package averan.tactics;
+package averan.core;
 
 import static net.sourceforge.aprog.tools.Tools.ignore;
 import static net.sourceforge.aprog.tools.Tools.unchecked;
 
+import averan.core.Module.Symbol;
+
 import java.lang.reflect.Field;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import averan.core.Composite;
-import averan.core.Expression;
-import averan.core.Module;
-import averan.core.Module.Symbol;
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 
 /**
@@ -72,14 +69,6 @@ public final class SessionTools {
 	public static final void admit(final String factName, final Expression fact) {
 		session().admit(factName, fact);
 	}
-	
-//	public static final void recall(final String propositionName) {
-//		session().recall(propositionName);
-//	}
-//	
-//	public static final void recall(final String factName, final String propositionName) {
-//		session().recall(factName, propositionName);
-//	}
 	
 	public static final void claim(final Expression fact) {
 		session().claim(fact);

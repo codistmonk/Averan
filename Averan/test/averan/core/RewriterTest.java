@@ -1,7 +1,7 @@
 package averan.core;
 
+import static averan.core.ExpressionTools.$;
 import static averan.core.Module.EQUAL;
-import static averan.tactics.ExpressionTools.$;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
