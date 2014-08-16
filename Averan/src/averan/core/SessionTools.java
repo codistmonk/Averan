@@ -3,6 +3,7 @@ package averan.core;
 import static net.sourceforge.aprog.tools.Tools.ignore;
 import static net.sourceforge.aprog.tools.Tools.unchecked;
 
+import averan.core.Module.Bind;
 import averan.core.Module.Symbol;
 
 import java.lang.reflect.Field;
@@ -148,6 +149,35 @@ public final class SessionTools {
 		} catch (final Exception exception) {
 			throw unchecked(exception);
 		}
+	}
+	
+	public static final void unifyAndApply(final String moduleName, final String conditionName) {
+		unifyAndApply(session(), moduleName, conditionName);
+	}
+	
+	public static final void unifyAndApply(final Session session, final String moduleName, final String conditionName) {
+		final Module module = session.getProposition(moduleName);
+		final Pattern anyfiedCondition = Pattern.anyfy(module.getConditions().get(0));
+		
+		if (!anyfiedCondition.equals(session.getProposition(conditionName))) {
+			throw new IllegalArgumentException("Failed to unify (" + conditionName + ") with " + anyfiedCondition.getTemplate());
+		}
+		
+		computeBind(session.getCurrentModule(), module, moduleName, anyfiedCondition).execute();
+		
+		session.apply(session.getFactName(-1), conditionName);
+	}
+	
+	private static final Bind computeBind(final Module context, final Module module, final String moduleName, final Pattern anyfiedCondition) {
+		final Bind result = context.new Bind(context, moduleName);
+		
+		for (final Symbol parameter : module.getParameters()) {
+			final String parameterName = parameter.toString();
+			
+			result.bind(parameterName, anyfiedCondition.get(parameterName));
+		}
+		
+		return result;
 	}
 	
 }

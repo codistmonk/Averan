@@ -1,11 +1,12 @@
 package averan.core;
 
 import static net.sourceforge.aprog.tools.Tools.cast;
-
 import averan.core.Module.Symbol;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -63,6 +64,71 @@ public final class Pattern implements Serializable {
 	
 	public static final Any any(final String name, final int number) {
 		return new Any(name, number);
+	}
+	
+	public static final Pattern anyfy(final Expression expression) {
+		final Map<String, List<Module>> parameterNameUsage = new HashMap<>();
+		final Pattern result = new Pattern(expression.accept(new Visitor<Expression>() {
+			
+			@Override
+			public final Expression visit(final Composite composite) {
+				return new Composite(composite.childrenAcceptor(this).get());
+			}
+			
+			@Override
+			public final Expression visit(final Symbol symbol) {
+				return Pattern.any(symbol.toString());
+			}
+			
+			@Override
+			public final Expression visit(final Module module) {
+				final Module result = new Module(module.getParent(), module.getName(),
+						new ArrayList<>(module.getParameters()), new ArrayList<>(module.getConditions()), new ArrayList<>(module.getFacts()));
+				final Rewriter rewriter = new Rewriter();
+				
+				{
+					final List<Symbol> parameters = result.getParameters();
+					final int n = parameters.size();
+					
+					for (int i = 0; i < n; ++i) {
+						final Symbol parameter = parameters.get(i);
+						final List<Module> usage = parameterNameUsage.compute(parameter.toString(), (k, v) -> v == null ? new ArrayList<>() : v );
+						
+						usage.add(result);
+						
+						rewriter.rewrite(parameter, Pattern.any(parameter.toString(), usage.size()));
+					}
+				}
+				
+				{
+					final List<Expression> conditions = result.getConditions();
+					final int n = conditions.size();
+					
+					for (int i = 0; i < n; ++i) {
+						conditions.set(i, conditions.get(i).accept(rewriter));
+					}
+				}
+				
+				{
+					final List<Expression> facts = result.getFacts();
+					final int n = facts.size();
+					
+					for (int i = 0; i < n; ++i) {
+						facts.set(i, facts.get(i).accept(rewriter));
+					}
+				}
+				
+				return result;
+			}
+			
+			/**
+			 * {@value}.
+			 */
+			private static final long serialVersionUID = -7233860227717949061L;
+			
+		}));
+		
+		return result;
 	}
 	
 	/**
