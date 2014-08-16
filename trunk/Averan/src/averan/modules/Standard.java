@@ -1,32 +1,26 @@
 package averan.modules;
 
+import static averan.core.ExpressionTools.*;
 import static averan.core.Module.ROOT;
-import static averan.core.Module.equality;
-import static averan.tactics.ExpressionTools.*;
-import static averan.tactics.SessionTools.session;
+import static averan.core.SessionTools.claim;
+import static averan.core.SessionTools.session;
 import static net.sourceforge.aprog.tools.Tools.ignore;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Module;
+import averan.core.Session;
 import averan.core.Module.Bind;
 import averan.core.Rewriter;
 import averan.core.Visitor;
 import averan.core.Module.Symbol;
 import averan.core.Pattern;
-import averan.demos.Demo2.BreakSessionException;
-import averan.io.SessionExporter;
-import averan.tactics.ExpressionTools;
-import averan.tactics.Session;
-import averan.tactics.SessionTools;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
-import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2014-08-04)
@@ -102,6 +96,24 @@ public final class Standard {
 			session.introduce();
 			session.bind(IDENTITY, p);
 			session.rewrite(session.getConditionName(-1), session.getFactName(-1));
+		}
+	}
+	
+	public static final void rewriteRight(final String sourceName, final String equalityName, final Integer... indices) {
+		rewriteRight(session(), sourceName, equalityName, indices);
+	}
+	
+	public static final void rewriteRight(final Session session, final String sourceName, final String equalityName, final Integer... indices) {
+		final Expression source = session.getProposition(sourceName);
+		final Composite equality = session.getProposition(equalityName);
+		final Expression left = equality.get(0);
+		final Expression right = equality.get(2);
+		
+		claim(source.accept(new Rewriter().rewrite(right, left)));
+		{
+			session.bind(Standard.SYMMETRY_OF_EQUALITY, left, right);
+			session.apply(session.getFactName(-1), equalityName);
+			session.rewrite(sourceName, session.getFactName(-1), indices);
 		}
 	}
 	

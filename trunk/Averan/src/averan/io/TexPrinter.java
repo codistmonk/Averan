@@ -1,8 +1,8 @@
 package averan.io;
 
 import static averan.core.Composite.isBracedComposite;
+import static averan.core.ExpressionTools.$;
 import static averan.core.Pattern.any;
-import static averan.tactics.ExpressionTools.$;
 import static java.util.regex.Matcher.quoteReplacement;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.join;

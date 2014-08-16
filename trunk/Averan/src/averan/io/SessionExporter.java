@@ -3,10 +3,10 @@ package averan.io;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import averan.core.Expression;
 import averan.core.Module;
+import averan.core.Session;
 import averan.core.Module.Claim;
 import averan.core.Module.Statement;
-import averan.tactics.Session;
-import averan.tactics.Session.ProofContext;
+import averan.core.Session.ProofContext;
 
 import java.io.Serializable;
 import java.util.List;

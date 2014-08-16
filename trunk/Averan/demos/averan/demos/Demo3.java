@@ -1,23 +1,21 @@
 package averan.demos;
 
+import static averan.core.ExpressionTools.*;
+import static averan.core.SessionTools.*;
 import static averan.io.ExpressionParser.$$;
 import static averan.modules.Standard.*;
-import static averan.tactics.ExpressionTools.*;
-import static averan.tactics.SessionTools.*;
-import static averan.tactics.StandardTools.rewriteRight;
 import static java.awt.Color.BLACK;
 import static java.awt.Color.WHITE;
 import static net.sourceforge.aprog.tools.Tools.ignore;
-
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Module;
+import averan.core.Session;
 import averan.core.Module.Symbol;
 import averan.demos.Demo2.BreakSessionException;
 import averan.io.SessionExporter;
 import averan.io.TexPrinter;
 import averan.modules.Standard;
-import averan.tactics.Session;
 
 import java.io.ByteArrayOutputStream;
 

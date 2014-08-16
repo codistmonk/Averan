@@ -705,49 +705,7 @@ public final class Module implements Expression {
 		private static final long serialVersionUID = -6762359358588862640L;
 		
 	}
-	
-//	/**
-//	 * @author codistmonk (creation 2014-08-02)
-//	 */
-//	public final class Recall extends AddProposition {
-//		
-//		private final PropositionReference<Expression> proposition;
-//		
-//		public Recall(final Module context, final String propositionName) {
-//			this(null, context, propositionName);
-//		}
-//		
-//		public Recall(final String factName, final Module context, final String propositionName) {
-//			super(factName);
-//			
-//			if (!Module.this.canAccess(context)) {
-//				throw new IllegalArgumentException("Inaccessible proposition context");
-//			}
-//			
-//			this.proposition = new PropositionReference<>(context, propositionName);
-//		}
-//		
-//		public final PropositionReference<Expression> getProposition() {
-//			return this.proposition;
-//		}
-//		
-//		@Override
-//		public final Module execute() {
-//			return this.addFact(this.getProposition().getProposition());
-//		}
-//		
-//		@Override
-//		public final String toString() {
-//			return "Recall (" + this.getProposition().getPropositionName() + ")";
-//		}
-//		
-//		/**
-//		 * {@value}.
-//		 */
-//		private static final long serialVersionUID = 3738702808623483557L;
-//		
-//	}
-	
+		
 	/**
 	 * @author codistmonk (creation 2014-08-02)
 	 */

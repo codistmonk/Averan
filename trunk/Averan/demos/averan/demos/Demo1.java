@@ -1,10 +1,10 @@
 package averan.demos;
 
+import static averan.core.ExpressionTools.*;
 import static averan.modules.Standard.IDENTITY;
-import static averan.tactics.ExpressionTools.*;
+import averan.core.Session;
 import averan.io.SessionExporter;
 import averan.modules.Standard;
-import averan.tactics.Session;
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 
 /**
