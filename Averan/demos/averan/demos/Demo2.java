@@ -3,6 +3,7 @@ package averan.demos;
 import static averan.io.ExpressionParser.$$;
 import static averan.tactics.ExpressionTools.$;
 import static averan.tactics.SessionTools.*;
+import static averan.modules.Standard.*;
 import static averan.tactics.StandardTools.rewriteRight;
 import static java.awt.Color.BLACK;
 import static java.awt.Color.WHITE;

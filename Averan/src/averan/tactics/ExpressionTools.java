@@ -116,6 +116,10 @@ public final class ExpressionTools {
 		return Module.equality($(left), $(right));
 	}
 	
+	public static final Composite substitution(final Object expression, final Composite... equalities) {
+		return $(expression, composite((Object[]) equalities));
+	}
+	
 	public static final Module rule(final Object condition, final Object fact) {
 		final Module result = new Module(null);
 		

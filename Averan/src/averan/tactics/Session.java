@@ -75,6 +75,8 @@ public final class Session implements Serializable {
 	}
 	
 	public final Session suppose(final String conditionName, final Expression condition) {
+		this.checkPropositionNameAvailable(conditionName);
+		
 		this.getCurrentModule().new Suppose(conditionName, condition).execute();
 		
 		return this.tryToPop();
@@ -85,19 +87,9 @@ public final class Session implements Serializable {
 	}
 	
 	public final Session admit(final String factName, final Expression fact) {
+		this.checkPropositionNameAvailable(factName);
+		
 		this.getCurrentModule().new Admit(factName, fact).execute();
-		
-		return this.tryToPop();
-	}
-	
-	public final Session recall(final String propositionName) {
-		return this.recall(this.newPropositionName(), propositionName);
-	}
-	
-	public final Session recall(final String factName, final String propositionName) {
-		final Module module = this.getCurrentModule();
-		
-		module.new Recall(factName, module, propositionName).execute();
 		
 		return this.tryToPop();
 	}
@@ -107,6 +99,8 @@ public final class Session implements Serializable {
 	}
 	
 	public final Session rewrite(final String factName, final String sourceName, final String equalityName, final Integer... indices) {
+		this.checkPropositionNameAvailable(factName);
+		
 		final Module module = this.getCurrentModule();
 		
 		module.new Rewrite(factName, module, sourceName, module, equalityName).atIndices(indices).execute();
@@ -119,6 +113,8 @@ public final class Session implements Serializable {
 	}
 	
 	public final Session apply(final String factName, final String moduleName, final String conditionName) {
+		this.checkPropositionNameAvailable(factName);
+		
 		final Module module = this.getCurrentModule();
 		
 		module.new Apply(factName, module, moduleName, module, conditionName).execute();
@@ -169,6 +165,8 @@ public final class Session implements Serializable {
 	}
 	
 	public final Session bind(final String factName, final String moduleName, final Expression... expressions) {
+		this.checkPropositionNameAvailable(factName);
+		
 		Module module = this.getCurrentModule();
 		
 		if (module.getPropositionOrNull(moduleName) == null) {
@@ -198,11 +196,32 @@ public final class Session implements Serializable {
 		return this.tryToPop();
 	}
 	
+	public final <E extends Expression> E introduceAndGet() {
+		final List<Symbol> parameters = this.getCurrentModule().getParameters();
+		final List<Expression> conditions = this.getCurrentModule().getConditions();
+		final int oldParameterCount = parameters.size();
+		final int oldConditionCount = conditions.size();
+		
+		this.introduce();
+		
+		if (oldParameterCount < parameters.size()) {
+			return (E) this.getParameter(-1);
+		}
+		
+		if (oldConditionCount < conditions.size()) {
+			return this.getCondition(-1);
+		}
+		
+		throw new IllegalStateException();
+	}
+	
 	public final Session claim(final Expression proposition) {
 		return this.claim(this.newPropositionName(), proposition);
 	}
 	
 	public final Session claim(final String factName, final Expression proposition) {
+		this.checkPropositionNameAvailable(factName);
+		
 		final ProofContext proofContext = new ProofContext(factName,
 				new Module(this.getCurrentModule(), factName), proposition);
 		
@@ -216,9 +235,19 @@ public final class Session implements Serializable {
 	}
 	
 	public final Session substitute(final String factName, final Composite substitution) {
+		this.checkPropositionNameAvailable(factName);
+		
 		this.getCurrentModule().new Substitute(factName, substitution).execute();
 		
 		return this.tryToPop();
+	}
+	
+	public final Session checkPropositionNameAvailable(final String propositionName) {
+		if (this.getCurrentModule().getPropositionOrNull(propositionName) != null) {
+			throw new IllegalArgumentException("Name already in use: " + propositionName);
+		}
+		
+		return this;
 	}
 	
 	public final String newPropositionName() {
