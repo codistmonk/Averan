@@ -5,6 +5,7 @@ import static averan.core.Module.ROOT;
 import static averan.core.SessionTools.claim;
 import static averan.core.SessionTools.session;
 import static net.sourceforge.aprog.tools.Tools.ignore;
+
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Module;
@@ -106,13 +107,10 @@ public final class Standard {
 	public static final void rewriteRight(final Session session, final String sourceName, final String equalityName, final Integer... indices) {
 		final Expression source = session.getProposition(sourceName);
 		final Composite equality = session.getProposition(equalityName);
-		final Expression left = equality.get(0);
-		final Expression right = equality.get(2);
 		
-		claim(source.accept(new Rewriter().rewrite(right, left)));
+		claim(source.accept(new Rewriter().rewrite(equality.get(2), equality.get(0))));
 		{
-			session.bind(Standard.SYMMETRY_OF_EQUALITY, left, right);
-			session.apply(session.getFactName(-1), equalityName);
+			unifyAndApply(session, SYMMETRY_OF_EQUALITY, equalityName);
 			session.rewrite(sourceName, session.getFactName(-1), indices);
 		}
 	}
