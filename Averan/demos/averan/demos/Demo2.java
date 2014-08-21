@@ -52,11 +52,23 @@ public final class Demo2 {
 			suppose("definition_of_matrix_scalarization",
 					$$("∀X ((X∈≀M_(1,1)) → (⟨X⟩=X_(1,1)))"));
 			suppose("definition_of_matrix_addition",
-					$$("∀X,Y,i,j (((X+Y)_(i,j)=(X_(i,j))+(Y_(i,j))))"));
+					$$("∀X,Y,i,j (((X+Y)_(i,j) = (X_(i,j))+(Y_(i,j))))"));
+			suppose("definition_of_matrix_addition_rowCount",
+					$$("∀X,Y ('rowCount'_(X+Y) = 'rowCount'_X)"));
+			suppose("definition_of_matrix_addition_columnCount",
+					$$("∀X,Y ('columnCount'_(X+Y) = 'columnCount'_X)"));
 			suppose("definition_of_matrix_subtraction",
-					$$("∀X,Y,i,j (((X-Y)_(i,j)=(X_(i,j))-(Y_(i,j))))"));
+					$$("∀X,Y,i,j (((X-Y)_(i,j) = (X_(i,j))-(Y_(i,j))))"));
+			suppose("definition_of_matrix_subtraction_rowCount",
+					$$("∀X,Y ('rowCount'_(X-Y) = 'rowCount'_X)"));
+			suppose("definition_of_matrix_subtraction_columnCount",
+					$$("∀X,Y ('columnCount'_(X-Y) = 'columnCount'_X)"));
 			suppose("definition_of_matrix_multiplication",
 					$$("∀X,Y,n ((('columnCount'_X = n) ∧ ('rowCount'_Y = n)) → (∀i,j,k ((XY)_(i,j)=((Σ_(k=0)^(n-1)) (X_(i,k))(Y_(k,j))))))"));
+			suppose("definition_of_matrix_multiplication_rowCount",
+					$$("∀X,Y ('rowCount'_(XY) = 'rowCount'_X)"));
+			suppose("definition_of_matrix_multiplication_columnCount",
+					$$("∀X,Y ('columnCount'_(XY) = 'columnCount'_Y)"));
 			suppose("definition_of_transposition",
 					$$("∀X (∀i,j (Xᵀ_(i,j)=X_(j,i)))"));
 			suppose("definition_of_transposition_rowCount",
@@ -73,10 +85,23 @@ public final class Demo2 {
 			
 			admit("commutativity_of_multiplication",
 					$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((xy)=(yx))))"));
+			admit("expand_product_of_subtractions", $$("∀a,b,c,d ((a∈ℝ) → (((a-b)(c-d))=((ac)-(ad)-(bc)+(bd))))"));
 			
 			claimCommutativityOfConjunction();
 			claimTranspositionOfAddition();
+			claimTranspositionOfSubtraction();
 			claimTranspositionOfMultiplication();
+			claim("expand_product_of_matrix_subtractions", $$("∀A,B,C,D ((('columnCount'_A)=('rowCount'_C)) → (((A-B)(C-D))=((AC)-(AD)-(BC)+(BD))))"));
+			{
+				final Symbol a = introduce();
+				final Symbol b = introduce();
+				final Symbol c = introduce();
+				final Symbol d = introduce();
+				
+				introduce();
+				
+				BreakSessionException.breakSession();
+			}
 			
 			suppose("definition_of_replicated_means",
 					$$("∀X,n (('columnCount'_X=n) → (M_X)=X(U_n)(U_n)ᵀ)"));
@@ -92,16 +117,30 @@ public final class Demo2 {
 					$$("V = 'Var'_(M_C)"));
 			suppose("definition_of_S",
 					$$("∀i (S = (Σ_(i=0)^(N-1) ('Var'_(C_i))))"));
+			suppose("definition_of_variance",
+					$$("∀X (('Var'_X)=(X-(M_X))(X-(M_X))ᵀ)"));
 			
 			// TODO claim
-			admit("simplified_definition_of_variance",
+			claim("simplified_definition_of_variance",
 					$$("∀X (('Var'_X)=(XXᵀ)-((M_X)(M_X)ᵀ))"));
-			admit("simplified_definition_of_objective",
-					$$("∀w,i ((J_w)=⟨wᵀVw⟩/⟨wᵀSw⟩)"));
-			admit("equation_to_solve_to_optimize_objective",
-					$$("∀w (((SwwᵀV)=(VwwᵀS)) → 'optimality' (J_w))"));
-			admit("regularization",
-					$$("∀B,ω,w ((w=Bω) → (((SwwᵀV)=(VwwᵀS)) → 'constrainedOptimality' (J_(Bω))))"));
+			{
+				final Symbol x = introduce();
+				final Expression xt = $(x, "ᵀ");
+				final Expression mx = $("M", "_", x);
+				final Expression mxt = $($("M", "_", x), "ᵀ");
+				
+				bind("definition_of_variance", x);
+				bind("transposition_of_subtraction", x, mx);
+				rewrite(factName(-2), factName(-1));
+			}
+//			admit("simplified_definition_of_variance",
+//					$$("∀X (('Var'_X)=(XXᵀ)-((M_X)(M_X)ᵀ))"));
+//			admit("simplified_definition_of_objective",
+//					$$("∀w,i ((J_w)=⟨wᵀVw⟩/⟨wᵀSw⟩)"));
+//			admit("equation_to_solve_to_optimize_objective",
+//					$$("∀w (((SwwᵀV)=(VwwᵀS)) → 'optimality' (J_w))"));
+//			admit("regularization",
+//					$$("∀B,ω,w ((w=Bω) → (((SwwᵀV)=(VwwᵀS)) → 'constrainedOptimality' (J_(Bω))))"));
 		} catch (final BreakSessionException exception) {
 			sessionBreakPoint = exception.getStackTrace()[1].toString();
 		} finally {
@@ -259,6 +298,49 @@ public final class Demo2 {
 					rewriteRight(factName(-2), factName(-1));
 					
 					bind("definition_of_matrix_addition", xt, yt, i, j);
+					
+					rewriteRight(factName(-2), factName(-1));
+				}
+				
+				rewrite(factName(-2), factName(-1));
+			}
+			
+			rewriteRight(factName(-1), factName(-2));
+		}
+	}
+	
+	public static final void claimTranspositionOfSubtraction() {
+		claim("transposition_of_subtraction", $$("∀X,Y ((X-Y)ᵀ=Xᵀ-Yᵀ)"));
+		
+		{
+			final Symbol x = introduce();
+			final Symbol y = introduce();
+			
+			final Expression xt = $(x, "ᵀ");
+			final Expression yt = $(y, "ᵀ");
+			final Expression xy = $(x, "-", y);
+			final Expression xyt = $(xy, "ᵀ");
+			final Expression xtyt = $(xt, "-", yt);
+			
+			bind("definition_of_matrix_equality", xyt, xtyt);
+			claim(((Composite) fact(-1)).get(2));
+			
+			{
+				final Symbol i = introduce();
+				final Symbol j = introduce();
+				
+				bind("definition_of_transposition", xy, i, j);
+				claim($(((Composite) fact(-1)).get(2), "=", ((Composite) getCurrentGoal()).get(2)));
+				
+				{
+					bind("definition_of_matrix_subtraction", x, y, j, i);
+					bind("definition_of_transposition", x, i, j);
+					rewriteRight(factName(-2), factName(-1));
+					
+					bind("definition_of_transposition", y, i, j);
+					rewriteRight(factName(-2), factName(-1));
+					
+					bind("definition_of_matrix_subtraction", xt, yt, i, j);
 					
 					rewriteRight(factName(-2), factName(-1));
 				}
