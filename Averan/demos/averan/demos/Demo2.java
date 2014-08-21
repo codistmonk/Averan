@@ -64,7 +64,7 @@ public final class Demo2 {
 			suppose("definition_of_matrix_subtraction_columnCount",
 					$$("∀X,Y ('columnCount'_(X-Y) = 'columnCount'_X)"));
 			suppose("definition_of_matrix_multiplication",
-					$$("∀X,Y,n ((('columnCount'_X = n) ∧ ('rowCount'_Y = n)) → (∀i,j,k ((XY)_(i,j)=((Σ_(k=0)^(n-1)) (X_(i,k))(Y_(k,j))))))"));
+					$$("∀X,Y,i,j,k ((XY)_(i,j)=((Σ_(k=0)^(('columnCount'_X)-1)) (X_(i,k))(Y_(k,j))))"));
 			suppose("definition_of_matrix_multiplication_rowCount",
 					$$("∀X,Y ('rowCount'_(XY) = 'rowCount'_X)"));
 			suppose("definition_of_matrix_multiplication_columnCount",
@@ -82,26 +82,33 @@ public final class Demo2 {
 					$$("∀n ('columnCount'_(U_n)=1)"));
 			suppose("definition_of_U",
 					$$("∀n (0<n → (∀i (U_n_(i,1)=1/n)))"));
-			
+			suppose("definition_of_subtraction",
+					$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x-y)=(x+('-'y)))))"));
 			admit("commutativity_of_multiplication",
 					$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((xy)=(yx))))"));
-			admit("expand_product_of_subtractions", $$("∀a,b,c,d ((a∈ℝ) → (((a-b)(c-d))=((ac)-(ad)-(bc)+(bd))))"));
+			admit("type_of_multiplication",
+					$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((xy)∈ℝ)))"));
+			admit("commutativity_of_addition",
+					$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x+y)=(y+x))))"));
+			admit("type_of_addition",
+					$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x+y)∈ℝ)))"));
+			admit("associativity_of_addition",
+					$$("∀x,y,z ((x+(y+z))=((x+y)+z))"));
+			admit("associativity_of_multiplication",
+					$$("∀x,y,z ((x(yz))=((xy)z))"));
+			admit("distributivity_of_multiplication_on_left_addition",
+					$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → (((a+b)c)=((ac)+(bc))))))"));
+			admit("distributivity_of_multiplication_on_right_addition",
+					$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((a(b+c))=((ab)+(ac))))))"));
+			admit("distributivity_of_multiplication_on_left_subtraction",
+					$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → (((a-b)c)=((ac)-(bc))))))"));
+			admit("distributivity_of_multiplication_on_right_subtraction",
+					$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((a(b-c))=((ab)-(ac))))))"));
 			
 			claimCommutativityOfConjunction();
 			claimTranspositionOfAddition();
 			claimTranspositionOfSubtraction();
 			claimTranspositionOfMultiplication();
-			claim("expand_product_of_matrix_subtractions", $$("∀A,B,C,D ((('columnCount'_A)=('rowCount'_C)) → (((A-B)(C-D))=((AC)-(AD)-(BC)+(BD))))"));
-			{
-				final Symbol a = introduce();
-				final Symbol b = introduce();
-				final Symbol c = introduce();
-				final Symbol d = introduce();
-				
-				introduce();
-				
-				BreakSessionException.breakSession();
-			}
 			
 			suppose("definition_of_replicated_means",
 					$$("∀X,n (('columnCount'_X=n) → (M_X)=X(U_n)(U_n)ᵀ)"));
@@ -153,6 +160,7 @@ public final class Demo2 {
 			final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 			
 			new SessionExporter(session(), new TexPrinter(buffer)
+				.hint($("ᵀ"), new DisplayHint(1500, "", "", 0))
 				.hint($("optimality"), new DisplayHint(50, "", "\\;", 1))
 				.hint($("constrainedOptimality"), new DisplayHint(50, "", "\\;", 1))
 			, 0).exportSession();
@@ -164,105 +172,87 @@ public final class Demo2 {
 	public static final void claimTranspositionOfMultiplication() {
 		claim("transposition_of_multiplication",
 				$$("∀X,Y ((X∈≀M_('rowCount'_X,'columnCount'_X)) → ((Y∈≀M_('rowCount'_Y,'columnCount'_Y)) → (('columnCount'_X='rowCount'_Y) → ((XY)ᵀ=YᵀXᵀ))))"));
-		
 		{
 			final Symbol x = introduce();
 			final Symbol y = introduce();
 			
-			introduce();
-			introduce();
-			introduce();
+			introduce("type_of_X");
+			introduce("type_of_Y");
+			introduce("size_compatibility");
 			
+			final Expression xy = $(x, y);
+			final Expression xyt = $($(x, y), "ᵀ");
 			final Expression xt = $(x, "ᵀ");
 			final Expression yt = $(y, "ᵀ");
-			final Expression xy = $(x, y);
-			final Expression xyt = $(xy, "ᵀ");
 			final Expression ytxt = $(yt, xt);
+			final Expression rowCountX = $("rowCount", "_", x);
+			final Expression columnCountX = $("columnCount", "_", x);
+			final Expression rowCountY = $("rowCount", "_", y);
+			final Expression columnCountY = $("columnCount", "_", y);
+			final Expression columnCountYT = $("columnCount", "_", yt);
 			
 			bind("definition_of_matrix_equality", xyt, ytxt);
-			
 			claim(((Composite) fact(-1)).get(2));
-			
 			{
 				final Symbol i = introduce();
 				final Symbol j = introduce();
 				final Symbol k = parameter("k");
-				final Expression rowCountX = $("rowCount", "_", x);
-				final Expression columnCountX = $("columnCount", "_", x);
-				final Expression rowCountY = $("rowCount", "_", y);
-				final Expression columnCountY = $("columnCount", "_", y);
 				
-				bind(Standard.IDENTITY, k);
 				bind("definition_of_transposition", xy, i, j);
-				bind("definition_of_matrix_multiplication", x, y, columnCountX);
-				claim(((Module) fact(-1)).getConditions().get(0));
-				
+				claim($(((Composite) fact(-1)).get(2), "=", ((Composite) getCurrentGoal()).get(2)));
 				{
-					bind(Standard.IDENTITY, columnCountX);
-					rewrite(factName(-1), "transposition_of_multiplication#2", 0);
-				}
-				
-				apply("transposition_of_multiplication#4#2", factName(-1));
-				bind(factName(-1), j, i, k);
-				rewrite("transposition_of_multiplication#4#1", factName(-1));
-				
-				bind("definition_of_matrix_multiplication", yt, xt, $("columnCount", "_", x));
-				claim(((Module) fact(-1)).getConditions().get(0));
-				
-				{
-					bind("definition_of_transposition_columnCount", y);
-					rewriteRight(factName(-1), "transposition_of_multiplication#2");
-					bind("definition_of_transposition_rowCount", x);
-				}
-				
-				apply("transposition_of_multiplication#4#7", factName(-1));
-				bind(factName(-1), i, j, k);
-				
-				bind("definition_of_transposition", x);
-				bind(factName(-1), k, j);
-				rewrite("transposition_of_multiplication#4#10", factName(-1));
-				
-				bind("definition_of_transposition", y);
-				bind(factName(-1), i, k);
-				rewrite("transposition_of_multiplication#4#13", factName(-1));
-				
-				final Expression xjk = $(x, "_", $(j, ",", k));
-				final Expression yki = $(y, "_", $(k, ",", i));
-				final Expression xjkyki = $(xjk, yki);
-				final Expression ykixjk = $(yki, xjk);
-				
-				claim($(ykixjk, "=", xjkyki));
-				
-				{
-					claim($(xjk, "∈", "ℝ"));
+					bind("definition_of_matrix_multiplication", x, y, j, i, k);
 					
+					final Expression xjk = $(x, "_", $(j, ",", k));
+					final Expression yki = $(y, "_", $(k, ",", i));
+					
+					claim($($(xjk, yki), "=", $(yki, xjk)));
 					{
-						bind("definition_of_matrices", x, rowCountX, columnCountX);
-						rewrite("transposition_of_multiplication#0", factName(-1));
-						bind(factName(-1));
-						bind(factName(-1), j, k);
+						claim(real(xjk));
+						{
+							bind("definition_of_matrices", x, rowCountX, columnCountX);
+							rewrite("type_of_X", factName(-1));
+							bind(factName(-1));
+							bind(factName(-1), j, k);
+						}
+						
+						claim(real(yki));
+						{
+							bind("definition_of_matrices", y, rowCountY, columnCountY);
+							rewrite("type_of_Y", factName(-1));
+							bind(factName(-1));
+							bind(factName(-1), k, i);
+						}
+						
+						bind("commutativity_of_multiplication", xjk, yki);
+						apply(factName(-1), factName(-3));
+						apply(factName(-1), factName(-3));
 					}
 					
-					claim($(yki, "∈", "ℝ"));
+					rewrite(factName(-2), factName(-1));
 					
+					bind("definition_of_transposition", x, k, j);
+					rewriteRight(factName(-2), factName(-1));
+					
+					bind("definition_of_transposition", y, i, k);
+					rewriteRight(factName(-2), factName(-1));
+					
+					bind("definition_of_matrix_multiplication", yt, xt, i, j, k);
+					
+					claim($(columnCountYT, "=", columnCountX));
 					{
-						bind("definition_of_matrices", y, rowCountY, columnCountY);
-						rewrite("transposition_of_multiplication#1", factName(-1));
-						bind(factName(-1));
-						bind(factName(-1), k, i);
+						bind("definition_of_transposition_columnCount", y);
+						rewriteRight(factName(-1), "size_compatibility");
 					}
+					rewrite(factName(-2), factName(-1));
 					
-					bind("commutativity_of_multiplication", yki, xjk);
-					apply(factName(-1), "transposition_of_multiplication#4#17#1");
-					apply(factName(-1), "transposition_of_multiplication#4#17#0");
+					rewriteRight(factName(-4), factName(-1));
 				}
 				
-				rewrite("transposition_of_multiplication#4#16", factName(-1));
-				rewriteRight("transposition_of_multiplication#4#6", factName(-1));
-				
+				rewrite(factName(-2), factName(-1));
 			}
 			
-			rewriteRight(factName(-1), "transposition_of_multiplication#3");
+			rewriteRight(factName(-1), factName(-2));
 		}
 	}
 	
@@ -412,6 +402,10 @@ public final class Demo2 {
 			throw new BreakSessionException();
 		}
 		
+	}
+	
+	public static final Expression real(final Expression expression) {
+		return $(expression, "∈", "ℝ");
 	}
 	
 }

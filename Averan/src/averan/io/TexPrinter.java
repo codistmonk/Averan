@@ -281,7 +281,7 @@ public final class TexPrinter implements SessionExporter.Output {
 			}
 			
 			final List<Pair<String, DisplayHint>> pairs = Expression.listAcceptor(children, this).get();
-			final DisplayHint resultHint = n == 2 ? pairs.get(0).getSecond().vs(pairs.get(1).getSecond())
+			final DisplayHint resultHint = n == 2 ? pairs.get(0).getSecond().vs(pairs.get(1).getSecond()).vs(DisplayHint.GROUP)
 					: n == 3 ? this.getHintOrDefault(children.get(1)) : DisplayHint.DEFAULT;
 			
 			for (int i = 0; i < n; ++i) {
