@@ -7,6 +7,7 @@ import static java.util.regex.Matcher.quoteReplacement;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.join;
 import static net.sourceforge.aprog.tools.Tools.list;
+
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Module;
@@ -279,20 +280,20 @@ public final class TexPrinter implements SessionExporter.Output {
 				return DisplayHint.GROUP.hint(group(resultBuilder));
 			}
 			
-			final DisplayHint resultHint = n == 2 ? DisplayHint.GROUP
+			final List<Pair<String, DisplayHint>> pairs = Expression.listAcceptor(children, this).get();
+			final DisplayHint resultHint = n == 2 ? pairs.get(0).getSecond().vs(pairs.get(1).getSecond())
 					: n == 3 ? this.getHintOrDefault(children.get(1)) : DisplayHint.DEFAULT;
 			
-			for (final Expression child : children) {
-				final Pair<String, DisplayHint> childPair = child.accept(this);
+			for (int i = 0; i < n; ++i) {
+				final Expression child = children.get(i);
+				final Pair<String, DisplayHint> childPair = pairs.get(i);
 				
 				if (child instanceof Symbol || isBracedComposite(child)) {
 					resultBuilder.append(childPair.getFirst());
+				} else if (childPair.getSecond().getPriority() < resultHint.getPriority()) {
+					resultBuilder.append(pgroup(childPair.getFirst()));
 				} else {
-					if (childPair.getSecond().getPriority() < resultHint.getPriority()) {
-						resultBuilder.append(pgroup(childPair.getFirst()));
-					} else {
-						resultBuilder.append(group(childPair.getFirst()));
-					}
+					resultBuilder.append(group(childPair.getFirst()));
 				}
 			}
 			
@@ -440,6 +441,10 @@ public final class TexPrinter implements SessionExporter.Output {
 					this.getPriority(), this.getPrefix(), this.getPostfix(), this.getApplication() - 1);
 			
 			return new Pair<>(this.getPrefix() + string + this.getPostfix(), newHint);
+		}
+		
+		public final DisplayHint vs(final DisplayHint that) {
+			return this.getPriority() < that.getPriority() ? that : this;
 		}
 		
 		/**

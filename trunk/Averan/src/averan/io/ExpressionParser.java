@@ -171,6 +171,7 @@ public final class ExpressionParser implements Serializable {
 	        namedRule("expression",        "EXPRESSION", /* -> */  "∀", "PARAMETERS", "EXPRESSION"),
 	        namedRule("expression",        "EXPRESSION", /* -> */  "∃", "IDENTIFIER", "EXPRESSION"),
 	        namedRule("expression",        "EXPRESSION", /* -> */  "¬", "EXPRESSION"),
+//	        namedRule("expression",        "EXPRESSION", /* -> */  "-", "EXPRESSION"),
 	        namedRule("expression",        "EXPRESSION", /* -> */  "EXPRESSION", "ᵀ"),
 	        namedRule("operation",         "EXPRESSION", /* -> */  "EXPRESSION", "OPERATION"),
 	        namedRule("verbatim",          "OPERATION",  /* -> */  "+", "EXPRESSION"),
