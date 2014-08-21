@@ -55,6 +55,10 @@ public final class SessionTools {
 		return session().introduceAndGet();
 	}
 	
+	public static final void introduce(final String conditionName) {
+		session().introduce(conditionName);
+	}
+	
 	public static final void suppose(final Expression condition) {
 		session().suppose(condition);
 	}
