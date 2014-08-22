@@ -23,6 +23,14 @@ public final class Pattern implements Serializable {
 		this.template = template.accept(new SetBindings(this.bindings));
 	}
 	
+	public final Pattern copy() {
+		final Pattern result = new Pattern(this.getTemplate());
+		
+		result.getBindings().putAll(this.getBindings());
+		
+		return result;
+	}
+	
 	public final Map<Any.Key, Expression> getBindings() {
 		return this.bindings;
 	}
