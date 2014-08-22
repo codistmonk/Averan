@@ -8,10 +8,11 @@ import static averan.modules.Standard.*;
 import static java.awt.Color.BLACK;
 import static java.awt.Color.WHITE;
 import static java.util.stream.Collectors.toList;
-
+import static net.sourceforge.aprog.tools.Tools.cast;
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Module;
+import averan.core.Module.Bind;
 import averan.core.Module.Symbol;
 import averan.core.Pattern;
 import averan.core.Pattern.Any;
@@ -28,6 +29,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import net.sourceforge.aprog.tools.Tools;
 
@@ -40,6 +42,70 @@ public final class Demo2 {
 	
 	public static final Module MODULE = new Module(Standard.MODULE);
 	
+	public static final String propositionName(final Module module, final Pattern pattern) {
+		final String result = propositionNameOrNull(module, pattern);
+		
+		if (result == null) {
+			throw new IllegalArgumentException("No proposition found for pattern: " + pattern);
+		}
+		
+		return result;
+	}
+	
+	public static final String propositionNameOrNull(final Module module, final Pattern pattern) {
+		for (Module m = module; m != null; m = m.getParent()) {
+			for (final Map.Entry<String, Integer> entry : m.getFactIndices().entrySet()) {
+				if (pattern.equals(m.getFacts().get(entry.getValue()))) {
+					return entry.getKey();
+				}
+			}
+			
+			for (final Map.Entry<String, Integer> entry : m.getConditionIndices().entrySet()) {
+				if (pattern.equals(m.getConditions().get(entry.getValue()))) {
+					return entry.getKey();
+				}
+			}
+		}
+		
+		return null;
+	}
+	
+	public static final String propositionName(final Pattern template) {
+		return propositionName(session(), template);
+	}
+	
+	public static final String propositionName(final Session session, final Pattern pattern) {
+		final String result = propositionNameOrNull(session, pattern);
+		
+		if (result == null) {
+			throw new IllegalArgumentException("No proposition found for pattern: " + pattern);
+		}
+		
+		return result;
+	}
+	
+	public static final String propositionNameOrNull(final Pattern template) {
+		return propositionNameOrNull(session(), template);
+	}
+	
+	public static final String propositionNameOrNull(final Session session, final Pattern pattern) {
+		String result = propositionNameOrNull(session.getCurrentModule(), pattern);
+		
+		if (result != null) {
+			return result;
+		}
+		
+		for (final Module module : session.getTrustedModules()) {
+			result = propositionNameOrNull(module, pattern);
+			
+			if (result != null) {
+				return result;
+			}
+		}
+		
+		return null;
+	}
+	
 	static {
 		String sessionBreakPoint = "";
 		
@@ -47,39 +113,55 @@ public final class Demo2 {
 			{
 				suppose("definition_of_subtraction",
 						$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x-y)=(x+('-'y)))))"));
+				suppose("type_of_addition",
+						$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x+y)∈ℝ)))"));
+				suppose("type_of_multiplication",
+						$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((xy)∈ℝ)))"));
 				admit("right_distributivity_of_multiplication_over_addition",
 						$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → (((a+b)c)=((ac)+(bc))))))"));
-//				admit("associativity_of_addition",
-//						$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((x+(y+z))=((x+y)+z)))))"));
-//				admit("associativity_of_multiplication",
-//						$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((x(yz))=((xy)z)))))"));
-//				admit("left_distributivity_of_multiplication_over_addition",
-//						$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((a(b+c))=((ab)+(ac))))))"));
-//				admit("right_distributivity_of_multiplication_over_subtraction",
-//						$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → (((a-b)c)=((ac)-(bc))))))"));
-//				admit("left_distributivity_of_multiplication_over_subtraction",
-//						$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((a(b-c))=((ab)-(ac))))))"));
-//				admit("commutativity_of_multiplication",
-//						$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((xy)=(yx))))"));
-//				admit("commutativity_of_addition",
-//						$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x+y)=(y+x))))"));
-//				admit("ordering_of_terms",
-//						$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → (((x+z)+y)=((x+y)+z)))))"));
-//				admit("ordering_of_factors",
-//						$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → (((xz)y)=((xy)z)))))"));
+				admit("associativity_of_addition",
+						$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((x+(y+z))=((x+y)+z)))))"));
+				admit("associativity_of_multiplication",
+						$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((x(yz))=((xy)z)))))"));
+				admit("left_distributivity_of_multiplication_over_addition",
+						$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((a(b+c))=((ab)+(ac))))))"));
+				admit("right_distributivity_of_multiplication_over_subtraction",
+						$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → (((a-b)c)=((ac)-(bc))))))"));
+				admit("left_distributivity_of_multiplication_over_subtraction",
+						$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((a(b-c))=((ab)-(ac))))))"));
+				admit("commutativity_of_multiplication",
+						$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((xy)=(yx))))"));
+				admit("commutativity_of_addition",
+						$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x+y)=(y+x))))"));
+				admit("ordering_of_terms",
+						$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → (((x+z)+y)=((x+y)+z)))))"));
+				admit("ordering_of_factors",
+						$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → (((xz)y)=((xy)z)))))"));
 				
-//				canonicalize(session(), $$("c+(a-(ba))d"),
-				canonicalize(session(), $$("(a-b)d"),
-						new Noninversion("definition_of_subtraction"),
-						new Noninversion("right_distributivity_of_multiplication_over_addition")
-//						new Noninversion("associativity_of_addition"),
-//						new Inversion("ordering_of_terms"),
-//						new Inversion("commutativity_of_addition"),
-//						new Noninversion("associativity_of_multiplication"),
-//						new Inversion("commutativity_of_multiplication"),
-//						new Inversion("ordering_of_factors"),
-//						new Noninversion("left_distributivity_of_multiplication_over_addition")
-				);
+				claim("test", $$("∀a,b,c,d (c+(a-(ba))d)"));
+				{
+					final Symbol a = introduce();
+					final Symbol b = introduce();
+					final Symbol c = introduce();
+					final Symbol d = introduce();
+					
+					suppose(real(a));
+					suppose(real(b));
+					suppose(real(c));
+					suppose(real(d));
+					
+					canonicalize(session(), goal(),
+							new Noninversion("definition_of_subtraction"),
+							new Noninversion("right_distributivity_of_multiplication_over_addition"),
+							new Noninversion("associativity_of_addition"),
+							new Inversion("ordering_of_terms"),
+							new Inversion("commutativity_of_addition"),
+							new Noninversion("associativity_of_multiplication"),
+							new Inversion("commutativity_of_multiplication"),
+							new Inversion("ordering_of_factors"),
+							new Noninversion("left_distributivity_of_multiplication_over_addition")
+					);
+				}
 				
 				BreakSessionException.breakSession();
 			}
@@ -204,7 +286,7 @@ public final class Demo2 {
 		} catch (final BreakSessionException exception) {
 			sessionBreakPoint = exception.getStackTrace()[1].toString();
 		} finally {
-			new SessionExporter(session(), -1).exportSession();
+			new SessionExporter(session(), 5).exportSession();
 			
 			System.out.println(sessionBreakPoint);
 		}
@@ -223,18 +305,122 @@ public final class Demo2 {
 	}
 	
 	public static final void canonicalize(final Session session, final Expression expression, final AlgebraicProperty... transformationRules) {
-		final AlgebraicCanonicalizer canonicalizer = new AlgebraicCanonicalizer(session).addRules(transformationRules);
-		Expression oldExpression = expression;
-		Expression newExpression = expression.accept(canonicalizer);
+//		final AlgebraicCanonicalizer canonicalizer = new AlgebraicCanonicalizer(session).addRules(transformationRules);
+//		Expression oldExpression = expression;
+//		Expression newExpression = expression.accept(canonicalizer);
+//		
+//		while (oldExpression != newExpression) {
+//			Tools.debugPrint(oldExpression, newExpression);
+//			
+//			oldExpression = newExpression;
+//			newExpression = newExpression.accept(canonicalizer);
+//		}
+//		
+//		Tools.debugPrint(oldExpression, newExpression);
+		final Module module = new Module(session.getCurrentModule());
+		final Session s = new Session(module);
 		
-		while (oldExpression != newExpression) {
-			Tools.debugPrint(oldExpression, newExpression);
+		s.bind(IDENTITY, expression);
+		
+		for (final AlgebraicProperty transformationRule : transformationRules) {
+			Tools.debugPrint(transformationRule.getJustification(), s.getProposition(transformationRule.getJustification()));
+			final String propositionName = s.getFactName(-1);
+			final Pattern pattern = transformationRule.newLeftPattern(session);
+			final Integer index = s.getFact(-1).accept(new IndexFinder(pattern));
 			
-			oldExpression = newExpression;
-			newExpression = newExpression.accept(canonicalizer);
+			Tools.debugPrint(index, pattern.getTemplate(), s.getFact(-1));
+			
+			if (0 <= index) {
+				transformationRule.bindAndApply(s, pattern);
+//				s.rewrite(propositionName, s.getFactName(-1), index);
+				break;
+			}
 		}
 		
-		Tools.debugPrint(oldExpression, newExpression);
+		session.getCurrentModule().new Claim(module.getFacts().get(module.getFacts().size() - 1), module).execute();
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-08-22)
+	 */
+	public static final class IndexFinder implements Visitor<Integer> {
+		
+		private final Pattern pattern;
+		
+		private int index;
+		
+		public IndexFinder(final Pattern pattern) {
+			this.pattern = pattern;
+			this.index = -1;
+		}
+		
+		public final Pattern getPattern() {
+			return this.pattern;
+		}
+		
+		@Override
+		public final Integer visit(final Any any) {
+			++this.index;
+			
+			return this.pattern.equals(any) ? this.index : -1;
+		}
+		
+		@Override
+		public final Integer visit(final Composite composite) {
+			++this.index;
+			
+			if (this.getPattern().equals(composite)) {
+				return this.index;
+			}
+			
+			return this.findIndexIn(composite.getChildren());
+		}
+		
+		@Override
+		public final Integer visit(final Symbol symbol) {
+			++this.index;
+			
+			return this.pattern.equals(symbol) ? this.index : -1;
+		}
+		
+		@Override
+		public final Integer visit(final Module module) {
+			++this.index;
+			
+			if (this.getPattern().equals(module)) {
+				return this.index;
+			}
+			
+			Integer result = this.findIndexIn(module.getParameters());
+			
+			if (result < 0) {
+				result = this.findIndexIn(module.getConditions());
+			}
+			
+			if (result < 0) {
+				result = this.findIndexIn(module.getFacts());
+			}
+			
+			return result;
+		}
+		
+		private final Integer findIndexIn(final List<? extends Expression> list) {
+			for (final Expression child : list) {
+				final Integer result = child.accept(this);
+				
+				if (0 <= result) {
+					return result;
+				}
+			}
+			
+			return -1;
+		}
+		
+		/**
+		 * {@value}.
+		 */
+		private static final long serialVersionUID = -6666401837567106389L;
+		
 	}
 	
 	/**
@@ -350,6 +536,37 @@ public final class Demo2 {
 			return this.justification;
 		}
 		
+		public final void bindAndApply(final Session session, final Pattern pattern) {
+			Module module = cast(Module.class, session.getProposition(this.getJustification()));
+			
+			if (module != null) {
+				final Bind bind = session.getCurrentModule().new Bind(session.getCurrentModule(), this.getJustification());
+				
+				for (Map.Entry<Any.Key, Expression> binding : pattern.getBindings().entrySet()) {
+					bind.bind(binding.getKey().getName(), binding.getValue());
+				}
+				
+				bind.execute();
+				
+				module = cast(Module.class, session.getFact(-1));
+				
+				while (module != null && !module.getConditions().isEmpty()) {
+					final Expression condition = module.getConditions().get(0);
+					Tools.debugPrint(condition, session.getFact(-1));
+					final String propositionName = propositionNameOrNull(session, new Pattern(condition));
+					
+					if (propositionName == null) {
+						Tools.debugPrint(propositionName(session, this.anyfy(module, condition)));
+					}
+					
+					Tools.debugPrint(session.getFactName(-1), propositionName);
+					Tools.debugPrint(session.getCurrentModule().getFactIndices());
+					session.apply(session.getFactName(-1), propositionName);
+					module = cast(Module.class, session.getFact(-1));
+				}
+			}
+		}
+		
 		public final Pattern newPattern(final Session session) {
 			final Expression proposition = session.getProposition(this.getJustification());
 			
@@ -371,13 +588,50 @@ public final class Demo2 {
 					throw new IllegalArgumentException();
 				}
 				
+				return this.anyfy(canonicalModule, lastFact);
+			}
+			
+			throw new IllegalArgumentException();
+		}
+		
+		private final Pattern anyfy(final Module context, final Expression expression) {
+			final Rewriter rewriter = new Rewriter();
+			
+			for (final Symbol parameter : context.getParameters()) {
+				rewriter.rewrite(parameter, Pattern.any(parameter.toString()));
+			}
+			
+			return new Pattern(expression.accept(rewriter));
+		}
+		
+		public final Pattern newLeftPattern(final Session session) {
+			final Expression proposition = session.getProposition(this.getJustification());
+			
+			if (Module.isEquality(proposition)) {
+				return new Pattern(((Composite) proposition).getChildren().get(0));
+			}
+			
+			if (proposition instanceof Module) {
+				final Module canonicalModule = ((Module) proposition).canonical();
+				final List<Expression> facts = canonicalModule.getFacts();
+				
+				if (facts.isEmpty()) {
+					throw new IllegalArgumentException();
+				}
+				
+				final Composite lastFact = (Composite) facts.get(facts.size() - 1);
+				
+				if (!Module.isEquality(lastFact)) {
+					throw new IllegalArgumentException();
+				}
+				
 				final Rewriter rewriter = new Rewriter();
 				
 				for (final Symbol parameter : canonicalModule.getParameters()) {
 					rewriter.rewrite(parameter, Pattern.any(parameter.toString()));
 				}
 				
-				return new Pattern(lastFact.accept(rewriter));
+				return new Pattern(lastFact.getChildren().get(0).accept(rewriter));
 			}
 			
 			throw new IllegalArgumentException();
