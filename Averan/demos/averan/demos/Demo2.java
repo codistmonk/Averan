@@ -9,7 +9,6 @@ import static java.awt.Color.BLACK;
 import static java.awt.Color.WHITE;
 import static java.util.stream.Collectors.toList;
 import static net.sourceforge.aprog.tools.Tools.cast;
-
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Module;
@@ -28,11 +27,13 @@ import averan.modules.Standard;
 import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 import net.sourceforge.aprog.tools.Pair;
+import net.sourceforge.aprog.tools.Tools;
 
 import org.scilab.forge.jlatexmath.TeXFormula;
 
@@ -201,7 +202,8 @@ public final class Demo2 {
 				admit("ordering_of_factors",
 						$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → (((xz)y)=((xy)z)))))"));
 				
-				claim("test", $$("∀a,b,c,d (c+(a-(ba))d)"));
+//				claim("test", $$("∀a,b,c,d ((c+(a-(ba))d)=((ad)-(abd)+c))"));
+				claim("test", $$("∀a,b,c,d ((bda)=(adb))"));
 				{
 					final Symbol a = introduce();
 					final Symbol b = introduce();
@@ -217,7 +219,7 @@ public final class Demo2 {
 					proveUsingBindAndApply(session(), real($(a, b)));
 					proveUsingBindAndApply(session(), real($($(a, b), "-", $(c, "+", $("-", d)))));
 					
-					canonicalize(session(), goal(),
+					final AlgebraicProperty[] transformationRules = {
 							new Noninversion("definition_of_subtraction"),
 							new Noninversion("right_distributivity_of_multiplication_over_addition"),
 							new Noninversion("associativity_of_addition"),
@@ -227,7 +229,11 @@ public final class Demo2 {
 							new Inversion("commutativity_of_multiplication"),
 							new Inversion("ordering_of_factors"),
 							new Noninversion("left_distributivity_of_multiplication_over_addition")
-					);
+					};
+					final Composite goal = goal();
+					
+					canonicalize(session(), goal.get(0), transformationRules);
+					canonicalize(session(), goal.get(2), transformationRules);
 				}
 				
 				BreakSessionException.breakSession();
@@ -384,20 +390,27 @@ public final class Demo2 {
 			for (final AlgebraicProperty transformationRule : transformationRules) {
 				final Composite proposition = s.getFact(-1);
 				final String propositionName = s.getFactName(-1);
-				final Pattern pattern = transformationRule.newLeftPattern(session);
-				final Integer index = proposition.accept(new IndexFinder(true, pattern));
+				final List<Pair<Integer, Pattern>> indices = proposition.accept(new IndexFinder(true, transformationRule.newLeftPattern(session)));
 				
-				if (0 <= index) {
+				if (0 < indices.size() && 0 <= indices.get(0).getFirst()) {
+					final Integer index = indices.get(0).getFirst();
+					final Pattern pattern = indices.get(0).getSecond();
+					
 					transformationRule.bindAndApply(s, pattern);
 					s.rewrite(propositionName, s.getFactName(-1), index);
-				}
-				
-				final Expression last = s.getFact(-1);
-				
-				if (last.toString().compareTo(proposition.toString()) < 0) {
-					keepGoing = true;
-				} else if (transformationRule instanceof Inversion) {
-					recall(s, propositionName);
+					
+					final Expression last = s.getFact(-1);
+					
+					Tools.debugPrint(transformationRule.getJustification());
+					Tools.debugPrint(expression, last);
+					
+					if (transformationRule instanceof Inversion && 0 <= last.toString().compareTo(proposition.toString())) {
+						recall(s, propositionName);
+					} else {
+						keepGoing = true;
+					}
+					
+					Tools.debugPrint(expression, last, keepGoing);
 				}
 			}
 		}
@@ -408,7 +421,7 @@ public final class Demo2 {
 	/**
 	 * @author codistmonk (creation 2014-08-22)
 	 */
-	public static final class IndexFinder implements Visitor<Integer> {
+	public static final class IndexFinder implements Visitor<List<Pair<Integer, Pattern>>> {
 		
 		private final Pattern pattern;
 		
@@ -422,6 +435,8 @@ public final class Demo2 {
 		
 		private boolean active;
 		
+		private final List<Pair<Integer, Pattern>> result;
+		
 		public IndexFinder(final Pattern pattern) {
 			this(false, pattern);
 		}
@@ -433,119 +448,84 @@ public final class Demo2 {
 			this.subindex = -1;
 			this.level = -1;
 			this.active = !this.waitForTopLevelRHS;
+			this.result = new ArrayList<>();
 		}
 		
 		public final Pattern getPattern() {
 			return this.pattern;
 		}
 		
-		private final void beginVisit(final Expression expression) {
-			++this.level;
+		@Override
+		public final List<Pair<Integer, Pattern>> visit(final Any any) {
+			return this.beginVisit(any).endVisit(any);
 		}
 		
-		private final void endVisit(final Expression expression) {
+		@Override
+		public final List<Pair<Integer, Pattern>> visit(final Composite composite) {
+			return this.beginVisit(composite)
+					.findIndicesIn(composite.getChildren())
+					.endVisit(composite);
+		}
+		
+		@Override
+		public final List<Pair<Integer, Pattern>> visit(final Symbol symbol) {
+			return this.beginVisit(symbol).endVisit(symbol);
+		}
+		
+		@Override
+		public final List<Pair<Integer, Pattern>> visit(final Module module) {
+			return this.beginVisit(module)
+					.findIndicesIn(module.getParameters())
+					.findIndicesIn(module.getConditions())
+					.findIndicesIn(module.getFacts())
+					.endVisit(module);
+		}
+		
+		private final IndexFinder beginVisit(final Expression expression) {
+			++this.level;
+			
+			this.computeResult(this.getPattern().equals(expression));
+			
+			return this;
+		}
+		
+		private final List<Pair<Integer, Pattern>> endVisit(final Expression expression) {
 			if (this.level == 1 && this.subindex == 1 && Module.EQUAL.equals(expression)) {
 				this.active = true;
 			}
 			
 			--this.level;
+			
+			return this.result;
 		}
 		
 		private final boolean isActive() {
 			return this.active;
 		}
 		
-		@Override
-		public final Integer visit(final Any any) {
-			try {
-				this.beginVisit(any);
-				
-				return this.computeResult(this.pattern.equals(any));
-			} finally {
-				this.endVisit(any);
-			}
-		}
-		
-		private final Integer computeResult(final boolean match) {
+		private final List<Pair<Integer, Pattern>> computeResult(final boolean match) {
 			if (match) {
 				++this.index;
 				
 				if (this.isActive()) {
-					return this.index;
+					this.result.add(new Pair<>(this.index, this.pattern.copy()));
 				}
 			}
 			
-			return -1;
+			return this.result;
 		}
 		
-		@Override
-		public final Integer visit(final Composite composite) {
-			try {
-				this.beginVisit(composite);
-				
-				if (0 <= this.computeResult(this.getPattern().equals(composite))) {
-					return this.index;
-				}
-				
-				return this.findIndexIn(composite.getChildren());
-			} finally {
-				this.endVisit(composite);
-			}
-		}
-		
-		@Override
-		public final Integer visit(final Symbol symbol) {
-			try {
-				this.beginVisit(symbol);
-				
-				return this.computeResult(this.pattern.equals(symbol));
-			} finally {
-				this.endVisit(symbol);
-			}
-		}
-		
-		@Override
-		public final Integer visit(final Module module) {
-			try {
-				this.beginVisit(module);
-				
-				if (0 <= this.computeResult(this.getPattern().equals(module))) {
-					return this.index;
-				}
-				
-				Integer result = this.findIndexIn(module.getParameters());
-				
-				if (result < 0) {
-					result = this.findIndexIn(module.getConditions());
-				}
-				
-				if (result < 0) {
-					result = this.findIndexIn(module.getFacts());
-				}
-				
-				return result;
-			} finally {
-				this.endVisit(module);
-			}
-		}
-		
-		private final Integer findIndexIn(final List<? extends Expression> list) {
+		private final IndexFinder findIndicesIn(final List<? extends Expression> list) {
 			final int n = list.size();
 			
 			for (int i = 0; i < n; ++i) {
-				final Expression child = list.get(i);
 				this.subindex = i;
-				final Integer result = child.accept(this);
-				this.subindex = i;
-				
-				if (0 <= result) {
-					return result;
-				}
+				list.get(i).accept(this);
 			}
 			
 			this.subindex = -1;
 			
-			return -1;
+			return this;
 		}
 		
 		/**
