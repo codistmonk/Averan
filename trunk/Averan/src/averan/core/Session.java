@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import net.sourceforge.aprog.tools.Tools;
 import averan.core.Module.Symbol;
 
 /**
@@ -118,8 +117,6 @@ public final class Session implements Serializable {
 		
 		final Module context = this.getCurrentModule();
 		
-		Tools.debugPrint(context.getFactIndices());
-		
 		context.new Apply(factName, context, moduleName, context, conditionName).execute();
 		
 		return this.tryToPop();
@@ -154,8 +151,6 @@ public final class Session implements Serializable {
 		final Map<String, Integer> factIndices = this.getCurrentModule().getFactIndices();
 		final int n = factIndices.size();
 		final int i = (n + index) % n;
-		
-		Tools.debugPrint(i);
 		
 		return factIndices.entrySet().stream().reduce(
 				"", (old, entry) -> entry.getValue().equals(i) ? entry.getKey() : old, (u, t) -> t);

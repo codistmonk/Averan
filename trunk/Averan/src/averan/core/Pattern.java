@@ -224,20 +224,20 @@ public final class Pattern implements Serializable {
 		 */
 		public static final class Key implements Serializable {
 			
-			private final String name;
+			private final Object name;
 			
 			private final int number;
 			
-			public Key(final String name) {
+			public Key(final Object name) {
 				this(name, 0);
 			}
 			
-			public Key(final String name, final int number) {
+			public Key(final Object name, final int number) {
 				this.name = name;
 				this.number = number;
 			}
 			
-			public final String getName() {
+			public final Object getName() {
 				return this.name;
 			}
 			
@@ -259,7 +259,7 @@ public final class Pattern implements Serializable {
 			
 			@Override
 			public final String toString() {
-				return this.getName() + (this.getNumber() == 0 ? "" : this.getNumber());
+				return this.getName().toString() + (this.getNumber() == 0 ? "" : this.getNumber());
 			}
 			
 			/**
