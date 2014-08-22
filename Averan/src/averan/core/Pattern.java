@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.sourceforge.aprog.tools.Tools;
+
 /**
  * @author codistmonk (creation 2014-08-09)
  */
@@ -61,6 +63,8 @@ public final class Pattern implements Serializable {
 		for (final Map.Entry<Any.Key, Expression> entry : this.bindings.entrySet()) {
 			rewriter.rewrite(new Any(entry.getKey()).setBindings(this.bindings), entry.getValue());
 		}
+		
+		Tools.debugPrint(expression, rewriter.getRewrites());
 		
 		return (E) expression.accept(rewriter);
 	}

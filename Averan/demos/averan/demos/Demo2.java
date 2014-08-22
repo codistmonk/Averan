@@ -12,6 +12,7 @@ import averan.core.Expression;
 import averan.core.Module;
 import averan.core.Module.Symbol;
 import averan.core.Pattern;
+import averan.core.Rewriter;
 import averan.core.Session;
 import averan.core.Visitor;
 import averan.io.SessionExporter;
@@ -42,28 +43,40 @@ public final class Demo2 {
 		
 		try {
 			{
-				admit("associativity_of_addition",
-						$$("∀x,y,z ((x+(y+z))=((x+y)+z))"));
-				admit("associativity_of_multiplication",
-						$$("∀x,y,z ((x(yz))=((xy)z))"));
+				suppose("definition_of_subtraction",
+						$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x-y)=(x+('-'y)))))"));
 				admit("right_distributivity_of_multiplication_over_addition",
 						$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → (((a+b)c)=((ac)+(bc))))))"));
-				admit("left_distributivity_of_multiplication_over_addition",
-						$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((a(b+c))=((ab)+(ac))))))"));
-				admit("right_distributivity_of_multiplication_over_subtraction",
-						$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → (((a-b)c)=((ac)-(bc))))))"));
-				admit("left_distributivity_of_multiplication_over_subtraction",
-						$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((a(b-c))=((ab)-(ac))))))"));
-				admit("commutativity_of_multiplication",
-						$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((xy)=(yx))))"));
-				admit("commutativity_of_addition",
-						$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x+y)=(y+x))))"));
+//				admit("associativity_of_addition",
+//						$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((x+(y+z))=((x+y)+z)))))"));
+//				admit("associativity_of_multiplication",
+//						$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((x(yz))=((xy)z)))))"));
+//				admit("left_distributivity_of_multiplication_over_addition",
+//						$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((a(b+c))=((ab)+(ac))))))"));
+//				admit("right_distributivity_of_multiplication_over_subtraction",
+//						$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → (((a-b)c)=((ac)-(bc))))))"));
+//				admit("left_distributivity_of_multiplication_over_subtraction",
+//						$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((a(b-c))=((ab)-(ac))))))"));
+//				admit("commutativity_of_multiplication",
+//						$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((xy)=(yx))))"));
+//				admit("commutativity_of_addition",
+//						$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x+y)=(y+x))))"));
+//				admit("ordering_of_terms",
+//						$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → (((x+z)+y)=((x+y)+z)))))"));
+//				admit("ordering_of_factors",
+//						$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → (((xz)y)=((xy)z)))))"));
 				
-//				canonicalize(session(), $$("c+(a+(ba))d"),
-				canonicalize(session(), $$("(c+a)+b"),
-						new Inversion("associativity_of_addition"),
-						new Inversion("commutativity_of_addition")
-//						new Inversion("commutativity_of_multiplication")
+//				canonicalize(session(), $$("c+(a-(ba))d"),
+				canonicalize(session(), $$("(a-b)d"),
+						new Noninversion("definition_of_subtraction"),
+						new Noninversion("right_distributivity_of_multiplication_over_addition")
+//						new Noninversion("associativity_of_addition"),
+//						new Inversion("ordering_of_terms"),
+//						new Inversion("commutativity_of_addition"),
+//						new Noninversion("associativity_of_multiplication"),
+//						new Inversion("commutativity_of_multiplication"),
+//						new Inversion("ordering_of_factors"),
+//						new Noninversion("left_distributivity_of_multiplication_over_addition")
 				);
 				
 				BreakSessionException.breakSession();
@@ -131,9 +144,9 @@ public final class Demo2 {
 			admit("type_of_addition",
 					$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x+y)∈ℝ)))"));
 			admit("associativity_of_addition",
-					$$("∀x,y,z ((x+(y+z))=((x+y)+z))"));
+					$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((x+(y+z))=((x+y)+z)))))"));
 			admit("associativity_of_multiplication",
-					$$("∀x,y,z ((x(yz))=((xy)z))"));
+					$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((x(yz))=((xy)z)))))"));
 			admit("right_distributivity_of_multiplication_over_addition",
 					$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → (((a+b)c)=((ac)+(bc))))))"));
 			admit("left_distributivity_of_multiplication_over_addition",
@@ -248,13 +261,15 @@ public final class Demo2 {
 		public final Expression visit(final Composite composite) {
 			final Expression compositeVisit = this.tryToReplace(composite);
 			
+			Tools.debugPrint(composite, compositeVisit);
+			
 			if (compositeVisit != composite) {
 				return compositeVisit;
 			}
 			
 			final List<Expression> childVisits = composite.childrenAcceptor(this).get();
 			
-			if (childVisits.equals(composite.getChildren())) {
+			if (Rewriter.equals2(composite.getChildren(), childVisits)) {
 				return composite;
 			}
 			
@@ -280,9 +295,9 @@ public final class Demo2 {
 			final List<Expression> conditionVisits = module.conditionsAcceptor(this).get();
 			final List<Expression> factVisits = module.factsAcceptor(this).get();
 			
-			if (module.getParameters().equals(parameterVisits)
-					&& module.getConditions().equals(conditionVisits)
-					&& module.getFacts().equals(factVisits)) {
+			if (Rewriter.equals2(module.getParameters(), parameterVisits)
+					&& Rewriter.equals2(module.getConditions(), conditionVisits)
+					&& Rewriter.equals2(module.getFacts(), factVisits)) {
 				return module;
 			}
 			
@@ -334,11 +349,12 @@ public final class Demo2 {
 			final Expression proposition = session.getProposition(this.getJustification());
 			
 			if (Module.isEquality(proposition)) {
-				return Pattern.anyfy(proposition);
+				return new Pattern(proposition);
 			}
 			
 			if (proposition instanceof Module) {
-				final List<Expression> facts = ((Module) proposition).canonical().getFacts();
+				final Module canonicalModule = ((Module) proposition).canonical();
+				final List<Expression> facts = canonicalModule.getFacts();
 				
 				if (facts.isEmpty()) {
 					throw new IllegalArgumentException();
@@ -350,7 +366,13 @@ public final class Demo2 {
 					throw new IllegalArgumentException();
 				}
 				
-				return Pattern.anyfy(lastFact);
+				final Rewriter rewriter = new Rewriter();
+				
+				for (final Symbol parameter : canonicalModule.getParameters()) {
+					rewriter.rewrite(parameter, Pattern.any(parameter.toString()));
+				}
+				
+				return new Pattern(lastFact.accept(rewriter));
 			}
 			
 			throw new IllegalArgumentException();
