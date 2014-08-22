@@ -106,6 +106,125 @@ public final class Demo2 {
 		return null;
 	}
 	
+	public static final String justificationFor(final Module context, final Pattern pattern) {
+		String result = null;
+		
+		for (Module c = context; c != null && result == null; c = c.getParent()) {
+			result = justificationFor(pattern, c.getFacts(), c.getFactIndices());
+			
+			if (result == null) {
+				result = justificationFor(pattern, c.getConditions(), c.getConditionIndices());
+			}
+		}
+		
+		return result;
+	}
+
+	private static String justificationFor(final Pattern pattern,
+			final List<Expression> propositions, final Map<String, Integer> propositionIndices) {
+		for (final Map.Entry<String, Integer> entry : propositionIndices.entrySet()) {
+			final Expression proposition = propositions.get(entry.getValue());
+			
+			if (pattern.equals(proposition)) {
+				return entry.getKey();
+			}
+			
+			Module module = cast(Module.class, proposition);
+			
+			if (module != null) {
+				module = module.canonical();
+				
+				if (module.getFacts().contains(pattern)) {
+					return entry.getKey();
+				}
+			}
+		}
+		
+		return null;
+	}
+	
+	public static final String justificationFor(final Session session, final Pattern pattern) {
+		String result = justificationFor(session.getCurrentModule(), pattern);
+		
+		if (result != null) {
+			return result;
+		}
+		
+		for (final Module module : session.getTrustedModules()) {
+			result = justificationFor(module, pattern);
+			
+			if (result != null) {
+				return result;
+			}
+		}
+		
+		return null;
+	}
+	
+	public static final Pattern patternFor(final Session session, final Expression expression) {
+		final Rewriter rewriter = new Rewriter();
+		
+		scheduleAnyfyParameters(cast(Module.class, expression), rewriter);
+		
+		for (Module context = session.getCurrentModule(); context != null; context = context.getParent()) {
+			scheduleAnyfyParameters(context, rewriter);
+		}
+		
+		return new Pattern(expression.accept(rewriter));
+	}
+	
+	public static final void scheduleAnyfyParameters(final Module module, final Rewriter rewriter) {
+		if (module == null) {
+			return;
+		}
+		
+		for (final Symbol symbol : module.getParameters()) {
+			rewriter.rewrite(symbol, new Pattern.Any(new Pattern.Any.Key(symbol)));
+		}
+	}
+	
+	public static final void proveUsingBindAndApply(final Session session, final Expression expression) {
+		Pattern pattern = new Pattern(expression);
+		String justificationName = justificationFor(session, pattern);
+		
+		if (justificationName == null) {
+			pattern = patternFor(session, expression);
+			justificationName = justificationFor(session, pattern);
+		}
+		
+		if (justificationName == null) {
+			throw new IllegalArgumentException("No justification found for: " + expression);
+		}
+		
+		final Expression justification = session.getProposition(justificationName);
+		final Module module = cast(Module.class, justification);
+		
+		if (module == null) {
+			recall(justificationName);
+		} else {
+			session.claim(expression);
+			
+			{
+				Tools.debugPrint(justification);
+				Tools.debugPrint(pattern.getBindings());
+				
+				final Module context = session.getCurrentModule();
+				final Bind bind = context.new Bind(context, justificationName);
+				
+				for (final Map.Entry<Any.Key, Expression> entry : pattern.getBindings().entrySet()) {
+					bind.bind(entry.getValue().toString(), (Expression) entry.getKey().getName());
+				}
+				
+				bind.execute();
+				
+				for (Module last = cast(Module.class, session.getFact(-1)); last != null && !last.getConditions().isEmpty(); last = cast(Module.class, session.getFact(-1))) {
+					proveUsingBindAndApply(session, last.getConditions().get(0));
+					session.apply(session.getFactName(-2), session.getFactName(-1));
+				}
+			}
+		}
+	}
+	
 	static {
 		String sessionBreakPoint = "";
 		
@@ -150,17 +269,21 @@ public final class Demo2 {
 					suppose(real(c));
 					suppose(real(d));
 					
-					canonicalize(session(), goal(),
-							new Noninversion("definition_of_subtraction"),
-							new Noninversion("right_distributivity_of_multiplication_over_addition"),
-							new Noninversion("associativity_of_addition"),
-							new Inversion("ordering_of_terms"),
-							new Inversion("commutativity_of_addition"),
-							new Noninversion("associativity_of_multiplication"),
-							new Inversion("commutativity_of_multiplication"),
-							new Inversion("ordering_of_factors"),
-							new Noninversion("left_distributivity_of_multiplication_over_addition")
-					);
+					proveUsingBindAndApply(session(), real(a));
+					proveUsingBindAndApply(session(), real($(a, b)));
+					proveUsingBindAndApply(session(), real($($(a, b), "+", c)));
+					
+//					canonicalize(session(), goal(),
+//							new Noninversion("definition_of_subtraction"),
+//							new Noninversion("right_distributivity_of_multiplication_over_addition"),
+//							new Noninversion("associativity_of_addition"),
+//							new Inversion("ordering_of_terms"),
+//							new Inversion("commutativity_of_addition"),
+//							new Noninversion("associativity_of_multiplication"),
+//							new Inversion("commutativity_of_multiplication"),
+//							new Inversion("ordering_of_factors"),
+//							new Noninversion("left_distributivity_of_multiplication_over_addition")
+//					);
 				}
 				
 				BreakSessionException.breakSession();
@@ -286,7 +409,7 @@ public final class Demo2 {
 		} catch (final BreakSessionException exception) {
 			sessionBreakPoint = exception.getStackTrace()[1].toString();
 		} finally {
-			new SessionExporter(session(), 5).exportSession();
+			new SessionExporter(session(), -1).exportSession();
 			
 			System.out.println(sessionBreakPoint);
 		}
@@ -543,7 +666,7 @@ public final class Demo2 {
 				final Bind bind = session.getCurrentModule().new Bind(session.getCurrentModule(), this.getJustification());
 				
 				for (Map.Entry<Any.Key, Expression> binding : pattern.getBindings().entrySet()) {
-					bind.bind(binding.getKey().getName(), binding.getValue());
+					bind.bind(binding.getKey().getName().toString(), binding.getValue());
 				}
 				
 				bind.execute();
