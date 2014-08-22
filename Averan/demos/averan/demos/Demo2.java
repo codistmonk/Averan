@@ -231,8 +231,12 @@ public final class Demo2 {
 			{
 				suppose("definition_of_subtraction",
 						$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x-y)=(x+('-'y)))))"));
+				suppose("type_of_opposite",
+						$$("∀x ((x∈ℝ) → (('-'x)∈ℝ))"));
 				suppose("type_of_addition",
 						$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x+y)∈ℝ)))"));
+				suppose("type_of_subtraction",
+						$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x-y)∈ℝ)))"));
 				suppose("type_of_multiplication",
 						$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((xy)∈ℝ)))"));
 				admit("right_distributivity_of_multiplication_over_addition",
@@ -270,7 +274,7 @@ public final class Demo2 {
 					
 					proveUsingBindAndApply(session(), real(a));
 					proveUsingBindAndApply(session(), real($(a, b)));
-					proveUsingBindAndApply(session(), real($($(a, b), "+", c)));
+					proveUsingBindAndApply(session(), real($($(a, b), "-", $(c, "+", $("-", d)))));
 					
 //					canonicalize(session(), goal(),
 //							new Noninversion("definition_of_subtraction"),
