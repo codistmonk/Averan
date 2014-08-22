@@ -9,6 +9,7 @@ import static java.awt.Color.BLACK;
 import static java.awt.Color.WHITE;
 import static java.util.stream.Collectors.toList;
 import static net.sourceforge.aprog.tools.Tools.cast;
+
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Module;
@@ -41,70 +42,6 @@ import org.scilab.forge.jlatexmath.TeXFormula;
 public final class Demo2 {
 	
 	public static final Module MODULE = new Module(Standard.MODULE);
-	
-	public static final String propositionName(final Module module, final Pattern pattern) {
-		final String result = propositionNameOrNull(module, pattern);
-		
-		if (result == null) {
-			throw new IllegalArgumentException("No proposition found for pattern: " + pattern);
-		}
-		
-		return result;
-	}
-	
-	public static final String propositionNameOrNull(final Module module, final Pattern pattern) {
-		for (Module m = module; m != null; m = m.getParent()) {
-			for (final Map.Entry<String, Integer> entry : m.getFactIndices().entrySet()) {
-				if (pattern.equals(m.getFacts().get(entry.getValue()))) {
-					return entry.getKey();
-				}
-			}
-			
-			for (final Map.Entry<String, Integer> entry : m.getConditionIndices().entrySet()) {
-				if (pattern.equals(m.getConditions().get(entry.getValue()))) {
-					return entry.getKey();
-				}
-			}
-		}
-		
-		return null;
-	}
-	
-	public static final String propositionName(final Pattern template) {
-		return propositionName(session(), template);
-	}
-	
-	public static final String propositionName(final Session session, final Pattern pattern) {
-		final String result = propositionNameOrNull(session, pattern);
-		
-		if (result == null) {
-			throw new IllegalArgumentException("No proposition found for pattern: " + pattern);
-		}
-		
-		return result;
-	}
-	
-	public static final String propositionNameOrNull(final Pattern template) {
-		return propositionNameOrNull(session(), template);
-	}
-	
-	public static final String propositionNameOrNull(final Session session, final Pattern pattern) {
-		String result = propositionNameOrNull(session.getCurrentModule(), pattern);
-		
-		if (result != null) {
-			return result;
-		}
-		
-		for (final Module module : session.getTrustedModules()) {
-			result = propositionNameOrNull(module, pattern);
-			
-			if (result != null) {
-				return result;
-			}
-		}
-		
-		return null;
-	}
 	
 	public static final Pair<String, Pattern> justificationFor(final Module context, final Expression target) {
 		Pair<String, Pattern> result = null;
@@ -459,7 +396,7 @@ public final class Demo2 {
 				
 				if (last.toString().compareTo(proposition.toString()) < 0) {
 					keepGoing = true;
-				} else {
+				} else if (transformationRule instanceof Inversion) {
 					recall(s, propositionName);
 				}
 			}
