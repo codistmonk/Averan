@@ -6,17 +6,27 @@ import static averan.io.ExpressionParser.$$;
 import static averan.modules.Standard.*;
 import static java.awt.Color.BLACK;
 import static java.awt.Color.WHITE;
-
+import static java.util.stream.Collectors.toList;
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Module;
 import averan.core.Module.Symbol;
+import averan.core.Pattern;
+import averan.core.Session;
+import averan.core.Visitor;
 import averan.io.SessionExporter;
 import averan.io.TexPrinter;
 import averan.io.TexPrinter.DisplayHint;
 import averan.modules.Standard;
 
 import java.io.ByteArrayOutputStream;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import net.sourceforge.aprog.tools.Tools;
 
 import org.scilab.forge.jlatexmath.TeXFormula;
 
@@ -31,6 +41,34 @@ public final class Demo2 {
 		String sessionBreakPoint = "";
 		
 		try {
+			{
+				admit("associativity_of_addition",
+						$$("∀x,y,z ((x+(y+z))=((x+y)+z))"));
+				admit("associativity_of_multiplication",
+						$$("∀x,y,z ((x(yz))=((xy)z))"));
+				admit("right_distributivity_of_multiplication_over_addition",
+						$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → (((a+b)c)=((ac)+(bc))))))"));
+				admit("left_distributivity_of_multiplication_over_addition",
+						$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((a(b+c))=((ab)+(ac))))))"));
+				admit("right_distributivity_of_multiplication_over_subtraction",
+						$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → (((a-b)c)=((ac)-(bc))))))"));
+				admit("left_distributivity_of_multiplication_over_subtraction",
+						$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((a(b-c))=((ab)-(ac))))))"));
+				admit("commutativity_of_multiplication",
+						$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((xy)=(yx))))"));
+				admit("commutativity_of_addition",
+						$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x+y)=(y+x))))"));
+				
+//				canonicalize(session(), $$("c+(a+(ba))d"),
+				canonicalize(session(), $$("(c+a)+b"),
+						new Inversion("associativity_of_addition"),
+						new Inversion("commutativity_of_addition")
+//						new Inversion("commutativity_of_multiplication")
+				);
+				
+				BreakSessionException.breakSession();
+			}
+			
 			suppose("definition_of_conjunction",
 					$$("∀P,Q (P → (Q → (P ∧ Q)))"));
 			suppose("definition_of_proposition_equality",
@@ -96,13 +134,13 @@ public final class Demo2 {
 					$$("∀x,y,z ((x+(y+z))=((x+y)+z))"));
 			admit("associativity_of_multiplication",
 					$$("∀x,y,z ((x(yz))=((xy)z))"));
-			admit("distributivity_of_multiplication_on_left_addition",
+			admit("right_distributivity_of_multiplication_over_addition",
 					$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → (((a+b)c)=((ac)+(bc))))))"));
-			admit("distributivity_of_multiplication_on_right_addition",
+			admit("left_distributivity_of_multiplication_over_addition",
 					$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((a(b+c))=((ab)+(ac))))))"));
-			admit("distributivity_of_multiplication_on_left_subtraction",
+			admit("right_distributivity_of_multiplication_over_subtraction",
 					$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → (((a-b)c)=((ac)-(bc))))))"));
-			admit("distributivity_of_multiplication_on_right_subtraction",
+			admit("left_distributivity_of_multiplication_over_subtraction",
 					$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((a(b-c))=((ab)-(ac))))))"));
 			
 			claimCommutativityOfConjunction();
@@ -167,6 +205,194 @@ public final class Demo2 {
 			
 			new TeXFormula(buffer.toString()).createPNG(0, 18F, "view.png", WHITE, BLACK);
 		}
+	}
+	
+	public static final void canonicalize(final Session session, final Expression expression, final AlgebraicProperty... transformationRules) {
+		final AlgebraicCanonicalizer canonicalizer = new AlgebraicCanonicalizer(session).addRules(transformationRules);
+		Expression oldExpression = expression;
+		Expression newExpression = expression.accept(canonicalizer);
+		
+		while (oldExpression != newExpression) {
+			Tools.debugPrint(oldExpression, newExpression);
+			
+			oldExpression = newExpression;
+			newExpression = newExpression.accept(canonicalizer);
+		}
+		
+		Tools.debugPrint(oldExpression, newExpression);
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-08-22)
+	 */
+	public static final class AlgebraicCanonicalizer implements Visitor<Expression> {
+		
+		private final Session session;
+		
+		private final Collection<AlgebraicProperty> transformationRules;
+		
+		public AlgebraicCanonicalizer(Session session) {
+			this.session = session;
+			this.transformationRules = new ArrayList<>();
+		}
+
+		public final AlgebraicCanonicalizer addRules(final AlgebraicProperty... transformationRules) {
+			for (final AlgebraicProperty transformationRule : transformationRules) {
+				this.transformationRules.add(transformationRule);
+			}
+			
+			return this;
+		}
+		
+		@Override
+		public final Expression visit(final Composite composite) {
+			final Expression compositeVisit = this.tryToReplace(composite);
+			
+			if (compositeVisit != composite) {
+				return compositeVisit;
+			}
+			
+			final List<Expression> childVisits = composite.childrenAcceptor(this).get();
+			
+			if (childVisits.equals(composite.getChildren())) {
+				return composite;
+			}
+			
+			return new Composite(childVisits);
+		}
+		
+		@Override
+		public final Expression visit(final Symbol symbol) {
+			return this.tryToReplace(symbol);
+		}
+		
+		@Override
+		public final Expression visit(final Module module) {
+			final Expression moduleVisit = this.tryToReplace(module);
+			
+			if (moduleVisit != module) {
+				return moduleVisit;
+			}
+			
+			@SuppressWarnings("unchecked")
+			final List<Symbol> parameterVisits = (List) module.parametersAcceptor(this).get()
+					.stream().filter(e -> module.getParameters().contains(e)).collect(toList());
+			final List<Expression> conditionVisits = module.conditionsAcceptor(this).get();
+			final List<Expression> factVisits = module.factsAcceptor(this).get();
+			
+			if (module.getParameters().equals(parameterVisits)
+					&& module.getConditions().equals(conditionVisits)
+					&& module.getFacts().equals(factVisits)) {
+				return module;
+			}
+			
+			return new Module(module.getParent(), module.getName(),
+					parameterVisits, conditionVisits, factVisits);
+		}
+		
+		private final Expression tryToReplace(final Expression expression) {
+			for (final AlgebraicProperty transformationRule : this.transformationRules) {
+				final Pattern pattern = transformationRule.newPattern(this.session);
+				final Composite equality = (Composite) pattern.getTemplate();
+				
+				if (equality.get(0).equals(expression)) {
+					final Expression result = pattern.express(equality.get(2));
+					
+					if (!(transformationRule instanceof Inversion)
+							|| result.toString().compareTo(expression.toString()) < 0) {
+						return result;
+					}
+				}
+			}
+			
+			return expression;
+		}
+		
+		/**
+		 * {@value}.
+		 */
+		private static final long serialVersionUID = -4871598360704641832L;
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-08-22)
+	 */
+	public static abstract class AlgebraicProperty implements Serializable {
+		
+		private final String justification;
+		
+		protected AlgebraicProperty(final String justification) {
+			this.justification = justification;
+		}
+		
+		public final String getJustification() {
+			return this.justification;
+		}
+		
+		public final Pattern newPattern(final Session session) {
+			final Expression proposition = session.getProposition(this.getJustification());
+			
+			if (Module.isEquality(proposition)) {
+				return Pattern.anyfy(proposition);
+			}
+			
+			if (proposition instanceof Module) {
+				final List<Expression> facts = ((Module) proposition).canonical().getFacts();
+				
+				if (facts.isEmpty()) {
+					throw new IllegalArgumentException();
+				}
+				
+				final Expression lastFact = facts.get(facts.size() - 1);
+				
+				if (!Module.isEquality(lastFact)) {
+					throw new IllegalArgumentException();
+				}
+				
+				return Pattern.anyfy(lastFact);
+			}
+			
+			throw new IllegalArgumentException();
+		}
+		
+		/**
+		 * {@value}.
+		 */
+		private static final long serialVersionUID = 1878172301362441979L;
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-08-22)
+	 */
+	public static final class Inversion extends AlgebraicProperty {
+		
+		public Inversion(final String justification) {
+			super(justification);
+		}
+		
+		/**
+		 * {@value}.
+		 */
+		private static final long serialVersionUID = -3885973523639244860L;
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-08-22)
+	 */
+	public static final class Noninversion extends AlgebraicProperty {
+		
+		public Noninversion(final String justification) {
+			super(justification);
+		}
+		
+		/**
+		 * {@value}.
+		 */
+		private static final long serialVersionUID = 3917509705666449092L;
+		
 	}
 	
 	public static final void claimTranspositionOfMultiplication() {

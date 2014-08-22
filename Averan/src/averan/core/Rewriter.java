@@ -71,12 +71,41 @@ public final class Rewriter implements Visitor<Expression> {
 		if (composite == compositeVisit) {
 			final List<Expression> childVisits = composite.childrenAcceptor(this).get();
 			
-			if (!composite.getChildren().equals(childVisits)) {
+			if (!equals2(composite.getChildren(), childVisits)) {
 				return new Composite(childVisits);
 			}
 		}
 		
 		return compositeVisit;
+	}
+	
+	public static final boolean equals2(final List<? extends Expression> list1,
+			final List<? extends Expression> list2) {
+		final int n = list1.size();
+		
+		if (n != list2.size()) {
+			return false;
+		}
+		
+		for (int i = 0; i < n; ++i) {
+			final Expression expression1 = list1.get(i);
+			final Expression expression2 = list2.get(i);
+			
+			if (!expression1.equals(expression2)) {
+				return false;
+			}
+			
+			if (expression1 instanceof Pattern.Any && !(expression2 instanceof Pattern.Any)) {
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
+	@Override
+	public final Expression visit(final Pattern.Any any) {
+		return this.tryToRewrite(any);
 	}
 	
 	@Override
@@ -91,9 +120,9 @@ public final class Rewriter implements Visitor<Expression> {
 		final Supplier<List<Expression>> conditionVisits = module.conditionsAcceptor(this);
 		final Supplier<List<Expression>> factVisits = module.factsAcceptor(this);
 		
-		if (module == moduleVisit && (!module.getParameters().equals(parameterVisits.get()) ||
-				!module.getConditions().equals(conditionVisits.get()) ||
-				!module.getFacts().equals(factVisits.get()))) {
+		if (module == moduleVisit && (!equals2(module.getParameters(), parameterVisits.get()) ||
+				!equals2(module.getConditions(), conditionVisits.get()) ||
+				!equals2(module.getFacts(), factVisits.get()))) {
 			final List<Symbol> oldParameters = module.getParameters();
 			final List<Expression> replacedParameters = parameterVisits.get();
 			final int n = oldParameters.size();
