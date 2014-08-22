@@ -21,7 +21,7 @@ public final class Demo1 {
 	 * <br>Unused
 	 */
 	public static final void main(final String[] commandLineArguments) {
-		final Session session = new Session().load(Standard.MODULE);
+		final Session session = new Session().trust(Standard.MODULE);
 		
 		session.claim("symmetry_of_identity",
 				$(forAll("x", "y"), $($("x", "=", "y"), "->", $("y", "=", "x"))));

@@ -1,7 +1,6 @@
 package averan.core;
 
 import static net.sourceforge.aprog.tools.Tools.cast;
-
 import averan.core.Module.Symbol;
 
 import java.io.Serializable;
@@ -64,6 +63,11 @@ public final class Pattern implements Serializable {
 		}
 		
 		return (E) expression.accept(rewriter);
+	}
+	
+	@Override
+	public final String toString() {
+		return this.getTemplate().toString();
 	}
 	
 	/**

@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import net.sourceforge.aprog.tools.Tools;
 import averan.core.Module.Symbol;
 
 /**
@@ -14,7 +15,7 @@ import averan.core.Module.Symbol;
  */
 public final class Session implements Serializable {
 	
-	private final List<Module> modules;
+	private final List<Module> trustedModules;
 	
 	private final List<ProofContext> stack;
 	
@@ -27,13 +28,17 @@ public final class Session implements Serializable {
 	}
 	
 	public Session(final String name, final Module mainModule) {
-		this.modules = new ArrayList<>();
+		this.trustedModules = new ArrayList<>();
 		this.stack = new ArrayList<ProofContext>();
 		this.stack.add(0, new ProofContext(name, mainModule, null));
 	}
 	
-	public final Session load(final Module module) {
-		this.modules.add(module);
+	public final List<Module> getTrustedModules() {
+		return this.trustedModules;
+	}
+	
+	public final Session trust(final Module module) {
+		this.getTrustedModules().add(module);
 		
 		return this;
 	}
@@ -111,9 +116,11 @@ public final class Session implements Serializable {
 	public final Session apply(final String factName, final String moduleName, final String conditionName) {
 		this.checkPropositionNameAvailable(factName);
 		
-		final Module module = this.getCurrentModule();
+		final Module context = this.getCurrentModule();
 		
-		module.new Apply(factName, module, moduleName, module, conditionName).execute();
+		Tools.debugPrint(context.getFactIndices());
+		
+		context.new Apply(factName, context, moduleName, context, conditionName).execute();
 		
 		return this.tryToPop();
 	}
@@ -148,6 +155,8 @@ public final class Session implements Serializable {
 		final int n = factIndices.size();
 		final int i = (n + index) % n;
 		
+		Tools.debugPrint(i);
+		
 		return factIndices.entrySet().stream().reduce(
 				"", (old, entry) -> entry.getValue().equals(i) ? entry.getKey() : old, (u, t) -> t);
 	}
@@ -168,7 +177,7 @@ public final class Session implements Serializable {
 		if (module.getPropositionOrNull(moduleName) == null) {
 			module = null;
 			
-			for (final Module otherModule : this.modules) {
+			for (final Module otherModule : this.trustedModules) {
 				if (otherModule.getPropositionOrNull(moduleName) != null) {
 					module = otherModule;
 					break;

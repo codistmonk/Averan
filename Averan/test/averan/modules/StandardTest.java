@@ -18,7 +18,7 @@ public final class StandardTest {
 	public final void test1() {
 		final Session session = new Session();
 		
-		session.load(Standard.MODULE);
+		session.trust(Standard.MODULE);
 		
 		final Expression expected = $($("1", "=", "2"), "->", $("2", "=", "1"));
 		
