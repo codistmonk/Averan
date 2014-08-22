@@ -31,6 +31,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import net.sourceforge.aprog.tools.Pair;
 import net.sourceforge.aprog.tools.Tools;
 
 import org.scilab.forge.jlatexmath.TeXFormula;
@@ -106,36 +107,38 @@ public final class Demo2 {
 		return null;
 	}
 	
-	public static final String justificationFor(final Module context, final Pattern pattern) {
-		String result = null;
+	public static final Pair<String, Pattern> justificationFor(final Module context, final Expression target) {
+		Pair<String, Pattern> result = null;
 		
 		for (Module c = context; c != null && result == null; c = c.getParent()) {
-			result = justificationFor(pattern, c.getFacts(), c.getFactIndices());
+			result = justificationFor(target, c.getFacts(), c.getFactIndices());
 			
 			if (result == null) {
-				result = justificationFor(pattern, c.getConditions(), c.getConditionIndices());
+				result = justificationFor(target, c.getConditions(), c.getConditionIndices());
 			}
 		}
 		
 		return result;
 	}
-
-	private static String justificationFor(final Pattern pattern,
+	
+	private static final Pair<String, Pattern> justificationFor(final Expression target,
 			final List<Expression> propositions, final Map<String, Integer> propositionIndices) {
 		for (final Map.Entry<String, Integer> entry : propositionIndices.entrySet()) {
 			final Expression proposition = propositions.get(entry.getValue());
 			
-			if (pattern.equals(proposition)) {
-				return entry.getKey();
+			if (target.equals(proposition)) {
+				return new Pair<>(entry.getKey(), new Pattern(target));
 			}
 			
 			Module module = cast(Module.class, proposition);
 			
 			if (module != null) {
 				module = module.canonical();
+				final List<Expression> facts = module.getFacts();
+				final Pattern pattern = patternFor(module, facts.get(facts.size() - 1));
 				
-				if (module.getFacts().contains(pattern)) {
-					return entry.getKey();
+				if (pattern.equals(target)) {
+					return new Pair<>(entry.getKey(), pattern);
 				}
 			}
 		}
@@ -143,15 +146,15 @@ public final class Demo2 {
 		return null;
 	}
 	
-	public static final String justificationFor(final Session session, final Pattern pattern) {
-		String result = justificationFor(session.getCurrentModule(), pattern);
+	public static final Pair<String, Pattern> justificationFor(final Session session, final Expression target) {
+		Pair<String, Pattern> result = justificationFor(session.getCurrentModule(), target);
 		
 		if (result != null) {
 			return result;
 		}
 		
 		for (final Module module : session.getTrustedModules()) {
-			result = justificationFor(module, pattern);
+			result = justificationFor(module, target);
 			
 			if (result != null) {
 				return result;
@@ -161,13 +164,13 @@ public final class Demo2 {
 		return null;
 	}
 	
-	public static final Pattern patternFor(final Session session, final Expression expression) {
+	public static final Pattern patternFor(final Module context, final Expression expression) {
 		final Rewriter rewriter = new Rewriter();
 		
 		scheduleAnyfyParameters(cast(Module.class, expression), rewriter);
 		
-		for (Module context = session.getCurrentModule(); context != null; context = context.getParent()) {
-			scheduleAnyfyParameters(context, rewriter);
+		for (Module c = context; c != null; c = c.getParent()) {
+			scheduleAnyfyParameters(c, rewriter);
 		}
 		
 		return new Pattern(expression.accept(rewriter));
@@ -184,18 +187,14 @@ public final class Demo2 {
 	}
 	
 	public static final void proveUsingBindAndApply(final Session session, final Expression expression) {
-		Pattern pattern = new Pattern(expression);
-		String justificationName = justificationFor(session, pattern);
+		Pair<String, Pattern> justificationNameAndPattern = justificationFor(session, expression);
 		
-		if (justificationName == null) {
-			pattern = patternFor(session, expression);
-			justificationName = justificationFor(session, pattern);
-		}
-		
-		if (justificationName == null) {
+		if (justificationNameAndPattern == null) {
 			throw new IllegalArgumentException("No justification found for: " + expression);
 		}
 		
+		final String justificationName = justificationNameAndPattern.getFirst();
+		final Pattern pattern = justificationNameAndPattern.getSecond();
 		final Expression justification = session.getProposition(justificationName);
 		final Module module = cast(Module.class, justification);
 		
@@ -212,7 +211,7 @@ public final class Demo2 {
 				final Bind bind = context.new Bind(context, justificationName);
 				
 				for (final Map.Entry<Any.Key, Expression> entry : pattern.getBindings().entrySet()) {
-					bind.bind(entry.getValue().toString(), (Expression) entry.getKey().getName());
+					bind.bind(entry.getKey().toString(), entry.getValue());
 				}
 				
 				bind.execute();
