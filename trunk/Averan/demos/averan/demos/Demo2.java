@@ -199,7 +199,7 @@ public final class Demo2 {
 		final Module module = cast(Module.class, justification);
 		
 		if (module == null) {
-			recall(justificationName);
+			recall(session, justificationName);
 		} else {
 			session.claim(expression);
 			
@@ -276,17 +276,17 @@ public final class Demo2 {
 					proveUsingBindAndApply(session(), real($(a, b)));
 					proveUsingBindAndApply(session(), real($($(a, b), "-", $(c, "+", $("-", d)))));
 					
-//					canonicalize(session(), goal(),
-//							new Noninversion("definition_of_subtraction"),
-//							new Noninversion("right_distributivity_of_multiplication_over_addition"),
-//							new Noninversion("associativity_of_addition"),
-//							new Inversion("ordering_of_terms"),
-//							new Inversion("commutativity_of_addition"),
-//							new Noninversion("associativity_of_multiplication"),
-//							new Inversion("commutativity_of_multiplication"),
-//							new Inversion("ordering_of_factors"),
-//							new Noninversion("left_distributivity_of_multiplication_over_addition")
-//					);
+					canonicalize(session(), goal(),
+							new Noninversion("definition_of_subtraction"),
+							new Noninversion("right_distributivity_of_multiplication_over_addition"),
+							new Noninversion("associativity_of_addition"),
+							new Inversion("ordering_of_terms"),
+							new Inversion("commutativity_of_addition"),
+							new Noninversion("associativity_of_multiplication"),
+							new Inversion("commutativity_of_multiplication"),
+							new Inversion("ordering_of_factors"),
+							new Noninversion("left_distributivity_of_multiplication_over_addition")
+					);
 				}
 				
 				BreakSessionException.breakSession();
@@ -450,15 +450,18 @@ public final class Demo2 {
 		
 		for (final AlgebraicProperty transformationRule : transformationRules) {
 			Tools.debugPrint(transformationRule.getJustification(), s.getProposition(transformationRule.getJustification()));
+			final Composite proposition = s.getFact(-1);
 			final String propositionName = s.getFactName(-1);
 			final Pattern pattern = transformationRule.newLeftPattern(session);
-			final Integer index = s.getFact(-1).accept(new IndexFinder(pattern));
+			final Integer index = proposition.accept(new IndexFinder(true, pattern));
 			
-			Tools.debugPrint(index, pattern.getTemplate(), s.getFact(-1));
+			Tools.debugPrint(index, pattern.getTemplate(), proposition);
 			
 			if (0 <= index) {
 				transformationRule.bindAndApply(s, pattern);
-//				s.rewrite(propositionName, s.getFactName(-1), index);
+				s.rewrite(propositionName, s.getFactName(-1), index);
+				new SessionExporter(s).exportSession();
+				System.exit(0);
 				break;
 			}
 		}
@@ -473,71 +476,156 @@ public final class Demo2 {
 		
 		private final Pattern pattern;
 		
+		private final boolean waitForTopLevelRHS;
+		
 		private int index;
 		
+		private int subindex;
+		
+		private int level;
+		
+		private boolean active;
+		
 		public IndexFinder(final Pattern pattern) {
+			this(false, pattern);
+		}
+		
+		public IndexFinder(final boolean waitForTopLevelRHS, final Pattern pattern) {
 			this.pattern = pattern;
+			this.waitForTopLevelRHS = waitForTopLevelRHS;
 			this.index = -1;
+			this.subindex = -1;
+			this.level = -1;
+			this.active = !this.waitForTopLevelRHS;
 		}
 		
 		public final Pattern getPattern() {
 			return this.pattern;
 		}
 		
+		private final void beginVisit(final Expression expression) {
+			++this.level;
+		}
+		
+		private final void endVisit(final Expression expression) {
+			Tools.debugPrint(this.level, expression);
+			if (this.level == 1 && this.subindex == 1 && Module.EQUAL.equals(expression)) {
+				this.active = true;
+			}
+			
+			--this.level;
+		}
+		
+		private final boolean isActive() {
+			return this.active;
+		}
+		
 		@Override
 		public final Integer visit(final Any any) {
-			++this.index;
+			try {
+				this.beginVisit(any);
+				
+//				++this.index;
+//				
+//				return this.isInTopLevel() && this.pattern.equals(any) ? this.index : -1;
+				return this.computeResult(this.pattern.equals(any));
+			} finally {
+				this.endVisit(any);
+			}
+		}
+		
+		private final Integer computeResult(final boolean match) {
+			if (match) {
+				++this.index;
+				
+				if (this.isActive()) {
+					return this.index;
+				}
+			}
 			
-			return this.pattern.equals(any) ? this.index : -1;
+			return -1;
 		}
 		
 		@Override
 		public final Integer visit(final Composite composite) {
-			++this.index;
-			
-			if (this.getPattern().equals(composite)) {
-				return this.index;
+			try {
+				this.beginVisit(composite);
+				
+				if (0 <= this.computeResult(this.getPattern().equals(composite))) {
+					return this.index;
+				}
+//				++this.index;
+//				
+//				if (this.isInTopLevel() && this.getPattern().equals(composite)) {
+//					return this.index;
+//				}
+				
+				return this.findIndexIn(composite.getChildren());
+			} finally {
+				this.endVisit(composite);
 			}
-			
-			return this.findIndexIn(composite.getChildren());
 		}
 		
 		@Override
 		public final Integer visit(final Symbol symbol) {
-			++this.index;
-			
-			return this.pattern.equals(symbol) ? this.index : -1;
+			try {
+				this.beginVisit(symbol);
+				
+//				++this.index;
+//				
+//				return this.isInTopLevel() && this.pattern.equals(symbol) ? this.index : -1;
+				return this.computeResult(this.pattern.equals(symbol));
+			} finally {
+				this.endVisit(symbol);
+			}
 		}
 		
 		@Override
 		public final Integer visit(final Module module) {
-			++this.index;
-			
-			if (this.getPattern().equals(module)) {
-				return this.index;
+			try {
+				this.beginVisit(module);
+				
+//				++this.index;
+//				
+//				if (this.isInTopLevel() && this.getPattern().equals(module)) {
+//					return this.index;
+//				}
+				
+				if (0 <= this.computeResult(this.getPattern().equals(module))) {
+					return this.index;
+				}
+				
+				Integer result = this.findIndexIn(module.getParameters());
+				
+				if (result < 0) {
+					result = this.findIndexIn(module.getConditions());
+				}
+				
+				if (result < 0) {
+					result = this.findIndexIn(module.getFacts());
+				}
+				
+				return result;
+			} finally {
+				this.endVisit(module);
 			}
-			
-			Integer result = this.findIndexIn(module.getParameters());
-			
-			if (result < 0) {
-				result = this.findIndexIn(module.getConditions());
-			}
-			
-			if (result < 0) {
-				result = this.findIndexIn(module.getFacts());
-			}
-			
-			return result;
 		}
 		
 		private final Integer findIndexIn(final List<? extends Expression> list) {
-			for (final Expression child : list) {
+			final int n = list.size();
+			
+			for (int i = 0; i < n; ++i) {
+				final Expression child = list.get(i);
+				this.subindex = i;
 				final Integer result = child.accept(this);
+				this.subindex = i;
 				
 				if (0 <= result) {
 					return result;
 				}
 			}
+			
+			this.subindex = -1;
 			
 			return -1;
 		}
@@ -678,16 +766,19 @@ public final class Demo2 {
 				
 				while (module != null && !module.getConditions().isEmpty()) {
 					final Expression condition = module.getConditions().get(0);
-					Tools.debugPrint(condition, session.getFact(-1));
-					final String propositionName = propositionNameOrNull(session, new Pattern(condition));
-					
-					if (propositionName == null) {
-						Tools.debugPrint(propositionName(session, this.anyfy(module, condition)));
-					}
-					
-					Tools.debugPrint(session.getFactName(-1), propositionName);
-					Tools.debugPrint(session.getCurrentModule().getFactIndices());
-					session.apply(session.getFactName(-1), propositionName);
+					Tools.debugPrint(condition);
+					proveUsingBindAndApply(session, condition);
+					session.apply(session.getFactName(-2), session.getFactName(-1));
+//					Tools.debugPrint(condition, session.getFact(-1));
+//					final String propositionName = propositionNameOrNull(session, new Pattern(condition));
+//					
+//					if (propositionName == null) {
+//						Tools.debugPrint(propositionName(session, this.anyfy(module, condition)));
+//					}
+//					
+//					Tools.debugPrint(session.getFactName(-1), propositionName);
+//					Tools.debugPrint(session.getCurrentModule().getFactIndices());
+//					session.apply(session.getFactName(-1), propositionName);
 					module = cast(Module.class, session.getFact(-1));
 				}
 			}
