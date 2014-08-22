@@ -27,8 +27,9 @@ public final class Pattern implements Serializable {
 		return this.bindings;
 	}
 	
-	public final Expression getTemplate() {
-		return this.template;
+	@SuppressWarnings("unchecked")
+	public final <E extends Expression> E getTemplate() {
+		return (E) this.template;
 	}
 	
 	@Override
@@ -51,6 +52,17 @@ public final class Pattern implements Serializable {
 	@SuppressWarnings("unchecked")
 	public final <E extends Expression> E get(final String anyName, final int anyNumber) {
 		return (E) this.getBindings().get(new Any.Key(anyName, anyNumber));
+	}
+	
+	@SuppressWarnings("unchecked")
+	public final <E extends Expression> E express(final Expression expression) {
+		final Rewriter rewriter = new Rewriter();
+		
+		for (final Map.Entry<Any.Key, Expression> entry : this.bindings.entrySet()) {
+			rewriter.rewrite(new Any(entry.getKey()).setBindings(this.bindings), entry.getValue());
+		}
+		
+		return (E) expression.accept(rewriter);
 	}
 	
 	/**
@@ -148,16 +160,23 @@ public final class Pattern implements Serializable {
 			this.key = new Key(name, number);
 		}
 		
-		@SuppressWarnings("unchecked")
+		public Any(final Key key) {
+			this.key = key;
+		}
+		
 		@Override
 		public final <R> R accept(final Visitor<R> visitor) {
-			this.bindings = ((SetBindings) visitor).getBindings();
-			
-			return (R) this;
+			return visitor.visit(this);
 		}
 		
 		@Override
 		public final boolean equals(final Object object) {
+			final Any that = cast(this.getClass(), object);
+			
+			if (that != null && this.key.equals(that.key)) {
+				return true;
+			}
+			
 			final Expression alreadyBound = this.bindings.get(this.key);
 			
 			if (alreadyBound == null) {
@@ -174,8 +193,10 @@ public final class Pattern implements Serializable {
 			return this.key.toString();
 		}
 		
-		final void setBindings(final Map<Any.Key, Expression> bindings) {
+		final Any setBindings(final Map<Any.Key, Expression> bindings) {
 			this.bindings = bindings;
+			
+			return this;
 		}
 		
 		@Override
@@ -270,6 +291,13 @@ public final class Pattern implements Serializable {
 		@Override
 		public final Expression visit(final Symbol symbol) {
 			return symbol;
+		}
+		
+		@Override
+		public final Expression visit(final Any any) {
+			any.setBindings(this.getBindings());
+			
+			return any;
 		}
 		
 		public final Map<Any.Key, Expression> getBindings() {
