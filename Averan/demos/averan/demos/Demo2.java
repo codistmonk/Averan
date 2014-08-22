@@ -1,17 +1,20 @@
 package averan.demos;
 
 import static averan.core.ExpressionTools.$;
+import static averan.core.StructureMatcher.listsMatch;
 import static averan.core.SessionTools.*;
 import static averan.io.ExpressionParser.$$;
 import static averan.modules.Standard.*;
 import static java.awt.Color.BLACK;
 import static java.awt.Color.WHITE;
 import static java.util.stream.Collectors.toList;
+
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Module;
 import averan.core.Module.Symbol;
 import averan.core.Pattern;
+import averan.core.Pattern.Any;
 import averan.core.Rewriter;
 import averan.core.Session;
 import averan.core.Visitor;
@@ -25,7 +28,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import net.sourceforge.aprog.tools.Tools;
 
@@ -258,10 +260,13 @@ public final class Demo2 {
 		}
 		
 		@Override
+		public final Expression visit(final Any any) {
+			throw new IllegalArgumentException();
+		}
+		
+		@Override
 		public final Expression visit(final Composite composite) {
 			final Expression compositeVisit = this.tryToReplace(composite);
-			
-			Tools.debugPrint(composite, compositeVisit);
 			
 			if (compositeVisit != composite) {
 				return compositeVisit;
@@ -269,7 +274,7 @@ public final class Demo2 {
 			
 			final List<Expression> childVisits = composite.childrenAcceptor(this).get();
 			
-			if (Rewriter.equals2(composite.getChildren(), childVisits)) {
+			if (listsMatch(composite.getChildren(), childVisits)) {
 				return composite;
 			}
 			
@@ -295,9 +300,9 @@ public final class Demo2 {
 			final List<Expression> conditionVisits = module.conditionsAcceptor(this).get();
 			final List<Expression> factVisits = module.factsAcceptor(this).get();
 			
-			if (Rewriter.equals2(module.getParameters(), parameterVisits)
-					&& Rewriter.equals2(module.getConditions(), conditionVisits)
-					&& Rewriter.equals2(module.getFacts(), factVisits)) {
+			if (listsMatch(module.getParameters(), parameterVisits)
+					&& listsMatch(module.getConditions(), conditionVisits)
+					&& listsMatch(module.getFacts(), factVisits)) {
 				return module;
 			}
 			

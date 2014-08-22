@@ -1,6 +1,7 @@
 package averan.core;
 
 import static net.sourceforge.aprog.tools.Tools.cast;
+
 import averan.core.Module.Symbol;
 
 import java.io.Serializable;
@@ -8,8 +9,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2014-08-09)
@@ -64,8 +63,6 @@ public final class Pattern implements Serializable {
 			rewriter.rewrite(new Any(entry.getKey()).setBindings(this.bindings), entry.getValue());
 		}
 		
-		Tools.debugPrint(expression, rewriter.getRewrites());
-		
 		return (E) expression.accept(rewriter);
 	}
 	
@@ -85,6 +82,11 @@ public final class Pattern implements Serializable {
 	public static final Pattern anyfy(final Expression expression) {
 		final Map<String, List<Module>> parameterNameUsage = new HashMap<>();
 		final Pattern result = new Pattern(expression.accept(new Visitor<Expression>() {
+			
+			@Override
+			public final Expression visit(final Any any) {
+				throw new IllegalArgumentException();
+			}
 			
 			@Override
 			public final Expression visit(final Composite composite) {

@@ -21,6 +21,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
+import averan.core.Pattern.Any;
 import net.sourceforge.aprog.tools.Pair;
 import net.sourceforge.aprog.tools.Tools;
 
@@ -562,6 +563,11 @@ public final class Module implements Expression {
 			final AtomicBoolean alreadyInUse = new AtomicBoolean();
 			
 			Module.this.accept(new Visitor<Void>() {
+				
+				@Override
+				public final Void visit(final Any any) {
+					throw new IllegalArgumentException();
+				}
 				
 				@Override
 				public final Void visit(final Composite composite) {
