@@ -12,6 +12,7 @@ import org.junit.Test;
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Module;
+import averan.core.Pattern.Any;
 import averan.core.Visitor;
 import averan.core.Module.Symbol;
 
@@ -53,6 +54,11 @@ public final class VisitorTest {
 		
 		public final List<Event> getEvents() {
 			return this.events;
+		}
+		
+		@Override
+		public final Expression visit(final Any any) {
+			throw new IllegalArgumentException();
 		}
 		
 		@Override

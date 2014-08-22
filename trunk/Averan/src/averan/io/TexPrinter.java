@@ -7,14 +7,15 @@ import static java.util.regex.Matcher.quoteReplacement;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.join;
 import static net.sourceforge.aprog.tools.Tools.list;
-
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Module;
 import averan.core.Module.Statement;
 import averan.core.Module.Symbol;
 import averan.core.Pattern;
+import averan.core.Pattern.Any;
 import averan.core.Visitor;
+import averan.io.TexPrinter.DisplayHint;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -216,6 +217,11 @@ public final class TexPrinter implements SessionExporter.Output {
 		
 		public final Map<Object, DisplayHint> getDisplayHints() {
 			return this.displayHints;
+		}
+		
+		@Override
+		public final Pair<String, DisplayHint> visit(final Any any) {
+			throw new IllegalArgumentException();
 		}
 		
 		@Override
