@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Map;
 
 import net.sourceforge.aprog.tools.Pair;
-import net.sourceforge.aprog.tools.Tools;
 
 import org.scilab.forge.jlatexmath.TeXFormula;
 
@@ -200,13 +199,10 @@ public final class Demo2 {
 		
 		if (module == null) {
 			recall(session, justificationName);
-		} else {
+		} else if (!Standard.ELIMINATION_OF_FALSE.equals(justificationName)) {
 			session.claim(expression);
 			
 			{
-				Tools.debugPrint(justification);
-				Tools.debugPrint(pattern.getBindings());
-				
 				final Module context = session.getCurrentModule();
 				final Bind bind = context.new Bind(context, justificationName);
 				
@@ -217,7 +213,13 @@ public final class Demo2 {
 				bind.execute();
 				
 				for (Module last = cast(Module.class, session.getFact(-1)); last != null && !last.getConditions().isEmpty(); last = cast(Module.class, session.getFact(-1))) {
-					proveUsingBindAndApply(session, last.getConditions().get(0));
+					final Expression condition = last.getConditions().get(0);
+					
+					if (expression.equals(condition)) {
+						throw new IllegalStateException("Circularity: " + condition + " needed to prove itself");
+					}
+					
+					proveUsingBindAndApply(session, condition);
 					session.apply(session.getFactName(-2), session.getFactName(-1));
 				}
 			}
@@ -231,6 +233,8 @@ public final class Demo2 {
 			{
 				suppose("definition_of_subtraction",
 						$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x-y)=(x+('-'y)))))"));
+				suppose("tmp",
+						$$("'-'∈ℝ"));
 				suppose("type_of_opposite",
 						$$("∀x ((x∈ℝ) → (('-'x)∈ℝ))"));
 				suppose("type_of_addition",
@@ -431,38 +435,33 @@ public final class Demo2 {
 	}
 	
 	public static final void canonicalize(final Session session, final Expression expression, final AlgebraicProperty... transformationRules) {
-//		final AlgebraicCanonicalizer canonicalizer = new AlgebraicCanonicalizer(session).addRules(transformationRules);
-//		Expression oldExpression = expression;
-//		Expression newExpression = expression.accept(canonicalizer);
-//		
-//		while (oldExpression != newExpression) {
-//			Tools.debugPrint(oldExpression, newExpression);
-//			
-//			oldExpression = newExpression;
-//			newExpression = newExpression.accept(canonicalizer);
-//		}
-//		
-//		Tools.debugPrint(oldExpression, newExpression);
+		boolean keepGoing = true;
 		final Module module = new Module(session.getCurrentModule());
 		final Session s = new Session(module);
 		
 		s.bind(IDENTITY, expression);
 		
-		for (final AlgebraicProperty transformationRule : transformationRules) {
-			Tools.debugPrint(transformationRule.getJustification(), s.getProposition(transformationRule.getJustification()));
-			final Composite proposition = s.getFact(-1);
-			final String propositionName = s.getFactName(-1);
-			final Pattern pattern = transformationRule.newLeftPattern(session);
-			final Integer index = proposition.accept(new IndexFinder(true, pattern));
+		while (keepGoing) {
+			keepGoing = false;
 			
-			Tools.debugPrint(index, pattern.getTemplate(), proposition);
-			
-			if (0 <= index) {
-				transformationRule.bindAndApply(s, pattern);
-				s.rewrite(propositionName, s.getFactName(-1), index);
-				new SessionExporter(s).exportSession();
-				System.exit(0);
-				break;
+			for (final AlgebraicProperty transformationRule : transformationRules) {
+				final Composite proposition = s.getFact(-1);
+				final String propositionName = s.getFactName(-1);
+				final Pattern pattern = transformationRule.newLeftPattern(session);
+				final Integer index = proposition.accept(new IndexFinder(true, pattern));
+				
+				if (0 <= index) {
+					transformationRule.bindAndApply(s, pattern);
+					s.rewrite(propositionName, s.getFactName(-1), index);
+				}
+				
+				final Expression last = s.getFact(-1);
+				
+				if (last.toString().compareTo(proposition.toString()) < 0) {
+					keepGoing = true;
+				} else {
+					recall(s, propositionName);
+				}
 			}
 		}
 		
@@ -508,7 +507,6 @@ public final class Demo2 {
 		}
 		
 		private final void endVisit(final Expression expression) {
-			Tools.debugPrint(this.level, expression);
 			if (this.level == 1 && this.subindex == 1 && Module.EQUAL.equals(expression)) {
 				this.active = true;
 			}
@@ -525,9 +523,6 @@ public final class Demo2 {
 			try {
 				this.beginVisit(any);
 				
-//				++this.index;
-//				
-//				return this.isInTopLevel() && this.pattern.equals(any) ? this.index : -1;
 				return this.computeResult(this.pattern.equals(any));
 			} finally {
 				this.endVisit(any);
@@ -554,11 +549,6 @@ public final class Demo2 {
 				if (0 <= this.computeResult(this.getPattern().equals(composite))) {
 					return this.index;
 				}
-//				++this.index;
-//				
-//				if (this.isInTopLevel() && this.getPattern().equals(composite)) {
-//					return this.index;
-//				}
 				
 				return this.findIndexIn(composite.getChildren());
 			} finally {
@@ -571,9 +561,6 @@ public final class Demo2 {
 			try {
 				this.beginVisit(symbol);
 				
-//				++this.index;
-//				
-//				return this.isInTopLevel() && this.pattern.equals(symbol) ? this.index : -1;
 				return this.computeResult(this.pattern.equals(symbol));
 			} finally {
 				this.endVisit(symbol);
@@ -584,12 +571,6 @@ public final class Demo2 {
 		public final Integer visit(final Module module) {
 			try {
 				this.beginVisit(module);
-				
-//				++this.index;
-//				
-//				if (this.isInTopLevel() && this.getPattern().equals(module)) {
-//					return this.index;
-//				}
 				
 				if (0 <= this.computeResult(this.getPattern().equals(module))) {
 					return this.index;
@@ -766,8 +747,11 @@ public final class Demo2 {
 				
 				while (module != null && !module.getConditions().isEmpty()) {
 					final Expression condition = module.getConditions().get(0);
-					Tools.debugPrint(condition);
+//					Tools.debugPrint(condition);
 					proveUsingBindAndApply(session, condition);
+					
+//					new SessionExporter(session).exportSession();
+					
 					session.apply(session.getFactName(-2), session.getFactName(-1));
 //					Tools.debugPrint(condition, session.getFact(-1));
 //					final String propositionName = propositionNameOrNull(session, new Pattern(condition));
