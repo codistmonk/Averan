@@ -49,10 +49,7 @@ public final class StructureMatcher extends Zipper<Boolean> {
 		}
 		
 		for (int i = 0; i < n; ++i) {
-			final Expression expression1 = list1.get(i);
-			final Expression expression2 = list2.get(i);
-			
-			if (!expression1.accept(new StructureMatcher(expression2))) {
+			if (!list1.get(i).accept(new StructureMatcher(list2.get(i)))) {
 				return false;
 			}
 		}
