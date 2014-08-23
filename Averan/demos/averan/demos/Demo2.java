@@ -243,9 +243,6 @@ public final class Demo2 {
 					canonicalize(goal.get(0), transformationRules);
 					canonicalize(goal.get(2), transformationRules);
 					rewriteRight(factName(-2), factName(-1));
-					
-					Tools.debugPrint(fact(-1));
-					Tools.debugPrint(fact(-1).equals(goal));
 				}
 				
 				BreakSessionException.breakSession();
@@ -417,17 +414,12 @@ public final class Demo2 {
 					
 					final Expression last = s.getFact(-1);
 					
-					Tools.debugPrint(index, pattern);
-					Tools.debugPrint(expression, proposition, last);
-					
 					if (transformationRule instanceof Inversion && 0 <= last.toString().compareTo(proposition.toString())) {
 						recall(s, propositionName);
 					} else {
 						keepGoing = true;
 						break;
 					}
-					
-					Tools.debugPrint(expression, last, keepGoing);
 				}
 			}
 		}
