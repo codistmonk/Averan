@@ -99,7 +99,7 @@ public final class Standard {
 		final Expression source = session.getProposition(sourceName);
 		final Composite equality = session.getProposition(equalityName);
 		
-		claim(source.accept(new Rewriter().rewrite(equality.get(2), equality.get(0))));
+		session.claim(source.accept(new Rewriter().rewrite(equality.get(2), equality.get(0))));
 		{
 			unifyAndApply(session, SYMMETRY_OF_EQUALITY, equalityName);
 			session.rewrite(sourceName, session.getFactName(-1), indices);

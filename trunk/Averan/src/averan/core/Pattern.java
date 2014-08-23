@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.sourceforge.aprog.tools.Tools;
+
 /**
  * @author codistmonk (creation 2014-08-09)
  */
@@ -24,7 +26,37 @@ public final class Pattern implements Serializable {
 	}
 	
 	public final Pattern copy() {
-		final Pattern result = new Pattern(this.getTemplate());
+		final Pattern result = new Pattern(this.getTemplate().accept(new Visitor<Expression>() {
+			
+			@Override
+			public final Expression visit(final Any any) {
+				return new Any(any.getKey());
+			}
+			
+			@Override
+			public final Expression visit(final Composite composite) {
+				return new Composite(composite.childrenAcceptor(this).get());
+			}
+			
+			@Override
+			public final Expression visit(final Symbol symbol) {
+				return symbol;
+			}
+			
+			@Override
+			public final Expression visit(final Module module) {
+				return new Module(module.getParent(), module.getName(),
+						(List) module.parametersAcceptor(this).get(),
+						module.conditionsAcceptor(this).get(),
+						module.factsAcceptor(this).get());
+			}
+			
+			/**
+			 * {@value}.
+			 */
+			private static final long serialVersionUID = -7084493920222354942L;
+			
+		}));
 		
 		result.getBindings().putAll(this.getBindings());
 		
@@ -75,7 +107,7 @@ public final class Pattern implements Serializable {
 	
 	@Override
 	public final String toString() {
-		return this.getTemplate().toString();
+		return this.getTemplate().toString() + this.getBindings();
 	}
 	
 	/**
@@ -182,6 +214,10 @@ public final class Pattern implements Serializable {
 			this.key = key;
 		}
 		
+		public final Key getKey() {
+			return this.key;
+		}
+		
 		@Override
 		public final <R> R accept(final Visitor<R> visitor) {
 			return visitor.visit(this);
@@ -191,14 +227,14 @@ public final class Pattern implements Serializable {
 		public final boolean equals(final Object object) {
 			final Any that = cast(this.getClass(), object);
 			
-			if (that != null && this.key.equals(that.key)) {
+			if (that != null && this.getKey().equals(that.getKey())) {
 				return true;
 			}
 			
-			final Expression alreadyBound = this.bindings.get(this.key);
+			final Expression alreadyBound = this.bindings.get(this.getKey());
 			
 			if (alreadyBound == null) {
-				this.bindings.put(this.key, (Expression) object);
+				this.bindings.put(this.getKey(), (Expression) object);
 				
 				return true;
 			}
@@ -208,7 +244,7 @@ public final class Pattern implements Serializable {
 		
 		@Override
 		public final String toString() {
-			return this.key.toString();
+			return this.getKey().toString();
 		}
 		
 		final Any setBindings(final Map<Any.Key, Expression> bindings) {
