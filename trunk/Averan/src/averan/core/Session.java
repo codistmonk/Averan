@@ -258,14 +258,11 @@ public final class Session implements Serializable {
 	
 	private final Session tryToPop() {
 		while (1 < this.getStack().size() && this.getCurrentContext().isGoalReached()) {
-			Tools.debugPrint(this.getCurrentGoal(), this.getCurrentContext());
 			final ProofContext previous = this.getStack().remove(0);
 			final Module proof = previous.getModule();
 			final Expression fact = previous.getInitialGoal();
 			
 			this.getCurrentModule().new Claim(previous.getName(), fact, proof).execute();
-			Tools.debugPrint(this.getCurrentGoal(), this.getCurrentContext());
-			Tools.debugPrint(this.getStack().size(), this.getCurrentContext().isGoalReached());
 		}
 		
 		return this;
