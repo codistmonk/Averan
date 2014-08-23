@@ -1,6 +1,6 @@
 package averan.demos;
 
-import static averan.core.ExpressionTools.$;
+import static averan.core.ExpressionTools.*;
 import static averan.core.StructureMatcher.listsMatch;
 import static averan.core.SessionTools.*;
 import static averan.io.ExpressionParser.$$;
@@ -9,6 +9,7 @@ import static java.awt.Color.BLACK;
 import static java.awt.Color.WHITE;
 import static java.util.stream.Collectors.toList;
 import static net.sourceforge.aprog.tools.Tools.cast;
+
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Module;
@@ -27,8 +28,8 @@ import averan.modules.Standard;
 import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -123,6 +124,10 @@ public final class Demo2 {
 		}
 	}
 	
+	public static final void proveUsingBindAndApply(final Expression expression) {
+		proveUsingBindAndApply(session(), expression);
+	}
+	
 	public static final void proveUsingBindAndApply(final Session session, final Expression expression) {
 		Pair<String, Pattern> justificationNameAndPattern = justificationFor(session, expression);
 		
@@ -203,21 +208,24 @@ public final class Demo2 {
 						$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → (((xz)y)=((xy)z)))))"));
 				
 //				claim("test", $$("∀a,b,c,d ((c+(a-(ba))d)=((ad)-(abd)+c))"));
-				claim("test", $$("∀a,b,c,d ((bda)=(adb))"));
+				claim("test", $(forAll("a", "b", "c", "d"),
+						rule(real($("a")), rule(real($("b")), rule(real($("c")), rule(real($("d")),
+//								$$("(bda)=(adb)")))))));
+								$$("(c+(a-(ba))d)=((ad)-(abd)+c)")))))));
 				{
 					final Symbol a = introduce();
 					final Symbol b = introduce();
 					final Symbol c = introduce();
 					final Symbol d = introduce();
 					
-					suppose(real(a));
-					suppose(real(b));
-					suppose(real(c));
-					suppose(real(d));
+					introduce();
+					introduce();
+					introduce();
+					introduce();
 					
-					proveUsingBindAndApply(session(), real(a));
-					proveUsingBindAndApply(session(), real($(a, b)));
-					proveUsingBindAndApply(session(), real($($(a, b), "-", $(c, "+", $("-", d)))));
+					proveUsingBindAndApply(real(a));
+					proveUsingBindAndApply(real($(a, b)));
+					proveUsingBindAndApply(real($($(a, b), "-", $(c, "+", $("-", d)))));
 					
 					final AlgebraicProperty[] transformationRules = {
 							new Noninversion("definition_of_subtraction"),
@@ -232,8 +240,12 @@ public final class Demo2 {
 					};
 					final Composite goal = goal();
 					
-					canonicalize(session(), goal.get(0), transformationRules);
-					canonicalize(session(), goal.get(2), transformationRules);
+					canonicalize(goal.get(0), transformationRules);
+					canonicalize(goal.get(2), transformationRules);
+					rewriteRight(factName(-2), factName(-1));
+					
+					Tools.debugPrint(fact(-1));
+					Tools.debugPrint(fact(-1).equals(goal));
 				}
 				
 				BreakSessionException.breakSession();
@@ -377,6 +389,10 @@ public final class Demo2 {
 		}
 	}
 	
+	public static final void canonicalize(final Expression expression, final AlgebraicProperty... transformationRules) {
+		canonicalize(session(), expression, transformationRules);
+	}
+	
 	public static final void canonicalize(final Session session, final Expression expression, final AlgebraicProperty... transformationRules) {
 		boolean keepGoing = true;
 		final Module module = new Module(session.getCurrentModule());
@@ -392,22 +408,23 @@ public final class Demo2 {
 				final String propositionName = s.getFactName(-1);
 				final List<Pair<Integer, Pattern>> indices = proposition.accept(new IndexFinder(true, transformationRule.newLeftPattern(session)));
 				
-				if (0 < indices.size() && 0 <= indices.get(0).getFirst()) {
-					final Integer index = indices.get(0).getFirst();
-					final Pattern pattern = indices.get(0).getSecond();
+				for (final Pair<Integer, Pattern> pair : indices) {
+					final Integer index = pair.getFirst();
+					final Pattern pattern = pair.getSecond();
 					
 					transformationRule.bindAndApply(s, pattern);
 					s.rewrite(propositionName, s.getFactName(-1), index);
 					
 					final Expression last = s.getFact(-1);
 					
-					Tools.debugPrint(transformationRule.getJustification());
-					Tools.debugPrint(expression, last);
+					Tools.debugPrint(index, pattern);
+					Tools.debugPrint(expression, proposition, last);
 					
 					if (transformationRule instanceof Inversion && 0 <= last.toString().compareTo(proposition.toString())) {
 						recall(s, propositionName);
 					} else {
 						keepGoing = true;
+						break;
 					}
 					
 					Tools.debugPrint(expression, last, keepGoing);
@@ -437,6 +454,8 @@ public final class Demo2 {
 		
 		private final List<Pair<Integer, Pattern>> result;
 		
+		private final Map<Object, Integer> indices;
+		
 		public IndexFinder(final Pattern pattern) {
 			this(false, pattern);
 		}
@@ -449,6 +468,7 @@ public final class Demo2 {
 			this.level = -1;
 			this.active = !this.waitForTopLevelRHS;
 			this.result = new ArrayList<>();
+			this.indices = new HashMap<>();
 		}
 		
 		public final Pattern getPattern() {
@@ -506,9 +526,13 @@ public final class Demo2 {
 		private final List<Pair<Integer, Pattern>> computeResult(final boolean match) {
 			if (match) {
 				++this.index;
+				final Pattern patternCopy = this.getPattern().copy();
+				final Integer patternIndex = this.indices.compute(patternCopy.getBindings(),
+						(k, v) -> v == null ? 0 : v + 1);
 				
 				if (this.isActive()) {
-					this.result.add(new Pair<>(this.index, this.pattern.copy()));
+//					this.result.add(new Pair<>(this.index, patternCopy));
+					this.result.add(new Pair<>(patternIndex, patternCopy));
 				}
 			}
 			
