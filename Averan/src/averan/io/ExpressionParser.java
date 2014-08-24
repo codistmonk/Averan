@@ -203,14 +203,9 @@ public final class ExpressionParser implements Serializable {
 	        namedRule("expression",        "EXPRESSION", /* -> */  "ℝ"),
 	        namedRule("list",              "PARAMETERS", /* -> */ "PARAMETERS", ",", "IDENTIFIER"),
 	        namedRule("list",              "PARAMETERS", /* -> */ "IDENTIFIER"),
-//	        namedRule("identifier",        "IDENTIFIER", /* -> */  "≀", "WORD"),
-	        namedRule("identifier",        "IDENTIFIER", /* -> */  "≀", "CWORD"),
 	        namedRule("identifier",        "IDENTIFIER", /* -> */  "≀", "VARIABLE"),
-//	        namedRule("identifier",        "IDENTIFIER", /* -> */  "WORD"),
 	        namedRule("identifier",        "IDENTIFIER", /* -> */  "VARIABLE"),
 	        namedRule("identifier",        "IDENTIFIER", /* -> */  "STRING")
-//	        namedRule("concatenation",     "WORD",       /* -> */  "WORD", "VARIABLE"),
-//	        namedRule("concatenation",     "WORD",       /* -> */  "`", "VARIABLE")
 		)/*, verbatimWordRules()*/);
 		
 //		static final ParserRule[] verbatimWordRules() {
