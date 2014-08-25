@@ -9,7 +9,6 @@ import static java.awt.Color.BLACK;
 import static java.awt.Color.WHITE;
 import static java.util.stream.Collectors.toList;
 import static net.sourceforge.aprog.tools.Tools.cast;
-
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Module;
@@ -20,6 +19,7 @@ import averan.core.Pattern.Any;
 import averan.core.Rewriter;
 import averan.core.Session;
 import averan.core.Visitor;
+import averan.io.ExpressionParser2;
 import averan.io.SessionExporter;
 import averan.io.TexPrinter;
 import averan.io.TexPrinter.DisplayHint;
@@ -207,9 +207,8 @@ public final class Demo2 {
 				admit("ordering_of_factors",
 						$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → (((xz)y)=((xy)z)))))"));
 				
-//				claim("test", $$("∀a,b,c,d ((c+(a-(ba))d)=((ad)-(abd)+c))"));
 				claim("test", $(forAll("a", "b", "c", "d"),
-						rule(real($("a")), rule(real($("b")), rule(real($("c")), rule(real($("d")),
+						$(real($("a")), "->", $(real($("b")), "->", $(real($("c")), "->", $(real($("d")), "->",
 //								$$("(bda)=(adb)")))))));
 								$$("(c+(a-(ba))d)=((ad)-(abd)+c)")))))));
 				{
@@ -1027,6 +1026,7 @@ public final class Demo2 {
 	 */
 	public static final void main(final String[] commandLineArguments) {
 		// NOP
+		Tools.debugPrint(ExpressionParser2.$$("(a+b)+c"));
 	}
 	
 	/**
