@@ -244,7 +244,7 @@ public final class Demo2 {
 					rewriteRight(factName(-2), factName(-1));
 				}
 				
-				BreakSessionException.breakSession();
+//				BreakSessionException.breakSession();
 			}
 			
 			suppose("definition_of_conjunction",
@@ -298,28 +298,28 @@ public final class Demo2 {
 					$$("∀n ('columnCount'_(U_n)=1)"));
 			suppose("definition_of_U",
 					$$("∀n (0<n → (∀i (U_n_(i,1)=1/n)))"));
-			suppose("definition_of_subtraction",
-					$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x-y)=(x+('-'y)))))"));
-			admit("commutativity_of_multiplication",
-					$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((xy)=(yx))))"));
-			admit("type_of_multiplication",
-					$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((xy)∈ℝ)))"));
-			admit("commutativity_of_addition",
-					$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x+y)=(y+x))))"));
-			admit("type_of_addition",
-					$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x+y)∈ℝ)))"));
-			admit("associativity_of_addition",
-					$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((x+(y+z))=((x+y)+z)))))"));
-			admit("associativity_of_multiplication",
-					$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((x(yz))=((xy)z)))))"));
-			admit("right_distributivity_of_multiplication_over_addition",
-					$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → (((a+b)c)=((ac)+(bc))))))"));
-			admit("left_distributivity_of_multiplication_over_addition",
-					$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((a(b+c))=((ab)+(ac))))))"));
-			admit("right_distributivity_of_multiplication_over_subtraction",
-					$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → (((a-b)c)=((ac)-(bc))))))"));
-			admit("left_distributivity_of_multiplication_over_subtraction",
-					$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((a(b-c))=((ab)-(ac))))))"));
+//			suppose("definition_of_subtraction",
+//					$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x-y)=(x+('-'y)))))"));
+//			admit("commutativity_of_multiplication",
+//					$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((xy)=(yx))))"));
+//			admit("type_of_multiplication",
+//					$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((xy)∈ℝ)))"));
+//			admit("commutativity_of_addition",
+//					$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x+y)=(y+x))))"));
+//			admit("type_of_addition",
+//					$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x+y)∈ℝ)))"));
+//			admit("associativity_of_addition",
+//					$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((x+(y+z))=((x+y)+z)))))"));
+//			admit("associativity_of_multiplication",
+//					$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((x(yz))=((xy)z)))))"));
+//			admit("right_distributivity_of_multiplication_over_addition",
+//					$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → (((a+b)c)=((ac)+(bc))))))"));
+//			admit("left_distributivity_of_multiplication_over_addition",
+//					$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((a(b+c))=((ab)+(ac))))))"));
+//			admit("right_distributivity_of_multiplication_over_subtraction",
+//					$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → (((a-b)c)=((ac)-(bc))))))"));
+//			admit("left_distributivity_of_multiplication_over_subtraction",
+//					$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((a(b-c))=((ab)-(ac))))))"));
 			
 			claimCommutativityOfConjunction();
 			claimTranspositionOfAddition();
@@ -1029,7 +1029,9 @@ public final class Demo2 {
 		Tools.debugPrint(ExpressionParser2.$$("(a+b)+c"));
 		Tools.debugPrint($$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x-y)=(x+('-'y)))))"));
 		Tools.debugPrint(ExpressionParser2.$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x-y)=(x+('-'y)))))"));
-		Tools.debugPrint(ExpressionParser2.$$("∀x,y z"));
+		Tools.debugPrint($$("(c+(a-(ba))d)=((ad)-(abd)+c)"));
+		Tools.debugPrint(ExpressionParser2.$$("(c+(a-(ba))d)=((ad)-(abd)+c)"));
+		Tools.debugPrint(ExpressionParser2.$$("a+ab"));
 	}
 	
 	/**
