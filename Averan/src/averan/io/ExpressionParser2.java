@@ -1,11 +1,14 @@
 package averan.io;
 
 import static averan.core.ExpressionTools.*;
+import static java.util.Arrays.copyOfRange;
+import static net.sourceforge.aprog.tools.Tools.array;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aurochs2.core.LexerBuilder.*;
-import static net.sourceforge.aurochs2.core.ParserBuilder.bloc;
+import static net.sourceforge.aurochs2.core.ParserBuilder.block;
 import static net.sourceforge.aurochs2.core.ParserBuilder.Priority.Associativity.LEFT;
 import static net.sourceforge.aurochs2.core.ParserBuilder.Priority.Associativity.NONE;
+import static net.sourceforge.aurochs2.core.ParserBuilder.Priority.Associativity.RIGHT;
 import static net.sourceforge.aurochs2.core.TokenSource.tokens;
 import averan.core.Expression;
 
@@ -14,12 +17,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
+import net.sourceforge.aprog.tools.Tools;
 import net.sourceforge.aurochs2.core.Grammar.Rule;
 import net.sourceforge.aurochs2.core.LRParser;
 import net.sourceforge.aurochs2.core.Lexer;
 import net.sourceforge.aurochs2.core.LexerBuilder;
 import net.sourceforge.aurochs2.core.ParserBuilder;
 import net.sourceforge.aurochs2.core.LexerBuilder.Union;
+import net.sourceforge.aurochs2.core.ParserBuilder.Priority.Associativity;
 
 /**
  * @author codistmonk (creation 2014-08-06)
@@ -71,17 +76,38 @@ public final class ExpressionParser2 implements Serializable {
 		parserBuilder.define("Expression", "variable").setListener((rule, data) -> $(data));
 		parserBuilder.define("Expression", "string").setListener((rule, data) -> $(data));
 		
-		parserBuilder.resolveConflictWith(bloc("Expression", "Expression"), bloc("(", "Expression", ")"));
-		parserBuilder.resolveConflictWith(bloc("-", "Expression"), bloc("(", "Expression", ")"));
-		parserBuilder.resolveConflictWith("Expression", "+", bloc("Expression", bloc("(", "Expression", ")")));
-		parserBuilder.resolveConflictWith("Expression", "-", bloc("Expression", bloc("(", "Expression", ")")));
-		parserBuilder.resolveConflictWith("(", bloc("Expression", "-", "Expression"), ")");
+		parserBuilder.resolveConflictWith(block("Expression", "Expression"), block("(", "Expression", ")"));
+		parserBuilder.resolveConflictWith(block("-", "Expression"), block("(", "Expression", ")"));
+		parserBuilder.resolveConflictWith("Expression", "+", block("Expression", block("(", "Expression", ")")));
+		parserBuilder.resolveConflictWith("Expression", "-", block("Expression", block("(", "Expression", ")")));
+		parserBuilder.resolveConflictWith("(", block("Expression", "-", "Expression"), ")");
+		
+		for (final Object op1 : prefixOperator.getSymbols()) {
+			for (final Object op2 : prefixOperator.getSymbols()) {
+				parserBuilder.resolveConflictWith(block(op1.toString(), "Expression"), block(op2.toString(), "Expression"));
+			}
+		}
+		
+		for (final Object op1 : infixOperator.getSymbols()) {
+			for (final Object op2 : prefixOperator.getSymbols()) {
+				parserBuilder.resolveConflictWith("Expression", op1.toString(), block("Expression", block(op2.toString(), "Expression")));
+			}
+		}
+		
+		for (final Object op1 : infixOperator.getSymbols()) {
+			for (final Object[] pair : groupingPairs(groupingOperator)) {
+				parserBuilder.resolveConflictWith("Expression", op1.toString(), block("Expression", block(pair[0].toString(), "Expression", pair[1].toString())));
+			}
+		}
 		
 		for (final Object op : prefixOperator.getSymbols()) {
-			parserBuilder.setPriority(200, NONE, op.toString(), "Expression");
+			parserBuilder.setPriority(200, LEFT, op.toString(), "Expression");
+		}
+		for (final Object op : infixOperator.getSymbols()) {
+			parserBuilder.setPriority(200, LEFT, "Expression", op.toString(), "Expression");
 		}
 		for (final Object op : postfixOperator.getSymbols()) {
-			parserBuilder.setPriority(200, NONE, "Expression", op.toString());
+			parserBuilder.setPriority(300, RIGHT, "Expression", op.toString());
 		}
 		parserBuilder.setPriority(200, NONE, "-", "Expression");
 		parserBuilder.setPriority(200, LEFT, "Expression", "natural");
@@ -143,12 +169,9 @@ public final class ExpressionParser2 implements Serializable {
 	}
 	
 	public static final void defineGroupingOperations(final ParserBuilder parserBuilder, final Union groupingOperator) {
-		final Object[] groupingSymbols = groupingOperator.getSymbols();
-		final int n = groupingSymbols.length;
-		
-		for (int i = 0; i < n; i += 2) {
-			final Object left = groupingSymbols[i + 0];
-			final Object right = groupingSymbols[i + 1];
+		for (final Object[] pair : groupingPairs(groupingOperator)) {
+			final Object left = pair[0];
+			final Object right = pair[1];
 			final Rule rule = parserBuilder.define("Expression", left.toString(), "Expression", right.toString());
 			
 			if (left.equals('(') && right.equals(')')) {
@@ -179,6 +202,18 @@ public final class ExpressionParser2 implements Serializable {
 		for (final Object op : postfixOperator.getSymbols()) {
 			parserBuilder.define("Expression", "Expression", op.toString()).setListener((rule, data) -> $(data));
 		}
+	}
+	
+	public static final Object[][] groupingPairs(final Union groupingOperator) {
+		final Object[] symbols = groupingOperator.getSymbols();
+		final int n = symbols.length;
+		final Object[][] result = new Object[n / 2][];
+		
+		for (int i = 0; i < n; i += 2) {
+			result[i / 2] = copyOfRange(symbols, i, i + 2);
+		}
+		
+		return result;
 	}
 	
 }
