@@ -255,10 +255,10 @@ public final class ExpressionParser2 implements Serializable {
 		for (final Object op : POSTFIX_OPERATOR.getSymbols()) {
 			resultBuilder.setPriority(300, RIGHT, "Expression", op.toString());
 		}
-		resultBuilder.setPriority(200, LEFT, "Expression", "natural");
-		resultBuilder.setPriority(200, LEFT, "Expression", "variable");
-		resultBuilder.setPriority(200, LEFT, "Expression", "string");
-		resultBuilder.setPriority(200, LEFT, "Expression", "Expression");
+		resultBuilder.setPriority(250, LEFT, "Expression", "natural");
+		resultBuilder.setPriority(250, LEFT, "Expression", "variable");
+		resultBuilder.setPriority(250, LEFT, "Expression", "string");
+		resultBuilder.setPriority(250, LEFT, "Expression", "Expression");
 	}
 	
 	public static final Object unquote(final Rule rule, final Object[] data) {
