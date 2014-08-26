@@ -175,42 +175,42 @@ public final class Demo2 {
 		try {
 			{
 				suppose("definition_of_subtraction",
-						$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x-y)=(x+('-'y)))))"));
+						ExpressionParser2.$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x-y)=(x+('-'y)))))"));
 				suppose("tmp",
-						$$("'-'∈ℝ"));
+						ExpressionParser2.$$("'-'∈ℝ"));
 				suppose("type_of_opposite",
-						$$("∀x ((x∈ℝ) → (('-'x)∈ℝ))"));
+						ExpressionParser2.$$("∀x ((x∈ℝ) → (('-'x)∈ℝ))"));
 				suppose("type_of_addition",
-						$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x+y)∈ℝ)))"));
+						ExpressionParser2.$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x+y)∈ℝ)))"));
 				suppose("type_of_subtraction",
-						$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x-y)∈ℝ)))"));
+						ExpressionParser2.$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x-y)∈ℝ)))"));
 				suppose("type_of_multiplication",
-						$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((xy)∈ℝ)))"));
+						ExpressionParser2.$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((xy)∈ℝ)))"));
 				admit("right_distributivity_of_multiplication_over_addition",
-						$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → (((a+b)c)=((ac)+(bc))))))"));
+						ExpressionParser2.$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → (((a+b)c)=((ac)+(bc))))))"));
 				admit("associativity_of_addition",
-						$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((x+(y+z))=((x+y)+z)))))"));
+						ExpressionParser2.$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((x+(y+z))=((x+y)+z)))))"));
 				admit("associativity_of_multiplication",
-						$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((x(yz))=((xy)z)))))"));
+						ExpressionParser2.$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((x(yz))=((xy)z)))))"));
 				admit("left_distributivity_of_multiplication_over_addition",
-						$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((a(b+c))=((ab)+(ac))))))"));
+						ExpressionParser2.$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((a(b+c))=((ab)+(ac))))))"));
 				admit("right_distributivity_of_multiplication_over_subtraction",
-						$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → (((a-b)c)=((ac)-(bc))))))"));
+						ExpressionParser2.$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → (((a-b)c)=((ac)-(bc))))))"));
 				admit("left_distributivity_of_multiplication_over_subtraction",
-						$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((a(b-c))=((ab)-(ac))))))"));
+						ExpressionParser2.$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((a(b-c))=((ab)-(ac))))))"));
 				admit("commutativity_of_multiplication",
-						$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((xy)=(yx))))"));
+						ExpressionParser2.$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((xy)=(yx))))"));
 				admit("commutativity_of_addition",
-						$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x+y)=(y+x))))"));
+						ExpressionParser2.$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x+y)=(y+x))))"));
 				admit("ordering_of_terms",
-						$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → (((x+z)+y)=((x+y)+z)))))"));
+						ExpressionParser2.$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → (((x+z)+y)=((x+y)+z)))))"));
 				admit("ordering_of_factors",
-						$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → (((xz)y)=((xy)z)))))"));
+						ExpressionParser2.$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → (((xz)y)=((xy)z)))))"));
 				
 				claim("test", $(forAll("a", "b", "c", "d"),
 						$(real($("a")), "->", $(real($("b")), "->", $(real($("c")), "->", $(real($("d")), "->",
 //								$$("(bda)=(adb)")))))));
-								$$("(c+(a-(ba))d)=((ad)-(abd)+c)")))))));
+								ExpressionParser2.$$("(c+(a-(ba))d)=((ad)-(abd)+c)")))))));
 				{
 					final Symbol a = introduce();
 					final Symbol b = introduce();
@@ -1027,6 +1027,9 @@ public final class Demo2 {
 	public static final void main(final String[] commandLineArguments) {
 		// NOP
 		Tools.debugPrint(ExpressionParser2.$$("(a+b)+c"));
+		Tools.debugPrint($$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x-y)=(x+('-'y)))))"));
+		Tools.debugPrint(ExpressionParser2.$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x-y)=(x+('-'y)))))"));
+		Tools.debugPrint(ExpressionParser2.$$("∀x,y z"));
 	}
 	
 	/**
