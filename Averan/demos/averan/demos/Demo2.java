@@ -248,23 +248,23 @@ public final class Demo2 {
 			}
 			
 			suppose("definition_of_conjunction",
-					$$("∀P,Q (P → (Q → (P ∧ Q)))"));
+					ExpressionParser2.$$("∀P,Q (P → (Q → (P ∧ Q)))"));
 			suppose("definition_of_proposition_equality",
-					$$("∀P,Q ((P=Q) = ((P→Q) ∧ (Q→P)))"));
+					ExpressionParser2.$$("∀P,Q ((P=Q) = ((P→Q) ∧ (Q→P)))"));
 			suppose("definition_of_negation",
-					$$("∀P (¬P = (P→'false'))"));
+					ExpressionParser2.$$("∀P (¬P = (P→'false'))"));
 			suppose("definition_of_existence",
-					$$("∀P,x (∃x (P x)) = ¬(∀y ¬(P y))"));
+					ExpressionParser2.$$("∀P,x (∃x (P x)) = ¬(∀y ¬(P y))"));
 			suppose("definition_of_intersection",
-					$$("∀A,B,x (x∈A∩B) = (x∈A ∧ x∈B)"));
+					ExpressionParser2.$$("∀A,B,x (x∈A∩B) = (x∈A ∧ x∈B)"));
 			suppose("definition_of_summation",
-					$$("∀i,a,b,e,s ((s=((Σ_(i=a)^b) e)) → (((b<a) → (s=0)) ∧ ((a≤b) → (s=(s{b=(b-1)})+(e{i=b})))))"));
+					ExpressionParser2.$$("∀i,a,b,e,s ((s=((Σ_(i=a)^b) e)) → (((b<a) → (s=0)) ∧ ((a≤b) → (s=(s{b=(b-1)})+(e{i=b})))))"));
 			suppose("definition_of_matrices",
 					$$("∀X,m,n (X∈≀M_(m,n) = ('rowCount'_X = m ∧ 'columnCount'_X = n ∧ ∀i,j (X_(i,j)∈ℝ)))"));
 			suppose("definition_of_matrix_size_equality",
-					$$("∀X,Y (('size'_X='size'_Y) = (('columnCount'_X = 'columnCount'_Y) ∧ ('rowCount'_X = 'rowCount'_Y)))"));
+					ExpressionParser2.$$("∀X,Y (('size'_X='size'_Y) = (('columnCount'_X = 'columnCount'_Y) ∧ ('rowCount'_X = 'rowCount'_Y)))"));
 			suppose("definition_of_matrix_equality",
-					$$("∀X,Y ((X=Y) = (∀i,j ((X)_(i,j)=(Y_(i,j)))))"));
+					ExpressionParser2.$$("∀X,Y ((X=Y) = (∀i,j ((X)_(i,j)=(Y_(i,j)))))"));
 			suppose("definition_of_matrix_scalarization",
 					$$("∀X ((X∈≀M_(1,1)) → (⟨X⟩=X_(1,1)))"));
 			suppose("definition_of_matrix_addition",
@@ -1031,7 +1031,8 @@ public final class Demo2 {
 		Tools.debugPrint(ExpressionParser2.$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x-y)=(x+('-'y)))))"));
 		Tools.debugPrint($$("(c+(a-(ba))d)=((ad)-(abd)+c)"));
 		Tools.debugPrint(ExpressionParser2.$$("(c+(a-(ba))d)=((ad)-(abd)+c)"));
-		Tools.debugPrint(ExpressionParser2.$$("a+ab"));
+		Tools.debugPrint($$("∀P,Q (P → (Q → (P ∧ Q)))"));
+		Tools.debugPrint(ExpressionParser2.$$("∀P,Q P"));
 	}
 	
 	/**
