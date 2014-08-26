@@ -246,11 +246,14 @@ public final class ExpressionParser2 implements Serializable {
 		}
 		
 		resultBuilder.setPriority(200, NONE, "-", "Expression");
+		resultBuilder.setPriority(150, NONE, "Expression", "=", "Expression");
 		for (final Object op : PREFIX_OPERATOR.getSymbols()) {
 			resultBuilder.setPriority(200, LEFT, op.toString(), "Expression");
 		}
 		for (final Object op : INFIX_OPERATOR.getSymbols()) {
-			resultBuilder.setPriority(200, LEFT, "Expression", op.toString(), "Expression");
+			if (!"=".equals(op.toString())) {
+				resultBuilder.setPriority(200, LEFT, "Expression", op.toString(), "Expression");
+			}
 		}
 		for (final Object op : POSTFIX_OPERATOR.getSymbols()) {
 			resultBuilder.setPriority(300, RIGHT, "Expression", op.toString());

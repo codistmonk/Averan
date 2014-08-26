@@ -268,58 +268,36 @@ public final class Demo2 {
 			suppose("definition_of_matrix_scalarization",
 					$$("∀X ((X∈≀M_(1,1)) → (⟨X⟩=X_(1,1)))"));
 			suppose("definition_of_matrix_addition",
-					$$("∀X,Y,i,j (((X+Y)_(i,j) = (X_(i,j))+(Y_(i,j))))"));
+					ExpressionParser2.$$("∀X,Y,i,j (((X+Y)_(i,j) = (X_(i,j))+(Y_(i,j))))"));
 			suppose("definition_of_matrix_addition_rowCount",
-					$$("∀X,Y ('rowCount'_(X+Y) = 'rowCount'_X)"));
+					ExpressionParser2.$$("∀X,Y ('rowCount'_(X+Y) = 'rowCount'_X)"));
 			suppose("definition_of_matrix_addition_columnCount",
-					$$("∀X,Y ('columnCount'_(X+Y) = 'columnCount'_X)"));
+					ExpressionParser2.$$("∀X,Y ('columnCount'_(X+Y) = 'columnCount'_X)"));
 			suppose("definition_of_matrix_subtraction",
-					$$("∀X,Y,i,j (((X-Y)_(i,j) = (X_(i,j))-(Y_(i,j))))"));
+					ExpressionParser2.$$("∀X,Y,i,j (((X-Y)_(i,j) = (X_(i,j))-(Y_(i,j))))"));
 			suppose("definition_of_matrix_subtraction_rowCount",
-					$$("∀X,Y ('rowCount'_(X-Y) = 'rowCount'_X)"));
+					ExpressionParser2.$$("∀X,Y ('rowCount'_(X-Y) = 'rowCount'_X)"));
 			suppose("definition_of_matrix_subtraction_columnCount",
-					$$("∀X,Y ('columnCount'_(X-Y) = 'columnCount'_X)"));
+					ExpressionParser2.$$("∀X,Y ('columnCount'_(X-Y) = 'columnCount'_X)"));
 			suppose("definition_of_matrix_multiplication",
-					$$("∀X,Y,i,j,k ((XY)_(i,j)=((Σ_(k=0)^(('columnCount'_X)-1)) (X_(i,k))(Y_(k,j))))"));
+					ExpressionParser2.$$("∀X,Y,i,j,k ((XY)_(i,j)=((Σ_(k=0)^(('columnCount'_X)-1)) ((X_(i,k))(Y_(k,j)))))"));
 			suppose("definition_of_matrix_multiplication_rowCount",
-					$$("∀X,Y ('rowCount'_(XY) = 'rowCount'_X)"));
+					ExpressionParser2.$$("∀X,Y ('rowCount'_(XY) = 'rowCount'_X)"));
 			suppose("definition_of_matrix_multiplication_columnCount",
-					$$("∀X,Y ('columnCount'_(XY) = 'columnCount'_Y)"));
+					ExpressionParser2.$$("∀X,Y ('columnCount'_(XY) = 'columnCount'_Y)"));
 			suppose("definition_of_transposition",
-					$$("∀X (∀i,j (Xᵀ_(i,j)=X_(j,i)))"));
+					ExpressionParser2.$$("∀X (∀i,j (Xᵀ_(i,j)=X_(j,i)))"));
 			suppose("definition_of_transposition_rowCount",
-					$$("∀X ('rowCount'_(Xᵀ)='columnCount'_X)"));
+					ExpressionParser2.$$("∀X ('rowCount'_(Xᵀ)='columnCount'_X)"));
 			suppose("definition_of_transposition_columnCount",
-					$$("∀X ('columnCount'_(Xᵀ)='rowCount'_X)"));
+					ExpressionParser2.$$("∀X ('columnCount'_(Xᵀ)='rowCount'_X)"));
 			
 			suppose("definition_of_U_rowCount",
-					$$("∀n ('rowCount'_(U_n)=n)"));
+					ExpressionParser2.$$("∀n ('rowCount'_(U_n)=n)"));
 			suppose("definition_of_U_columnCount",
-					$$("∀n ('columnCount'_(U_n)=1)"));
+					ExpressionParser2.$$("∀n ('columnCount'_(U_n)=1)"));
 			suppose("definition_of_U",
-					$$("∀n (0<n → (∀i (U_n_(i,1)=1/n)))"));
-//			suppose("definition_of_subtraction",
-//					$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x-y)=(x+('-'y)))))"));
-//			admit("commutativity_of_multiplication",
-//					$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((xy)=(yx))))"));
-//			admit("type_of_multiplication",
-//					$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((xy)∈ℝ)))"));
-//			admit("commutativity_of_addition",
-//					$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x+y)=(y+x))))"));
-//			admit("type_of_addition",
-//					$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x+y)∈ℝ)))"));
-//			admit("associativity_of_addition",
-//					$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((x+(y+z))=((x+y)+z)))))"));
-//			admit("associativity_of_multiplication",
-//					$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((x(yz))=((xy)z)))))"));
-//			admit("right_distributivity_of_multiplication_over_addition",
-//					$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → (((a+b)c)=((ac)+(bc))))))"));
-//			admit("left_distributivity_of_multiplication_over_addition",
-//					$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((a(b+c))=((ab)+(ac))))))"));
-//			admit("right_distributivity_of_multiplication_over_subtraction",
-//					$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → (((a-b)c)=((ac)-(bc))))))"));
-//			admit("left_distributivity_of_multiplication_over_subtraction",
-//					$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((a(b-c))=((ab)-(ac))))))"));
+					ExpressionParser2.$$("∀n (0<n → (∀i (U_n_(i,1)=1/n)))"));
 			
 			claimCommutativityOfConjunction();
 			claimTranspositionOfAddition();
@@ -327,25 +305,25 @@ public final class Demo2 {
 			claimTranspositionOfMultiplication();
 			
 			suppose("definition_of_replicated_means",
-					$$("∀X,n (('columnCount'_X=n) → (M_X)=X(U_n)(U_n)ᵀ)"));
+					ExpressionParser2.$$("∀X,n (('columnCount'_X=n) → (M_X)=X(U_n)(U_n)ᵀ)"));
 			suppose("definition_of_problem_dimension",
-					$$("0<D"));
+					ExpressionParser2.$$("0<D"));
 			suppose("definition_of_class_count",
-					$$("1<N"));
+					ExpressionParser2.$$("1<N"));
 			suppose("definition_of_class_means",
-					$$("∀i,j,n ((n='columnCount'_(C_j)) → (((M_C)_(i,j))=((C_j)(U_n))_(i,1)))"));
+					ExpressionParser2.$$("∀i,j,n ((n='columnCount'_(C_j)) → (((M_C)_(i,j))=((C_j)(U_n))_(i,1)))"));
 			suppose("definition_of_class_rowCount",
-					$$("∀i (('rowCount'_(C_i)) = D)"));
+					ExpressionParser2.$$("∀i (('rowCount'_(C_i)) = D)"));
 			suppose("definition_of_V",
-					$$("V = 'Var'_(M_C)"));
+					ExpressionParser2.$$("V = 'Var'_(M_C)"));
 			suppose("definition_of_S",
-					$$("∀i (S = (Σ_(i=0)^(N-1) ('Var'_(C_i))))"));
+					ExpressionParser2.$$("∀i (S = (Σ_(i=0)^(N-1) ('Var'_(C_i))))"));
 			suppose("definition_of_variance",
-					$$("∀X (('Var'_X)=(X-(M_X))(X-(M_X))ᵀ)"));
+					ExpressionParser2.$$("∀X (('Var'_X)=(X-(M_X))(X-(M_X))ᵀ)"));
 			
 			// TODO claim
 			claim("simplified_definition_of_variance",
-					$$("∀X (('Var'_X)=(XXᵀ)-((M_X)(M_X)ᵀ))"));
+					ExpressionParser2.$$("∀X (('Var'_X)=(XXᵀ)-((M_X)(M_X)ᵀ))"));
 			{
 				final Symbol x = introduce();
 				final Expression xt = $(x, "ᵀ");
@@ -1031,8 +1009,10 @@ public final class Demo2 {
 		Tools.debugPrint(ExpressionParser2.$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x-y)=(x+('-'y)))))"));
 		Tools.debugPrint($$("(c+(a-(ba))d)=((ad)-(abd)+c)"));
 		Tools.debugPrint(ExpressionParser2.$$("(c+(a-(ba))d)=((ad)-(abd)+c)"));
-		Tools.debugPrint($$("∀P,Q (P → (Q → (P ∧ Q)))"));
-		Tools.debugPrint(ExpressionParser2.$$("∀P,Q P"));
+		Tools.debugPrint($$("∀X,Y,i,j (((X+Y)_(i,j) = (X_(i,j))+(Y_(i,j))))"));
+		Tools.debugPrint(ExpressionParser2.$$("∀X,Y,i,j (((X+Y)_(i,j) = (X_(i,j))+(Y_(i,j))))"));
+		Tools.debugPrint($$("∀X,Y,i,j,k ((XY)_(i,j)=((Σ_(k=0)^(('columnCount'_X)-1)) (X_(i,k))(Y_(k,j))))"));
+		Tools.debugPrint(ExpressionParser2.$$("∀X,Y,i,j,k ((XY)_(i,j)=((Σ_(k=0)^(('columnCount'_X)-1)) ((X_(i,k))(Y_(k,j)))))"));
 	}
 	
 	/**
