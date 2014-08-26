@@ -77,15 +77,19 @@ public final class ExpressionParser2 implements Serializable {
 		parserBuilder.define("Expression", "string").setListener((rule, data) -> $(data));
 		
 		parserBuilder.resolveConflictWith(block("Expression", "Expression"), block("(", "Expression", ")"));
-		parserBuilder.resolveConflictWith(block("-", "Expression"), block("(", "Expression", ")"));
-		parserBuilder.resolveConflictWith("Expression", "+", block("Expression", block("(", "Expression", ")")));
-		parserBuilder.resolveConflictWith("Expression", "-", block("Expression", block("(", "Expression", ")")));
-		parserBuilder.resolveConflictWith("(", block("Expression", "-", "Expression"), ")");
+//		parserBuilder.resolveConflictWith(block("-", "Expression"), block("(", "Expression", ")"));
+		
+		for (final Object[] pair : groupingPairs(groupingOperator)) {
+			parserBuilder.resolveConflictWith(pair[0].toString(), block("Expression", "-", "Expression"), pair[1].toString());
+		}
 		
 		for (final Object op1 : prefixOperator.getSymbols()) {
 			for (final Object op2 : prefixOperator.getSymbols()) {
 				parserBuilder.resolveConflictWith(block(op1.toString(), "Expression"), block(op2.toString(), "Expression"));
 			}
+		}
+		for (final Object op2 : prefixOperator.getSymbols()) {
+			parserBuilder.resolveConflictWith(block("-", "Expression"), block(op2.toString(), "Expression"));
 		}
 		
 		for (final Object op1 : infixOperator.getSymbols()) {
@@ -94,12 +98,22 @@ public final class ExpressionParser2 implements Serializable {
 			}
 		}
 		
+		for (final Object op1 : prefixOperator.getSymbols()) {
+			for (final Object[] pair : groupingPairs(groupingOperator)) {
+				parserBuilder.resolveConflictWith(block(op1.toString(), "Expression"), block(pair[0].toString(), "Expression", pair[1].toString()));
+			}
+		}
+		for (final Object[] pair : groupingPairs(groupingOperator)) {
+			parserBuilder.resolveConflictWith(block("-", "Expression"), block(pair[0].toString(), "Expression", pair[1].toString()));
+		}
+		
 		for (final Object op1 : infixOperator.getSymbols()) {
 			for (final Object[] pair : groupingPairs(groupingOperator)) {
 				parserBuilder.resolveConflictWith("Expression", op1.toString(), block("Expression", block(pair[0].toString(), "Expression", pair[1].toString())));
 			}
 		}
 		
+		parserBuilder.setPriority(200, NONE, "-", "Expression");
 		for (final Object op : prefixOperator.getSymbols()) {
 			parserBuilder.setPriority(200, LEFT, op.toString(), "Expression");
 		}
@@ -109,13 +123,10 @@ public final class ExpressionParser2 implements Serializable {
 		for (final Object op : postfixOperator.getSymbols()) {
 			parserBuilder.setPriority(300, RIGHT, "Expression", op.toString());
 		}
-		parserBuilder.setPriority(200, NONE, "-", "Expression");
 		parserBuilder.setPriority(200, LEFT, "Expression", "natural");
 		parserBuilder.setPriority(200, LEFT, "Expression", "variable");
 		parserBuilder.setPriority(200, LEFT, "Expression", "string");
 		parserBuilder.setPriority(200, LEFT, "Expression", "Expression");
-		parserBuilder.setPriority(100, LEFT, "Expression", "+", "Expression");
-		parserBuilder.setPriority(100, LEFT, "Expression", "-", "Expression");
 		
 		this.mathParser = parserBuilder.newParser();
 	}
