@@ -9,13 +9,13 @@ import static net.sourceforge.aurochs2.core.ParserBuilder.Priority.Associativity
 import static net.sourceforge.aurochs2.core.ParserBuilder.Priority.Associativity.NONE;
 import static net.sourceforge.aurochs2.core.ParserBuilder.Priority.Associativity.RIGHT;
 import static net.sourceforge.aurochs2.core.TokenSource.tokens;
-
 import averan.core.Expression;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import net.sourceforge.aurochs2.core.Grammar.Rule;
 import net.sourceforge.aurochs2.core.LRParser;
@@ -54,13 +54,15 @@ public final class ExpressionParser2 implements Serializable {
 	
 	public static final Union GROUPING_OPERATOR = disjoin("(){}[]⟨⟩");
 	
-	public static final Union PREFIX_OPERATOR = disjoin("∀∃¬");
+	public static final Union SPECIAL_OPERATOR = disjoin("∀");
+	
+	public static final Union PREFIX_OPERATOR = disjoin("∃¬");
 	
 	public static final Union INFIX_OPERATOR = disjoin(",=+-*/_^<≤∧∈∩→");
 	
 	public static final Union POSTFIX_OPERATOR = disjoin("ᵀ");
 	
-	public static final Union OPERATOR = merge(GROUPING_OPERATOR, PREFIX_OPERATOR, INFIX_OPERATOR, POSTFIX_OPERATOR);
+	public static final Union OPERATOR = merge(GROUPING_OPERATOR, SPECIAL_OPERATOR, PREFIX_OPERATOR, INFIX_OPERATOR, POSTFIX_OPERATOR);
 	
 	public static final ExpressionParser2 instance = new ExpressionParser2();
 	
@@ -165,6 +167,7 @@ public final class ExpressionParser2 implements Serializable {
 		final ParserBuilder resultBuilder = new ParserBuilder(mathLexer);
 		
 		resultBuilder.define("()", "Expression").setListener((rule, data) -> data[0]);
+		resultBuilder.define("Expression", "∀", "Identifiers", "Expression").setListener((rule, data) -> $(data[1], data[2]));
 		defineGroupingOperations(resultBuilder, GROUPING_OPERATOR);
 		definePrefixOperations(resultBuilder, PREFIX_OPERATOR);
 		defineInfixOperations(resultBuilder, INFIX_OPERATOR);
@@ -173,7 +176,28 @@ public final class ExpressionParser2 implements Serializable {
 		resultBuilder.define("Expression", "Expression", "Expression").setListener((rule, data) -> $(data));
 		resultBuilder.define("Expression", "natural").setListener((rule, data) -> $(data));
 		resultBuilder.define("Expression", "variable").setListener((rule, data) -> $(data));
-		resultBuilder.define("Expression", "string").setListener((rule, data) -> $(data));
+		resultBuilder.define("Expression", "string").setListener(ExpressionParser2::unquote);
+		resultBuilder.define("Identifier", "string").setListener(ExpressionParser2::unquote);
+		resultBuilder.define("Identifier", "variable").setListener((rule, data) -> $(data));
+		resultBuilder.define("Identifiers", "Identifiers", ",", "Identifier").setListener(ExpressionParser2::flatten);
+		resultBuilder.define("Identifiers", "Identifier").setListener(ExpressionParser2::flatten);
+		
+		resolveConflicts(resultBuilder);
+		
+		return resultBuilder.newParser();
+	}
+	
+	private static final void resolveConflicts(final ParserBuilder resultBuilder) {
+		for (final Object op : INFIX_OPERATOR.getSymbols()) {
+			resultBuilder.resolveConflictWith("∀", "Identifiers", block("Expression", op.toString(), "Expression"));
+			resultBuilder.resolveConflictWith("Expression", op.toString(), block("Expression", block("∀", "Identifiers", "Expression")));
+		}
+		
+		final List<Object> complexTokens = Arrays.asList("string", "natural", "variable");
+		
+		for (final Object complexToken : complexTokens) {
+			resultBuilder.resolveConflictWith("∀", "Identifiers", block("Expression", complexToken));
+		}
 		
 		for (final Object[] pair : groupingPairs(GROUPING_OPERATOR)) {
 			final String left = pair[0].toString();
@@ -181,6 +205,7 @@ public final class ExpressionParser2 implements Serializable {
 			
 			resultBuilder.resolveConflictWith(block("Expression", "Expression"), block(left, "Expression", right));
 			resultBuilder.resolveConflictWith(left, block("Expression", "-", "Expression"), right);
+			resultBuilder.resolveConflictWith("∀", "Identifiers", block("Expression", block(left, "Expression", right)));
 		}
 		
 		for (final Object op1 : PREFIX_OPERATOR.getSymbols()) {
@@ -234,8 +259,28 @@ public final class ExpressionParser2 implements Serializable {
 		resultBuilder.setPriority(200, LEFT, "Expression", "variable");
 		resultBuilder.setPriority(200, LEFT, "Expression", "string");
 		resultBuilder.setPriority(200, LEFT, "Expression", "Expression");
+	}
+	
+	public static final Object unquote(final Rule rule, final Object[] data) {
+		final String string = data[0].toString();
 		
-		return resultBuilder.newParser();
+		return string.substring(1, string.length() - 1);
+	}
+	
+	public static final Object flatten(final Rule rule, final Object[] data) {
+		if (data.length == 1) {
+			final List<Object> result = new ArrayList<>();
+			
+			result.add($(data[0]));
+			
+			return result;
+		}
+		
+		final List<Object> result = (List) data[0];
+		
+		result.add($(data[2]));
+		
+		return result;
 	}
 	
 }

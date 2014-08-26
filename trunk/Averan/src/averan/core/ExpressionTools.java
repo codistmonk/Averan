@@ -52,6 +52,7 @@ public final class ExpressionTools {
 			case "=":
 				return (E) Module.equality($(objects[0]), $(objects[2]));
 			case "->":
+			case "→":
 				return (E) rule($(objects[0]), $(objects[2]));
 			}
 		}
@@ -60,7 +61,7 @@ public final class ExpressionTools {
 			boolean isConjunction = true;
 			
 			for (int i = 1; isConjunction && i < objects.length; i += 2) {
-				if (!"&".equals(objects[i])) {
+				if (!("&".equals(objects[i]) || "∧".equals(objects[i]))) {
 					isConjunction = false;
 				}
 			}
