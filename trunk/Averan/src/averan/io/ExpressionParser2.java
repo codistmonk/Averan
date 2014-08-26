@@ -61,36 +61,10 @@ public final class ExpressionParser2 implements Serializable {
 			
 			return null;
 		});
-		{
-			final Object[] groupingSymbols = groupingOperator.getSymbols();
-			final int n = groupingSymbols.length;
-			
-			for (int i = 0; i < n; i += 2) {
-				final Object left = groupingSymbols[i + 0];
-				final Object right = groupingSymbols[i + 1];
-				final Rule rule = parserBuilder.define("Expression", left.toString(), "Expression", right.toString());
-				
-				if (left.equals('(') && right.equals(')')) {
-					rule.setListener((r, data) -> {
-						return $(data[1]);
-					});
-				} else {
-					rule.setListener((r, data) -> {
-						return $(data);
-					});
-				}
-			}
-		}
-		
-		for (final Object op : prefixOperator.getSymbols()) {
-			parserBuilder.define("Expression", op.toString(), "Expression").setListener((rule, data) -> $(data));
-		}
-		for (final Object op : infixOperator.getSymbols()) {
-			parserBuilder.define("Expression", "Expression", op.toString(), "Expression").setListener((rule, data) -> $(data));
-		}
-		for (final Object op : postfixOperator.getSymbols()) {
-			parserBuilder.define("Expression", "Expression", op.toString()).setListener((rule, data) -> $(data));
-		}
+		defineGroupingOperations(parserBuilder, groupingOperator);
+		definePrefixOperations(parserBuilder, prefixOperator);
+		defineInfixOperations(parserBuilder, infixOperator);
+		definePostfixOperations(parserBuilder, postfixOperator);
 		parserBuilder.define("Expression", "-", "Expression").setListener((rule, data) -> $(data));
 		parserBuilder.define("Expression", "Expression", "Expression").setListener((rule, data) -> $(data));
 		parserBuilder.define("Expression", "natural").setListener((rule, data) -> $(data));
@@ -166,6 +140,45 @@ public final class ExpressionParser2 implements Serializable {
 		}
 		
 		return done ? union(protoresult.toArray()) : merge(protoresult.toArray());
+	}
+	
+	public static final void defineGroupingOperations(final ParserBuilder parserBuilder, final Union groupingOperator) {
+		final Object[] groupingSymbols = groupingOperator.getSymbols();
+		final int n = groupingSymbols.length;
+		
+		for (int i = 0; i < n; i += 2) {
+			final Object left = groupingSymbols[i + 0];
+			final Object right = groupingSymbols[i + 1];
+			final Rule rule = parserBuilder.define("Expression", left.toString(), "Expression", right.toString());
+			
+			if (left.equals('(') && right.equals(')')) {
+				rule.setListener((r, data) -> {
+					return $(data[1]);
+				});
+			} else {
+				rule.setListener((r, data) -> {
+					return $(data);
+				});
+			}
+		}
+	}
+	
+	public static final void definePrefixOperations(final ParserBuilder parserBuilder, final Union prefixOperator) {
+		for (final Object op : prefixOperator.getSymbols()) {
+			parserBuilder.define("Expression", op.toString(), "Expression").setListener((rule, data) -> $(data));
+		}
+	}
+	
+	public static final void defineInfixOperations(final ParserBuilder parserBuilder, final Union infixOperator) {
+		for (final Object op : infixOperator.getSymbols()) {
+			parserBuilder.define("Expression", "Expression", op.toString(), "Expression").setListener((rule, data) -> $(data));
+		}
+	}
+	
+	public static final void definePostfixOperations(final ParserBuilder parserBuilder, final Union postfixOperator) {
+		for (final Object op : postfixOperator.getSymbols()) {
+			parserBuilder.define("Expression", "Expression", op.toString()).setListener((rule, data) -> $(data));
+		}
 	}
 	
 }
