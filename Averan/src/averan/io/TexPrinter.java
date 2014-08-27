@@ -15,7 +15,6 @@ import averan.core.Module.Symbol;
 import averan.core.Pattern;
 import averan.core.Pattern.Any;
 import averan.core.Visitor;
-import averan.io.TexPrinter.DisplayHint;
 
 import java.io.OutputStream;
 import java.io.PrintStream;

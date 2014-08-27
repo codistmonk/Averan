@@ -29,9 +29,9 @@ import net.sourceforge.aurochs2.core.LexerBuilder.Union;
  */
 public final class ExpressionParser2 implements Serializable {
 	
-	private final Lexer mathLexer = newMathLexer();
+	private final Lexer mathLexer = newMathLexerBuilder().newLexer();
 	
-	private final LRParser mathParser = newMathParser(this.mathLexer);
+	private final LRParser mathParser = newMathParserBuilder(this.mathLexer).newParser();
 	
 	public final <E extends Expression> E parse(final CharSequence input) {
 		final Object[] result = new Object[1];
@@ -147,44 +147,44 @@ public final class ExpressionParser2 implements Serializable {
 		return result;
 	}
 	
-	public static final Lexer newMathLexer() {
-		final LexerBuilder resultBuilder = new LexerBuilder();
+	public static final LexerBuilder newMathLexerBuilder() {
+		final LexerBuilder result = new LexerBuilder();
 		
-		resultBuilder.generate("natural", oneOrMore(DIGIT));
-		resultBuilder.generate("variable", LETTER);
+		result.generate("natural", oneOrMore(DIGIT));
+		result.generate("variable", LETTER);
 		for (final Object symbol : OPERATOR.getSymbols()) {
-			resultBuilder.generate(symbol.toString(), symbol);
+			result.generate(symbol.toString(), symbol);
 		}
-		resultBuilder.generate("string", '\'', "characters", '\'');
-		resultBuilder.define("characters", union(DIGIT, LETTER, OPERATOR, ' ', sequence('\\', '\'')), "characters");
-		resultBuilder.define("characters");
-		resultBuilder.skip(oneOrMore(' '));
+		result.generate("string", '\'', "characters", '\'');
+		result.define("characters", union(DIGIT, LETTER, OPERATOR, ' ', sequence('\\', '\'')), "characters");
+		result.define("characters");
+		result.skip(oneOrMore(' '));
 		
-		return resultBuilder.newLexer();
+		return result;
 	}
 	
-	public static final LRParser newMathParser(final Lexer mathLexer) {
-		final ParserBuilder resultBuilder = new ParserBuilder(mathLexer);
+	public static final ParserBuilder newMathParserBuilder(final Lexer mathLexer) {
+		final ParserBuilder result = new ParserBuilder(mathLexer);
 		
-		resultBuilder.define("()", "Expression").setListener((rule, data) -> data[0]);
-		resultBuilder.define("Expression", "∀", "Identifiers", "Expression").setListener((rule, data) -> $(data[1], data[2]));
-		defineGroupingOperations(resultBuilder, GROUPING_OPERATOR);
-		definePrefixOperations(resultBuilder, PREFIX_OPERATOR);
-		defineInfixOperations(resultBuilder, INFIX_OPERATOR);
-		definePostfixOperations(resultBuilder, POSTFIX_OPERATOR);
-		resultBuilder.define("Expression", "-", "Expression").setListener((rule, data) -> $(data));
-		resultBuilder.define("Expression", "Expression", "Expression").setListener((rule, data) -> $(data));
-		resultBuilder.define("Expression", "natural").setListener((rule, data) -> $(data));
-		resultBuilder.define("Expression", "variable").setListener((rule, data) -> $(data));
-		resultBuilder.define("Expression", "string").setListener(ExpressionParser2::unquote);
-		resultBuilder.define("Identifier", "string").setListener(ExpressionParser2::unquote);
-		resultBuilder.define("Identifier", "variable").setListener((rule, data) -> $(data));
-		resultBuilder.define("Identifiers", "Identifiers", ",", "Identifier").setListener(ExpressionParser2::flatten);
-		resultBuilder.define("Identifiers", "Identifier").setListener(ExpressionParser2::flatten);
+		result.define("()", "Expression").setListener((rule, data) -> data[0]);
+		result.define("Expression", "∀", "Identifiers", "Expression").setListener((rule, data) -> $(data[1], data[2]));
+		defineGroupingOperations(result, GROUPING_OPERATOR);
+		definePrefixOperations(result, PREFIX_OPERATOR);
+		defineInfixOperations(result, INFIX_OPERATOR);
+		definePostfixOperations(result, POSTFIX_OPERATOR);
+		result.define("Expression", "-", "Expression").setListener((rule, data) -> $(data));
+		result.define("Expression", "Expression", "Expression").setListener((rule, data) -> $(data));
+		result.define("Expression", "natural").setListener((rule, data) -> $(data));
+		result.define("Expression", "variable").setListener((rule, data) -> $(data));
+		result.define("Expression", "string").setListener(ExpressionParser2::unquote);
+		result.define("Identifier", "string").setListener(ExpressionParser2::unquote);
+		result.define("Identifier", "variable").setListener((rule, data) -> $(data));
+		result.define("Identifiers", "Identifiers", ",", "Identifier").setListener(ExpressionParser2::flatten);
+		result.define("Identifiers", "Identifier").setListener(ExpressionParser2::flatten);
 		
-		resolveConflicts(resultBuilder);
+		resolveConflicts(result);
 		
-		return resultBuilder.newParser();
+		return result;
 	}
 	
 	private static final void resolveConflicts(final ParserBuilder resultBuilder) {
@@ -279,7 +279,8 @@ public final class ExpressionParser2 implements Serializable {
 			return result;
 		}
 		
-		final List<Object> result = (List) data[0];
+		@SuppressWarnings("unchecked")
+		final List<Object> result = (List<Object>) data[0];
 		
 		result.add($(data[2]));
 		

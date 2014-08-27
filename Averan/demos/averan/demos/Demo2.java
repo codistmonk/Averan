@@ -413,8 +413,6 @@ public final class Demo2 {
 		
 		private final boolean waitForTopLevelRHS;
 		
-		private int index;
-		
 		private int subindex;
 		
 		private int level;
@@ -432,7 +430,6 @@ public final class Demo2 {
 		public IndexFinder(final boolean waitForTopLevelRHS, final Pattern pattern) {
 			this.pattern = pattern;
 			this.waitForTopLevelRHS = waitForTopLevelRHS;
-			this.index = -1;
 			this.subindex = -1;
 			this.level = -1;
 			this.active = !this.waitForTopLevelRHS;
@@ -494,13 +491,11 @@ public final class Demo2 {
 		
 		private final List<Pair<Integer, Pattern>> computeResult(final boolean match) {
 			if (match) {
-				++this.index;
 				final Pattern patternCopy = this.getPattern().copy();
 				final Integer patternIndex = this.indices.compute(patternCopy.getBindings(),
 						(k, v) -> v == null ? 0 : v + 1);
 				
 				if (this.isActive()) {
-//					this.result.add(new Pair<>(this.index, patternCopy));
 					this.result.add(new Pair<>(patternIndex, patternCopy));
 				}
 			}
