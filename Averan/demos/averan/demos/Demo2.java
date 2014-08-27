@@ -22,6 +22,7 @@ import averan.core.Visitor;
 import averan.io.SessionExporter;
 import averan.io.TexPrinter;
 import averan.io.TexPrinter.DisplayHint;
+import averan.modules.Reals;
 import averan.modules.Standard;
 
 import java.io.ByteArrayOutputStream;
@@ -32,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.sourceforge.aprog.tools.IllegalInstantiationException;
 import net.sourceforge.aprog.tools.Pair;
 
 import org.scilab.forge.jlatexmath.TeXFormula;
@@ -42,6 +44,19 @@ import org.scilab.forge.jlatexmath.TeXFormula;
 public final class Demo2 {
 	
 	public static final Module MODULE = new Module(Standard.MODULE);
+	
+	public static final AlgebraicProperty[] REAL_ALGEBRA_RULES = {
+			new Noninversion("definition_of_subtraction"),
+			new Noninversion("opposite_of_multiplication"),
+			new Noninversion("right_distributivity_of_multiplication_over_addition"),
+			new Noninversion("associativity_of_addition"),
+			new Inversion("ordering_of_terms"),
+			new Inversion("commutativity_of_addition"),
+			new Noninversion("associativity_of_multiplication"),
+			new Inversion("commutativity_of_multiplication"),
+			new Inversion("ordering_of_factors"),
+			new Noninversion("left_distributivity_of_multiplication_over_addition")
+	};
 	
 	public static final Pair<String, Pattern> justificationFor(final Module context, final Expression target) {
 		Pair<String, Pattern> result = null;
@@ -167,83 +182,39 @@ public final class Demo2 {
 		}
 	}
 	
+	public static final void claimRealEquality(final String factName, final Expression goal) {
+		claimRealEquality(session(), factName, goal);
+	}
+	
+	public static final void claimRealEquality(final Session session, final String factName, final Expression goal) {
+		session.claim(factName == null ? session.newPropositionName() : factName, goal);
+		{
+			{
+				Expression g = session.getCurrentGoal();
+				
+				while (g instanceof Module) {
+					session.introduce();
+					g = session.getCurrentGoal();
+				}
+			}
+			
+			final Composite equality = (Composite) session.getCurrentGoal();
+			
+			canonicalize(equality.get(0), REAL_ALGEBRA_RULES);
+			canonicalize(equality.get(2), REAL_ALGEBRA_RULES);
+			rewriteRight(factName(-2), factName(-1));
+		}
+	}
+	
 	static {
 		String sessionBreakPoint = "";
 		
 		try {
-			{
-				suppose("definition_of_subtraction",
-						$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x-y)=(x+(-y)))))"));
-				suppose("type_of_opposite",
-						$$("∀x ((x∈ℝ) → ((-x)∈ℝ))"));
-				suppose("type_of_addition",
-						$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x+y)∈ℝ)))"));
-				suppose("type_of_subtraction",
-						$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x-y)∈ℝ)))"));
-				suppose("type_of_multiplication",
-						$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((xy)∈ℝ)))"));
-				admit("right_distributivity_of_multiplication_over_addition",
-						$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → (((a+b)c)=((ac)+(bc))))))"));
-				admit("associativity_of_addition",
-						$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((x+(y+z))=((x+y)+z)))))"));
-				admit("associativity_of_multiplication",
-						$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((x(yz))=((xy)z)))))"));
-				admit("left_distributivity_of_multiplication_over_addition",
-						$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((a(b+c))=((ab)+(ac))))))"));
-				admit("right_distributivity_of_multiplication_over_subtraction",
-						$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → (((a-b)c)=((ac)-(bc))))))"));
-				admit("left_distributivity_of_multiplication_over_subtraction",
-						$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((a(b-c))=((ab)-(ac))))))"));
-				admit("commutativity_of_multiplication",
-						$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((xy)=(yx))))"));
-				admit("commutativity_of_addition",
-						$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x+y)=(y+x))))"));
-				admit("ordering_of_terms",
-						$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → (((x+z)+y)=((x+y)+z)))))"));
-				admit("ordering_of_factors",
-						$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → (((xz)y)=((xy)z)))))"));
-				admit("opposite_of_multiplication",
-						$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → (((-x)y)=(-(xy)))))"));
-				
-				claim("test", $(forAll("a", "b", "c", "d"),
-						$(real($("a")), "->", $(real($("b")), "->", $(real($("c")), "->", $(real($("d")), "->",
-//								$$("(bda)=(adb)")))))));
-								$$("(c+(a-(ba))d)=((ad)-(abd)+c)")))))));
-				{
-					final Symbol a = introduce();
-					final Symbol b = introduce();
-					final Symbol c = introduce();
-					final Symbol d = introduce();
-					
-					introduce();
-					introduce();
-					introduce();
-					introduce();
-					
-					proveUsingBindAndApply(real(a));
-					proveUsingBindAndApply(real($(a, b)));
-					proveUsingBindAndApply(real($("-", b)));
-					proveUsingBindAndApply(real($($(a, b), "-", $(c, "+", $("-", d)))));
-					
-					final AlgebraicProperty[] transformationRules = {
-							new Noninversion("definition_of_subtraction"),
-							new Noninversion("opposite_of_multiplication"),
-							new Noninversion("right_distributivity_of_multiplication_over_addition"),
-							new Noninversion("associativity_of_addition"),
-							new Inversion("ordering_of_terms"),
-							new Inversion("commutativity_of_addition"),
-							new Noninversion("associativity_of_multiplication"),
-							new Inversion("commutativity_of_multiplication"),
-							new Inversion("ordering_of_factors"),
-							new Noninversion("left_distributivity_of_multiplication_over_addition")
-					};
-					final Composite goal = goal();
-					
-					canonicalize(goal.get(0), transformationRules);
-					canonicalize(goal.get(2), transformationRules);
-					rewriteRight(factName(-2), factName(-1));
-				}
-			}
+			session().trust(Reals.MODULE);
+			
+			claimRealEquality("test", $(forAll("a", "b", "c", "d"),
+					$(real($("a")), "->", $(real($("b")), "->", $(real($("c")), "->", $(real($("d")), "->",
+							$$("(c+(a-(ba))d)=((ad)-(abd)+c)")))))));
 			
 			suppose("definition_of_conjunction",
 					$$("∀P,Q (P → (Q → (P ∧ Q)))"));
