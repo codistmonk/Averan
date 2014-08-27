@@ -9,7 +9,6 @@ import static java.awt.Color.BLACK;
 import static java.awt.Color.WHITE;
 import static java.util.stream.Collectors.toList;
 import static net.sourceforge.aprog.tools.Tools.cast;
-
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Module;
@@ -174,11 +173,9 @@ public final class Demo2 {
 		try {
 			{
 				suppose("definition_of_subtraction",
-						$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x-y)=(x+('-'y)))))"));
-				suppose("tmp",
-						$$("'-'∈ℝ"));
+						$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x-y)=(x+(-y)))))"));
 				suppose("type_of_opposite",
-						$$("∀x ((x∈ℝ) → (('-'x)∈ℝ))"));
+						$$("∀x ((x∈ℝ) → ((-x)∈ℝ))"));
 				suppose("type_of_addition",
 						$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x+y)∈ℝ)))"));
 				suppose("type_of_subtraction",
@@ -205,6 +202,8 @@ public final class Demo2 {
 						$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → (((x+z)+y)=((x+y)+z)))))"));
 				admit("ordering_of_factors",
 						$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → (((xz)y)=((xy)z)))))"));
+				admit("opposite_of_multiplication",
+						$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → (((-x)y)=(-(xy)))))"));
 				
 				claim("test", $(forAll("a", "b", "c", "d"),
 						$(real($("a")), "->", $(real($("b")), "->", $(real($("c")), "->", $(real($("d")), "->",
@@ -223,10 +222,12 @@ public final class Demo2 {
 					
 					proveUsingBindAndApply(real(a));
 					proveUsingBindAndApply(real($(a, b)));
+					proveUsingBindAndApply(real($("-", b)));
 					proveUsingBindAndApply(real($($(a, b), "-", $(c, "+", $("-", d)))));
 					
 					final AlgebraicProperty[] transformationRules = {
 							new Noninversion("definition_of_subtraction"),
+							new Noninversion("opposite_of_multiplication"),
 							new Noninversion("right_distributivity_of_multiplication_over_addition"),
 							new Noninversion("associativity_of_addition"),
 							new Inversion("ordering_of_terms"),
@@ -242,8 +243,6 @@ public final class Demo2 {
 					canonicalize(goal.get(2), transformationRules);
 					rewriteRight(factName(-2), factName(-1));
 				}
-				
-//				BreakSessionException.breakSession();
 			}
 			
 			suppose("definition_of_conjunction",
@@ -385,7 +384,10 @@ public final class Demo2 {
 					final Integer index = pair.getFirst();
 					final Pattern pattern = pair.getSecond();
 					
-					transformationRule.bindAndApply(s, pattern);
+					if (!transformationRule.bindAndApply(s, pattern)) {
+						continue;
+					}
+					
 					s.rewrite(propositionName, s.getFactName(-1), index);
 					
 					final Expression last = s.getFact(-1);
@@ -874,11 +876,13 @@ public final class Demo2 {
 			return this.justification;
 		}
 		
-		public final void bindAndApply(final Session session, final Pattern pattern) {
-			Module module = cast(Module.class, session.getProposition(this.getJustification()));
+		public final boolean bindAndApply(final Session session, final Pattern pattern) {
+			final Session s = new Session(new Module(session.getCurrentModule(), session.newPropositionName()));
+			
+			Module module = cast(Module.class, s.getProposition(this.getJustification()));
 			
 			if (module != null) {
-				final Bind bind = session.getCurrentModule().new Bind(session.getCurrentModule(), this.getJustification());
+				final Bind bind = s.getCurrentModule().new Bind(s.getCurrentModule(), this.getJustification());
 				
 				for (Map.Entry<Any.Key, Expression> binding : pattern.getBindings().entrySet()) {
 					bind.bind(binding.getKey().getName().toString(), binding.getValue());
@@ -886,16 +890,26 @@ public final class Demo2 {
 				
 				bind.execute();
 				
-				module = cast(Module.class, session.getFact(-1));
+				module = cast(Module.class, s.getFact(-1));
 				
 				while (module != null && !module.getConditions().isEmpty()) {
 					final Expression condition = module.getConditions().get(0);
-					proveUsingBindAndApply(session, condition);
+					final int oldFactCount = s.getCurrentModule().getFacts().size();
+					proveUsingBindAndApply(s, condition);
+					final int newFactCount = s.getCurrentModule().getFacts().size();
 					
-					session.apply(session.getFactName(-2), session.getFactName(-1));
-					module = cast(Module.class, session.getFact(-1));
+					if (oldFactCount == newFactCount) {
+						return false;
+					}
+					
+					s.apply(s.getFactName(-2), s.getFactName(-1));
+					module = cast(Module.class, s.getFact(-1));
 				}
 			}
+			
+			session.getCurrentModule().new Claim(session.newPropositionName(), s.getFact(-1), s.getCurrentModule()).execute();
+			
+			return true;
 		}
 		
 		public final Pattern newPattern(final Session session) {
