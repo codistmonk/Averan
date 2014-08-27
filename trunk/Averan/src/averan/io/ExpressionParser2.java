@@ -15,6 +15,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 
 import net.sourceforge.aurochs2.core.Grammar.Rule;
@@ -23,6 +24,7 @@ import net.sourceforge.aurochs2.core.Lexer;
 import net.sourceforge.aurochs2.core.LexerBuilder;
 import net.sourceforge.aurochs2.core.ParserBuilder;
 import net.sourceforge.aurochs2.core.LexerBuilder.Union;
+import net.sourceforge.aurochs2.core.ParserBuilder.Priority.Associativity;
 
 /**
  * @author codistmonk (creation 2014-08-06)
@@ -70,6 +72,17 @@ public final class ExpressionParser2 implements Serializable {
 		return instance.parse(input);
 	}
 	
+	public static final Sequence string(final CharSequence characters) {
+		final int n = characters.length();
+		final Object[] symbols = new Object[n];
+		
+		for (int i = 0; i < n; ++i) {
+			symbols[i] = characters.charAt(i);
+		}
+		
+		return sequence(symbols);
+	}
+	
 	public static final Union disjoin(final CharSequence characters) {
 		final int n = characters.length();
 		final Object[] cs = new Character[n];
@@ -106,11 +119,11 @@ public final class ExpressionParser2 implements Serializable {
 			final Rule rule = parserBuilder.define("Expression", left.toString(), "Expression", right.toString());
 			
 			if (left.equals('(') && right.equals(')')) {
-				rule.setListener((r, data) -> {
+				rule.setAction((r, data) -> {
 					return $(data[1]);
 				});
 			} else {
-				rule.setListener((r, data) -> {
+				rule.setAction((r, data) -> {
 					return $(data);
 				});
 			}
@@ -119,19 +132,19 @@ public final class ExpressionParser2 implements Serializable {
 	
 	public static final void definePrefixOperations(final ParserBuilder parserBuilder, final Union prefixOperator) {
 		for (final Object op : prefixOperator.getSymbols()) {
-			parserBuilder.define("Expression", op.toString(), "Expression").setListener((rule, data) -> $(data));
+			parserBuilder.define("Expression", op.toString(), "Expression").setAction((rule, data) -> $(data));
 		}
 	}
 	
 	public static final void defineInfixOperations(final ParserBuilder parserBuilder, final Union infixOperator) {
 		for (final Object op : infixOperator.getSymbols()) {
-			parserBuilder.define("Expression", "Expression", op.toString(), "Expression").setListener((rule, data) -> $(data));
+			parserBuilder.define("Expression", "Expression", op.toString(), "Expression").setAction((rule, data) -> $(data));
 		}
 	}
 	
 	public static final void definePostfixOperations(final ParserBuilder parserBuilder, final Union postfixOperator) {
 		for (final Object op : postfixOperator.getSymbols()) {
-			parserBuilder.define("Expression", "Expression", op.toString()).setListener((rule, data) -> $(data));
+			parserBuilder.define("Expression", "Expression", op.toString()).setAction((rule, data) -> $(data));
 		}
 	}
 	
@@ -152,12 +165,15 @@ public final class ExpressionParser2 implements Serializable {
 		
 		result.generate("natural", oneOrMore(DIGIT));
 		result.generate("variable", LETTER);
+		result.generate("variable", '≀', LETTER);
 		for (final Object symbol : OPERATOR.getSymbols()) {
 			result.generate(symbol.toString(), symbol);
 		}
 		result.generate("string", '\'', "characters", '\'');
-		result.define("characters", union(DIGIT, LETTER, OPERATOR, ' ', sequence('\\', '\'')), "characters");
+		result.define("characters", union(DIGIT, LETTER, OPERATOR, ' ', "escaped_character"), "characters");
 		result.define("characters");
+		result.define("escaped_character", union(string("\\'"), string("\\\\")))
+				.setAction((rule, data) -> data[0].toString().charAt(1));
 		result.skip(oneOrMore(' '));
 		
 		return result;
@@ -166,21 +182,21 @@ public final class ExpressionParser2 implements Serializable {
 	public static final ParserBuilder newMathParserBuilder(final Lexer mathLexer) {
 		final ParserBuilder result = new ParserBuilder(mathLexer);
 		
-		result.define("()", "Expression").setListener((rule, data) -> data[0]);
-		result.define("Expression", "∀", "Identifiers", "Expression").setListener((rule, data) -> $(data[1], data[2]));
+		result.define("()", "Expression").setAction((rule, data) -> data[0]);
+		result.define("Expression", "∀", "Identifiers", "Expression").setAction((rule, data) -> $(data[1], data[2]));
 		defineGroupingOperations(result, GROUPING_OPERATOR);
 		definePrefixOperations(result, PREFIX_OPERATOR);
 		defineInfixOperations(result, INFIX_OPERATOR);
 		definePostfixOperations(result, POSTFIX_OPERATOR);
-		result.define("Expression", "-", "Expression").setListener((rule, data) -> $(data));
-		result.define("Expression", "Expression", "Expression").setListener((rule, data) -> $(data));
-		result.define("Expression", "natural").setListener((rule, data) -> $(data));
-		result.define("Expression", "variable").setListener((rule, data) -> $(data));
-		result.define("Expression", "string").setListener(ExpressionParser2::unquote);
-		result.define("Identifier", "string").setListener(ExpressionParser2::unquote);
-		result.define("Identifier", "variable").setListener((rule, data) -> $(data));
-		result.define("Identifiers", "Identifiers", ",", "Identifier").setListener(ExpressionParser2::flatten);
-		result.define("Identifiers", "Identifier").setListener(ExpressionParser2::flatten);
+		result.define("Expression", "-", "Expression").setAction((rule, data) -> $(data));
+		result.define("Expression", "Expression", "Expression").setAction((rule, data) -> $(data));
+		result.define("Expression", "natural").setAction((rule, data) -> $(data));
+		result.define("Expression", "variable").setAction((rule, data) -> $(data));
+		result.define("Expression", "string").setAction(ExpressionParser2::unquote);
+		result.define("Identifier", "string").setAction(ExpressionParser2::unquote);
+		result.define("Identifier", "variable").setAction((rule, data) -> $(data));
+		result.define("Identifiers", "Identifiers", ",", "Identifier").setAction(ExpressionParser2::flatten);
+		result.define("Identifiers", "Identifier").setAction(ExpressionParser2::flatten);
 		
 		resolveConflicts(result);
 		
@@ -245,15 +261,17 @@ public final class ExpressionParser2 implements Serializable {
 			resultBuilder.resolveConflictWith(block("Expression", "Expression"), block(op.toString(), "Expression"));
 		}
 		
+		final Collection<Object> done = new HashSet<>();
+		
 		resultBuilder.setPriority(200, NONE, "-", "Expression");
-		resultBuilder.setPriority(150, NONE, "Expression", "=", "Expression");
+		setBinaryOperatorPriority("=", 150, NONE, resultBuilder, done);
+		setBinaryOperatorPriority("∧", 100, LEFT, resultBuilder, done);
+		setBinaryOperatorPriority("_", 250, RIGHT, resultBuilder, done);
 		for (final Object op : PREFIX_OPERATOR.getSymbols()) {
 			resultBuilder.setPriority(200, LEFT, op.toString(), "Expression");
 		}
 		for (final Object op : INFIX_OPERATOR.getSymbols()) {
-			if (!"=".equals(op.toString())) {
-				resultBuilder.setPriority(200, LEFT, "Expression", op.toString(), "Expression");
-			}
+			setBinaryOperatorPriority(op, 200, LEFT, resultBuilder, done);
 		}
 		for (final Object op : POSTFIX_OPERATOR.getSymbols()) {
 			resultBuilder.setPriority(300, RIGHT, "Expression", op.toString());
@@ -262,6 +280,16 @@ public final class ExpressionParser2 implements Serializable {
 		resultBuilder.setPriority(250, LEFT, "Expression", "variable");
 		resultBuilder.setPriority(250, LEFT, "Expression", "string");
 		resultBuilder.setPriority(250, LEFT, "Expression", "Expression");
+	}
+	
+	public static final void setBinaryOperatorPriority(final Object operator,
+			final int priority, final Associativity associativity,
+			final ParserBuilder parserBuilder, final Collection<Object> done) {
+		final String opToken = operator.toString();
+		
+		if (done.add(opToken)) {
+			parserBuilder.setPriority(priority, associativity, "Expression", opToken, "Expression");
+		}
 	}
 	
 	public static final Object unquote(final Rule rule, final Object[] data) {

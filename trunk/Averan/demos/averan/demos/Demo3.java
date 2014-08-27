@@ -2,7 +2,7 @@ package averan.demos;
 
 import static averan.core.ExpressionTools.*;
 import static averan.core.SessionTools.*;
-import static averan.io.ExpressionParser.$$;
+import static averan.io.ExpressionParser2.$$;
 import static averan.modules.Standard.*;
 import static java.awt.Color.BLACK;
 import static java.awt.Color.WHITE;
@@ -160,7 +160,7 @@ public final class Demo3 {
 				rewriteRight(factName(-1), factName(-2));
 			}
 			
-			admit("substitute", $$("∀P,X,Y ((P'\\og\\{\\fg'X=Y'\\og\\}\\fg')/((P'\\og\\{\\fg'X=Y'\\og\\}\\fg')=(P{X=Y})))"));
+			admit("substitute", $$("∀P,X,Y ((P'\\\\og\\\\{\\\\fg'X=Y'\\\\og\\\\}\\\\fg')/((P'\\\\og\\\\{\\\\fg'X=Y'\\\\og\\\\}\\\\fg')=(P{X=Y})))"));
 		} catch (final BreakSessionException exception) {
 			sessionBreakPoint = exception.getStackTrace()[1].toString();
 		} finally {
