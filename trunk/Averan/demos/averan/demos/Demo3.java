@@ -2,7 +2,7 @@ package averan.demos;
 
 import static averan.core.ExpressionTools.*;
 import static averan.core.SessionTools.*;
-import static averan.io.ExpressionParser2.$$;
+import static averan.io.ExpressionParser.$$;
 import static averan.modules.Standard.*;
 import static java.awt.Color.BLACK;
 import static java.awt.Color.WHITE;

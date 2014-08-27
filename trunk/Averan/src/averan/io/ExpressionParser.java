@@ -1,300 +1,318 @@
 package averan.io;
 
-import static averan.core.ExpressionTools.$;
-import static averan.core.ExpressionTools.facts;
-import static averan.core.ExpressionTools.rule;
+import static averan.core.ExpressionTools.*;
 import static java.util.Arrays.copyOfRange;
-import static net.sourceforge.aprog.tools.Tools.append;
-import static net.sourceforge.aprog.tools.Tools.array;
 import static net.sourceforge.aprog.tools.Tools.cast;
-import static net.sourceforge.aprog.tools.Tools.join;
-import static net.sourceforge.aurochs.AurochsTools.input;
-import static net.sourceforge.aurochs.LRParserTools.*;
-import static net.sourceforge.aurochs.RegularTools.*;
-import averan.core.Composite;
+import static net.sourceforge.aurochs2.core.LexerBuilder.*;
+import static net.sourceforge.aurochs2.core.ParserBuilder.block;
+import static net.sourceforge.aurochs2.core.ParserBuilder.Priority.Associativity.LEFT;
+import static net.sourceforge.aurochs2.core.ParserBuilder.Priority.Associativity.NONE;
+import static net.sourceforge.aurochs2.core.ParserBuilder.Priority.Associativity.RIGHT;
+import static net.sourceforge.aurochs2.core.TokenSource.tokens;
 import averan.core.Expression;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 
-import net.sourceforge.aprog.tools.Tools;
-import net.sourceforge.aurochs.Grammar;
-import net.sourceforge.aurochs.Grammar.Regular;
-import net.sourceforge.aurochs.LRParser;
-import net.sourceforge.aurochs.LRParserTools;
-import net.sourceforge.aurochs.AbstractLRParser.GeneratedToken;
-import net.sourceforge.aurochs.AbstractLRParser.Listener;
-import net.sourceforge.aurochs.AbstractLRParser.ReductionEvent;
-import net.sourceforge.aurochs.AbstractLRParser.UnexpectedSymbolErrorEvent;
-import net.sourceforge.aurochs.LRParserTools.LexerRule;
-import net.sourceforge.aurochs.LRParserTools.ParserRule;
+import net.sourceforge.aurochs2.core.Grammar.Rule;
+import net.sourceforge.aurochs2.core.LRParser;
+import net.sourceforge.aurochs2.core.Lexer;
+import net.sourceforge.aurochs2.core.LexerBuilder;
+import net.sourceforge.aurochs2.core.ParserBuilder;
+import net.sourceforge.aurochs2.core.LexerBuilder.Union;
+import net.sourceforge.aurochs2.core.ParserBuilder.Priority.Associativity;
 
 /**
  * @author codistmonk (creation 2014-08-06)
  */
 public final class ExpressionParser implements Serializable {
 	
-	private final LRParser mathParser;
+	private final Lexer mathLexer = newMathLexerBuilder().newLexer();
 	
-	private transient Object result;
+	private final LRParser mathParser = newMathParserBuilder(this.mathLexer).newParser();
 	
-	{
-		final LRParser parser = LRParserTools.newParser(MathParser.class);
-		this.mathParser = parser;
+	public final <E extends Expression> E parse(final CharSequence input) {
+		final Object[] result = new Object[1];
 		
-		this.mathParser.addListener(new Listener() {
-
-			@Override
-			public final void unexpectedSymbolErrorOccured(final UnexpectedSymbolErrorEvent event) {
-				final Object inputSymbol = parser.getInputSymbol();
-				
-				if (!Grammar.SpecialSymbol.INITIAL_NONTERMINAL.equals(inputSymbol)) {
-					Tools.debugError(inputSymbol);
-				}
-			}
-			
-			@Override
-			public final void reductionOccured(final ReductionEvent event) {
-				final GeneratedToken generatedToken = event.getGeneratedToken();
-				
-				if ("ALL".equals(generatedToken.getSymbol())) {
-					ExpressionParser.this.setResult(generatedToken.getValue());
-				}
-			}
-			
-			/**
-			 * {@value}.
-			 */
-			private static final long serialVersionUID = 7194229918744361926L;
-			
-		});
-	}
-	
-	public final <E extends Expression> E parse(final CharSequence charSequence) {
-		this.setResult(null);
-		
-		if (!this.mathParser.parse(input(charSequence))) {
-			throw new IllegalArgumentException("Syntax error");
+		if (this.mathParser.parse(this.mathLexer.translate(tokens(input)), result)) {
+			return $(result[0]);
 		}
 		
-		return $(this.result);
-	}
-	
-	final void setResult(final Object result) {
-		this.result = result;
+		throw new IllegalArgumentException("Syntax error");
 	}
 	
 	/**
 	 * {@value}.
 	 */
-	private static final long serialVersionUID = -2690081831029013658L;
+	private static final long serialVersionUID = -5684274223441131221L;
+	
+	public static final Union DIGIT = union(range('0', '9'));
+	
+	public static final Union LETTER = union(union(range('a', 'z')), union(range('A', 'Z')), disjoin("Σℕℝ"));
+	
+	public static final Union GROUPING_OPERATOR = disjoin("(){}[]⟨⟩");
+	
+	public static final Union SPECIAL_OPERATOR = disjoin("∀");
+	
+	public static final Union PREFIX_OPERATOR = disjoin("∃¬");
+	
+	public static final Union INFIX_OPERATOR = disjoin(",=+-*/_^<≤∧∈∩→");
+	
+	public static final Union POSTFIX_OPERATOR = disjoin("ᵀ");
+	
+	public static final Union OPERATOR = merge(GROUPING_OPERATOR, SPECIAL_OPERATOR, PREFIX_OPERATOR, INFIX_OPERATOR, POSTFIX_OPERATOR);
 	
 	public static final ExpressionParser instance = new ExpressionParser();
 	
-	@SuppressWarnings("unchecked")
-	public static final <E extends Expression> E $$(final CharSequence... charSequences) {
-		final int n = charSequences.length;
-		
-		if (n == 1) {
-			return instance.parse(charSequences[0]);
-		}
-		
-		final Object[] facts = new Object[n];
-		
-		for (int i = 0; i < n; ++i) {
-			facts[i] = instance.parse(charSequences[i]);
-		}
-		
-		return (E) facts(facts);
+	public static final <E extends Expression> E $$(final CharSequence input) {
+		return instance.parse(input);
 	}
 	
-	/**
-	 * @author codistmonk (creation 2014-08-05)
-	 */
-	public static final class MathParser implements Serializable {
+	public static final Sequence string(final CharSequence characters) {
+		final int n = characters.length();
+		final Object[] symbols = new Object[n];
 		
-		/**
-		 * {@value}.
-		 */
-		private static final long serialVersionUID = 2607977220438106247L;
+		for (int i = 0; i < n; ++i) {
+			symbols[i] = characters.charAt(i);
+		}
 		
-		static final Object[] verbatims = {
-			"+", "-", "/", "=", "(", ")", "{", "}", "[", "]",
-			",", "∀", "∃", "¬", "→", "`", "≀", "∧", "∈", "∩",
-			"<", "≤", "Σ", "_", "^", "ℕ", "ℝ", "ᵀ", "⟨", "⟩",
-		};
+		return sequence(symbols);
+	}
+	
+	public static final Union disjoin(final CharSequence characters) {
+		final int n = characters.length();
+		final Object[] cs = new Character[n];
 		
-		private static final Regular alpha = union(range('A', 'Z'), range('a', 'z'), range('Α', 'Ω'), range('α', 'ω'));
+		for (int i = 0; i < n; ++i) {
+			cs[i] = characters.charAt(i);
+		}
 		
-		static final LexerRule[] lexerRules = appendVerbatims(array(
-				tokenRule("VARIABLE", /* -> */ alpha),
-				tokenRule("NATURAL",  /* -> */ oneOrMore(range('0', '9'))),
-				tokenRule("STRING",   /* -> */ sequence('\'', oneOrMore(union(append(
-						(Object[]) array(alpha, ' ', '\\'),
-						Arrays.stream(verbatims).map(s -> s.toString().charAt(0)).toArray()))), '\'')),
-				nontokenRule(" *",    /* -> */ zeroOrMore(' '))
-		), verbatims);
+		return new Union(cs);
+	}
+	
+	public static final Union merge(final Object... symbolOrUnions) {
+		final Collection<Object> protoresult = new ArrayList<>();
+		boolean done = true;
 		
-		static final ParserRule[] parserRules = append(array(
-			leftAssociative("∧", 5),
-			leftAssociative("→", 5),
-			leftAssociative(",", 8),
-			leftAssociative("=", 10),
-			leftAssociative("∈", 50),
-			leftAssociative("<", 50),
-			leftAssociative("≤", 50),
-			leftAssociative("(", 100),
-			leftAssociative("{", 100),
-			leftAssociative("[", 100),
-			leftAssociative("⟨", 100),
-			leftAssociative("+", 100),
-			leftAssociative("-", 100),
-			leftAssociative("∩", 125),
-			leftAssociative("/", 200),
-			leftAssociative("ᵀ", 300),
-			leftAssociative("¬", 300),
-			leftAssociative("∀", 300),
-			leftAssociative("∃", 300),
-			leftAssociative("_", 330),
-			leftAssociative("^", 330),
-//			leftAssociative("`", 340),
-			leftAssociative("≀", 340),
-			leftAssociative("VARIABLE", 350),
-			leftAssociative("NATURAL", 350),
-			leftAssociative("Σ", 350),
-			leftAssociative("ℕ", 350),
-			leftAssociative("ℝ", 350),
+		for (final Object object : symbolOrUnions) {
+			final Union union = cast(Union.class, object);
 			
-	        namedRule("expression",        "ALL",        /* -> */  "EXPRESSION"),
-	        namedRule("expression",        "EXPRESSION", /* -> */  "∀", "PARAMETERS", "EXPRESSION"),
-	        namedRule("expression",        "EXPRESSION", /* -> */  "∃", "IDENTIFIER", "EXPRESSION"),
-	        namedRule("expression",        "EXPRESSION", /* -> */  "¬", "EXPRESSION"),
-//	        namedRule("expression",        "EXPRESSION", /* -> */  "-", "EXPRESSION"),
-	        namedRule("expression",        "EXPRESSION", /* -> */  "EXPRESSION", "ᵀ"),
-	        namedRule("operation",         "EXPRESSION", /* -> */  "EXPRESSION", "OPERATION"),
-	        namedRule("verbatim",          "OPERATION",  /* -> */  "+", "EXPRESSION"),
-	        namedRule("verbatim",          "OPERATION",  /* -> */  "-", "EXPRESSION"),
-	        namedRule("verbatim",          "OPERATION",  /* -> */  "/", "EXPRESSION"),
-	        namedRule("verbatim",          "OPERATION",  /* -> */  "=", "EXPRESSION"),
-	        namedRule("verbatim",          "OPERATION",  /* -> */  "→", "EXPRESSION"),
-	        namedRule("verbatim",          "OPERATION",  /* -> */  "∧", "EXPRESSION"),
-	        namedRule("verbatim",          "OPERATION",  /* -> */  "∈", "EXPRESSION"),
-	        namedRule("verbatim",          "OPERATION",  /* -> */  "∩", "EXPRESSION"),
-	        namedRule("verbatim",          "OPERATION",  /* -> */  "<", "EXPRESSION"),
-	        namedRule("verbatim",          "OPERATION",  /* -> */  "≤", "EXPRESSION"),
-	        namedRule("verbatim",          "OPERATION",  /* -> */  "_", "EXPRESSION"),
-	        namedRule("verbatim",          "OPERATION",  /* -> */  "^", "EXPRESSION"),
-	        namedRule("verbatim",          "OPERATION",  /* -> */  ",", "EXPRESSION"),
-	        namedRule("verbatim",          "OPERATION",  /* -> */  "EXPRESSION"),
-	        namedRule("grouping",          "EXPRESSION", /* -> */  "(", "EXPRESSION", ")"),
-	        namedRule("expression",        "EXPRESSION", /* -> */  "(", ")"),
-	        namedRule("expression",        "EXPRESSION", /* -> */  "{", "EXPRESSION", "}"),
-	        namedRule("expression",        "EXPRESSION", /* -> */  "{", "}"),
-	        namedRule("expression",        "EXPRESSION", /* -> */  "[", "EXPRESSION", "]"),
-	        namedRule("expression",        "EXPRESSION", /* -> */  "[", "]"),
-	        namedRule("expression",        "EXPRESSION", /* -> */  "⟨", "EXPRESSION", "⟩"),
-	        namedRule("expression",        "EXPRESSION", /* -> */  "⟨", "⟩"),
-	        namedRule("expression",        "EXPRESSION", /* -> */  "NATURAL"),
-	        namedRule("expression",        "EXPRESSION", /* -> */  "IDENTIFIER"),
-	        namedRule("expression",        "EXPRESSION", /* -> */  "Σ"),
-	        namedRule("expression",        "EXPRESSION", /* -> */  "ℕ"),
-	        namedRule("expression",        "EXPRESSION", /* -> */  "ℝ"),
-	        namedRule("list",              "PARAMETERS", /* -> */ "PARAMETERS", ",", "IDENTIFIER"),
-	        namedRule("list",              "PARAMETERS", /* -> */ "IDENTIFIER"),
-	        namedRule("identifier",        "IDENTIFIER", /* -> */  "≀", "VARIABLE"),
-	        namedRule("identifier",        "IDENTIFIER", /* -> */  "VARIABLE"),
-	        namedRule("identifier",        "IDENTIFIER", /* -> */  "STRING")
-		)/*, verbatimWordRules()*/);
-		
-//		static final ParserRule[] verbatimWordRules() {
-//			return Arrays.stream(verbatims).map(v -> namedRule("concatenation", "WORD", "`", v)).toArray(ParserRule[]::new);
-//		}
-		
-		public static final LexerRule[] appendVerbatims(final LexerRule[] lexerRules, final Object... verbatims) {
-			final int m = lexerRules.length;
-			final int n = m + verbatims.length;
-			final LexerRule[] result = Arrays.copyOf(lexerRules, n);
-			
-			for (int i = m; i < n; ++i) {
-				final Object verbatim = verbatims[i - m];
-				result[i] = verbatimTokenRule(verbatim, string(verbatim.toString()));
+			if (union != null) {
+				protoresult.addAll(Arrays.asList(union.getSymbols()));
+				done = false;
+			} else {
+				protoresult.add(object);
 			}
+		}
+		
+		return done ? union(protoresult.toArray()) : merge(protoresult.toArray());
+	}
+	
+	public static final void defineGroupingOperations(final ParserBuilder parserBuilder, final Union groupingOperator) {
+		for (final Object[] pair : groupingPairs(groupingOperator)) {
+			final Object left = pair[0];
+			final Object right = pair[1];
+			final Rule rule = parserBuilder.define("Expression", left.toString(), "Expression", right.toString());
+			
+			if (left.equals('(') && right.equals(')')) {
+				rule.setAction((r, data) -> {
+					return $(data[1]);
+				});
+			} else {
+				rule.setAction((r, data) -> {
+					return $(data);
+				});
+			}
+		}
+	}
+	
+	public static final void definePrefixOperations(final ParserBuilder parserBuilder, final Union prefixOperator) {
+		for (final Object op : prefixOperator.getSymbols()) {
+			parserBuilder.define("Expression", op.toString(), "Expression").setAction((rule, data) -> $(data));
+		}
+	}
+	
+	public static final void defineInfixOperations(final ParserBuilder parserBuilder, final Union infixOperator) {
+		for (final Object op : infixOperator.getSymbols()) {
+			parserBuilder.define("Expression", "Expression", op.toString(), "Expression").setAction((rule, data) -> $(data));
+		}
+	}
+	
+	public static final void definePostfixOperations(final ParserBuilder parserBuilder, final Union postfixOperator) {
+		for (final Object op : postfixOperator.getSymbols()) {
+			parserBuilder.define("Expression", "Expression", op.toString()).setAction((rule, data) -> $(data));
+		}
+	}
+	
+	public static final Object[][] groupingPairs(final Union groupingOperator) {
+		final Object[] symbols = groupingOperator.getSymbols();
+		final int n = symbols.length;
+		final Object[][] result = new Object[n / 2][];
+		
+		for (int i = 0; i < n; i += 2) {
+			result[i / 2] = copyOfRange(symbols, i, i + 2);
+		}
+		
+		return result;
+	}
+	
+	public static final LexerBuilder newMathLexerBuilder() {
+		final LexerBuilder result = new LexerBuilder();
+		
+		result.generate("natural", oneOrMore(DIGIT));
+		result.generate("variable", LETTER);
+		result.generate("variable", '≀', LETTER);
+		for (final Object symbol : OPERATOR.getSymbols()) {
+			result.generate(symbol.toString(), symbol);
+		}
+		result.generate("string", '\'', "characters", '\'');
+		result.define("characters", union(DIGIT, LETTER, OPERATOR, ' ', "escaped_character"), "characters");
+		result.define("characters");
+		result.define("escaped_character", union(string("\\'"), string("\\\\")))
+				.setAction((rule, data) -> data[0].toString().charAt(1));
+		result.skip(oneOrMore(' '));
+		
+		return result;
+	}
+	
+	public static final ParserBuilder newMathParserBuilder(final Lexer mathLexer) {
+		final ParserBuilder result = new ParserBuilder(mathLexer);
+		
+		result.define("()", "Expression").setAction((rule, data) -> data[0]);
+		result.define("Expression", "∀", "Identifiers", "Expression").setAction((rule, data) -> $(data[1], data[2]));
+		defineGroupingOperations(result, GROUPING_OPERATOR);
+		definePrefixOperations(result, PREFIX_OPERATOR);
+		defineInfixOperations(result, INFIX_OPERATOR);
+		definePostfixOperations(result, POSTFIX_OPERATOR);
+		result.define("Expression", "-", "Expression").setAction((rule, data) -> $(data));
+		result.define("Expression", "Expression", "Expression").setAction((rule, data) -> $(data));
+		result.define("Expression", "natural").setAction((rule, data) -> $(data));
+		result.define("Expression", "variable").setAction((rule, data) -> $(data));
+		result.define("Expression", "string").setAction(ExpressionParser::unquote);
+		result.define("Identifier", "string").setAction(ExpressionParser::unquote);
+		result.define("Identifier", "variable").setAction((rule, data) -> $(data));
+		result.define("Identifiers", "Identifiers", ",", "Identifier").setAction(ExpressionParser::flatten);
+		result.define("Identifiers", "Identifier").setAction(ExpressionParser::flatten);
+		
+		resolveConflicts(result);
+		
+		return result;
+	}
+	
+	private static final void resolveConflicts(final ParserBuilder resultBuilder) {
+		for (final Object op : INFIX_OPERATOR.getSymbols()) {
+			resultBuilder.resolveConflictWith("∀", "Identifiers", block("Expression", op.toString(), "Expression"));
+			resultBuilder.resolveConflictWith("Expression", op.toString(), block("Expression", block("∀", "Identifiers", "Expression")));
+		}
+		
+		final List<Object> complexTokens = Arrays.asList("string", "natural", "variable");
+		
+		for (final Object complexToken : complexTokens) {
+			resultBuilder.resolveConflictWith("∀", "Identifiers", block("Expression", complexToken));
+		}
+		
+		for (final Object[] pair : groupingPairs(GROUPING_OPERATOR)) {
+			final String left = pair[0].toString();
+			final String right = pair[1].toString();
+			
+			resultBuilder.resolveConflictWith(block("Expression", "Expression"), block(left, "Expression", right));
+			resultBuilder.resolveConflictWith(left, block("Expression", "-", "Expression"), right);
+			resultBuilder.resolveConflictWith("∀", "Identifiers", block("Expression", block(left, "Expression", right)));
+		}
+		
+		for (final Object op1 : PREFIX_OPERATOR.getSymbols()) {
+			for (final Object op2 : PREFIX_OPERATOR.getSymbols()) {
+				resultBuilder.resolveConflictWith(block(op1.toString(), "Expression"),
+						block(op2.toString(), "Expression"));
+			}
+		}
+		for (final Object op2 : PREFIX_OPERATOR.getSymbols()) {
+			resultBuilder.resolveConflictWith(block("-", "Expression"),
+					block(op2.toString(), "Expression"));
+		}
+		
+		for (final Object op1 : INFIX_OPERATOR.getSymbols()) {
+			for (final Object op2 : PREFIX_OPERATOR.getSymbols()) {
+				resultBuilder.resolveConflictWith("Expression", op1.toString(),
+						block("Expression", block(op2.toString(), "Expression")));
+			}
+		}
+		
+		for (final Object op1 : PREFIX_OPERATOR.getSymbols()) {
+			for (final Object[] pair : groupingPairs(GROUPING_OPERATOR)) {
+				resultBuilder.resolveConflictWith(block(op1.toString(), "Expression"), block(pair[0].toString(), "Expression", pair[1].toString()));
+			}
+		}
+		for (final Object[] pair : groupingPairs(GROUPING_OPERATOR)) {
+			resultBuilder.resolveConflictWith(block("-", "Expression"), block(pair[0].toString(), "Expression", pair[1].toString()));
+		}
+		
+		for (final Object op1 : INFIX_OPERATOR.getSymbols()) {
+			for (final Object[] pair : groupingPairs(GROUPING_OPERATOR)) {
+				resultBuilder.resolveConflictWith("Expression", op1.toString(), block("Expression", block(pair[0].toString(), "Expression", pair[1].toString())));
+			}
+		}
+		
+		for (final Object op : PREFIX_OPERATOR.getSymbols()) {
+			resultBuilder.resolveConflictWith(block("Expression", "Expression"), block(op.toString(), "Expression"));
+		}
+		
+		final Collection<Object> done = new HashSet<>();
+		
+		resultBuilder.setPriority(200, NONE, "-", "Expression");
+		setBinaryOperatorPriority("=", 150, NONE, resultBuilder, done);
+		setBinaryOperatorPriority("∧", 100, LEFT, resultBuilder, done);
+		setBinaryOperatorPriority("_", 250, RIGHT, resultBuilder, done);
+		for (final Object op : PREFIX_OPERATOR.getSymbols()) {
+			resultBuilder.setPriority(200, LEFT, op.toString(), "Expression");
+		}
+		for (final Object op : INFIX_OPERATOR.getSymbols()) {
+			setBinaryOperatorPriority(op, 200, LEFT, resultBuilder, done);
+		}
+		for (final Object op : POSTFIX_OPERATOR.getSymbols()) {
+			resultBuilder.setPriority(300, RIGHT, "Expression", op.toString());
+		}
+		resultBuilder.setPriority(250, LEFT, "Expression", "natural");
+		resultBuilder.setPriority(250, LEFT, "Expression", "variable");
+		resultBuilder.setPriority(250, LEFT, "Expression", "string");
+		resultBuilder.setPriority(250, LEFT, "Expression", "Expression");
+	}
+	
+	public static final void setBinaryOperatorPriority(final Object operator,
+			final int priority, final Associativity associativity,
+			final ParserBuilder parserBuilder, final Collection<Object> done) {
+		final String opToken = operator.toString();
+		
+		if (done.add(opToken)) {
+			parserBuilder.setPriority(priority, associativity, "Expression", opToken, "Expression");
+		}
+	}
+	
+	public static final Object unquote(final Rule rule, final Object[] data) {
+		final String string = data[0].toString();
+		
+		return string.substring(1, string.length() - 1);
+	}
+	
+	public static final Object flatten(final Rule rule, final Object[] data) {
+		if (data.length == 1) {
+			final List<Object> result = new ArrayList<>();
+			
+			result.add($(data[0]));
 			
 			return result;
 		}
 		
-	    final Object expression(final Object[] values) {
-	    	if ("∀".equals(values[0].toString())) {
-	    		return $(copyOfRange(values, 1, values.length));
-	    	}
-	    	
-	        return $(values);
-	    }
+		@SuppressWarnings("unchecked")
+		final List<Object> result = (List<Object>) data[0];
 		
-	    final Object operation(final Object[] values) {
-	    	final Object[] right = cast(Object[].class, values[1]);
-	    	
-	    	if (right != null) {
-	    		final Composite left = cast(Composite.class, values[0]);
-	    		
-	    		if (left != null) {
-	    			if (("<".equals(right[0].toString()) || "≤".equals(right[0].toString()))) {
-	    				return $(append(left.getChildren().toArray(), right));
-	    			}
-	    		}
-	    		
-	    		if ("→".equals(right[0].toString())) {
-	    			return rule(values[0], right[1]);
-	    		}
-	    		
-	    		if ("∧".equals(right[0].toString())) {
-	    			return $(values[0], "&", right[1]);
-	    		}
-	    		
-	    		return $(append(array(values[0]), right));
-	    	}
-	    	
-	    	return $(append(array(values[0]), values[1]));
-	    }
-	    
-	    final Object verbatim(final Object[] values) {
-	    	return values;
-	    }
-	    
-	    final Object identifier(final Object[] values) {
-	    	String result = join("", values);
-	    	
-	    	if (result.startsWith("'")) {
-	    		return result.substring(1, result.length() - 1);
-	    	} else if (2 <= result.length() && result.charAt(1) == '\'') {
-	    		return result.charAt(0) + result.substring(2, result.length() - 1);
-	    	}
-	    	
-	    	return result;
-	    }
-	    
-	    final Object concatenation(final Object[] values) {
-	    	return join("", values);
-	    }
-	    
-	    final Object grouping(final Object[] values) {
-	    	return values[1];
-	    }
-	    
-	    final Object list(final Object[] values) {
-	    	List<?> result = cast(List.class, values[0]);
-	    	
-	    	if (result == null) {
-	    		result = new ArrayList<>();
-	    	}
-	    	
-	    	result.add($(values[values.length - 1]));
-	    	
-	    	return result;
-	    }
-	    
+		result.add($(data[2]));
+		
+		return result;
 	}
 	
 }
