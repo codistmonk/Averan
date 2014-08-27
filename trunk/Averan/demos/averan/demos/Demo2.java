@@ -41,7 +41,7 @@ public final class Demo2 {
 	}
 	
 	public static final Composite realMatrix(final Expression expression) {
-		return $(expression, "∈", $("≀M", "_", $($("rowCount", "_", expression), ",", $("columnCount", "_", expression))));
+		return $(expression, "∈", "≀M");
 	}
 	
 	public static final void claimMatrixFactMirroringRealFact(final Session session, final String matrixFactName, final String realFactName) {
@@ -69,7 +69,9 @@ public final class Demo2 {
 		for (final Expression e :s.getCurrentModule().bind(realFact).getFacts()) {
 			s.claim(e);
 			{
-				
+				final Composite g = (Composite) s.getCurrentGoal();
+				s.bind("definition_of_matrix_equality_2", (Expression) g.get(0), g.get(2));
+				Tools.debugPrint(justificationFor(s, e));
 			}
 		}
 		
@@ -86,10 +88,6 @@ public final class Demo2 {
 					$(real($("a")), "->", $(real($("b")), "->", $(real($("c")), "->", $(real($("d")), "->",
 							$$("(c+(a-(ba))d)=((ad)-(abd)+c)")))))));
 			
-			claimMatrixFactMirroringRealFact("associativity_of_matrix_addition", "associativity_of_addition");
-			
-			BreakSessionException.breakSession();
-			
 			suppose("definition_of_conjunction",
 					$$("∀P,Q (P → (Q → (P ∧ Q)))"));
 			suppose("definition_of_proposition_equality",
@@ -104,10 +102,14 @@ public final class Demo2 {
 					$$("∀i,a,b,e,s ((s=((Σ_(i=a)^b) e)) → (((b<a) → (s=0)) ∧ ((a≤b) → (s=(s{b=(b-1)})+(e{i=b})))))"));
 			suppose("definition_of_matrices",
 					$$("∀X,m,n (X∈≀M_(m,n) = ('rowCount'_X = m ∧ 'columnCount'_X = n ∧ ∀i,j (X_(i,j)∈ℝ)))"));
+			suppose("type_of_matrices",
+					$$("∀X ((X∈≀M)=(X∈≀M_(('rowCount'_X),('columnCount'_X))))"));
 			suppose("definition_of_matrix_size_equality",
 					$$("∀X,Y (('size'_X='size'_Y) = (('columnCount'_X = 'columnCount'_Y) ∧ ('rowCount'_X = 'rowCount'_Y)))"));
 			suppose("definition_of_matrix_equality",
 					$$("∀X,Y ((X=Y) = (∀i,j ((X)_(i,j)=(Y_(i,j)))))"));
+			suppose("definition_of_matrix_equality_2",
+					$$("∀X,Y ((X∈≀M) → ((Y∈≀M) → ((X=Y) = (∀i,j ((X)_(i,j)=(Y_(i,j)))))))"));
 			suppose("definition_of_matrix_scalarization",
 					$$("∀X ((X∈≀M_(1,1)) → (⟨X⟩=X_(1,1)))"));
 			suppose("definition_of_matrix_addition",
@@ -134,6 +136,10 @@ public final class Demo2 {
 					$$("∀X ('rowCount'_(Xᵀ)='columnCount'_X)"));
 			suppose("definition_of_transposition_columnCount",
 					$$("∀X ('columnCount'_(Xᵀ)='rowCount'_X)"));
+			
+			claimMatrixFactMirroringRealFact("associativity_of_matrix_addition", "associativity_of_addition");
+			
+//			BreakSessionException.breakSession();
 			
 			suppose("definition_of_U_rowCount",
 					$$("∀n ('rowCount'_(U_n)=n)"));
