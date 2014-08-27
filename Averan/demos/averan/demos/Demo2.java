@@ -3,12 +3,13 @@ package averan.demos;
 import static averan.core.ExpressionTools.*;
 import static averan.core.StructureMatcher.listsMatch;
 import static averan.core.SessionTools.*;
-import static averan.io.ExpressionParser.$$;
+import static averan.io.ExpressionParser2.$$;
 import static averan.modules.Standard.*;
 import static java.awt.Color.BLACK;
 import static java.awt.Color.WHITE;
 import static java.util.stream.Collectors.toList;
 import static net.sourceforge.aprog.tools.Tools.cast;
+
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Module;
@@ -19,7 +20,6 @@ import averan.core.Pattern.Any;
 import averan.core.Rewriter;
 import averan.core.Session;
 import averan.core.Visitor;
-import averan.io.ExpressionParser2;
 import averan.io.SessionExporter;
 import averan.io.TexPrinter;
 import averan.io.TexPrinter.DisplayHint;
@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.Map;
 
 import net.sourceforge.aprog.tools.Pair;
-import net.sourceforge.aprog.tools.Tools;
 
 import org.scilab.forge.jlatexmath.TeXFormula;
 
@@ -175,42 +174,42 @@ public final class Demo2 {
 		try {
 			{
 				suppose("definition_of_subtraction",
-						ExpressionParser2.$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x-y)=(x+('-'y)))))"));
+						$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x-y)=(x+('-'y)))))"));
 				suppose("tmp",
-						ExpressionParser2.$$("'-'∈ℝ"));
+						$$("'-'∈ℝ"));
 				suppose("type_of_opposite",
-						ExpressionParser2.$$("∀x ((x∈ℝ) → (('-'x)∈ℝ))"));
+						$$("∀x ((x∈ℝ) → (('-'x)∈ℝ))"));
 				suppose("type_of_addition",
-						ExpressionParser2.$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x+y)∈ℝ)))"));
+						$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x+y)∈ℝ)))"));
 				suppose("type_of_subtraction",
-						ExpressionParser2.$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x-y)∈ℝ)))"));
+						$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x-y)∈ℝ)))"));
 				suppose("type_of_multiplication",
-						ExpressionParser2.$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((xy)∈ℝ)))"));
+						$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((xy)∈ℝ)))"));
 				admit("right_distributivity_of_multiplication_over_addition",
-						ExpressionParser2.$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → (((a+b)c)=((ac)+(bc))))))"));
+						$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → (((a+b)c)=((ac)+(bc))))))"));
 				admit("associativity_of_addition",
-						ExpressionParser2.$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((x+(y+z))=((x+y)+z)))))"));
+						$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((x+(y+z))=((x+y)+z)))))"));
 				admit("associativity_of_multiplication",
-						ExpressionParser2.$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((x(yz))=((xy)z)))))"));
+						$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((x(yz))=((xy)z)))))"));
 				admit("left_distributivity_of_multiplication_over_addition",
-						ExpressionParser2.$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((a(b+c))=((ab)+(ac))))))"));
+						$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((a(b+c))=((ab)+(ac))))))"));
 				admit("right_distributivity_of_multiplication_over_subtraction",
-						ExpressionParser2.$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → (((a-b)c)=((ac)-(bc))))))"));
+						$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → (((a-b)c)=((ac)-(bc))))))"));
 				admit("left_distributivity_of_multiplication_over_subtraction",
-						ExpressionParser2.$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((a(b-c))=((ab)-(ac))))))"));
+						$$("∀a,b,c ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((a(b-c))=((ab)-(ac))))))"));
 				admit("commutativity_of_multiplication",
-						ExpressionParser2.$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((xy)=(yx))))"));
+						$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((xy)=(yx))))"));
 				admit("commutativity_of_addition",
-						ExpressionParser2.$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x+y)=(y+x))))"));
+						$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x+y)=(y+x))))"));
 				admit("ordering_of_terms",
-						ExpressionParser2.$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → (((x+z)+y)=((x+y)+z)))))"));
+						$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → (((x+z)+y)=((x+y)+z)))))"));
 				admit("ordering_of_factors",
-						ExpressionParser2.$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → (((xz)y)=((xy)z)))))"));
+						$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → (((xz)y)=((xy)z)))))"));
 				
 				claim("test", $(forAll("a", "b", "c", "d"),
 						$(real($("a")), "->", $(real($("b")), "->", $(real($("c")), "->", $(real($("d")), "->",
 //								$$("(bda)=(adb)")))))));
-								ExpressionParser2.$$("(c+(a-(ba))d)=((ad)-(abd)+c)")))))));
+								$$("(c+(a-(ba))d)=((ad)-(abd)+c)")))))));
 				{
 					final Symbol a = introduce();
 					final Symbol b = introduce();
@@ -248,56 +247,56 @@ public final class Demo2 {
 			}
 			
 			suppose("definition_of_conjunction",
-					ExpressionParser2.$$("∀P,Q (P → (Q → (P ∧ Q)))"));
+					$$("∀P,Q (P → (Q → (P ∧ Q)))"));
 			suppose("definition_of_proposition_equality",
-					ExpressionParser2.$$("∀P,Q ((P=Q) = ((P→Q) ∧ (Q→P)))"));
+					$$("∀P,Q ((P=Q) = ((P→Q) ∧ (Q→P)))"));
 			suppose("definition_of_negation",
-					ExpressionParser2.$$("∀P (¬P = (P→'false'))"));
+					$$("∀P (¬P = (P→'false'))"));
 			suppose("definition_of_existence",
-					ExpressionParser2.$$("∀P,x (∃x (P x)) = ¬(∀y ¬(P y))"));
+					$$("∀P,x (∃x (P x)) = ¬(∀y ¬(P y))"));
 			suppose("definition_of_intersection",
-					ExpressionParser2.$$("∀A,B,x (x∈A∩B) = (x∈A ∧ x∈B)"));
+					$$("∀A,B,x (x∈A∩B) = (x∈A ∧ x∈B)"));
 			suppose("definition_of_summation",
-					ExpressionParser2.$$("∀i,a,b,e,s ((s=((Σ_(i=a)^b) e)) → (((b<a) → (s=0)) ∧ ((a≤b) → (s=(s{b=(b-1)})+(e{i=b})))))"));
+					$$("∀i,a,b,e,s ((s=((Σ_(i=a)^b) e)) → (((b<a) → (s=0)) ∧ ((a≤b) → (s=(s{b=(b-1)})+(e{i=b})))))"));
 			suppose("definition_of_matrices",
 					$$("∀X,m,n (X∈≀M_(m,n) = ('rowCount'_X = m ∧ 'columnCount'_X = n ∧ ∀i,j (X_(i,j)∈ℝ)))"));
 			suppose("definition_of_matrix_size_equality",
-					ExpressionParser2.$$("∀X,Y (('size'_X='size'_Y) = (('columnCount'_X = 'columnCount'_Y) ∧ ('rowCount'_X = 'rowCount'_Y)))"));
+					$$("∀X,Y (('size'_X='size'_Y) = (('columnCount'_X = 'columnCount'_Y) ∧ ('rowCount'_X = 'rowCount'_Y)))"));
 			suppose("definition_of_matrix_equality",
-					ExpressionParser2.$$("∀X,Y ((X=Y) = (∀i,j ((X)_(i,j)=(Y_(i,j)))))"));
+					$$("∀X,Y ((X=Y) = (∀i,j ((X)_(i,j)=(Y_(i,j)))))"));
 			suppose("definition_of_matrix_scalarization",
 					$$("∀X ((X∈≀M_(1,1)) → (⟨X⟩=X_(1,1)))"));
 			suppose("definition_of_matrix_addition",
-					ExpressionParser2.$$("∀X,Y,i,j (((X+Y)_(i,j) = (X_(i,j))+(Y_(i,j))))"));
+					$$("∀X,Y,i,j (((X+Y)_(i,j) = (X_(i,j))+(Y_(i,j))))"));
 			suppose("definition_of_matrix_addition_rowCount",
-					ExpressionParser2.$$("∀X,Y ('rowCount'_(X+Y) = 'rowCount'_X)"));
+					$$("∀X,Y ('rowCount'_(X+Y) = 'rowCount'_X)"));
 			suppose("definition_of_matrix_addition_columnCount",
-					ExpressionParser2.$$("∀X,Y ('columnCount'_(X+Y) = 'columnCount'_X)"));
+					$$("∀X,Y ('columnCount'_(X+Y) = 'columnCount'_X)"));
 			suppose("definition_of_matrix_subtraction",
-					ExpressionParser2.$$("∀X,Y,i,j (((X-Y)_(i,j) = (X_(i,j))-(Y_(i,j))))"));
+					$$("∀X,Y,i,j (((X-Y)_(i,j) = (X_(i,j))-(Y_(i,j))))"));
 			suppose("definition_of_matrix_subtraction_rowCount",
-					ExpressionParser2.$$("∀X,Y ('rowCount'_(X-Y) = 'rowCount'_X)"));
+					$$("∀X,Y ('rowCount'_(X-Y) = 'rowCount'_X)"));
 			suppose("definition_of_matrix_subtraction_columnCount",
-					ExpressionParser2.$$("∀X,Y ('columnCount'_(X-Y) = 'columnCount'_X)"));
+					$$("∀X,Y ('columnCount'_(X-Y) = 'columnCount'_X)"));
 			suppose("definition_of_matrix_multiplication",
-					ExpressionParser2.$$("∀X,Y,i,j,k ((XY)_(i,j)=((Σ_(k=0)^(('columnCount'_X)-1)) ((X_(i,k))(Y_(k,j)))))"));
+					$$("∀X,Y,i,j,k ((XY)_(i,j)=((Σ_(k=0)^(('columnCount'_X)-1)) ((X_(i,k))(Y_(k,j)))))"));
 			suppose("definition_of_matrix_multiplication_rowCount",
-					ExpressionParser2.$$("∀X,Y ('rowCount'_(XY) = 'rowCount'_X)"));
+					$$("∀X,Y ('rowCount'_(XY) = 'rowCount'_X)"));
 			suppose("definition_of_matrix_multiplication_columnCount",
-					ExpressionParser2.$$("∀X,Y ('columnCount'_(XY) = 'columnCount'_Y)"));
+					$$("∀X,Y ('columnCount'_(XY) = 'columnCount'_Y)"));
 			suppose("definition_of_transposition",
-					ExpressionParser2.$$("∀X (∀i,j (Xᵀ_(i,j)=X_(j,i)))"));
+					$$("∀X (∀i,j (Xᵀ_(i,j)=X_(j,i)))"));
 			suppose("definition_of_transposition_rowCount",
-					ExpressionParser2.$$("∀X ('rowCount'_(Xᵀ)='columnCount'_X)"));
+					$$("∀X ('rowCount'_(Xᵀ)='columnCount'_X)"));
 			suppose("definition_of_transposition_columnCount",
-					ExpressionParser2.$$("∀X ('columnCount'_(Xᵀ)='rowCount'_X)"));
+					$$("∀X ('columnCount'_(Xᵀ)='rowCount'_X)"));
 			
 			suppose("definition_of_U_rowCount",
-					ExpressionParser2.$$("∀n ('rowCount'_(U_n)=n)"));
+					$$("∀n ('rowCount'_(U_n)=n)"));
 			suppose("definition_of_U_columnCount",
-					ExpressionParser2.$$("∀n ('columnCount'_(U_n)=1)"));
+					$$("∀n ('columnCount'_(U_n)=1)"));
 			suppose("definition_of_U",
-					ExpressionParser2.$$("∀n (0<n → (∀i (U_n_(i,1)=1/n)))"));
+					$$("∀n (0<n → (∀i (U_n_(i,1)=1/n)))"));
 			
 			claimCommutativityOfConjunction();
 			claimTranspositionOfAddition();
@@ -305,25 +304,25 @@ public final class Demo2 {
 			claimTranspositionOfMultiplication();
 			
 			suppose("definition_of_replicated_means",
-					ExpressionParser2.$$("∀X,n (('columnCount'_X=n) → (M_X)=X(U_n)(U_n)ᵀ)"));
+					$$("∀X,n (('columnCount'_X=n) → (M_X)=X(U_n)(U_n)ᵀ)"));
 			suppose("definition_of_problem_dimension",
-					ExpressionParser2.$$("0<D"));
+					$$("0<D"));
 			suppose("definition_of_class_count",
-					ExpressionParser2.$$("1<N"));
+					$$("1<N"));
 			suppose("definition_of_class_means",
-					ExpressionParser2.$$("∀i,j,n ((n='columnCount'_(C_j)) → (((M_C)_(i,j))=((C_j)(U_n))_(i,1)))"));
+					$$("∀i,j,n ((n='columnCount'_(C_j)) → (((M_C)_(i,j))=((C_j)(U_n))_(i,1)))"));
 			suppose("definition_of_class_rowCount",
-					ExpressionParser2.$$("∀i (('rowCount'_(C_i)) = D)"));
+					$$("∀i (('rowCount'_(C_i)) = D)"));
 			suppose("definition_of_V",
-					ExpressionParser2.$$("V = 'Var'_(M_C)"));
+					$$("V = 'Var'_(M_C)"));
 			suppose("definition_of_S",
-					ExpressionParser2.$$("∀i (S = (Σ_(i=0)^(N-1) ('Var'_(C_i))))"));
+					$$("∀i (S = (Σ_(i=0)^(N-1) ('Var'_(C_i))))"));
 			suppose("definition_of_variance",
-					ExpressionParser2.$$("∀X (('Var'_X)=(X-(M_X))(X-(M_X))ᵀ)"));
+					$$("∀X (('Var'_X)=(X-(M_X))(X-(M_X))ᵀ)"));
 			
 			// TODO claim
 			claim("simplified_definition_of_variance",
-					ExpressionParser2.$$("∀X (('Var'_X)=(XXᵀ)-((M_X)(M_X)ᵀ))"));
+					$$("∀X (('Var'_X)=(XXᵀ)-((M_X)(M_X)ᵀ))"));
 			{
 				final Symbol x = introduce();
 				final Expression xt = $(x, "ᵀ");
@@ -402,6 +401,245 @@ public final class Demo2 {
 		}
 		
 		session.getCurrentModule().new Claim(module.getFacts().get(module.getFacts().size() - 1), module).execute();
+	}
+	
+	public static final void claimTranspositionOfMultiplication() {
+		claim("transposition_of_multiplication",
+				$$("∀X,Y ((X∈≀M_('rowCount'_X,'columnCount'_X)) → ((Y∈≀M_('rowCount'_Y,'columnCount'_Y)) → (('columnCount'_X='rowCount'_Y) → ((XY)ᵀ=YᵀXᵀ))))"));
+		{
+			final Symbol x = introduce();
+			final Symbol y = introduce();
+			
+			introduce("type_of_X");
+			introduce("type_of_Y");
+			introduce("size_compatibility");
+			
+			final Expression xy = $(x, y);
+			final Expression xyt = $($(x, y), "ᵀ");
+			final Expression xt = $(x, "ᵀ");
+			final Expression yt = $(y, "ᵀ");
+			final Expression ytxt = $(yt, xt);
+			final Expression rowCountX = $("rowCount", "_", x);
+			final Expression columnCountX = $("columnCount", "_", x);
+			final Expression rowCountY = $("rowCount", "_", y);
+			final Expression columnCountY = $("columnCount", "_", y);
+			final Expression columnCountYT = $("columnCount", "_", yt);
+			
+			bind("definition_of_matrix_equality", xyt, ytxt);
+			claim(((Composite) fact(-1)).get(2));
+			{
+				final Symbol i = introduce();
+				final Symbol j = introduce();
+				final Symbol k = parameter("k");
+				
+				bind("definition_of_transposition", xy, i, j);
+				claim($(((Composite) fact(-1)).get(2), "=", ((Composite) getCurrentGoal()).get(2)));
+				{
+					bind("definition_of_matrix_multiplication", x, y, j, i, k);
+					
+					final Expression xjk = $(x, "_", $(j, ",", k));
+					final Expression yki = $(y, "_", $(k, ",", i));
+					
+					claim($($(xjk, yki), "=", $(yki, xjk)));
+					{
+						claim(real(xjk));
+						{
+							bind("definition_of_matrices", x, rowCountX, columnCountX);
+							rewrite("type_of_X", factName(-1));
+							bind(factName(-1));
+							bind(factName(-1), j, k);
+						}
+						
+						claim(real(yki));
+						{
+							bind("definition_of_matrices", y, rowCountY, columnCountY);
+							rewrite("type_of_Y", factName(-1));
+							bind(factName(-1));
+							bind(factName(-1), k, i);
+						}
+						
+						bind("commutativity_of_multiplication", xjk, yki);
+						apply(factName(-1), factName(-3));
+						apply(factName(-1), factName(-3));
+					}
+					
+					rewrite(factName(-2), factName(-1));
+					
+					bind("definition_of_transposition", x, k, j);
+					rewriteRight(factName(-2), factName(-1));
+					
+					bind("definition_of_transposition", y, i, k);
+					rewriteRight(factName(-2), factName(-1));
+					
+					bind("definition_of_matrix_multiplication", yt, xt, i, j, k);
+					
+					claim($(columnCountYT, "=", columnCountX));
+					{
+						bind("definition_of_transposition_columnCount", y);
+						rewriteRight(factName(-1), "size_compatibility");
+					}
+					rewrite(factName(-2), factName(-1));
+					
+					rewriteRight(factName(-4), factName(-1));
+				}
+				
+				rewrite(factName(-2), factName(-1));
+			}
+			
+			rewriteRight(factName(-1), factName(-2));
+		}
+	}
+	
+	public static final void claimTranspositionOfAddition() {
+		claim("transposition_of_addition", $$("∀X,Y ((X+Y)ᵀ=Xᵀ+Yᵀ)"));
+		
+		{
+			final Symbol x = introduce();
+			final Symbol y = introduce();
+			
+			final Expression xt = $(x, "ᵀ");
+			final Expression yt = $(y, "ᵀ");
+			final Expression xy = $(x, "+", y);
+			final Expression xyt = $(xy, "ᵀ");
+			final Expression xtyt = $(xt, "+", yt);
+			
+			bind("definition_of_matrix_equality", xyt, xtyt);
+			claim(((Composite) fact(-1)).get(2));
+			
+			{
+				final Symbol i = introduce();
+				final Symbol j = introduce();
+				
+				bind("definition_of_transposition", xy, i, j);
+				claim($(((Composite) fact(-1)).get(2), "=", ((Composite) getCurrentGoal()).get(2)));
+				
+				{
+					bind("definition_of_matrix_addition", x, y, j, i);
+					bind("definition_of_transposition", x, i, j);
+					rewriteRight(factName(-2), factName(-1));
+					
+					bind("definition_of_transposition", y, i, j);
+					rewriteRight(factName(-2), factName(-1));
+					
+					bind("definition_of_matrix_addition", xt, yt, i, j);
+					
+					rewriteRight(factName(-2), factName(-1));
+				}
+				
+				rewrite(factName(-2), factName(-1));
+			}
+			
+			rewriteRight(factName(-1), factName(-2));
+		}
+	}
+	
+	public static final void claimTranspositionOfSubtraction() {
+		claim("transposition_of_subtraction", $$("∀X,Y ((X-Y)ᵀ=Xᵀ-Yᵀ)"));
+		
+		{
+			final Symbol x = introduce();
+			final Symbol y = introduce();
+			
+			final Expression xt = $(x, "ᵀ");
+			final Expression yt = $(y, "ᵀ");
+			final Expression xy = $(x, "-", y);
+			final Expression xyt = $(xy, "ᵀ");
+			final Expression xtyt = $(xt, "-", yt);
+			
+			bind("definition_of_matrix_equality", xyt, xtyt);
+			claim(((Composite) fact(-1)).get(2));
+			
+			{
+				final Symbol i = introduce();
+				final Symbol j = introduce();
+				
+				bind("definition_of_transposition", xy, i, j);
+				claim($(((Composite) fact(-1)).get(2), "=", ((Composite) getCurrentGoal()).get(2)));
+				
+				{
+					bind("definition_of_matrix_subtraction", x, y, j, i);
+					bind("definition_of_transposition", x, i, j);
+					rewriteRight(factName(-2), factName(-1));
+					
+					bind("definition_of_transposition", y, i, j);
+					rewriteRight(factName(-2), factName(-1));
+					
+					bind("definition_of_matrix_subtraction", xt, yt, i, j);
+					
+					rewriteRight(factName(-2), factName(-1));
+				}
+				
+				rewrite(factName(-2), factName(-1));
+			}
+			
+			rewriteRight(factName(-1), factName(-2));
+		}
+	}
+	
+	public static final void claimCommutativityOfConjunction() {
+		claim("commutativity_of_conjunction",
+				$$("∀P,Q ((P ∧ Q) = (Q ∧ P))"));
+		
+		{
+			final Symbol p = introduce();
+			final Symbol q = introduce();
+			final Expression pq = $(p, "&", q);
+			final Expression qp = $(q, "&", p);
+			final Expression pq2qp = $(pq, "->", qp);
+			final Expression qp2pq = $(qp, "->", pq);
+			
+			bind("definition_of_proposition_equality", pq, qp);
+			
+			claim(pq2qp);
+			{
+				introduce();
+				bind("commutativity_of_conjunction#1#0");
+			}
+			
+			claim(qp2pq);
+			
+			{
+				introduce();
+				bind("commutativity_of_conjunction#2#0");
+			}
+			
+			claim($(pq2qp, "&", qp2pq));
+			
+			{
+				recall("commutativity_of_conjunction#1");
+				recall("commutativity_of_conjunction#2");
+			}
+			
+			rewriteRight("commutativity_of_conjunction#3", "commutativity_of_conjunction#0");
+		}
+	}
+	
+	/**
+	 * @param commandLineArguments
+	 * <br>Unused
+	 */
+	public static final void main(final String[] commandLineArguments) {
+		// NOP
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-08-11)
+	 */
+	public static final class BreakSessionException extends RuntimeException {
+		
+		/**
+		 * {@value}.
+		 */
+		private static final long serialVersionUID = -6958775377557504848L;
+		
+		public static final void breakSession() {
+			throw new BreakSessionException();
+		}
+		
+	}
+	
+	public static final Expression real(final Expression expression) {
+		return $(expression, "∈", "ℝ");
 	}
 	
 	/**
@@ -652,22 +890,9 @@ public final class Demo2 {
 				
 				while (module != null && !module.getConditions().isEmpty()) {
 					final Expression condition = module.getConditions().get(0);
-//					Tools.debugPrint(condition);
 					proveUsingBindAndApply(session, condition);
 					
-//					new SessionExporter(session).exportSession();
-					
 					session.apply(session.getFactName(-2), session.getFactName(-1));
-//					Tools.debugPrint(condition, session.getFact(-1));
-//					final String propositionName = propositionNameOrNull(session, new Pattern(condition));
-//					
-//					if (propositionName == null) {
-//						Tools.debugPrint(propositionName(session, this.anyfy(module, condition)));
-//					}
-//					
-//					Tools.debugPrint(session.getFactName(-1), propositionName);
-//					Tools.debugPrint(session.getCurrentModule().getFactIndices());
-//					session.apply(session.getFactName(-1), propositionName);
 					module = cast(Module.class, session.getFact(-1));
 				}
 			}
@@ -780,254 +1005,6 @@ public final class Demo2 {
 		 */
 		private static final long serialVersionUID = 3917509705666449092L;
 		
-	}
-	
-	public static final void claimTranspositionOfMultiplication() {
-		claim("transposition_of_multiplication",
-				$$("∀X,Y ((X∈≀M_('rowCount'_X,'columnCount'_X)) → ((Y∈≀M_('rowCount'_Y,'columnCount'_Y)) → (('columnCount'_X='rowCount'_Y) → ((XY)ᵀ=YᵀXᵀ))))"));
-		{
-			final Symbol x = introduce();
-			final Symbol y = introduce();
-			
-			introduce("type_of_X");
-			introduce("type_of_Y");
-			introduce("size_compatibility");
-			
-			final Expression xy = $(x, y);
-			final Expression xyt = $($(x, y), "ᵀ");
-			final Expression xt = $(x, "ᵀ");
-			final Expression yt = $(y, "ᵀ");
-			final Expression ytxt = $(yt, xt);
-			final Expression rowCountX = $("rowCount", "_", x);
-			final Expression columnCountX = $("columnCount", "_", x);
-			final Expression rowCountY = $("rowCount", "_", y);
-			final Expression columnCountY = $("columnCount", "_", y);
-			final Expression columnCountYT = $("columnCount", "_", yt);
-			
-			bind("definition_of_matrix_equality", xyt, ytxt);
-			claim(((Composite) fact(-1)).get(2));
-			{
-				final Symbol i = introduce();
-				final Symbol j = introduce();
-				final Symbol k = parameter("k");
-				
-				bind("definition_of_transposition", xy, i, j);
-				claim($(((Composite) fact(-1)).get(2), "=", ((Composite) getCurrentGoal()).get(2)));
-				{
-					bind("definition_of_matrix_multiplication", x, y, j, i, k);
-					
-					final Expression xjk = $(x, "_", $(j, ",", k));
-					final Expression yki = $(y, "_", $(k, ",", i));
-					
-					claim($($(xjk, yki), "=", $(yki, xjk)));
-					{
-						claim(real(xjk));
-						{
-							bind("definition_of_matrices", x, rowCountX, columnCountX);
-							rewrite("type_of_X", factName(-1));
-							bind(factName(-1));
-							bind(factName(-1), j, k);
-						}
-						
-						claim(real(yki));
-						{
-							bind("definition_of_matrices", y, rowCountY, columnCountY);
-							rewrite("type_of_Y", factName(-1));
-							bind(factName(-1));
-							bind(factName(-1), k, i);
-						}
-						
-						bind("commutativity_of_multiplication", xjk, yki);
-						apply(factName(-1), factName(-3));
-						apply(factName(-1), factName(-3));
-					}
-					
-					rewrite(factName(-2), factName(-1));
-					
-					bind("definition_of_transposition", x, k, j);
-					rewriteRight(factName(-2), factName(-1));
-					
-					bind("definition_of_transposition", y, i, k);
-					rewriteRight(factName(-2), factName(-1));
-					
-					bind("definition_of_matrix_multiplication", yt, xt, i, j, k);
-					
-					claim($(columnCountYT, "=", columnCountX));
-					{
-						bind("definition_of_transposition_columnCount", y);
-						rewriteRight(factName(-1), "size_compatibility");
-					}
-					rewrite(factName(-2), factName(-1));
-					
-					rewriteRight(factName(-4), factName(-1));
-				}
-				
-				rewrite(factName(-2), factName(-1));
-			}
-			
-			rewriteRight(factName(-1), factName(-2));
-		}
-	}
-	
-	public static final void claimTranspositionOfAddition() {
-		claim("transposition_of_addition", $$("∀X,Y ((X+Y)ᵀ=Xᵀ+Yᵀ)"));
-		
-		{
-			final Symbol x = introduce();
-			final Symbol y = introduce();
-			
-			final Expression xt = $(x, "ᵀ");
-			final Expression yt = $(y, "ᵀ");
-			final Expression xy = $(x, "+", y);
-			final Expression xyt = $(xy, "ᵀ");
-			final Expression xtyt = $(xt, "+", yt);
-			
-			bind("definition_of_matrix_equality", xyt, xtyt);
-			claim(((Composite) fact(-1)).get(2));
-			
-			{
-				final Symbol i = introduce();
-				final Symbol j = introduce();
-				
-				bind("definition_of_transposition", xy, i, j);
-				claim($(((Composite) fact(-1)).get(2), "=", ((Composite) getCurrentGoal()).get(2)));
-				
-				{
-					bind("definition_of_matrix_addition", x, y, j, i);
-					bind("definition_of_transposition", x, i, j);
-					rewriteRight(factName(-2), factName(-1));
-					
-					bind("definition_of_transposition", y, i, j);
-					rewriteRight(factName(-2), factName(-1));
-					
-					bind("definition_of_matrix_addition", xt, yt, i, j);
-					
-					rewriteRight(factName(-2), factName(-1));
-				}
-				
-				rewrite(factName(-2), factName(-1));
-			}
-			
-			rewriteRight(factName(-1), factName(-2));
-		}
-	}
-	
-	public static final void claimTranspositionOfSubtraction() {
-		claim("transposition_of_subtraction", $$("∀X,Y ((X-Y)ᵀ=Xᵀ-Yᵀ)"));
-		
-		{
-			final Symbol x = introduce();
-			final Symbol y = introduce();
-			
-			final Expression xt = $(x, "ᵀ");
-			final Expression yt = $(y, "ᵀ");
-			final Expression xy = $(x, "-", y);
-			final Expression xyt = $(xy, "ᵀ");
-			final Expression xtyt = $(xt, "-", yt);
-			
-			bind("definition_of_matrix_equality", xyt, xtyt);
-			claim(((Composite) fact(-1)).get(2));
-			
-			{
-				final Symbol i = introduce();
-				final Symbol j = introduce();
-				
-				bind("definition_of_transposition", xy, i, j);
-				claim($(((Composite) fact(-1)).get(2), "=", ((Composite) getCurrentGoal()).get(2)));
-				
-				{
-					bind("definition_of_matrix_subtraction", x, y, j, i);
-					bind("definition_of_transposition", x, i, j);
-					rewriteRight(factName(-2), factName(-1));
-					
-					bind("definition_of_transposition", y, i, j);
-					rewriteRight(factName(-2), factName(-1));
-					
-					bind("definition_of_matrix_subtraction", xt, yt, i, j);
-					
-					rewriteRight(factName(-2), factName(-1));
-				}
-				
-				rewrite(factName(-2), factName(-1));
-			}
-			
-			rewriteRight(factName(-1), factName(-2));
-		}
-	}
-	
-	public static final void claimCommutativityOfConjunction() {
-		claim("commutativity_of_conjunction",
-				$$("∀P,Q ((P ∧ Q) = (Q ∧ P))"));
-		
-		{
-			final Symbol p = introduce();
-			final Symbol q = introduce();
-			final Expression pq = $(p, "&", q);
-			final Expression qp = $(q, "&", p);
-			final Expression pq2qp = $(pq, "->", qp);
-			final Expression qp2pq = $(qp, "->", pq);
-			
-			bind("definition_of_proposition_equality", pq, qp);
-			
-			claim(pq2qp);
-			{
-				introduce();
-				bind("commutativity_of_conjunction#1#0");
-			}
-			
-			claim(qp2pq);
-			
-			{
-				introduce();
-				bind("commutativity_of_conjunction#2#0");
-			}
-			
-			claim($(pq2qp, "&", qp2pq));
-			
-			{
-				recall("commutativity_of_conjunction#1");
-				recall("commutativity_of_conjunction#2");
-			}
-			
-			rewriteRight("commutativity_of_conjunction#3", "commutativity_of_conjunction#0");
-		}
-	}
-	
-	/**
-	 * @param commandLineArguments
-	 * <br>Unused
-	 */
-	public static final void main(final String[] commandLineArguments) {
-		// NOP
-		Tools.debugPrint(ExpressionParser2.$$("(a+b)+c"));
-		Tools.debugPrint($$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x-y)=(x+('-'y)))))"));
-		Tools.debugPrint(ExpressionParser2.$$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x-y)=(x+('-'y)))))"));
-		Tools.debugPrint($$("(c+(a-(ba))d)=((ad)-(abd)+c)"));
-		Tools.debugPrint(ExpressionParser2.$$("(c+(a-(ba))d)=((ad)-(abd)+c)"));
-		Tools.debugPrint($$("∀X,Y,i,j (((X+Y)_(i,j) = (X_(i,j))+(Y_(i,j))))"));
-		Tools.debugPrint(ExpressionParser2.$$("∀X,Y,i,j (((X+Y)_(i,j) = (X_(i,j))+(Y_(i,j))))"));
-		Tools.debugPrint($$("∀X,Y,i,j,k ((XY)_(i,j)=((Σ_(k=0)^(('columnCount'_X)-1)) (X_(i,k))(Y_(k,j))))"));
-		Tools.debugPrint(ExpressionParser2.$$("∀X,Y,i,j,k ((XY)_(i,j)=((Σ_(k=0)^(('columnCount'_X)-1)) ((X_(i,k))(Y_(k,j)))))"));
-	}
-	
-	/**
-	 * @author codistmonk (creation 2014-08-11)
-	 */
-	public static final class BreakSessionException extends RuntimeException {
-		
-		/**
-		 * {@value}.
-		 */
-		private static final long serialVersionUID = -6958775377557504848L;
-		
-		public static final void breakSession() {
-			throw new BreakSessionException();
-		}
-		
-	}
-	
-	public static final Expression real(final Expression expression) {
-		return $(expression, "∈", "ℝ");
 	}
 	
 }
