@@ -8,11 +8,11 @@ import static averan.modules.Reals.real;
 import static averan.modules.Standard.*;
 import static java.awt.Color.BLACK;
 import static java.awt.Color.WHITE;
-
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Module;
 import averan.core.Module.Symbol;
+import averan.core.Session;
 import averan.io.SessionExporter;
 import averan.io.TexPrinter;
 import averan.io.TexPrinter.DisplayHint;
@@ -20,6 +20,12 @@ import averan.modules.Reals;
 import averan.modules.Standard;
 
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Locale;
+
+import net.sourceforge.aprog.tools.Tools;
 
 import org.scilab.forge.jlatexmath.TeXFormula;
 
@@ -30,6 +36,46 @@ public final class Demo2 {
 	
 	public static final Module MODULE = new Module(Standard.MODULE);
 	
+	public static final void claimMatrixFactMirroringRealFact(final String matrixFactName, final String realFactName) {
+		claimMatrixFactMirroringRealFact(session(), matrixFactName, realFactName);
+	}
+	
+	public static final Composite realMatrix(final Expression expression) {
+		return $(expression, "∈", $("≀M", "_", $($("rowCount", "_", expression), ",", $("columnCount", "_", expression))));
+	}
+	
+	public static final void claimMatrixFactMirroringRealFact(final Session session, final String matrixFactName, final String realFactName) {
+		final Session s = new Session(new Module(session.getCurrentModule(), matrixFactName));
+		final Module realFact = ((Module) session.getProposition(realFactName)).canonical();
+		final Collection<Expression> remainingConditions = new HashSet<>(realFact.getConditions());
+		
+		lookForRealParameters:
+		for (final Symbol parameter : realFact.getParameters()) {
+			final Expression typeOfParameter = real(parameter);
+			
+			for (final Expression condition : realFact.getConditions()) {
+				if (typeOfParameter.equals(condition)) {
+					s.suppose(realMatrix(s.getCurrentContext().parameter(parameter.toString().toUpperCase(Locale.ENGLISH))));
+					remainingConditions.remove(condition);
+					continue lookForRealParameters;
+				}
+			}
+			
+			s.getCurrentContext().parameter(parameter.toString());
+		}
+		
+		Tools.debugPrint(realFact);
+		
+		for (final Expression e :s.getCurrentModule().bind(realFact).getFacts()) {
+			s.claim(e);
+			{
+				
+			}
+		}
+		
+		new SessionExporter(s).exportSession();
+	}
+	
 	static {
 		String sessionBreakPoint = "";
 		
@@ -39,6 +85,10 @@ public final class Demo2 {
 			claimRealEquality("test", $(forAll("a", "b", "c", "d"),
 					$(real($("a")), "->", $(real($("b")), "->", $(real($("c")), "->", $(real($("d")), "->",
 							$$("(c+(a-(ba))d)=((ad)-(abd)+c)")))))));
+			
+			claimMatrixFactMirroringRealFact("associativity_of_matrix_addition", "associativity_of_addition");
+			
+			BreakSessionException.breakSession();
 			
 			suppose("definition_of_conjunction",
 					$$("∀P,Q (P → (Q → (P ∧ Q)))"));
