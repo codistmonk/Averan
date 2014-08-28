@@ -20,7 +20,6 @@ import averan.modules.Reals;
 import averan.modules.Standard;
 
 import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Locale;
