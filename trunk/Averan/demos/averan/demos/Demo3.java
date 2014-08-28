@@ -167,7 +167,6 @@ public final class Demo3 {
 			new SessionExporter(session, -1).exportSession();
 			
 			System.out.println(sessionBreakPoint);
-			
 		}
 		
 		{
