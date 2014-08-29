@@ -6,6 +6,7 @@ import static averan.io.ExpressionParser.$$;
 import static averan.modules.Standard.*;
 import static java.awt.Color.BLACK;
 import static java.awt.Color.WHITE;
+import static net.sourceforge.aprog.tools.Tools.append;
 import static net.sourceforge.aprog.tools.Tools.cast;
 
 import averan.core.Composite;
@@ -410,14 +411,7 @@ public final class Demo4 {
 					proveEquality(goal(), multiplicationHints);
 				}
 				
-				final RewriteHint[] additionAndMultiplicationHints = {
-						new RewriteHint(session(), "commutativity_of_addition", true),
-						new RewriteHint(session(), "associativity_of_addition", false),
-						new RewriteHint(session(), "ordering_of_terms", true),
-						new RewriteHint(session(), "commutativity_of_multiplication", true),
-						new RewriteHint(session(), "associativity_of_multiplication", false),
-						new RewriteHint(session(), "ordering_of_factors", true),
-				};
+				final RewriteHint[] additionAndMultiplicationHints = append(additionHints, multiplicationHints);
 				
 				claim("test4", $$("∀a,b,c,d ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((d∈ℝ) → ((dc+ba)=(ab+cd))))))"));
 				{
