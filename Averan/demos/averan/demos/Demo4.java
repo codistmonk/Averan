@@ -409,6 +409,29 @@ public final class Demo4 {
 					
 					proveEquality(goal(), multiplicationHints);
 				}
+				
+				final RewriteHint[] additionAndMultiplicationHints = {
+						new RewriteHint(session(), "commutativity_of_addition", true),
+						new RewriteHint(session(), "associativity_of_addition", false),
+						new RewriteHint(session(), "ordering_of_terms", true),
+						new RewriteHint(session(), "commutativity_of_multiplication", true),
+						new RewriteHint(session(), "associativity_of_multiplication", false),
+						new RewriteHint(session(), "ordering_of_factors", true),
+				};
+				
+				claim("test4", $$("∀a,b,c,d ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((d∈ℝ) → ((dc+ba)=(ab+cd))))))"));
+				{
+					introduce();
+					introduce();
+					introduce();
+					introduce();
+					introduce();
+					introduce();
+					introduce();
+					introduce();
+					
+					proveEquality(goal(), additionAndMultiplicationHints);
+				}
 			}
 			
 			/**

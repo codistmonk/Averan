@@ -169,7 +169,7 @@ public final class Module implements Expression {
 	}
 	
 	public final String newPropositionName() {
-		return this.getName() + "#" + this.getPropositionCount();
+		return (this.getName().isEmpty() ? "" : (this.getName()) + ".") + (this.getPropositionCount() + 1);
 	}
 	
 	@Override

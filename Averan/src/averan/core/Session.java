@@ -1,7 +1,6 @@
 package averan.core;
 
 import static net.sourceforge.aprog.tools.Tools.cast;
-
 import averan.core.Module.Symbol;
 
 import java.io.Serializable;
@@ -148,9 +147,24 @@ public final class Session implements Serializable {
 	}
 	
 	public final String getFactName(final int index) {
-		final Map<String, Integer> factIndices = this.getCurrentModule().getFactIndices();
-		final int n = factIndices.size();
-		final int i = (n + index) % n;
+		int relativeIndex = index;
+		Module context = this.getCurrentModule();
+		Map<String, Integer> factIndices = context.getFactIndices();
+		int n = factIndices.size();
+		
+		while (n + relativeIndex < 0) {
+			context = context.getParent();
+			
+			if (context == null) {
+				throw new IllegalArgumentException();
+			}
+			
+			relativeIndex += n;
+			factIndices = context.getFactIndices();
+			n = factIndices.size();
+		}
+		
+		final int i = (n + relativeIndex) % n;
 		
 		return factIndices.entrySet().stream().reduce(
 				"", (old, entry) -> entry.getValue().equals(i) ? entry.getKey() : old, (u, t) -> t);
