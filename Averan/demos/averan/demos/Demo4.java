@@ -10,6 +10,7 @@ import static net.sourceforge.aprog.tools.Tools.append;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import averan.core.Composite;
 import averan.core.Expression;
+import averan.core.IndexFinder;
 import averan.core.Module;
 import averan.core.Pattern.Any.Key;
 import averan.core.Module.Bind;
@@ -20,7 +21,6 @@ import averan.core.Session;
 import averan.demos.Demo2.BreakSessionException;
 import averan.io.SessionExporter;
 import averan.io.TexPrinter;
-import averan.modules.Reals.IndexFinder;
 import averan.modules.Standard;
 
 import java.io.ByteArrayOutputStream;
@@ -47,6 +47,10 @@ public final class Demo4 {
 	static boolean debug;
 	
 	public static final Module MODULE = new Module(Standard.MODULE, Demo4.class.getName());
+	
+	public static final Expression real(final Expression expression) {
+		return $(expression, "∈", "ℝ");
+	}
 	
 	public static final Expression anyfy(final Module module) {
 		final Rewriter rewriter = new Rewriter();
