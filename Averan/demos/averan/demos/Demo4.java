@@ -43,14 +43,6 @@ public final class Demo4 {
 			
 			@Override
 			public final void run() {
-				claim("Demo4.test1", $$("∀x,y (x → ((x→y) → y))"));
-				{
-					introduce();
-					introduce();
-					introduce();
-					introduce();
-					proveWithBindAndApply(goal());
-				}
 				
 				suppose("type_of_addition", $$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x+y)∈ℝ)))"));
 				suppose("commutativity_of_addition", $$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x+y)=(y+x))))"));
@@ -91,18 +83,6 @@ public final class Demo4 {
 				
 				hints.put("addition", additionHints);
 				
-				claim("Demo4.test2", $$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((x+z+y)=(z+y+x)))))"));
-				{
-					introduce();
-					introduce();
-					introduce();
-					introduce();
-					introduce();
-					introduce();
-					
-					proveEquality(goal(), additionHints);
-				}
-				
 				suppose("type_of_multiplication", $$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((xy)∈ℝ)))"));
 				suppose("commutativity_of_multiplication", $$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((xy)=(yx))))"));
 				suppose("associativity_of_multiplication", $$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → (x(yz)=xyz))))"));
@@ -142,33 +122,7 @@ public final class Demo4 {
 				
 				hints.put("multiplication", multiplicationHints);
 				
-				claim("Demo4.test3", $$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((xzy)=(zyx)))))"));
-				{
-					introduce();
-					introduce();
-					introduce();
-					introduce();
-					introduce();
-					introduce();
-					
-					proveEquality(goal(), multiplicationHints);
-				}
-				
 				final RewriteHint[] additionAndMultiplicationHints = append(additionHints, multiplicationHints);
-				
-				claim("Demo4.test4", $$("∀a,b,c,d ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((d∈ℝ) → ((dc+ba)=(ab+cd))))))"));
-				{
-					introduce();
-					introduce();
-					introduce();
-					introduce();
-					introduce();
-					introduce();
-					introduce();
-					introduce();
-					
-					proveEquality(goal(), additionAndMultiplicationHints);
-				}
 				
 				suppose("definition_of_subtraction", $$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x-y)=(x+(-y)))))"));
 				suppose("type_of_opposite", $$("∀x ((x∈ℝ) → ((-x)∈ℝ))"));
@@ -180,20 +134,6 @@ public final class Demo4 {
 				};
 				
 				hints.put("subtraction", subtractionHints);
-				
-				claim("Demo4.test5", $$("∀a,b,c,d ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((d∈ℝ) → ((dc+(a-ba))=(cd-ab+a))))))"));
-				{
-					introduce();
-					introduce();
-					introduce();
-					introduce();
-					introduce();
-					introduce();
-					introduce();
-					introduce();
-					
-					proveEquality(goal(), append(additionAndMultiplicationHints, subtractionHints));
-				}
 				
 				suppose("left_distributivity_of_multiplication_over_addition",
 						$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((x(y+z))=(xy+xz)))))"));
@@ -230,6 +170,67 @@ public final class Demo4 {
 						append(subtractionHints, distributivityHints));
 				
 				hints.put("arithmetic", arithmeticHints);
+				
+				claim("Demo4.test1", $$("∀x,y (x → ((x→y) → y))"));
+				{
+					introduce();
+					introduce();
+					introduce();
+					introduce();
+					proveWithBindAndApply(goal());
+				}
+				
+				claim("Demo4.test2", $$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((x+z+y)=(z+y+x)))))"));
+				{
+					introduce();
+					introduce();
+					introduce();
+					introduce();
+					introduce();
+					introduce();
+					
+					proveEquality(goal(), additionHints);
+				}
+				
+				claim("Demo4.test3", $$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((xzy)=(zyx)))))"));
+				{
+					introduce();
+					introduce();
+					introduce();
+					introduce();
+					introduce();
+					introduce();
+					
+					proveEquality(goal(), multiplicationHints);
+				}
+				
+				claim("Demo4.test4", $$("∀a,b,c,d ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((d∈ℝ) → ((dc+ba)=(ab+cd))))))"));
+				{
+					introduce();
+					introduce();
+					introduce();
+					introduce();
+					introduce();
+					introduce();
+					introduce();
+					introduce();
+					
+					proveEquality(goal(), additionAndMultiplicationHints);
+				}
+				
+				claim("Demo4.test5", $$("∀a,b,c,d ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((d∈ℝ) → ((dc+(a-ba))=(cd-ab+a))))))"));
+				{
+					introduce();
+					introduce();
+					introduce();
+					introduce();
+					introduce();
+					introduce();
+					introduce();
+					introduce();
+					
+					proveEquality(goal(), append(additionAndMultiplicationHints, subtractionHints));
+				}
 				
 				claim("Demo4.test6", $$("∀a,b,c,d ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((d∈ℝ) → ((c+(a-ba)d)=(c-adb+da))))))"));
 				{
