@@ -1,18 +1,13 @@
 package averan.demos;
 
-import static averan.core.ExpressionTools.*;
 import static averan.core.SessionTools.*;
 import static averan.io.ExpressionParser.$$;
 import static averan.modules.Reals.*;
-import static averan.modules.Standard.*;
 import static java.awt.Color.BLACK;
 import static java.awt.Color.WHITE;
 import static net.sourceforge.aprog.tools.Tools.append;
 
-import averan.core.Composite;
-import averan.core.Expression;
 import averan.core.Module;
-import averan.core.Module.Symbol;
 import averan.core.Session;
 import averan.demos.Demo2.BreakSessionException;
 import averan.io.SessionExporter;
@@ -47,42 +42,7 @@ public final class Demo4 {
 				final RewriteHint[] multiplicationHints = hints.get("multiplication");
 				final RewriteHint[] additionAndMultiplicationHints = append(additionHints, multiplicationHints);
 				final RewriteHint[] subtractionHints = hints.get("subtraction");
-				
-				suppose("left_distributivity_of_multiplication_over_addition",
-						$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((x(y+z))=(xy+xz)))))"));
-				
-				claim("right_distributivity_of_multiplication_over_addition",
-						$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → (((x+y)z)=(xz+yz)))))"));
-				{
-					final Symbol x = introduce();
-					final Symbol y = introduce();
-					final Symbol z = introduce();
-					introduce();
-					introduce();
-					introduce();
-					
-					final Composite goal = goal();
-					
-					bind(IDENTITY, (Expression) goal.get(0));
-					proveWithBindAndApply($($($(x, "+", y), z), "=", $(z, $(x, "+", y))));
-					rewrite(factName(-2), factName(-1), 1);
-					proveWithBindAndApply($($(z, $(x, "+", y)), "=", $($(z, x), "+", $(z, y))));
-					rewrite(factName(-2), factName(-1));
-					canonicalize(((Composite) fact(-1)).get(2), additionAndMultiplicationHints);
-					rewrite(factName(-2), factName(-1));
-				}
-				
-				final RewriteHint[] distributivityHints = {
-						new RewriteHint("left_distributivity_of_multiplication_over_addition", false),
-						new RewriteHint("right_distributivity_of_multiplication_over_addition", false),
-				};
-				
-				hints.put("distributivity", distributivityHints);
-				
-				final RewriteHint[] arithmeticHints = append(additionAndMultiplicationHints,
-						append(subtractionHints, distributivityHints));
-				
-				hints.put("arithmetic", arithmeticHints);
+				final RewriteHint[] arithmeticHints = hints.get("arithmetic");
 				
 				claim("Demo4.test1", $$("∀x,y (x → ((x→y) → y))"));
 				{
