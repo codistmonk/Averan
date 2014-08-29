@@ -200,13 +200,13 @@ public final class Standard {
 			return result;
 		}
 		
-		for (final Module module : session.getTrustedModules()) {
-			result = justificationFor(module, target);
-			
-			if (result != null) {
-				return result;
-			}
-		}
+//		for (final Module module : session.getTrustedModules()) {
+//			result = justificationFor(module, target);
+//			
+//			if (result != null) {
+//				return result;
+//			}
+//		}
 		
 		return null;
 	}
