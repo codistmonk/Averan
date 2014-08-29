@@ -80,15 +80,20 @@ public final class Demo2 {
 	static {
 		String sessionBreakPoint = "";
 		
+		final Session session = pushSession(new Session(MODULE));
+		
 		try {
-			session().trust(Reals.MODULE);
-			
-			claimRealEquality("test", $(forAll("a", "b", "c", "d"),
+//			session().trust(Reals.MODULE);
+//			claimRealEquality("Demo2.test1", $(forAll("a", "b", "c", "d"),
+//					$(real($("a")), "->", $(real($("b")), "->", $(real($("c")), "->", $(real($("d")), "->",
+//							$$("(c+(a-(ba))d)=((ad)-(abd)+c)")))))));
+			session().trust(Demo4.MODULE);
+			Demo4.debug = true;
+			Demo4.proveEquality("Demo2.test2", $(forAll("a", "b", "c", "d"),
 					$(real($("a")), "->", $(real($("b")), "->", $(real($("c")), "->", $(real($("d")), "->",
-							$$("(c+(a-(ba))d)=((ad)-(abd)+c)")))))));
-			Demo4.proveEquality("test", $(forAll("a", "b", "c", "d"),
-					$(real($("a")), "->", $(real($("b")), "->", $(real($("c")), "->", $(real($("d")), "->",
-							$$("(c+(a-(ba))d)=((ad)-(abd)+c)")))))));
+							$$("(c+(a-(ba))d)=((ad)-(abd)+c)")))))),
+							Demo4.hints.get("arithmetic"));
+			Demo4.debug = false;
 			
 			suppose("definition_of_conjunction",
 					$$("∀P,Q (P → (Q → (P ∧ Q)))"));
@@ -196,7 +201,9 @@ public final class Demo2 {
 		} catch (final BreakSessionException exception) {
 			sessionBreakPoint = exception.getStackTrace()[1].toString();
 		} finally {
-			new SessionExporter(session(), -1).exportSession();
+			popSession();
+			
+			new SessionExporter(session, -1).exportSession();
 			
 			System.out.println(sessionBreakPoint);
 		}
@@ -204,7 +211,7 @@ public final class Demo2 {
 		{
 			final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 			
-			new SessionExporter(session(), new TexPrinter(buffer)
+			new SessionExporter(session, new TexPrinter(buffer)
 				.hint($("ᵀ"), new DisplayHint(1500, "", "", 0))
 				.hint($("optimality"), new DisplayHint(50, "", "\\;", 1))
 				.hint($("constrainedOptimality"), new DisplayHint(50, "", "\\;", 1))

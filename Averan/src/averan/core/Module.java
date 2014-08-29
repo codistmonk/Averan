@@ -21,6 +21,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
+import averan.core.Module.Statement;
 import averan.core.Pattern.Any;
 import net.sourceforge.aprog.tools.Pair;
 import net.sourceforge.aprog.tools.Tools;
@@ -625,6 +626,11 @@ public final class Module implements Expression {
 		}
 		
 		@Override
+		public final Parametrize copyFor(final Module otherModule) {
+			return otherModule.new Parametrize(this.getName());
+		}
+		
+		@Override
 		public final Module execute() {
 			final Module result = Module.this;
 			
@@ -661,6 +667,11 @@ public final class Module implements Expression {
 		}
 		
 		@Override
+		public final Suppose copyFor(final Module otherModule) {
+			return otherModule.new Suppose(this.getPropositionName(), this.getCondition());
+		}
+		
+		@Override
 		public final Module execute() {
 			final Module module = Module.this;
 			
@@ -693,6 +704,11 @@ public final class Module implements Expression {
 		
 		public final Expression getFact() {
 			return this.fact;
+		}
+		
+		@Override
+		public final Statement copyFor(final Module otherModule) {
+			return otherModule.new Admit(this.getPropositionName(), this.getFact());
 		}
 		
 		@Override
@@ -762,6 +778,11 @@ public final class Module implements Expression {
 		}
 		
 		@Override
+		public final Claim copyFor(final Module otherModule) {
+			return otherModule.new Claim(this.getPropositionName(), this.getFact(), this.getProofContext());
+		}
+		
+		@Override
 		public final Module execute() {
 			return this.addFact(this.getFact());
 		}
@@ -802,6 +823,11 @@ public final class Module implements Expression {
 		
 		public final Composite getExpression() {
 			return this.subsitution;
+		}
+		
+		@Override
+		public final Substitute copyFor(final Module otherModule) {
+			return otherModule.new Substitute(this.getPropositionName(), this.getExpression());
 		}
 		
 		@Override
@@ -913,6 +939,14 @@ public final class Module implements Expression {
 		}
 		
 		@Override
+		public final Rewrite copyFor(final Module otherModule) {
+			return otherModule.new Rewrite(this.getPropositionName(),
+					this.getSource().getContext(), this.getSource().getPropositionName(),
+					this.getEquality().getContext(), this.getEquality().getPropositionName(),
+					this.getIndices());
+		}
+		
+		@Override
 		public final Module execute() {
 			final Module result = Module.this;
 			final Expression source = this.getSource().getProposition();
@@ -1020,6 +1054,16 @@ public final class Module implements Expression {
 		}
 		
 		@Override
+		public final Bind copyFor(final Module otherModule) {
+			final Bind result = otherModule.new Bind(this.getPropositionName(), this.getModule().getContext(), this.getModule().getPropositionName());
+			
+			result.getBinder().getRewrites().putAll(this.getBinder().getRewrites());
+			result.getBinder().getIndices().addAll(this.getBinder().getIndices());
+			
+			return result;
+		}
+		
+		@Override
 		public final Module execute() {
 			final Module protofact = (Module) this.getModule().getProposition().accept(this.getBinder());
 			
@@ -1110,6 +1154,13 @@ public final class Module implements Expression {
 		
 		public final int getRemovedConditions() {
 			return this.removedConditions;
+		}
+		
+		@Override
+		public final Apply copyFor(final Module otherModule) {
+			return otherModule.new Apply(this.getPropositionName(),
+					this.getModule().getContext(), this.getModule().getPropositionName(),
+					this.getProposition().getContext(), this.getProposition().getPropositionName());
 		}
 		
 		@Override
@@ -1234,6 +1285,8 @@ public final class Module implements Expression {
 	 * @author codistmonk (creation 2014-08-02)
 	 */
 	public static abstract interface Statement extends Serializable {
+		
+		public abstract Statement copyFor(Module otherModule);
 		
 		public abstract Module execute();
 		

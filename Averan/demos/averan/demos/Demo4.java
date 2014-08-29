@@ -8,7 +8,6 @@ import static java.awt.Color.BLACK;
 import static java.awt.Color.WHITE;
 import static net.sourceforge.aprog.tools.Tools.append;
 import static net.sourceforge.aprog.tools.Tools.cast;
-
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Module;
@@ -44,6 +43,8 @@ public final class Demo4 {
 	private Demo4() {
 		throw new IllegalInstantiationException();
 	}
+	
+	static boolean debug;
 	
 	public static final Module MODULE = new Module(Standard.MODULE, Demo4.class.getName());
 	
@@ -120,9 +121,9 @@ public final class Demo4 {
 				result.addAll(0, findJustificationsIn(context, goal));
 			}
 			
-			for (final Module context : session.getTrustedModules()) {
-				result.addAll(0, findJustificationsIn(context, goal));
-			}
+//			for (final Module context : session.getTrustedModules()) {
+//				result.addAll(0, findJustificationsIn(context, goal));
+//			}
 		}
 		
 		return result;
@@ -229,7 +230,7 @@ public final class Demo4 {
 			
 			tryHint:
 				for (final RewriteHint hint : hints) {
-					final List<Pair<Integer, Pattern>> pairs = s.getFact(-1).accept(new IndexFinder(true, hint.getLeftPattern()));
+					final List<Pair<Integer, Pattern>> pairs = s.getFact(-1).accept(new IndexFinder(true, hint.getLeftPattern(s)));
 					
 					for (final Pair<Integer, Pattern> pair : pairs) {
 						final Expression oldFact = s.getFact(-1);
@@ -347,7 +348,7 @@ public final class Demo4 {
 				return;
 			}
 			
-			rewriteRight(session, factName, factName(-2), factName(-1));
+			rewriteRight(session, factName(-2), factName(-1));
 		}
 	}
 	
@@ -358,7 +359,7 @@ public final class Demo4 {
 			
 			@Override
 			public final void run() {
-				claim("test1", $$("∀x,y (x → ((x→y) → y))"));
+				claim("Demo4.test1", $$("∀x,y (x → ((x→y) → y))"));
 				{
 					introduce();
 					introduce();
@@ -406,7 +407,7 @@ public final class Demo4 {
 				
 				hints.put("addition", additionHints);
 				
-				claim("test2", $$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((x+z+y)=(z+y+x)))))"));
+				claim("Demo4.test2", $$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((x+z+y)=(z+y+x)))))"));
 				{
 					introduce();
 					introduce();
@@ -457,7 +458,7 @@ public final class Demo4 {
 				
 				hints.put("multiplication", multiplicationHints);
 				
-				claim("test3", $$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((xzy)=(zyx)))))"));
+				claim("Demo4.test3", $$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((xzy)=(zyx)))))"));
 				{
 					introduce();
 					introduce();
@@ -471,7 +472,7 @@ public final class Demo4 {
 				
 				final RewriteHint[] additionAndMultiplicationHints = append(additionHints, multiplicationHints);
 				
-				claim("test4", $$("∀a,b,c,d ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((d∈ℝ) → ((dc+ba)=(ab+cd))))))"));
+				claim("Demo4.test4", $$("∀a,b,c,d ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((d∈ℝ) → ((dc+ba)=(ab+cd))))))"));
 				{
 					introduce();
 					introduce();
@@ -496,7 +497,7 @@ public final class Demo4 {
 				
 				hints.put("subtraction", subtractionHints);
 				
-				claim("test5", $$("∀a,b,c,d ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((d∈ℝ) → ((dc+(a-ba))=(cd-ab+a))))))"));
+				claim("Demo4.test5", $$("∀a,b,c,d ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((d∈ℝ) → ((dc+(a-ba))=(cd-ab+a))))))"));
 				{
 					introduce();
 					introduce();
@@ -546,7 +547,7 @@ public final class Demo4 {
 				
 				hints.put("arithmetic", arithmeticHints);
 				
-				claim("test6", $$("∀a,b,c,d ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((d∈ℝ) → ((c+(a-ba)d)=(c-adb+da))))))"));
+				claim("Demo4.test6", $$("∀a,b,c,d ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((d∈ℝ) → ((c+(a-ba)d)=(c-adb+da))))))"));
 				{
 					introduce();
 					introduce();
@@ -584,8 +585,6 @@ public final class Demo4 {
 	 */
 	public static final class RewriteHint implements Serializable {
 		
-		private final Session session;
-		
 		private final String propositionName;
 		
 		private final boolean infinite;
@@ -599,7 +598,6 @@ public final class Demo4 {
 		}
 		
 		public RewriteHint(final Session session, final String propositionName, final boolean infinite) {
-			this.session = session;
 			this.propositionName = propositionName;
 			this.infinite = infinite;
 			
@@ -630,7 +628,7 @@ public final class Demo4 {
 			return this.propositionName;
 		}
 		
-		public final Pattern getLeftPattern() {
+		public final Pattern getLeftPattern(final Session session) {
 			return this.leftPattern;
 		}
 		
@@ -655,7 +653,7 @@ public final class Demo4 {
 	public static abstract class SessionScaffold implements Serializable {
 		
 		public SessionScaffold() {
-			final Session session = session();
+			final Session session = pushSession(new Session(MODULE));
 			String sessionBreakPoint = "";
 			
 			try {
@@ -663,6 +661,7 @@ public final class Demo4 {
 			} catch (final BreakSessionException exception) {
 				sessionBreakPoint = exception.getStackTrace()[1].toString();
 			} finally {
+				popSession();
 				new SessionExporter(session, 0).exportSession();
 				
 				System.out.println(sessionBreakPoint);

@@ -8,12 +8,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import net.sourceforge.aprog.tools.Tools;
+
 /**
  * @author codistmonk (creation 2014-08-02)
  */
 public final class Session implements Serializable {
 	
-	private final List<Module> trustedModules;
+//	private final List<Module> trustedModules;
 	
 	private final List<ProofContext> stack;
 	
@@ -26,17 +28,28 @@ public final class Session implements Serializable {
 	}
 	
 	public Session(final String name, final Module mainModule) {
-		this.trustedModules = new ArrayList<>();
+//		this.trustedModules = new ArrayList<>();
 		this.stack = new ArrayList<ProofContext>();
 		this.stack.add(0, new ProofContext(name, mainModule, null));
 	}
-	
-	public final List<Module> getTrustedModules() {
-		return this.trustedModules;
-	}
+//	
+//	public final List<Module> getTrustedModules() {
+//		return this.trustedModules;
+//	}
 	
 	public final Session trust(final Module module) {
-		this.getTrustedModules().add(module);
+//		this.getTrustedModules().add(module);
+		for (final Symbol symbol : module.getParameters()) {
+			this.getCurrentContext().parameter(symbol.toString());
+		}
+		
+		for (final Map.Entry<String, Integer> entry : module.getConditionIndices().entrySet()) {
+			this.suppose(entry.getKey(), module.getConditions().get(entry.getValue()));
+		}
+		
+		for (final Map.Entry<String, Integer> entry : module.getFactIndices().entrySet()) {
+			module.getStatements().get(entry.getValue()).copyFor(this.getCurrentModule()).execute();
+		}
 		
 		return this;
 	}
@@ -51,7 +64,24 @@ public final class Session implements Serializable {
 	
 	@SuppressWarnings("unchecked")
 	public final <E extends Expression> E getProposition(final String name) {
-		return (E) this.getCurrentModule().getProposition(name);
+		{
+			final E result = (E) this.getCurrentModule().getPropositionOrNull(name);
+			
+			if (result != null) {
+				return result;
+			}
+		}
+		
+//		for (final Module module : this.getTrustedModules()) {
+//			final E result = (E) module.getPropositionOrNull(name);
+//			Tools.debugPrint(module.getConditionIndices(), module.getFactIndices(), result);
+//			
+//			if (result != null) {
+//				return result;
+//			}
+//		}
+		
+		throw new IllegalArgumentException("Proposition not found: " + name);
 	}
 	
 	public final Expression getCurrentGoal() {
@@ -183,16 +213,16 @@ public final class Session implements Serializable {
 		
 		Module module = this.getCurrentModule();
 		
-		if (module.getPropositionOrNull(moduleName) == null) {
-			module = null;
-			
-			for (final Module otherModule : this.trustedModules) {
-				if (otherModule.getPropositionOrNull(moduleName) != null) {
-					module = otherModule;
-					break;
-				}
-			}
-		}
+//		if (module.getPropositionOrNull(moduleName) == null) {
+//			module = null;
+//			
+//			for (final Module otherModule : this.trustedModules) {
+//				if (otherModule.getPropositionOrNull(moduleName) != null) {
+//					module = otherModule;
+//					break;
+//				}
+//			}
+//		}
 		
 		this.getCurrentModule().new Bind(
 				factName, module, moduleName).bind(expressions).execute();
