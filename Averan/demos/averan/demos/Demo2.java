@@ -2,11 +2,12 @@ package averan.demos;
 
 import static averan.core.ExpressionTools.*;
 import static averan.core.SessionTools.*;
-import static averan.demos.Demo4.real;
 import static averan.io.ExpressionParser.$$;
+import static averan.modules.Reals.real;
 import static averan.modules.Standard.*;
 import static java.awt.Color.BLACK;
 import static java.awt.Color.WHITE;
+
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Module;
@@ -86,12 +87,10 @@ public final class Demo2 {
 //					$(real($("a")), "->", $(real($("b")), "->", $(real($("c")), "->", $(real($("d")), "->",
 //							$$("(c+(a-(ba))d)=((ad)-(abd)+c)")))))));
 			session().trust(Demo4.MODULE);
-			Demo4.debug = true;
 			Demo4.proveEquality("Demo2.test2", $(forAll("a", "b", "c", "d"),
 					$(real($("a")), "->", $(real($("b")), "->", $(real($("c")), "->", $(real($("d")), "->",
 							$$("(c+(a-(ba))d)=((ad)-(abd)+c)")))))),
 							Demo4.hints.get("arithmetic"));
-			Demo4.debug = false;
 			
 			suppose("definition_of_conjunction",
 					$$("∀P,Q (P → (Q → (P ∧ Q)))"));
