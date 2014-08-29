@@ -44,27 +44,9 @@ public final class Demo4 {
 			@Override
 			public final void run() {
 				final RewriteHint[] additionHints = hints.get("addition");
-				
-				final RewriteHint[] multiplicationHints = {
-						new RewriteHint("commutativity_of_multiplication", true),
-						new RewriteHint("associativity_of_multiplication", false),
-						new RewriteHint("ordering_of_factors", true),
-				};
-				
-				hints.put("multiplication", multiplicationHints);
-				
+				final RewriteHint[] multiplicationHints = hints.get("multiplication");
 				final RewriteHint[] additionAndMultiplicationHints = append(additionHints, multiplicationHints);
-				
-				suppose("definition_of_subtraction", $$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x-y)=(x+(-y)))))"));
-				suppose("type_of_opposite", $$("∀x ((x∈ℝ) → ((-x)∈ℝ))"));
-				suppose("opposite_of_multiplication", $$("∀x,y ((x∈ℝ) → ((y∈ℝ) → (((-x)y)=(-(xy)))))"));
-				
-				final RewriteHint[] subtractionHints = {
-						new RewriteHint("definition_of_subtraction", false),
-						new RewriteHint("opposite_of_multiplication", false),
-				};
-				
-				hints.put("subtraction", subtractionHints);
+				final RewriteHint[] subtractionHints = hints.get("subtraction");
 				
 				suppose("left_distributivity_of_multiplication_over_addition",
 						$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((x(y+z))=(xy+xz)))))"));
