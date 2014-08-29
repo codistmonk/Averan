@@ -127,8 +127,16 @@ public final class Demo4 {
 		return result;
 	}
 	
+	public static final boolean proveWithBindAndApply(final Expression goal) {
+		return proveWithBindAndApply(goal, getProveWithBindAndApplyDepth());
+	}
+	
 	public static final boolean proveWithBindAndApply(final Expression goal, final int depth) {
 		return proveWithBindAndApply(session(), goal, depth);
+	}
+	
+	public static final boolean proveWithBindAndApply(final Session session, final Expression goal) {
+		return proveWithBindAndApply(session, goal, getProveWithBindAndApplyDepth());
 	}
 	
 	public static final boolean proveWithBindAndApply(final Session session, final Expression goal, final int depth) {
@@ -139,7 +147,9 @@ public final class Demo4 {
 		final List<Pair<String, Pattern>> justifications = findJustificationsIn(session, goal);
 		final int n = justifications.size();
 		
-//		Tools.debugPrint(goal, justifications);
+//		if (debug) {
+//			Tools.debugPrint(goal, justifications);
+//		}
 		
 		for (int i = n - 1; 0 <= i; --i) {
 			final Pair<String, Pattern> justification = justifications.get(i);
@@ -267,7 +277,7 @@ public final class Demo4 {
 			session.claim(lastFactOf(bound.canonical()));
 			{
 				while (bound != null && !bound.getConditions().isEmpty()) {
-					if (!proveWithBindAndApply(session, bound.getConditions().get(0), 3)) {
+					if (!proveWithBindAndApply(session, bound.getConditions().get(0), getProveWithBindAndApplyDepth())) {
 						return false;
 					}
 					
@@ -281,6 +291,16 @@ public final class Demo4 {
 		session.rewrite(toRewriteName, boundName, pair.getFirst());
 		
 		return true;
+	}
+	
+	private static int proveWithBindAndApplyDepth = 4;
+	
+	public static final int getProveWithBindAndApplyDepth() {
+		return proveWithBindAndApplyDepth;
+	}
+	
+	public static final void setProveWithBindAndApplyDepth(final int proveWithBindAndApplyDepth) {
+		Demo4.proveWithBindAndApplyDepth = proveWithBindAndApplyDepth;
 	}
 	
 	public static final Expression lastFactOf(final Module module) {
@@ -310,12 +330,12 @@ public final class Demo4 {
 					introduce();
 					introduce();
 					introduce();
-					proveWithBindAndApply(goal(), 2);
+					proveWithBindAndApply(goal());
 				}
 				
-				admit("type_of_addition", $$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x+y)∈ℝ)))"));
-				admit("commutativity_of_addition", $$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x+y)=(y+x))))"));
-				admit("associativity_of_addition", $$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → (x+(y+z)=x+y+z))))"));
+				suppose("type_of_addition", $$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x+y)∈ℝ)))"));
+				suppose("commutativity_of_addition", $$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x+y)=(y+x))))"));
+				suppose("associativity_of_addition", $$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → (x+(y+z)=x+y+z))))"));
 				claim("ordering_of_terms", $$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((x+z+y)=(x+y+z)))))"));
 				{
 					final Symbol x = introduce();
@@ -336,18 +356,18 @@ public final class Demo4 {
 					final Composite pyxz = $(pyx, "+", z);
 					final Composite pxy = $(x, "+", y);
 					
-					proveWithBindAndApply($(pxzy, "=", pypxz), 3);
+					proveWithBindAndApply($(pxzy, "=", pypxz));
 					rewrite(factName(-2), factName(-1), 1);
-					proveWithBindAndApply($(pypxz, "=", pyxz), 3);
+					proveWithBindAndApply($(pypxz, "=", pyxz));
 					rewrite(factName(-2), factName(-1));
-					proveWithBindAndApply($(pyx, "=", pxy), 3);
+					proveWithBindAndApply($(pyx, "=", pxy));
 					rewrite(factName(-2), factName(-1));
 				}
 				
 				final RewriteHint[] additionHints = {
-						new RewriteHint(session(), "commutativity_of_addition", true),
-						new RewriteHint(session(), "associativity_of_addition", false),
-						new RewriteHint(session(), "ordering_of_terms", true),
+						new RewriteHint("commutativity_of_addition", true),
+						new RewriteHint("associativity_of_addition", false),
+						new RewriteHint("ordering_of_terms", true),
 				};
 				
 				claim("test2", $$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((x+z+y)=(z+y+x)))))"));
@@ -362,9 +382,9 @@ public final class Demo4 {
 					proveEquality(goal(), additionHints);
 				}
 				
-				admit("type_of_multiplication", $$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((xy)∈ℝ)))"));
-				admit("commutativity_of_multiplication", $$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((xy)=(yx))))"));
-				admit("associativity_of_multiplication", $$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → (x(yz)=xyz))))"));
+				suppose("type_of_multiplication", $$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((xy)∈ℝ)))"));
+				suppose("commutativity_of_multiplication", $$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((xy)=(yx))))"));
+				suppose("associativity_of_multiplication", $$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → (x(yz)=xyz))))"));
 				claim("ordering_of_factors", $$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((xzy)=(xyz)))))"));
 				{
 					final Symbol x = introduce();
@@ -385,18 +405,18 @@ public final class Demo4 {
 					final Composite pyxz = $(pyx, z);
 					final Composite pxy = $(x, y);
 					
-					proveWithBindAndApply($(pxzy, "=", pypxz), 3);
+					proveWithBindAndApply($(pxzy, "=", pypxz));
 					rewrite(factName(-2), factName(-1), 1);
-					proveWithBindAndApply($(pypxz, "=", pyxz), 3);
+					proveWithBindAndApply($(pypxz, "=", pyxz));
 					rewrite(factName(-2), factName(-1));
-					proveWithBindAndApply($(pyx, "=", pxy), 3);
+					proveWithBindAndApply($(pyx, "=", pxy));
 					rewrite(factName(-2), factName(-1));
 				}
 				
 				final RewriteHint[] multiplicationHints = {
-						new RewriteHint(session(), "commutativity_of_multiplication", true),
-						new RewriteHint(session(), "associativity_of_multiplication", false),
-						new RewriteHint(session(), "ordering_of_factors", true),
+						new RewriteHint("commutativity_of_multiplication", true),
+						new RewriteHint("associativity_of_multiplication", false),
+						new RewriteHint("ordering_of_factors", true),
 				};
 				
 				claim("test3", $$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((xzy)=(zyx)))))"));
@@ -426,6 +446,84 @@ public final class Demo4 {
 					
 					proveEquality(goal(), additionAndMultiplicationHints);
 				}
+				
+				suppose("definition_of_subtraction", $$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x-y)=(x+(-y)))))"));
+				suppose("type_of_opposite", $$("∀x ((x∈ℝ) → ((-x)∈ℝ))"));
+				suppose("opposite_of_multiplication", $$("∀x,y ((x∈ℝ) → ((y∈ℝ) → (((-x)y)=(-(xy)))))"));
+				
+//				claim("test5", $$("((a∈ℝ) → ((b∈ℝ) → ((-(ab))∈ℝ)))"));
+//				{
+//					introduce();
+//					introduce();
+//					proveWithBindAndApply(goal(), 3);
+//					BreakSessionException.breakSession();
+//				}
+				
+				final RewriteHint[] subtractionHints = {
+						new RewriteHint("definition_of_subtraction", false),
+						new RewriteHint("opposite_of_multiplication", false),
+				};
+				
+				claim("test5", $$("∀a,b,c,d ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((d∈ℝ) → ((dc+(a-ba))=(cd-ab+a))))))"));
+				{
+					introduce();
+					introduce();
+					introduce();
+					introduce();
+					introduce();
+					introduce();
+					introduce();
+					introduce();
+					
+					proveEquality(goal(), append(additionAndMultiplicationHints, subtractionHints));
+				}
+				
+				suppose("left_distributivity_of_multiplication_over_addition",
+						$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((x(y+z))=(xy+xz)))))"));
+				
+				claim("right_distributivity_of_multiplication_over_addition",
+						$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → (((x+y)z)=(xz+yz)))))"));
+				{
+					final Symbol x = introduce();
+					final Symbol y = introduce();
+					final Symbol z = introduce();
+					introduce();
+					introduce();
+					introduce();
+					
+					final Composite goal = goal();
+					
+					bind(IDENTITY, (Expression) goal.get(0));
+					proveWithBindAndApply($($($(x, "+", y), z), "=", $(z, $(x, "+", y))));
+					rewrite(factName(-2), factName(-1), 1);
+					proveWithBindAndApply($($(z, $(x, "+", y)), "=", $($(z, x), "+", $(z, y))));
+					rewrite(factName(-2), factName(-1));
+					canonicalize(((Composite) fact(-1)).get(2), additionAndMultiplicationHints);
+					rewrite(factName(-2), factName(-1));
+				}
+				
+				final RewriteHint[] distributivityHints = {
+						new RewriteHint("left_distributivity_of_multiplication_over_addition", false),
+						new RewriteHint("right_distributivity_of_multiplication_over_addition", false),
+				};
+				
+				final RewriteHint[] arithmeticHints = append(additionAndMultiplicationHints,
+						append(subtractionHints, distributivityHints));
+				
+				claim("test6", $$("∀a,b,c,d ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((d∈ℝ) → ((c+(a-ba)d)=(c-adb+da))))))"));
+				{
+					introduce();
+					introduce();
+					introduce();
+					introduce();
+					introduce();
+					introduce();
+					introduce();
+					introduce();
+					
+					proveEquality(goal(), arithmeticHints);
+				}
+				
 			}
 			
 			/**
@@ -458,6 +556,10 @@ public final class Demo4 {
 		private final Pattern leftPattern;
 		
 		private final Expression rightTemplate;
+		
+		public RewriteHint(final String propositionName, final boolean infinite) {
+			this(session(), propositionName, infinite);
+		}
 		
 		public RewriteHint(final Session session, final String propositionName, final boolean infinite) {
 			this.session = session;
