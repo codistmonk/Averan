@@ -7,7 +7,6 @@ import static averan.modules.Reals.real;
 import static averan.modules.Standard.*;
 import static java.awt.Color.BLACK;
 import static java.awt.Color.WHITE;
-
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Module;
@@ -16,6 +15,7 @@ import averan.core.Session;
 import averan.io.SessionExporter;
 import averan.io.TexPrinter;
 import averan.io.TexPrinter.DisplayHint;
+import averan.modules.Reals;
 import averan.modules.Standard;
 
 import java.io.ByteArrayOutputStream;
@@ -87,10 +87,10 @@ public final class Demo2 {
 //					$(real($("a")), "->", $(real($("b")), "->", $(real($("c")), "->", $(real($("d")), "->",
 //							$$("(c+(a-(ba))d)=((ad)-(abd)+c)")))))));
 			session().trust(Demo4.MODULE);
-			Demo4.proveEquality("Demo2.test2", $(forAll("a", "b", "c", "d"),
+			Reals.proveEquality("Demo2.test2", $(forAll("a", "b", "c", "d"),
 					$(real($("a")), "->", $(real($("b")), "->", $(real($("c")), "->", $(real($("d")), "->",
 							$$("(c+(a-(ba))d)=((ad)-(abd)+c)")))))),
-							Demo4.hints.get("arithmetic"));
+							Reals.hints.get("arithmetic"));
 			
 			suppose("definition_of_conjunction",
 					$$("∀P,Q (P → (Q → (P ∧ Q)))"));

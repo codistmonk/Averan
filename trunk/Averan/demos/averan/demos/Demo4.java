@@ -8,16 +8,11 @@ import static averan.modules.Standard.*;
 import static java.awt.Color.BLACK;
 import static java.awt.Color.WHITE;
 import static net.sourceforge.aprog.tools.Tools.append;
-import static net.sourceforge.aprog.tools.Tools.cast;
 
 import averan.core.Composite;
 import averan.core.Expression;
-import averan.core.IndexFinder;
 import averan.core.Module;
-import averan.core.Pattern.Any.Key;
-import averan.core.Module.Bind;
 import averan.core.Module.Symbol;
-import averan.core.Pattern;
 import averan.core.Session;
 import averan.demos.Demo2.BreakSessionException;
 import averan.io.SessionExporter;
@@ -27,14 +22,10 @@ import averan.modules.Reals.RewriteHint;
 
 import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import org.scilab.forge.jlatexmath.TeXFormula;
 
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
-import net.sourceforge.aprog.tools.Pair;
 
 /**
  * @author codistmonk (creation 2014-08-28)
@@ -46,148 +37,6 @@ public final class Demo4 {
 	}
 	
 	public static final Module MODULE = new Module(Reals.MODULE, Demo4.class.getName());
-	
-	public static final void canonicalize(final Expression expression, final RewriteHint... hints) {
-		canonicalize(session(), expression, hints);
-	}
-	
-	public static final void canonicalize(final Session session, final Expression expression,
-			final RewriteHint... hints) {
-		final Session s = new Session(new Module(session.getCurrentModule(), session.newPropositionName()));
-		
-		s.bind(IDENTITY, expression);
-		
-		final int sOldFactCount = s.getCurrentModule().getFacts().size();
-		boolean done;
-		
-		do {
-			done = true;
-			
-			tryHint:
-				for (final RewriteHint hint : hints) {
-					final List<Pair<Integer, Pattern>> pairs = s.getFact(-1).accept(new IndexFinder(true, hint.getLeftPattern(s)));
-					
-					for (final Pair<Integer, Pattern> pair : pairs) {
-						final Expression oldFact = s.getFact(-1);
-						final String  oldFactName = s.getFactName(-1);
-						final Session tmp = new Session(new Module(s.getCurrentModule(), s.newPropositionName()));
-						
-						if (tryToRewrite(tmp, oldFactName, hint, pair)) {
-							final Expression newFact = lastFactOf(tmp.getCurrentModule());
-							
-							if (!hint.isInfinite() || newFact.toString().compareTo(oldFact.toString()) < 0) {
-								done = false;
-								s.getCurrentModule().new Claim(newFact, tmp.getCurrentModule()).execute();
-								s.tryToPop();
-								
-								continue tryHint;
-							}
-						}
-					}
-				}
-		} while (!done);
-		
-		if (sOldFactCount < s.getCurrentModule().getFacts().size()) {
-			final Expression newFact = lastFactOf(s.getCurrentModule());
-			
-			session.getCurrentModule().new Claim(newFact, s.getCurrentModule()).execute();
-			session.tryToPop();
-		}
-	}
-	
-	public static boolean tryToRewrite(final Session session, final String toRewriteName,
-			final RewriteHint hint, final Pair<Integer, Pattern> pair) {
-		final Pattern pattern = pair.getSecond();
-		
-		{
-			final Module context = session.getCurrentModule();
-			final Bind bind = context.new Bind(context, hint.getPropositionName());
-			
-			for (final Map.Entry<Key, Expression> binding : pattern.getBindings().entrySet()) {
-				bind.bind(binding.getKey().toString(), binding.getValue());
-			}
-			
-			bind.execute();
-		}
-		
-		Module bound = cast(Module.class, session.getFact(-1));
-		String boundName = session.getFactName(-1);
-		
-		if (bound != null) {
-			session.claim(lastFactOf(bound.canonical()));
-			{
-				while (bound != null && !bound.getConditions().isEmpty()) {
-					if (!proveWithBindAndApply(session, bound.getConditions().get(0), getProveWithBindAndApplyDepth())) {
-						return false;
-					}
-					
-					session.apply(boundName, session.getFactName(-1));
-					bound = cast(Module.class, session.getFact(-1));
-					boundName = session.getFactName(-1);
-				}
-			}
-		}
-		
-		session.rewrite(toRewriteName, boundName, pair.getFirst());
-		
-		return true;
-	}
-	
-	private static int proveWithBindAndApplyDepth = 4;
-	
-	public static final int getProveWithBindAndApplyDepth() {
-		return proveWithBindAndApplyDepth;
-	}
-	
-	public static final void setProveWithBindAndApplyDepth(final int proveWithBindAndApplyDepth) {
-		Demo4.proveWithBindAndApplyDepth = proveWithBindAndApplyDepth;
-	}
-	
-	public static final Expression lastFactOf(final Module module) {
-		final List<Expression> facts = module.getFacts();
-		
-		return facts.get(facts.size() - 1);
-	}
-	
-	public static final void proveEquality(final Expression expression, final RewriteHint... hints) {
-		proveEquality((String) null, expression, hints);
-	}
-	
-	public static final void proveEquality(final String factName, final Expression expression, final RewriteHint... hints) {
-		proveEquality(session(), factName, expression, hints);
-	}
-	
-	public static final void proveEquality(final Session session, final Expression expression, final RewriteHint... hints) {
-		proveEquality(session, null, expression, hints);
-	}
-	
-	public static final void proveEquality(final Session session, final String factName, final Expression expression, final RewriteHint... hints) {
-		session.claim(factName == null ? session.newPropositionName() : factName, expression);
-		{
-			while (session.getCurrentGoal() instanceof Module) {
-				session.introduce();
-			}
-			
-			final Composite equality = (Composite) session.getCurrentGoal();
-			final Module context = session.getCurrentModule();
-			
-			canonicalize(session, equality.get(0), hints);
-			
-			if (context != session.getCurrentModule()) {
-				return;
-			}
-			
-			canonicalize(session, equality.get(2), hints);
-			
-			if (context != session.getCurrentModule()) {
-				return;
-			}
-			
-			rewriteRight(session, factName(-2), factName(-1));
-		}
-	}
-	
-	public static final Map<String, RewriteHint[]> hints = new HashMap<>();
 	
 	static {
 		new SessionScaffold() {
@@ -404,8 +253,6 @@ public final class Demo4 {
 			
 		};
 	}
-	
-//	static boolean debug = false;
 	
 	/**
 	 * @param commandLineArguments
