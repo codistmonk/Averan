@@ -12,19 +12,14 @@ import averan.core.Module;
 import averan.core.Module.Symbol;
 import averan.core.Session;
 import averan.io.SessionExporter;
-import averan.io.TexPrinter;
-import averan.io.TexPrinter.DisplayHint;
 import averan.modules.Reals;
 import averan.modules.Standard;
 
-import java.io.ByteArrayOutputStream;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Locale;
 
 import net.sourceforge.aprog.tools.Tools;
-
-import org.scilab.forge.jlatexmath.TeXFormula;
 
 /**
  * @author codistmonk (creation 2014-08-08)
@@ -81,7 +76,6 @@ public final class Demo2 {
 			@Override
 			public final void run() {
 				session().trust(Reals.MODULE);
-				session().trust(Demo4.MODULE);
 				Reals.proveEquality("Demo2.test2", $(forAll("a", "b", "c", "d"),
 						$(real($("a")), "->", $(real($("b")), "->", $(real($("c")), "->", $(real($("d")), "->",
 								$$("(c+(a-(ba))d)=((ad)-(abd)+c)")))))),
