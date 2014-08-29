@@ -2,9 +2,9 @@ package averan.modules;
 
 import static averan.core.ExpressionTools.*;
 import static averan.core.SessionTools.*;
+import static averan.io.ExpressionParser.$$;
 import static averan.modules.Standard.*;
 import static net.sourceforge.aprog.tools.Tools.cast;
-
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.IndexFinder;
@@ -36,6 +36,20 @@ public final class Reals {
 	}
 	
 	public static final Module MODULE = new Module(Standard.MODULE, Reals.class.getName());
+	
+	public static final Map<String, RewriteHint[]> hints = new HashMap<>();
+	
+	static {
+		pushNewSession(MODULE);
+		
+		try {
+			suppose("type_of_addition", $$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x+y)∈ℝ)))"));
+			suppose("commutativity_of_addition", $$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x+y)=(y+x))))"));
+			suppose("associativity_of_addition", $$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → (x+(y+z)=x+y+z))))"));
+		} finally {
+			popSession();
+		}
+	}
 	
 	public static final Expression real(final Expression expression) {
 		return $(expression, "∈", "ℝ");
@@ -335,11 +349,6 @@ public final class Reals {
 			
 			rewriteRight(session, factName(-2), factName(-1));
 		}
-	}
-	
-	public static final Map<String, RewriteHint[]> hints = new HashMap<>();
-	
-	static {
 	}
 	
 	/**
