@@ -1,6 +1,5 @@
 package averan.modules;
 
-import static averan.core.ExpressionTools.$;
 import static averan.core.SessionTools.*;
 import static averan.core.StructureMatcher.listsMatch;
 import static averan.io.ExpressionParser.$$;
@@ -10,6 +9,7 @@ import static averan.modules.Standard.recall;
 import static averan.modules.Standard.rewriteRight;
 import static java.util.stream.Collectors.toList;
 import static net.sourceforge.aprog.tools.Tools.cast;
+
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.IndexFinder;
@@ -30,14 +30,14 @@ import java.util.Map;
 
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 import net.sourceforge.aprog.tools.Pair;
-import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2014-08-27)
  */
-public final class Reals {
+@Deprecated
+public final class OldReals {
 	
-	private Reals() {
+	private OldReals() {
 		throw new IllegalInstantiationException();
 	}
 	
