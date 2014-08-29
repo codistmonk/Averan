@@ -2,12 +2,11 @@ package averan.demos;
 
 import static averan.core.ExpressionTools.*;
 import static averan.core.SessionTools.*;
+import static averan.demos.Demo4.real;
 import static averan.io.ExpressionParser.$$;
-import static averan.modules.Reals.real;
 import static averan.modules.Standard.*;
 import static java.awt.Color.BLACK;
 import static java.awt.Color.WHITE;
-
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Module;
