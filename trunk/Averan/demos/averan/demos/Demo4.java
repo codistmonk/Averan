@@ -3,12 +3,13 @@ package averan.demos;
 import static averan.core.ExpressionTools.*;
 import static averan.core.SessionTools.*;
 import static averan.io.ExpressionParser.$$;
-import static averan.modules.Reals.findJustificationsIn;
+import static averan.modules.Reals.*;
 import static averan.modules.Standard.*;
 import static java.awt.Color.BLACK;
 import static java.awt.Color.WHITE;
 import static net.sourceforge.aprog.tools.Tools.append;
 import static net.sourceforge.aprog.tools.Tools.cast;
+
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.IndexFinder;
@@ -45,85 +46,6 @@ public final class Demo4 {
 	}
 	
 	public static final Module MODULE = new Module(Reals.MODULE, Demo4.class.getName());
-	
-	public static final boolean proveWithBindAndApply(final Expression goal) {
-		return proveWithBindAndApply(goal, getProveWithBindAndApplyDepth());
-	}
-	
-	public static final boolean proveWithBindAndApply(final Expression goal, final int depth) {
-		return proveWithBindAndApply(session(), goal, depth);
-	}
-	
-	public static final boolean proveWithBindAndApply(final Session session, final Expression goal) {
-		return proveWithBindAndApply(session, goal, getProveWithBindAndApplyDepth());
-	}
-	
-	public static final boolean proveWithBindAndApply(final Session session, final Expression goal, final int depth) {
-		if (depth <= 0) {
-			return false;
-		}
-		
-		final List<Pair<String, Pattern>> justifications = findJustificationsIn(session, goal);
-		final int n = justifications.size();
-		
-		for (int i = n - 1; 0 <= i; --i) {
-			final Pair<String, Pattern> justification = justifications.get(i);
-			final Module module = cast(Module.class, justification.getSecond().getTemplate());
-			
-			if (module == null) {
-				recall(session, justification.getFirst());
-				return true;
-			}
-			
-			if (module.getConditions().isEmpty()) {
-				bindPattern(session, justification);
-				return true;
-			}
-		}
-		
-		tryToBindAndProveConditions:
-		for (int i = n - 1; 0 <= i; --i) {
-			final Pair<String, Pattern> justification = justifications.get(i);
-			final Module module = cast(Module.class, justification.getSecond().getTemplate());
-			
-			if (module != null && !module.getConditions().isEmpty()) {
-				session.claim(goal);
-				{
-					bindPattern(session, justification);
-					
-					Module bound = session.getFact(-1);
-					
-					while (bound != null && !bound.getConditions().isEmpty()) {
-						final Expression condition = bound.getConditions().get(0);
-						
-						if (proveWithBindAndApply(session, condition, depth - 1)) {
-							session.apply(session.getFactName(-2), session.getFactName(-1));
-							
-							bound = cast(Module.class, session.getFact(-1));
-						} else {
-							session.abort();
-							
-							continue tryToBindAndProveConditions;
-						}
-					}
-				}
-				
-				return true;
-			}
-		}
-		
-		return false;
-	}
-	
-	public static final void bindPattern(final Session session, final Pair<String, Pattern> justification) {
-		final Bind bind = session.getCurrentModule().new Bind(session.getCurrentModule(), justification.getFirst());
-		
-		for (final Map.Entry<Pattern.Any.Key, Expression> binding : justification.getSecond().getBindings().entrySet()) {
-			bind.bind(binding.getKey().toString(), binding.getValue());
-		}
-		
-		bind.execute();
-	}
 	
 	public static final void canonicalize(final Expression expression, final RewriteHint... hints) {
 		canonicalize(session(), expression, hints);
