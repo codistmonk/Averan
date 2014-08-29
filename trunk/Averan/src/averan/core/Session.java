@@ -281,7 +281,7 @@ public final class Session implements Serializable {
 		return this;
 	}
 	
-	private final Session tryToPop() {
+	public final Session tryToPop() {
 		while (1 < this.getStack().size() && this.getCurrentContext().isGoalReached()) {
 			final ProofContext previous = this.getStack().remove(0);
 			final Module proof = previous.getModule();

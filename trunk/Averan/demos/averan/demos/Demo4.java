@@ -27,6 +27,7 @@ import averan.modules.Standard;
 import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -241,6 +242,8 @@ public final class Demo4 {
 							if (!hint.isInfinite() || newFact.toString().compareTo(oldFact.toString()) < 0) {
 								done = false;
 								s.getCurrentModule().new Claim(newFact, tmp.getCurrentModule()).execute();
+								s.tryToPop();
+								
 								continue tryHint;
 							}
 						}
@@ -252,6 +255,7 @@ public final class Demo4 {
 			final Expression newFact = lastFactOf(s.getCurrentModule());
 			
 			session.getCurrentModule().new Claim(newFact, s.getCurrentModule()).execute();
+			session.tryToPop();
 		}
 	}
 	
@@ -309,15 +313,45 @@ public final class Demo4 {
 		return facts.get(facts.size() - 1);
 	}
 	
-	public static final void proveEquality(final Composite equality, final RewriteHint... hints) {
-		proveEquality(session(), equality, hints);
+	public static final void proveEquality(final Expression expression, final RewriteHint... hints) {
+		proveEquality((String) null, expression, hints);
 	}
 	
-	public static final void proveEquality(final Session session, final Composite equality, final RewriteHint... hints) {
-		canonicalize(equality.get(0), hints);
-		canonicalize(equality.get(2), hints);
-		rewriteRight(factName(-2), factName(-1));
+	public static final void proveEquality(final String factName, final Expression expression, final RewriteHint... hints) {
+		proveEquality(session(), factName, expression, hints);
 	}
+	
+	public static final void proveEquality(final Session session, final Expression expression, final RewriteHint... hints) {
+		proveEquality(session, null, expression, hints);
+	}
+	
+	public static final void proveEquality(final Session session, final String factName, final Expression expression, final RewriteHint... hints) {
+		session.claim(factName == null ? session.newPropositionName() : factName, expression);
+		{
+			while (session.getCurrentGoal() instanceof Module) {
+				session.introduce();
+			}
+			
+			final Composite equality = (Composite) session.getCurrentGoal();
+			final Module context = session.getCurrentModule();
+			
+			canonicalize(session, equality.get(0), hints);
+			
+			if (context != session.getCurrentModule()) {
+				return;
+			}
+			
+			canonicalize(session, equality.get(2), hints);
+			
+			if (context != session.getCurrentModule()) {
+				return;
+			}
+			
+			rewriteRight(session, factName, factName(-2), factName(-1));
+		}
+	}
+	
+	public static final Map<String, RewriteHint[]> hints = new HashMap<>();
 	
 	static {
 		new SessionScaffold() {
@@ -370,6 +404,8 @@ public final class Demo4 {
 						new RewriteHint("ordering_of_terms", true),
 				};
 				
+				hints.put("addition", additionHints);
+				
 				claim("test2", $$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((x+z+y)=(z+y+x)))))"));
 				{
 					introduce();
@@ -419,6 +455,8 @@ public final class Demo4 {
 						new RewriteHint("ordering_of_factors", true),
 				};
 				
+				hints.put("multiplication", multiplicationHints);
+				
 				claim("test3", $$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((xzy)=(zyx)))))"));
 				{
 					introduce();
@@ -451,18 +489,12 @@ public final class Demo4 {
 				suppose("type_of_opposite", $$("∀x ((x∈ℝ) → ((-x)∈ℝ))"));
 				suppose("opposite_of_multiplication", $$("∀x,y ((x∈ℝ) → ((y∈ℝ) → (((-x)y)=(-(xy)))))"));
 				
-//				claim("test5", $$("((a∈ℝ) → ((b∈ℝ) → ((-(ab))∈ℝ)))"));
-//				{
-//					introduce();
-//					introduce();
-//					proveWithBindAndApply(goal(), 3);
-//					BreakSessionException.breakSession();
-//				}
-				
 				final RewriteHint[] subtractionHints = {
 						new RewriteHint("definition_of_subtraction", false),
 						new RewriteHint("opposite_of_multiplication", false),
 				};
+				
+				hints.put("subtraction", subtractionHints);
 				
 				claim("test5", $$("∀a,b,c,d ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((d∈ℝ) → ((dc+(a-ba))=(cd-ab+a))))))"));
 				{
@@ -507,8 +539,12 @@ public final class Demo4 {
 						new RewriteHint("right_distributivity_of_multiplication_over_addition", false),
 				};
 				
+				hints.put("distributivity", distributivityHints);
+				
 				final RewriteHint[] arithmeticHints = append(additionAndMultiplicationHints,
 						append(subtractionHints, distributivityHints));
+				
+				hints.put("arithmetic", arithmeticHints);
 				
 				claim("test6", $$("∀a,b,c,d ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((d∈ℝ) → ((c+(a-ba)d)=(c-adb+da))))))"));
 				{
@@ -523,7 +559,6 @@ public final class Demo4 {
 					
 					proveEquality(goal(), arithmeticHints);
 				}
-				
 			}
 			
 			/**
@@ -533,6 +568,8 @@ public final class Demo4 {
 			
 		};
 	}
+	
+//	static boolean debug = false;
 	
 	/**
 	 * @param commandLineArguments
