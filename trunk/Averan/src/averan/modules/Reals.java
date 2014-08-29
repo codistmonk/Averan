@@ -3,9 +3,10 @@ package averan.modules;
 import static averan.core.ExpressionTools.*;
 import static averan.core.SessionTools.*;
 import static averan.io.ExpressionParser.$$;
+import static averan.modules.Reals.hints;
 import static averan.modules.Standard.*;
+import static net.sourceforge.aprog.tools.Tools.append;
 import static net.sourceforge.aprog.tools.Tools.cast;
-
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.IndexFinder;
@@ -115,6 +116,27 @@ public final class Reals {
 				proveWithBindAndApply($(pyx, "=", pxy));
 				rewrite(factName(-2), factName(-1));
 			}
+			
+			final RewriteHint[] multiplicationHints = {
+					new RewriteHint("commutativity_of_multiplication", true),
+					new RewriteHint("associativity_of_multiplication", false),
+					new RewriteHint("ordering_of_factors", true),
+			};
+			
+			hints.put("multiplication", multiplicationHints);
+			
+			final RewriteHint[] additionAndMultiplicationHints = append(additionHints, multiplicationHints);
+			
+			suppose("definition_of_subtraction", $$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x-y)=(x+(-y)))))"));
+			suppose("type_of_opposite", $$("∀x ((x∈ℝ) → ((-x)∈ℝ))"));
+			suppose("opposite_of_multiplication", $$("∀x,y ((x∈ℝ) → ((y∈ℝ) → (((-x)y)=(-(xy)))))"));
+			
+			final RewriteHint[] subtractionHints = {
+					new RewriteHint("definition_of_subtraction", false),
+					new RewriteHint("opposite_of_multiplication", false),
+			};
+			
+			hints.put("subtraction", subtractionHints);
 		} finally {
 			popSession();
 		}
