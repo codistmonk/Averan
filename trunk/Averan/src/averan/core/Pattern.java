@@ -1,6 +1,7 @@
 package averan.core;
 
 import static net.sourceforge.aprog.tools.Tools.cast;
+
 import averan.core.Module.Symbol;
 
 import java.io.Serializable;
@@ -8,8 +9,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2014-08-09)
