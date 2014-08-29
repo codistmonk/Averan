@@ -75,6 +75,10 @@ public final class SessionTools {
 		session().admit(factName, fact);
 	}
 	
+	public static final void abort() {
+		session().abort();
+	}
+	
 	public static final void claim(final Expression fact) {
 		session().claim(fact);
 	}
