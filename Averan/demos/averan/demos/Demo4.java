@@ -325,7 +325,9 @@ public final class Demo4 {
 					introduce();
 					
 					final Composite goal = goal();
+					
 					bind(IDENTITY, (Expression) goal.get(0));
+					
 					final Composite pxz = $(x, "+", z);
 					final Composite pxzy = $(pxz, "+", y);
 					final Composite pypxz = $(y, "+", pxz);
@@ -340,11 +342,13 @@ public final class Demo4 {
 					proveWithBindAndApply($(pyx, "=", pxy), 3);
 					rewrite(factName(-2), factName(-1));
 				}
-				final RewriteHint[] hints = {
+				
+				final RewriteHint[] additionHints = {
 						new RewriteHint(session(), "commutativity_of_addition", true),
 						new RewriteHint(session(), "associativity_of_addition", false),
 						new RewriteHint(session(), "ordering_of_terms", true),
 				};
+				
 				claim("test2", $$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((x+z+y)=(z+y+x)))))"));
 				{
 					introduce();
@@ -354,7 +358,56 @@ public final class Demo4 {
 					introduce();
 					introduce();
 					
-					proveEquality(goal(), hints);
+					proveEquality(goal(), additionHints);
+				}
+				
+				admit("type_of_multiplication", $$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((xy)∈ℝ)))"));
+				admit("commutativity_of_multiplication", $$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((xy)=(yx))))"));
+				admit("associativity_of_multiplication", $$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → (x(yz)=xyz))))"));
+				claim("ordering_of_factors", $$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((xzy)=(xyz)))))"));
+				{
+					final Symbol x = introduce();
+					final Symbol y = introduce();
+					final Symbol z = introduce();
+					introduce();
+					introduce();
+					introduce();
+					
+					final Composite goal = goal();
+					
+					bind(IDENTITY, (Expression) goal.get(0));
+					
+					final Composite pxz = $(x, z);
+					final Composite pxzy = $(pxz, y);
+					final Composite pypxz = $(y, pxz);
+					final Composite pyx = $(y, x);
+					final Composite pyxz = $(pyx, z);
+					final Composite pxy = $(x, y);
+					
+					proveWithBindAndApply($(pxzy, "=", pypxz), 3);
+					rewrite(factName(-2), factName(-1), 1);
+					proveWithBindAndApply($(pypxz, "=", pyxz), 3);
+					rewrite(factName(-2), factName(-1));
+					proveWithBindAndApply($(pyx, "=", pxy), 3);
+					rewrite(factName(-2), factName(-1));
+				}
+				
+				final RewriteHint[] multiplicationHints = {
+						new RewriteHint(session(), "commutativity_of_multiplication", true),
+						new RewriteHint(session(), "associativity_of_multiplication", false),
+						new RewriteHint(session(), "ordering_of_factors", true),
+				};
+				
+				claim("test3", $$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((xzy)=(zyx)))))"));
+				{
+					introduce();
+					introduce();
+					introduce();
+					introduce();
+					introduce();
+					introduce();
+					
+					proveEquality(goal(), multiplicationHints);
 				}
 			}
 			
