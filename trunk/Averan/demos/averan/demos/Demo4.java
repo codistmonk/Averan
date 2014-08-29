@@ -3,6 +3,7 @@ package averan.demos;
 import static averan.core.ExpressionTools.*;
 import static averan.core.SessionTools.*;
 import static averan.io.ExpressionParser.$$;
+import static averan.modules.Reals.findJustificationsIn;
 import static averan.modules.Standard.*;
 import static java.awt.Color.BLACK;
 import static java.awt.Color.WHITE;
@@ -16,18 +17,15 @@ import averan.core.Pattern.Any.Key;
 import averan.core.Module.Bind;
 import averan.core.Module.Symbol;
 import averan.core.Pattern;
-import averan.core.Rewriter;
 import averan.core.Session;
 import averan.demos.Demo2.BreakSessionException;
 import averan.io.SessionExporter;
 import averan.io.TexPrinter;
 import averan.modules.Reals;
 import averan.modules.Reals.RewriteHint;
-import averan.modules.Standard;
 
 import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,91 +46,6 @@ public final class Demo4 {
 	
 	public static final Module MODULE = new Module(Reals.MODULE, Demo4.class.getName());
 	
-	public static final Expression real(final Expression expression) {
-		return $(expression, "∈", "ℝ");
-	}
-	
-	public static final Expression anyfy(final Module module) {
-		final Rewriter rewriter = new Rewriter();
-		
-		for (final Symbol parameter : module.getParameters()) {
-			rewriter.rewrite(parameter, new Pattern.Any(new Pattern.Any.Key(parameter)));
-		}
-		
-		return module.accept(rewriter);
-	}
-	
-	public static final List<Pair<String, Pattern>> findJustificationsIn(final Module context, final Expression goal) {
-		final List<Pair<String, Pattern>> result = new ArrayList<>();
-		
-		result.addAll(0, findJustificationsIn(context.getFacts(), context.getFactIndices(), goal));
-		result.addAll(0, findJustificationsIn(context.getConditions(), context.getConditionIndices(), goal));
-		
-		return result;
-	}
-	
-	public static final List<Pair<String, Pattern>> findJustificationsIn(final List<Expression> propositions,
-			final Map<String, Integer> propositionIndices, final Expression goal) {
-		final List<Pair<String, Pattern>> result = new ArrayList<>();
-		
-		for (final Map.Entry<String, Integer> entry : propositionIndices.entrySet()) {
-			final Expression contextFact = propositions.get(entry.getValue());
-			
-			{
-				final Pattern justificationPattern = new Pattern(contextFact);
-				
-				if (justificationPattern.equals(goal)) {
-					result.add(new Pair<>(entry.getKey(), justificationPattern));
-					continue;
-				}
-			}
-			
-			{
-				Module module = cast(Module.class, contextFact);
-				
-				if (module != null) {
-					module = ((Module) anyfy(module)).canonical();
-					
-					for (final Expression moduleFact : module.getFacts()) {
-						final Pattern pattern = new Pattern(moduleFact);
-						
-						if (pattern.equals(goal)) {
-							final Pattern justificationPattern = new Pattern(module);
-							
-							justificationPattern.getBindings().putAll(pattern.getBindings());
-							
-							result.add(new Pair<>(entry.getKey(), justificationPattern));
-							
-							break;
-						}
-					}
-				}
-			}
-		}
-		
-		return result;
-	}
-	
-	public static final List<Pair<String, Pattern>> findJustificationsFor(final Expression goal) {
-		return findJustificationsIn(session(), goal);
-	}
-	
-	public static final List<Pair<String, Pattern>> findJustificationsIn(final Session session, final Expression goal) {
-		final List<Pair<String, Pattern>> result = new ArrayList<>();
-		
-		{
-			for (Module context = session.getCurrentModule(); context != null; context = context.getParent()) {
-				result.addAll(0, findJustificationsIn(context, goal));
-			}
-			
-//			for (final Module context : session.getTrustedModules()) {
-//				result.addAll(0, findJustificationsIn(context, goal));
-//			}
-		}
-		
-		return result;
-	}
-	
 	public static final boolean proveWithBindAndApply(final Expression goal) {
 		return proveWithBindAndApply(goal, getProveWithBindAndApplyDepth());
 	}
@@ -152,10 +65,6 @@ public final class Demo4 {
 		
 		final List<Pair<String, Pattern>> justifications = findJustificationsIn(session, goal);
 		final int n = justifications.size();
-		
-//		if (debug) {
-//			Tools.debugPrint(goal, justifications);
-//		}
 		
 		for (int i = n - 1; 0 <= i; --i) {
 			final Pair<String, Pattern> justification = justifications.get(i);
