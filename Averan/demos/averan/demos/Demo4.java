@@ -288,6 +288,16 @@ public final class Demo4 {
 		return facts.get(facts.size() - 1);
 	}
 	
+	public static final void proveEquality(final Composite equality, final RewriteHint... hints) {
+		proveEquality(session(), equality, hints);
+	}
+	
+	public static final void proveEquality(final Session session, final Composite equality, final RewriteHint... hints) {
+		canonicalize(equality.get(0), hints);
+		canonicalize(equality.get(2), hints);
+		rewriteRight(factName(-2), factName(-1));
+	}
+	
 	static {
 		new SessionScaffold() {
 			
@@ -344,11 +354,7 @@ public final class Demo4 {
 					introduce();
 					introduce();
 					
-					final Composite goal = goal();
-					
-					canonicalize(goal.get(0), hints);
-					canonicalize(goal.get(2), hints);
-					rewriteRight(factName(-2), factName(-1));
+					proveEquality(goal(), hints);
 				}
 			}
 			
