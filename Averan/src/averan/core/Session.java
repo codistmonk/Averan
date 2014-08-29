@@ -221,6 +221,10 @@ public final class Session implements Serializable {
 	}
 	
 	public final Session claim(final String factName, final Expression proposition) {
+		if (proposition == null) {
+			throw new NullPointerException();
+		}
+		
 		this.checkPropositionNameAvailable(factName);
 		
 		final ProofContext proofContext = new ProofContext(factName,
@@ -253,6 +257,14 @@ public final class Session implements Serializable {
 	
 	public final String newPropositionName() {
 		return this.getCurrentModule().newPropositionName();
+	}
+	
+	public final Session abort() {
+		if (1 < this.getStack().size()) {
+			this.getStack().remove(0);
+		}
+		
+		return this;
 	}
 	
 	private final Session tryToPop() {
