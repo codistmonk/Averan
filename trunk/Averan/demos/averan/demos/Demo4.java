@@ -43,34 +43,6 @@ public final class Demo4 {
 			
 			@Override
 			public final void run() {
-				claim("ordering_of_terms", $$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((x+z+y)=(x+y+z)))))"));
-				{
-					final Symbol x = introduce();
-					final Symbol y = introduce();
-					final Symbol z = introduce();
-					introduce();
-					introduce();
-					introduce();
-					
-					final Composite goal = goal();
-					
-					bind(IDENTITY, (Expression) goal.get(0));
-					
-					final Composite pxz = $(x, "+", z);
-					final Composite pxzy = $(pxz, "+", y);
-					final Composite pypxz = $(y, "+", pxz);
-					final Composite pyx = $(y, "+", x);
-					final Composite pyxz = $(pyx, "+", z);
-					final Composite pxy = $(x, "+", y);
-					
-					proveWithBindAndApply($(pxzy, "=", pypxz));
-					rewrite(factName(-2), factName(-1), 1);
-					proveWithBindAndApply($(pypxz, "=", pyxz));
-					rewrite(factName(-2), factName(-1));
-					proveWithBindAndApply($(pyx, "=", pxy));
-					rewrite(factName(-2), factName(-1));
-				}
-				
 				final RewriteHint[] additionHints = {
 						new RewriteHint("commutativity_of_addition", true),
 						new RewriteHint("associativity_of_addition", false),

@@ -82,10 +82,6 @@ public final class Demo2 {
 		final Session session = pushSession(new Session(MODULE));
 		
 		try {
-//			session().trust(Reals.MODULE);
-//			claimRealEquality("Demo2.test1", $(forAll("a", "b", "c", "d"),
-//					$(real($("a")), "->", $(real($("b")), "->", $(real($("c")), "->", $(real($("d")), "->",
-//							$$("(c+(a-(ba))d)=((ad)-(abd)+c)")))))));
 			session().trust(Reals.MODULE);
 			session().trust(Demo4.MODULE);
 			Reals.proveEquality("Demo2.test2", $(forAll("a", "b", "c", "d"),

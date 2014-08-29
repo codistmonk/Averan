@@ -5,6 +5,7 @@ import static averan.core.SessionTools.*;
 import static averan.io.ExpressionParser.$$;
 import static averan.modules.Standard.*;
 import static net.sourceforge.aprog.tools.Tools.cast;
+
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.IndexFinder;
@@ -35,6 +36,8 @@ public final class Reals {
 		throw new IllegalInstantiationException();
 	}
 	
+	private static int proveWithBindAndApplyDepth = 4;
+	
 	public static final Module MODULE = new Module(Standard.MODULE, Reals.class.getName());
 	
 	public static final Map<String, RewriteHint[]> hints = new HashMap<>();
@@ -46,6 +49,33 @@ public final class Reals {
 			suppose("type_of_addition", $$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x+y)∈ℝ)))"));
 			suppose("commutativity_of_addition", $$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x+y)=(y+x))))"));
 			suppose("associativity_of_addition", $$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → (x+(y+z)=x+y+z))))"));
+			claim("ordering_of_terms", $$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((x+z+y)=(x+y+z)))))"));
+			{
+				final Symbol x = introduce();
+				final Symbol y = introduce();
+				final Symbol z = introduce();
+				introduce();
+				introduce();
+				introduce();
+				
+				final Composite goal = goal();
+				
+				bind(IDENTITY, (Expression) goal.get(0));
+				
+				final Composite pxz = $(x, "+", z);
+				final Composite pxzy = $(pxz, "+", y);
+				final Composite pypxz = $(y, "+", pxz);
+				final Composite pyx = $(y, "+", x);
+				final Composite pyxz = $(pyx, "+", z);
+				final Composite pxy = $(x, "+", y);
+				
+				proveWithBindAndApply($(pxzy, "=", pypxz));
+				rewrite(factName(-2), factName(-1), 1);
+				proveWithBindAndApply($(pypxz, "=", pyxz));
+				rewrite(factName(-2), factName(-1));
+				proveWithBindAndApply($(pyx, "=", pxy));
+				rewrite(factName(-2), factName(-1));
+			}
 		} finally {
 			popSession();
 		}
@@ -53,6 +83,14 @@ public final class Reals {
 	
 	public static final Expression real(final Expression expression) {
 		return $(expression, "∈", "ℝ");
+	}
+	
+	public static final int getProveWithBindAndApplyDepth() {
+		return proveWithBindAndApplyDepth;
+	}
+	
+	public static final void setProveWithBindAndApplyDepth(final int proveWithBindAndApplyDepth) {
+		Reals.proveWithBindAndApplyDepth = proveWithBindAndApplyDepth;
 	}
 	
 	public static final Expression anyfy(final Module module) {
@@ -295,16 +333,6 @@ public final class Reals {
 		session.rewrite(toRewriteName, boundName, pair.getFirst());
 		
 		return true;
-	}
-	
-	private static int proveWithBindAndApplyDepth = 4;
-	
-	public static final int getProveWithBindAndApplyDepth() {
-		return proveWithBindAndApplyDepth;
-	}
-	
-	public static final void setProveWithBindAndApplyDepth(final int proveWithBindAndApplyDepth) {
-		Reals.proveWithBindAndApplyDepth = proveWithBindAndApplyDepth;
 	}
 	
 	public static final Expression lastFactOf(final Module module) {
