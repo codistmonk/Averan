@@ -401,24 +401,22 @@ public final class Demo2 {
 			claim(pq2qp);
 			{
 				introduce();
-				bind("commutativity_of_conjunction#1#0");
+				bind(conditionName(-1));
 			}
 			
 			claim(qp2pq);
-			
 			{
 				introduce();
-				bind("commutativity_of_conjunction#2#0");
+				bind(conditionName(-1));
 			}
 			
 			claim($(pq2qp, "&", qp2pq));
-			
 			{
-				recall("commutativity_of_conjunction#1");
-				recall("commutativity_of_conjunction#2");
+				recall(factName(-2));
+				recall(factName(-2));
 			}
 			
-			rewriteRight("commutativity_of_conjunction#3", "commutativity_of_conjunction#0");
+			rewriteRight(factName(-1), factName(-4));
 		}
 	}
 	
