@@ -100,14 +100,23 @@ public final class Standard {
 	}
 	
 	public static final void rewriteRight(final String sourceName, final String equalityName, final Integer... indices) {
-		rewriteRight(session(), sourceName, equalityName, indices);
+		rewriteRight((String) null, sourceName, equalityName, indices);
+	}
+	
+	public static final void rewriteRight(final String factName, final String sourceName, final String equalityName, final Integer... indices) {
+		rewriteRight(session(), factName, sourceName, equalityName, indices);
 	}
 	
 	public static final void rewriteRight(final Session session, final String sourceName, final String equalityName, final Integer... indices) {
+		rewriteRight(session, null, sourceName, equalityName, indices);
+	}
+	
+	public static final void rewriteRight(final Session session, final String factName, final String sourceName, final String equalityName, final Integer... indices) {
 		final Expression source = session.getProposition(sourceName);
 		final Composite equality = session.getProposition(equalityName);
 		
-		session.claim(source.accept(new Rewriter().rewrite(equality.get(2), equality.get(0))));
+		session.claim(factName == null ? session.newPropositionName() : factName,
+				source.accept(new Rewriter().rewrite(equality.get(2), equality.get(0))));
 		{
 			unifyAndApply(session, SYMMETRY_OF_EQUALITY, equalityName);
 			session.rewrite(sourceName, session.getFactName(-1), indices);

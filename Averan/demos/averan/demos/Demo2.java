@@ -86,6 +86,9 @@ public final class Demo2 {
 			claimRealEquality("test", $(forAll("a", "b", "c", "d"),
 					$(real($("a")), "->", $(real($("b")), "->", $(real($("c")), "->", $(real($("d")), "->",
 							$$("(c+(a-(ba))d)=((ad)-(abd)+c)")))))));
+			Demo4.proveEquality("test", $(forAll("a", "b", "c", "d"),
+					$(real($("a")), "->", $(real($("b")), "->", $(real($("c")), "->", $(real($("d")), "->",
+							$$("(c+(a-(ba))d)=((ad)-(abd)+c)")))))));
 			
 			suppose("definition_of_conjunction",
 					$$("∀P,Q (P → (Q → (P ∧ Q)))"));
