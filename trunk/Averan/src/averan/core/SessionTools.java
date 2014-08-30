@@ -1,15 +1,10 @@
 package averan.core;
 
-import static net.sourceforge.aprog.tools.Tools.ignore;
-import static net.sourceforge.aprog.tools.Tools.unchecked;
 import averan.core.Module.Bind;
 import averan.core.Module.Symbol;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 
@@ -22,7 +17,25 @@ public final class SessionTools {
 		throw new IllegalInstantiationException();
 	}
 	
-	private static final Map<Class<?>, Session> sessions = new HashMap<>();
+	private static final List<Session> sessions = new ArrayList<>();
+	
+	public static final Session session() {
+		return sessions.get(0);
+	}
+	
+	public static final Session pushNewSession(final Module module) {
+		return pushSession(new Session(module));
+	}
+	
+	public static final Session pushSession(final Session session) {
+		sessions.add(0, session);
+		
+		return session;
+	}
+	
+	public static final Session popSession() {
+		return sessions.remove(0);
+	}
 	
 	public static final <E extends Expression> E getCurrentGoal() {
 		return session().getCurrentContext().getCurrentGoal();
@@ -127,54 +140,6 @@ public final class SessionTools {
 	
 	public static final Module module() {
 		return session().getCurrentModule();
-	}
-	
-	private static final List<Session> sessionStack = new ArrayList<>();
-	
-	public static final Session session() {
-//		final StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-//		
-//		for (int i = stackTrace.length - 1; 0 <= i; --i) {
-//			try {
-//				final Class<?> cls = Class.forName(stackTrace[i].getClassName());
-//				final Field moduleField = cls.getDeclaredField("MODULE");
-//				
-//				return sessions.compute(cls, (k, v) -> v == null ?
-//						new Session((Module) getStaticFieldValue(moduleField)) : v);
-//			} catch (final ClassNotFoundException exception) {
-//				exception.printStackTrace();
-//			} catch (final NoSuchFieldException exception) {
-//				ignore(exception);
-//			}
-//		}
-//		
-//		throw new IllegalStateException();
-		return sessionStack.get(0);
-	}
-	
-	public static final Session pushNewSession(final Module module) {
-		return pushSession(new Session(module));
-	}
-	
-	public static final Session pushSession(final Session session) {
-		sessionStack.add(0, session);
-		
-		return session;
-	}
-	
-	public static final Session popSession() {
-		return sessionStack.remove(0);
-	}
-	
-	@SuppressWarnings("unchecked")
-	public static final <T> T getStaticFieldValue(final Field field) {
-		try {
-			field.setAccessible(true);
-			
-			return (T) field.get(null);
-		} catch (final Exception exception) {
-			throw unchecked(exception);
-		}
 	}
 	
 	public static final void unifyAndApply(final String moduleName, final String conditionName) {

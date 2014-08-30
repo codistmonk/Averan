@@ -3,6 +3,7 @@ package averan.io;
 import static averan.core.ExpressionTools.*;
 import static java.util.Arrays.copyOfRange;
 import static net.sourceforge.aprog.tools.Tools.cast;
+import static net.sourceforge.aprog.tools.Tools.ignore;
 import static net.sourceforge.aurochs2.core.LexerBuilder.*;
 import static net.sourceforge.aurochs2.core.ParserBuilder.block;
 import static net.sourceforge.aurochs2.core.ParserBuilder.Priority.Associativity.LEFT;
@@ -293,12 +294,16 @@ public final class ExpressionParser implements Serializable {
 	}
 	
 	public static final Object unquote(final Rule rule, final Object[] data) {
+		ignore(rule);
+		
 		final String string = data[0].toString();
 		
 		return string.substring(1, string.length() - 1);
 	}
 	
 	public static final Object flatten(final Rule rule, final Object[] data) {
+		ignore(rule);
+		
 		if (data.length == 1) {
 			final List<Object> result = new ArrayList<>();
 			
