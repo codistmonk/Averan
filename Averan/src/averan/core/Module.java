@@ -5,6 +5,7 @@ import static java.lang.Math.min;
 import static java.util.stream.Collectors.toCollection;
 import static net.sourceforge.aprog.tools.Tools.array;
 import static net.sourceforge.aprog.tools.Tools.cast;
+import static net.sourceforge.aprog.tools.Tools.ignore;
 import static net.sourceforge.aprog.tools.Tools.list;
 
 import averan.core.Pattern.Any;
@@ -1291,6 +1292,8 @@ public final class Module implements Expression {
 		public abstract Module execute();
 		
 		public default Pair<String, Object[]> getFormatString(final Function<? super Expression, String> f) {
+			ignore(f);
+			
 			return new Pair<>(this.toString(), array());
 		}
 		
@@ -1298,6 +1301,7 @@ public final class Module implements Expression {
 	
 	/**
 	 * @author codistmonk (creation 2014-08-02)
+	 * @param <P> 
 	 */
 	public static final class PropositionReference<P extends Expression> implements Serializable {
 		

@@ -364,7 +364,7 @@ public final class Reals {
 			
 			tryHint:
 				for (final RewriteHint hint : hints) {
-					final List<Pair<Integer, Pattern>> pairs = s.getFact(-1).accept(new IndexFinder(true, hint.getLeftPattern(s)));
+					final List<Pair<Integer, Pattern>> pairs = s.getFact(-1).accept(new IndexFinder(true, hint.getLeftPattern()));
 					
 					for (final Pair<Integer, Pattern> pair : pairs) {
 						final Expression oldFact = s.getFact(-1);
@@ -524,7 +524,7 @@ public final class Reals {
 			return this.propositionName;
 		}
 		
-		public final Pattern getLeftPattern(final Session session) {
+		public final Pattern getLeftPattern() {
 			return this.leftPattern;
 		}
 		
