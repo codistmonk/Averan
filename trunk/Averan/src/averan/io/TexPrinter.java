@@ -342,7 +342,11 @@ public final class TexPrinter implements SessionExporter.Output {
 		
 		@Override
 		public final Pair<String, DisplayHint> visit(final Symbol symbol) {
-			final String string = symbol.toString();
+			String string = symbol.toString();
+			
+			if ("𝓟".equals(string)) {
+				string = "\\mathcal P";
+			}
 			
 			return getHintOrGroup(symbol).hint(string.length() == 1 ? string : word(string));
 		}
