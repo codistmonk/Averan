@@ -257,9 +257,9 @@ public final class TexPrinter implements SessionExporter.Output {
 			}
 			
 			if (thisIsBraced) {
-				return DisplayHint.DEFAULT.hint("\\left" + children.get(0)
+				return DisplayHint.GROUP.hint("\\left" + formatBrace(children.get(0).toString())
 						+ join("", Expression.listAcceptor(children.subList(1, n - 1), this).get().stream().map(p -> p.getFirst()).collect(Collectors.toList()))
-						+ "\\right" + children.get(n - 1));
+						+ "\\right" + formatBrace(children.get(n - 1).toString()));
 			}
 			
 			if (n == 3 && "/".equals(children.get(1).toString())) {
@@ -397,6 +397,16 @@ public final class TexPrinter implements SessionExporter.Output {
 		
 		public static final Pattern newSummationPattern1() {
 			return new Pattern($($($("Σ", "_", any("i=a")), "^", any("b")), any("e")));
+		}
+		
+		public static final String formatBrace(final String brace) {
+			switch (brace) {
+				case "{":
+				case "}":
+					return "\\" + brace;
+			}
+			
+			return brace;
 		}
 		
 	}

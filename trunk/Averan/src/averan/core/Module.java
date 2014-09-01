@@ -247,7 +247,7 @@ public final class Module implements Expression {
 		if (propositions.size() == 1) {
 			final Expression proposition = propositions.get(0);
 			
-			if (proposition instanceof Symbol) {
+			if (proposition instanceof Symbol || Composite.isBracedComposite(proposition)) {
 				return proposition.toString();
 			}
 		}
