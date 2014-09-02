@@ -20,11 +20,23 @@ import org.scilab.forge.jlatexmath.TeXFormula;
  */
 public abstract class SessionScaffold implements Serializable {
 	
+	private final int successfulBuildMaximumProofDepth;
+	
 	protected SessionScaffold(final Module module) {
-		this(new Session(module));
+		this(module, 1);
+	}
+	
+	protected SessionScaffold(final Module module, final int successfulBuildMaximumProofDepth) {
+		this(new Session(module), successfulBuildMaximumProofDepth);
 	}
 	
 	protected SessionScaffold(final Session session) {
+		this(session, 1);
+	}
+	
+	protected SessionScaffold(final Session session, final int successfulBuildMaximumProofDepth) {
+		this.successfulBuildMaximumProofDepth = successfulBuildMaximumProofDepth;
+		
 		pushSession(session);
 		
 		String sessionBreakPoint = "";
@@ -44,7 +56,7 @@ public abstract class SessionScaffold implements Serializable {
 			final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 			
 			new SessionExporter(session, new TexPrinter(buffer)
-			, 1 < session.getStack().size() ? 0 : 1).exportSession();
+			, 1 < session.getStack().size() ? 0 : this.successfulBuildMaximumProofDepth).exportSession();
 			
 //			System.out.println(buffer.toString());
 			
