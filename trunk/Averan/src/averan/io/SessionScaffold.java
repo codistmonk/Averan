@@ -1,14 +1,12 @@
-package averan.demos;
+package averan.io;
 
 import static averan.core.SessionTools.popSession;
 import static averan.core.SessionTools.pushSession;
 import static java.awt.Color.BLACK;
 import static java.awt.Color.WHITE;
-
 import averan.core.Module;
 import averan.core.Session;
-import averan.io.SessionExporter;
-import averan.io.TexPrinter;
+import averan.demos.BreakSessionException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
