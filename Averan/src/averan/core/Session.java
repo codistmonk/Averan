@@ -134,9 +134,24 @@ public final class Session implements Serializable {
 	}
 	
 	public final String getConditionName(final int index) {
-		final Map<String, Integer> conditionIndices = this.getCurrentModule().getConditionIndices();
-		final int n = conditionIndices.size();
-		final int i = (n + index) % n;
+		Module context = this.getCurrentModule();
+		Map<String, Integer> conditionIndices = context.getConditionIndices();
+		int relativeIndex = index;
+		int n = conditionIndices.size();
+		
+		while (n + relativeIndex < 0) {
+			context = context.getParent();
+			
+			if (context == null) {
+				throw new IllegalArgumentException();
+			}
+			
+			relativeIndex += n;
+			conditionIndices = context.getConditionIndices();
+			n = conditionIndices.size();
+		}
+		
+		final int i = (n + relativeIndex) % n;
 		
 		return conditionIndices.entrySet().stream().reduce(
 				"", (old, entry) -> entry.getValue().equals(i) ? entry.getKey() : old, (u, t) -> t);
@@ -151,9 +166,9 @@ public final class Session implements Serializable {
 	}
 	
 	public final String getFactName(final int index) {
-		int relativeIndex = index;
 		Module context = this.getCurrentModule();
 		Map<String, Integer> factIndices = context.getFactIndices();
+		int relativeIndex = index;
 		int n = factIndices.size();
 		
 		while (n + relativeIndex < 0) {

@@ -61,7 +61,7 @@ public final class ExpressionParser implements Serializable {
 	
 	public static final Union PREFIX_OPERATOR = disjoin("∃¬");
 	
-	public static final Union INFIX_OPERATOR = disjoin(",=+-*/_^<≤∧∈∩→");
+	public static final Union INFIX_OPERATOR = disjoin(",=+-*/_^<≤∧∈⊂∩→");
 	
 	public static final Union POSTFIX_OPERATOR = disjoin("ᵀ");
 	
