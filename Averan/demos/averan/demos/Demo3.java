@@ -23,7 +23,7 @@ public final class Demo3 {
 		new SessionScaffold(MODULE) {
 			
 			@Override
-			public final void run() {
+			public final void buildSession() {
 				suppose("notation", $$("∀P,Q ((P/Q) = (P→Q))"));
 				claim("parametrize", $$("∀P,X (P/(∀X P))"));
 				{
