@@ -74,7 +74,7 @@ public final class Demo2 {
 		new SessionScaffold(MODULE) {
 			
 			@Override
-			public final void run() {
+			public final void buildSession() {
 				session().trust(Reals.MODULE);
 				Reals.proveEquality("Demo2.test2", $(forAll("a", "b", "c", "d"),
 						$(real($("a")), "->", $(real($("b")), "->", $(real($("c")), "->", $(real($("d")), "->",
