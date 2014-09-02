@@ -21,7 +21,7 @@ public final class Session implements Serializable {
 	}
 	
 	public Session(final Module mainModule) {
-		this("main", mainModule);
+		this(mainModule.getName(), mainModule);
 	}
 	
 	public Session(final String name, final Module mainModule) {
