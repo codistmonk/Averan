@@ -75,11 +75,7 @@ public final class Demo2 {
 			
 			@Override
 			public final void buildSession() {
-				session().trust(Reals.MODULE);
-				Reals.proveEquality("Demo2.test2", $(forAll("a", "b", "c", "d"),
-						$(real($("a")), "->", $(real($("b")), "->", $(real($("c")), "->", $(real($("d")), "->",
-								$$("(c+(a-(ba))d)=((ad)-(abd)+c)")))))),
-								Reals.hints.get("arithmetic"));
+				trust(Reals.MODULE);
 				
 				suppose("definition_of_conjunction",
 						$$("∀P,Q (P → (Q → (P ∧ Q)))"));

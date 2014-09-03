@@ -1,11 +1,12 @@
 package averan.modules;
 
+import static averan.core.ExpressionTools.$;
+import static averan.core.ExpressionTools.forAll;
 import static averan.core.SessionTools.*;
 import static averan.io.ExpressionParser.$$;
 import static averan.modules.Reals.*;
 import static net.sourceforge.aprog.tools.Tools.append;
 import static org.junit.Assert.assertEquals;
-
 import averan.core.Module;
 import averan.modules.Reals;
 import averan.modules.Reals.RewriteHint;
@@ -18,7 +19,7 @@ import org.junit.Test;
 public final class RealsTest {
 	
 	@Test
-	public final void test() {
+	public final void test1() {
 		pushNewSession(new Module(Reals.MODULE));
 		
 		try {
@@ -28,7 +29,7 @@ public final class RealsTest {
 			final RewriteHint[] subtractionHints = hints.get("subtraction");
 			final RewriteHint[] arithmeticHints = hints.get("arithmetic");
 			
-			claim("Demo4.test1", $$("∀x,y (x → ((x→y) → y))"));
+			claim("test1", $$("∀x,y (x → ((x→y) → y))"));
 			{
 				introduce();
 				introduce();
@@ -37,7 +38,7 @@ public final class RealsTest {
 				proveWithBindAndApply(goal());
 			}
 			
-			claim("Demo4.test2", $$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((x+z+y)=(z+y+x)))))"));
+			claim("test2", $$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((x+z+y)=(z+y+x)))))"));
 			{
 				introduce();
 				introduce();
@@ -49,7 +50,7 @@ public final class RealsTest {
 				proveEquality(goal(), additionHints);
 			}
 			
-			claim("Demo4.test3", $$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((xzy)=(zyx)))))"));
+			claim("test3", $$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((xzy)=(zyx)))))"));
 			{
 				introduce();
 				introduce();
@@ -61,7 +62,7 @@ public final class RealsTest {
 				proveEquality(goal(), multiplicationHints);
 			}
 			
-			claim("Demo4.test4", $$("∀a,b,c,d ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((d∈ℝ) → ((dc+ba)=(ab+cd))))))"));
+			claim("test4", $$("∀a,b,c,d ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((d∈ℝ) → ((dc+ba)=(ab+cd))))))"));
 			{
 				introduce();
 				introduce();
@@ -75,7 +76,7 @@ public final class RealsTest {
 				proveEquality(goal(), additionAndMultiplicationHints);
 			}
 			
-			claim("Demo4.test5", $$("∀a,b,c,d ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((d∈ℝ) → ((dc+(a-ba))=(cd-ab+a))))))"));
+			claim("test5", $$("∀a,b,c,d ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((d∈ℝ) → ((dc+(a-ba))=(cd-ab+a))))))"));
 			{
 				introduce();
 				introduce();
@@ -89,7 +90,7 @@ public final class RealsTest {
 				proveEquality(goal(), append(additionAndMultiplicationHints, subtractionHints));
 			}
 			
-			claim("Demo4.test6", $$("∀a,b,c,d ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((d∈ℝ) → ((c+(a-ba)d)=(c-adb+da))))))"));
+			claim("test6", $$("∀a,b,c,d ((a∈ℝ) → ((b∈ℝ) → ((c∈ℝ) → ((d∈ℝ) → ((c+(a-ba)d)=(c-adb+da))))))"));
 			{
 				introduce();
 				introduce();
@@ -104,6 +105,22 @@ public final class RealsTest {
 			}
 			
 			assertEquals(1L, session().getStack().size());
+		} finally {
+			popSession();
+		}
+	}
+	
+	@Test
+	public final void test2() {
+		pushNewSession(new Module(Standard.MODULE));
+		
+		trust(Reals.MODULE);
+		
+		try {
+			proveEquality("Demo2.test2", $(forAll("a", "b", "c", "d"),
+					$(real($("a")), "->", $(real($("b")), "->", $(real($("c")), "->", $(real($("d")), "->",
+							$$("(c+(a-(ba))d)=((ad)-(abd)+c)")))))),
+							Reals.hints.get("arithmetic"));
 		} finally {
 			popSession();
 		}

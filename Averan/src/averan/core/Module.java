@@ -55,7 +55,11 @@ public final class Module implements Expression {
 	}
 	
 	public Module(final Module parent, final String name) {
-		this(parent, name, new ArrayList<>(),
+		this(parent, name, new ArrayList<>());
+	}
+	
+	public Module(final Module parent, final String name, final List<Module> trustedModules) {
+		this(parent, name, trustedModules,
 				new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
 	}
 	
@@ -119,6 +123,14 @@ public final class Module implements Expression {
 		
 		if (resultIndex != null) {
 			return this.getFacts().get(resultIndex);
+		}
+		
+		for (final Module trustedModule : this.getTrustedModules()) {
+			Expression result = trustedModule.getPropositionOrNull(name);
+			
+			if (result != null) {
+				return result;
+			}
 		}
 		
 		if (this.getParent() != null) {

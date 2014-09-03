@@ -206,6 +206,10 @@ public final class Reals {
 		result.addAll(0, findJustificationsIn(context.getFacts(), context.getFactIndices(), goal));
 		result.addAll(0, findJustificationsIn(context.getConditions(), context.getConditionIndices(), goal));
 		
+		for (final Module trustedModule : context.getTrustedModules()) {
+			result.addAll(0, findJustificationsIn(trustedModule, goal));
+		}
+		
 		return result;
 	}
 	
@@ -258,10 +262,8 @@ public final class Reals {
 	public static final List<Pair<String, Pattern>> findJustificationsIn(final Session session, final Expression goal) {
 		final List<Pair<String, Pattern>> result = new ArrayList<>();
 		
-		{
-			for (Module context = session.getCurrentModule(); context != null; context = context.getParent()) {
-				result.addAll(0, findJustificationsIn(context, goal));
-			}
+		for (Module context = session.getCurrentModule(); context != null; context = context.getParent()) {
+			result.addAll(0, findJustificationsIn(context, goal));
 		}
 		
 		return result;
@@ -367,6 +369,7 @@ public final class Reals {
 					final List<Pair<Integer, Pattern>> pairs = s.getFact(-1).accept(new IndexFinder(true, hint.getLeftPattern()));
 					
 					for (final Pair<Integer, Pattern> pair : pairs) {
+						
 						final Expression oldFact = s.getFact(-1);
 						final String  oldFactName = s.getFactName(-1);
 						final Session tmp = new Session(new Module(s.getCurrentModule(), s.newPropositionName()));
@@ -386,12 +389,10 @@ public final class Reals {
 				}
 		} while (!done);
 		
-		if (sOldFactCount < s.getCurrentModule().getFacts().size()) {
-			final Expression newFact = lastFactOf(s.getCurrentModule());
-			
-			session.getCurrentModule().new Claim(newFact, s.getCurrentModule()).execute();
-			session.tryToPop();
-		}
+		final Expression newFact = lastFactOf(s.getCurrentModule());
+		
+		session.getCurrentModule().new Claim(newFact, s.getCurrentModule()).execute();
+		session.tryToPop();
 	}
 	
 	public static boolean tryToRewrite(final Session session, final String toRewriteName,
