@@ -40,11 +40,12 @@ public final class ExpressionTools {
 				
 				newParameters.addAll(module.getParameters());
 				
-				return (E) new Module(null, "", newParameters, module.getConditions(), module.getFacts());
+				return (E) new Module(null, "", new ArrayList<>(),
+						newParameters, module.getConditions(), module.getFacts());
 			}
 			
-			return (E) new Module(null, "", (List<Symbol>) objects[0], new ArrayList<>(),
-					new ArrayList<>(Arrays.asList($(objects[1]))));
+			return (E) new Module(null, "", new ArrayList<>(),
+					(List<Symbol>) objects[0], new ArrayList<>(), new ArrayList<>(Arrays.asList($(objects[1]))));
 		}
 		
 		if (objects.length == 3) {
