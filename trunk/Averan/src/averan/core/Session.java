@@ -30,17 +30,7 @@ public final class Session implements Serializable {
 	}
 	
 	public final Session trust(final Module module) {
-		for (final Symbol symbol : module.getParameters()) {
-			this.getCurrentContext().parameter(symbol.toString());
-		}
-		
-		for (final Map.Entry<String, Integer> entry : module.getConditionIndices().entrySet()) {
-			this.suppose(entry.getKey(), module.getConditions().get(entry.getValue()));
-		}
-		
-		for (final Map.Entry<String, Integer> entry : module.getFactIndices().entrySet()) {
-			module.getStatements().get(entry.getValue()).copyFor(this.getCurrentModule()).execute();
-		}
+		this.getCurrentModule().getTrustedModules().add(module);
 		
 		return this;
 	}
