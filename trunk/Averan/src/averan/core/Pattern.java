@@ -45,6 +45,7 @@ public final class Pattern implements Serializable {
 			@Override
 			public final Expression visit(final Module module) {
 				return new Module(module.getParent(), module.getName(),
+						module.getTrustedModules(),
 						(List) module.parametersAcceptor(this).get(),
 						module.conditionsAcceptor(this).get(),
 						module.factsAcceptor(this).get());
@@ -143,7 +144,7 @@ public final class Pattern implements Serializable {
 			
 			@Override
 			public final Expression visit(final Module module) {
-				final Module result = new Module(module.getParent(), module.getName(),
+				final Module result = new Module(module.getParent(), module.getName(), module.getTrustedModules(),
 						new ArrayList<>(module.getParameters()), new ArrayList<>(module.getConditions()), new ArrayList<>(module.getFacts()));
 				final Rewriter rewriter = new Rewriter();
 				

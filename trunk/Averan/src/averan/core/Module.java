@@ -36,6 +36,8 @@ public final class Module implements Expression {
 	
 	private final String name;
 	
+	private final List<Module> trustedModules;
+	
 	private final List<Symbol> parameters;
 	
 	private final List<Expression> conditions;
@@ -53,13 +55,15 @@ public final class Module implements Expression {
 	}
 	
 	public Module(final Module parent, final String name) {
-		this(parent, name, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+		this(parent, name, new ArrayList<>(),
+				new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
 	}
 	
-	public Module(final Module parent, final String name, final List<Symbol> parameters,
-			final List<Expression> conditions, final List<Expression> facts) {
+	public Module(final Module parent, final String name, final List<Module> trustedModules,
+			final List<Symbol> parameters, final List<Expression> conditions, final List<Expression> facts) {
 		this.parent = parent;
 		this.name = name;
+		this.trustedModules = trustedModules;
 		
 		{
 			final Rewriter rewriter = new Rewriter();
@@ -140,6 +144,10 @@ public final class Module implements Expression {
 	
 	public final String getName() {
 		return this.name;
+	}
+	
+	public final List<Module> getTrustedModules() {
+		return this.trustedModules;
 	}
 	
 	public final List<Symbol> getParameters() {
@@ -231,7 +239,7 @@ public final class Module implements Expression {
 		
 		newParameters.removeAll(this.getParameters());
 		
-		return new Module(that.getParent(), that.getName(), newParameters,
+		return new Module(that.getParent(), that.getName(), this.getTrustedModules(), newParameters,
 			Expression.listAcceptor(that.getConditions(), rewriter).get(),
 			Expression.listAcceptor(that.getFacts(), rewriter).get());
 	}
@@ -300,7 +308,7 @@ public final class Module implements Expression {
 	}
 	
 	public final Module canonical() {
-		return new Module(this.getParent(), this.getName(),
+		return new Module(this.getParent(), this.getName(), this.getTrustedModules(),
 				this.collectParameters(), this.collectConditions(), this.collectTerminalFacts());
 	}
 	
@@ -1177,8 +1185,8 @@ public final class Module implements Expression {
 			}
 			
 			if (remainingConditions.size() != allConditions.size()) {
-				final Module newFact = new Module(protofact.getParent(), protofact.getName(), protofact.getParameters(),
-						remainingConditions, protofact.getFacts());
+				final Module newFact = new Module(protofact.getParent(), protofact.getName(), protofact.getTrustedModules(),
+						protofact.getParameters(), remainingConditions, protofact.getFacts());
 				
 				for (final Map.Entry<String, Integer> entry : protofact.getConditionIndices().entrySet()) {
 					if (removedConditions <= entry.getValue()) {

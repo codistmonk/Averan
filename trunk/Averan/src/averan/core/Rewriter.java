@@ -114,8 +114,8 @@ public final class Rewriter implements Visitor<Expression> {
 				}
 			}
 			
-			final Module result = new Module(module.getParent(), module.getName(), newParameters,
-					conditionVisits.get(), factVisits.get());
+			final Module result = new Module(module.getParent(), module.getName(), module.getTrustedModules(),
+					newParameters, conditionVisits.get(), factVisits.get());
 			
 			result.getConditionIndices().putAll(module.getConditionIndices());
 			result.getFactIndices().putAll(module.getFactIndices());

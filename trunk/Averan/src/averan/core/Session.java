@@ -377,6 +377,7 @@ public final class Session implements Serializable {
 		
 		public final void introduce(final String parameterOrConditionName) {
 			final Module goal = (Module) this.getCurrentGoal();
+			final List<Module> trustedModules = goal.getTrustedModules();
 			final List<Symbol> parameters = goal.getParameters();
 			final List<Expression> conditions = goal.getConditions();
 			
@@ -388,6 +389,7 @@ public final class Session implements Serializable {
 				this.setCurrentGoal(new Module(
 						goal.getParent(),
 						this.getName(),
+						trustedModules,
 						newGoalParameters,
 						new ArrayList<>(conditions),
 						new ArrayList<>(goal.getFacts())).accept(new Rewriter().rewrite(parameter, introducedParameter)));
@@ -399,6 +401,7 @@ public final class Session implements Serializable {
 				this.setCurrentGoal(new Module(
 						goal.getParent(),
 						this.getName(),
+						trustedModules,
 						new ArrayList<>(parameters),
 						newConditions,
 						new ArrayList<>(goal.getFacts())));
