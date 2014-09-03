@@ -142,6 +142,10 @@ public final class SessionTools {
 		return session().getCurrentModule();
 	}
 	
+	public static final Session trust(final Module module) {
+		return session().trust(module);
+	}
+	
 	public static final void unifyAndApply(final String moduleName, final String conditionName) {
 		unifyAndApply(session(), moduleName, conditionName);
 	}
