@@ -308,15 +308,16 @@ public final class TexPrinter implements SessionExporter.Output {
 		@Override
 		public final Pair<String, DisplayHint> visit(final Module module) {
 			final StringBuilder resultBuilder = new StringBuilder();
+			final Module m = module.canonical();
 			
-			if (!module.getParameters().isEmpty()) {
+			if (!m.getParameters().isEmpty()) {
 				resultBuilder.append("\\forall ").append(Tools.join(",",
-						Arrays.stream(this.transform(module.getParameters())).map(p -> p.getFirst()).toArray()))
+						Arrays.stream(this.transform(m.getParameters())).map(p -> p.getFirst()).toArray()))
 						.append("\\;");
 			}
 			
-			if (!module.getConditions().isEmpty()) {
-				final Pair<String, DisplayHint> conjunction = formatConjunction(this.transform(module.getConditions()));
+			if (!m.getConditions().isEmpty()) {
+				final Pair<String, DisplayHint> conjunction = formatConjunction(this.transform(m.getConditions()));
 				
 				if (conjunction.getSecond().getPriority() < DisplayHint.IMPLICATION.getPriority()) {
 					resultBuilder.append(pgroup(conjunction.getFirst()));
@@ -327,8 +328,8 @@ public final class TexPrinter implements SessionExporter.Output {
 				resultBuilder.append(" \\rightarrow ");
 			}
 			
-			if (!module.getFacts().isEmpty()) {
-				final Pair<String, DisplayHint> conjunction = formatConjunction(this.transform(module.getFacts()));
+			if (!m.getFacts().isEmpty()) {
+				final Pair<String, DisplayHint> conjunction = formatConjunction(this.transform(m.getFacts()));
 				
 				if (conjunction.getSecond().getPriority() < DisplayHint.IMPLICATION.getPriority()) {
 					resultBuilder.append(pgroup(conjunction.getFirst()));
@@ -391,8 +392,10 @@ public final class TexPrinter implements SessionExporter.Output {
 				return propositions[0];
 			}
 			
-			return DisplayHint.GROUP.hint(pgroup(Tools.join(" \\land ",
-					Arrays.stream(propositions).map(p -> p.getFirst()).toArray())));
+//			return DisplayHint.GROUP.hint(Tools.join(" \\land ",
+//					Arrays.stream(propositions).map(p -> p.getFirst()).toArray()));
+			return DisplayHint.DEFAULT.hint("\\begin{array}{c}" + Tools.join(" \\\\ \\land  \\\\ ",
+					Arrays.stream(propositions).map(p -> p.getFirst()).toArray()) + "\\end{array}");
 		}
 		
 		public static final String join(final String separator, final Iterable<?> elements) {
