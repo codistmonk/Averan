@@ -6,7 +6,7 @@ import static java.awt.Color.BLACK;
 import static java.awt.Color.WHITE;
 import averan.core.Module;
 import averan.core.Session;
-import averan.demos.BreakSessionException;
+import averan.core.Session.BreakException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
@@ -41,7 +41,7 @@ public abstract class SessionScaffold implements Serializable {
 		
 		try {
 			this.buildSession();
-		} catch (final BreakSessionException exception) {
+		} catch (final BreakException exception) {
 			sessionBreakPoint = exception.getStackTrace()[1].toString();
 		} finally {
 			popSession();
