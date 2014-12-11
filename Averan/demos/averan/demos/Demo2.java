@@ -14,9 +14,12 @@ import averan.io.SessionExporter;
 import averan.io.SessionScaffold;
 import averan.modules.Reals;
 import averan.modules.Standard;
+import averan.modules.Reals.RewriteHint;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 
 import net.sourceforge.aprog.tools.Tools;
@@ -71,6 +74,11 @@ public final class Demo2 {
 	}
 	
 	static {
+		Tools.debugPrint(Reals.hints.get("arithmetic").length);
+		Tools.debugPrint(Reals.hints.get("arithmetic"));
+		
+		final List<RewriteHint> matrixArithmeticHints = new ArrayList<>();
+		
 		new SessionScaffold(MODULE) {
 			
 			@Override
@@ -143,7 +151,7 @@ public final class Demo2 {
 				claimTranspositionOfMultiplication();
 				
 				suppose("definition_of_replicated_means",
-						$$("∀X,n (('columnCount'_X=n) → (M_X)=X(U_n)(U_n)ᵀ)"));
+						$$("∀X,n (('columnCount'_X=n) → (M_X)=n X(U_n)(U_n)ᵀ)"));
 				suppose("definition_of_problem_dimension",
 						$$("0<D"));
 				suppose("definition_of_class_count",
