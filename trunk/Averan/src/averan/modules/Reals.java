@@ -6,7 +6,6 @@ import static averan.io.ExpressionParser.$$;
 import static averan.modules.Standard.*;
 import static net.sourceforge.aprog.tools.Tools.append;
 import static net.sourceforge.aprog.tools.Tools.cast;
-
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.IndexFinder;
@@ -535,6 +534,11 @@ public final class Reals {
 		
 		public final boolean isInfinite() {
 			return this.infinite;
+		}
+		
+		@Override
+		public final String toString() {
+			return this.getPropositionName();
 		}
 		
 		/**
