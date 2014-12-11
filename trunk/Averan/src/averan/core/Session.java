@@ -302,10 +302,14 @@ public final class Session implements Serializable {
 		return this;
 	}
 	
-	/**
-	 * {@value}.
-	 */
 	private static final long serialVersionUID = -4545117345944633693L;
+	
+	/**
+	 * @throws BreakException
+	 */
+	public static final void breakSession() {
+		throw new BreakException();
+	}
 	
 	/**
 	 * @author codistmonk (creation 2014-08-02)
@@ -404,9 +408,6 @@ public final class Session implements Serializable {
 			this.currentGoal = simplify(currentGoal);
 		}
 		
-		/**
-		 * {@value}.
-		 */
 		private static final long serialVersionUID = -6558665995824497727L;
 		
 		public static final Expression simplify(final Expression expression) {
@@ -418,6 +419,15 @@ public final class Session implements Serializable {
 			
 			return module.getFacts().get(0);
 		}
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-12-11)
+	 */
+	public static final class BreakException extends RuntimeException {
+		
+		private static final long serialVersionUID = -4772467116337570039L;
 		
 	}
 	
