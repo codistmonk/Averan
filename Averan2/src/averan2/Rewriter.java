@@ -37,7 +37,14 @@ public final class Rewriter implements Visitor<Expression> {
 		Expression result = this.tryReplace(module);
 		
 		if (result == module) {
-			// TODO
+			final List<Expression> newElements = new ArrayList<>();
+			
+			if (this.visitElements(module, newElements)) {
+				result = new Module(module.getContext(), module.getName(),
+						(Composite) newElements.get(Module.PARAMETERS),
+						(Composite) newElements.get(Module.CONDITIONS),
+						(Composite) newElements.get(Module.FACTS));
+			}
 		}
 		
 		return result;
