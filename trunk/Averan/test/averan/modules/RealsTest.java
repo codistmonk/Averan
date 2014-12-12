@@ -117,8 +117,24 @@ public final class RealsTest {
 		trust(Reals.MODULE);
 		
 		try {
-			proveEquality("Demo2.test2", $(forAll("a", "b", "c", "d"),
+			proveEquality("Reals.test2", $(forAll("a", "b", "c", "d"),
 					$(real($("a")), "->", $(real($("b")), "->", $(real($("c")), "->", $(real($("d")), "->",
+							$$("(c+(a-(ba))d)=((ad)-(abd)+c)")))))),
+							Reals.hints.get("arithmetic"));
+		} finally {
+			popSession();
+		}
+	}
+	
+	@Test
+	public final void test3() {
+		pushNewSession(new Module(Standard.MODULE));
+		
+		trust(Reals.MODULE);
+		
+		try {
+			proveEquality("Reals.test3", $(forAll("a", "b", "c", "d"),
+					$(natural($("a")), "->", $(natural($("b")), "->", $(real($("c")), "->", $(real($("d")), "->",
 							$$("(c+(a-(ba))d)=((ad)-(abd)+c)")))))),
 							Reals.hints.get("arithmetic"));
 		} finally {
