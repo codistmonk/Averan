@@ -134,9 +134,9 @@ public final class Demo2 {
 				suppose("definition_of_transposition_columnCount",
 						$$("∀X ('columnCount'_(Xᵀ)='rowCount'_X)"));
 				
-				claimMatrixFactMirroringRealFact("associativity_of_matrix_addition", "associativity_of_addition");
+//				claimMatrixFactMirroringRealFact("associativity_of_matrix_addition", "associativity_of_addition");
 				
-//				BreakSessionException.breakSession();
+//				Session.breakSession();
 				
 				suppose("definition_of_U_rowCount",
 						$$("∀n ('rowCount'_(U_n)=n)"));
