@@ -143,9 +143,23 @@ public abstract class Proof implements Expression {
 		
 		@Override
 		protected final Expression computeConclusion() {
+			final Proposition proposition = this.getContext().findProposition(this.getModuleName());
+			final Module module = proposition.getExpression();
+			final Symbol parameter = module.findParameter(this.getParameter());
+			final Symbol newName = new Symbol(this.getContext(), module.getName().toString() + ".bound");
+			final Composite<Symbol> newParameters = new Composite<>();
 			
-			// TODO Auto-generated method stub
-			return null;
+			for (final Symbol p : module.getParameters().getElements()) {
+				if (p != parameter) {
+					newParameters.getElements().add(p);
+				}
+			}
+			
+			final Rewriter rewriter = new Rewriter(parameter, this.getExpression());
+			final Composite<Condition> newConditions = (Composite<Condition>) module.getConditions().accept(rewriter);
+			final Composite<Fact> newFacts = (Composite<Fact>) module.getFacts().accept(rewriter);
+			
+			return new Module(this.getContext(), newName, newParameters, newConditions, newFacts);
 		}
 		
 		private static final long serialVersionUID = 4047331031987916386L;

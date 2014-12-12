@@ -29,6 +29,16 @@ public final class Module implements Expression {
 		this.facts = facts;
 	}
 	
+	public final Symbol findParameter(final Symbol name) {
+		for (final Symbol parameter : this.getParameters().getElements()) {
+			if (name.equals(parameter)) {
+				return parameter;
+			}
+		}
+		
+		return null;
+	}
+	
 	public final Condition findCondition(final Symbol name) {
 		final Condition result = find(name, this.getConditions().getElements());
 		
