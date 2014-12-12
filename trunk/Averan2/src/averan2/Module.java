@@ -6,6 +6,8 @@ package averan2;
  */
 public final class Module implements Expression {
 	
+	private final Module context;
+	
 	private final Symbol name;
 	
 	private final Composite parameters;
@@ -14,11 +16,16 @@ public final class Module implements Expression {
 	
 	private final Composite facts;
 	
-	public Module(final Symbol name) {
+	public Module(final Module context, final Symbol name) {
+		this.context = context;
 		this.name = name;
 		this.parameters = new Composite();
 		this.conditions = new Composite();
 		this.facts = new Composite();
+	}
+	
+	public final Module getContext() {
+		return this.context;
 	}
 	
 	public final Symbol getName() {
@@ -67,7 +74,7 @@ public final class Module implements Expression {
 	
 	private static final long serialVersionUID = 5905556222810031902L;
 	
-	public static final Module ROOT = new Module(new Symbol(null, "Root"));
+	public static final Module ROOT = new Module(null, new Symbol(null, "Root"));
 	
 	public static final Symbol FOR_ALL = new Symbol(ROOT, "∀");
 	
