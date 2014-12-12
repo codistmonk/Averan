@@ -1,5 +1,10 @@
 package averan2;
 
+import averan2.Proof.Admit;
+
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author codistmonk (creation 2014-12-12)
  */
@@ -24,78 +29,114 @@ public final class Rewriter implements Visitor<Expression> {
 	
 	@Override
 	public final Expression visit(final Symbol symbol) {
-		if (this.getPattern().equals(symbol)) {
-			return this.getReplacement();
-		}
-		
-		return symbol;
+		return this.tryReplace(symbol);
 	}
 	
 	@Override
 	public final Expression visit(final Module module) {
-		if (this.getPattern().equals(module)) {
-			return this.getReplacement();
+		Expression result = this.tryReplace(module);
+		
+		if (result == module) {
+			// TODO
 		}
 		
-		
-		// TODO Auto-generated method stub
-		return null;
+		return result;
 	}
 	
 	@Override
 	public final Expression visit(final Composite composite) {
-		if (this.getPattern().equals(composite)) {
-			return this.getReplacement();
+		Expression result = this.tryReplace(composite);
+		
+		if (result == null) {
+			final Composite newComposite = new Composite();
+			
+			if (this.visitElements(composite, newComposite.getExpressions())) {
+				result = newComposite;
+			}
 		}
 		
-		final Composite newComposite = new Composite();
-		boolean returnNewComposite = false;
-		
-		for (final Expression expression : composite) {
-			final Expression newExpression = expression.accept(this);
-			
-			newComposite.getExpressions().add(newExpression);
-			
-			returnNewComposite |= expression != newExpression;
-		}
-		
-		return returnNewComposite ? newComposite : composite;
+		return result;
 	}
 	
 	@Override
 	public final Expression visit(final Condition condition) {
-		if (this.getPattern().equals(condition)) {
-			return this.getReplacement();
+		Expression result = this.tryReplace(condition);
+		
+		if (result == condition) {
+			final List<Expression> newElements = new ArrayList<>();
+			
+			if (this.visitElements(condition, newElements)) {
+				result = new Condition((Symbol) newElements.get(Condition.NAME), newElements.get(Condition.EXPRESSION));
+			}
 		}
-		// TODO Auto-generated method stub
-		return null;
+		
+		return result;
 	}
 	
 	@Override
 	public final Expression visit(final Fact fact) {
-		if (this.getPattern().equals(fact)) {
-			return this.getReplacement();
+		Expression result = this.tryReplace(fact);
+		
+		if (result == fact) {
+			final List<Expression> newElements = new ArrayList<>();
+			
+			if (this.visitElements(fact, newElements)) {
+				result = new Fact((Symbol) newElements.get(Fact.NAME), (Proof) newElements.get(Fact.PROOF));
+			}
 		}
-		// TODO Auto-generated method stub
-		return null;
+		
+		return result;
 	}
 	
 	@Override
 	public final Expression visit(final Proof.Admit admit) {
-		if (this.getPattern().equals(admit)) {
-			return this.getReplacement();
+		Expression result = this.tryReplace(admit);
+		
+		if (result == admit) {
+			final List<Expression> newElements = new ArrayList<>();
+			
+			if (this.visitElements(admit, newElements)) {
+				result = new Proof.Admit(admit.getContext(), newElements.get(Admit.CONCLUSION));
+			}
 		}
-		// TODO Auto-generated method stub
-		return null;
+		
+		return result;
 	}
 	
 	@Override
 	public final Expression visit(final Proof.Bind bind) {
-		if (this.getPattern().equals(bind)) {
-			return this.getReplacement();
+		Expression result = this.tryReplace(bind);
+		
+		if (result == bind) {
+			final List<Expression> newElements = new ArrayList<>();
+			
+			if (this.visitElements(bind, newElements)) {
+				result = new Proof.Bind(bind.getContext(),
+						(Symbol) newElements.get(Proof.Bind.MODULE_NAME),
+						(Symbol) newElements.get(Proof.Bind.PARAMETER),
+						newElements.get(Proof.Bind.EXPRESSION));
+			}
 		}
-		// TODO Auto-generated method stub
-		return null;
+		
+		return result;
+	}
+	
+	private final boolean visitElements(final Expression expression, final List<Expression> newElements) {
+		boolean result = false;
+		
+		for (final Expression element : expression) {
+			final Expression newElement = element.accept(this);
+			
+			newElements.add(newElement);
+			
+			result |= element != newElement;
+		}
+		
+		return result;
+	}
+	
+	private final Expression tryReplace(final Expression expression) {
+		return this.getPattern().equals(expression) ? this.getReplacement() : expression;
 	}
 	
 	private static final long serialVersionUID = -4150340599391663242L;

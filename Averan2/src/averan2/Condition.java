@@ -17,9 +17,9 @@ public final class Condition extends Proposition.Default {
 	@Override
 	public final <E extends Expression> E getElement(final int index) {
 		switch (index) {
-		case 0:
+		case NAME:
 			return (E) this.getName();
-		case 1:
+		case EXPRESSION:
 			return this.getExpression();
 		}
 		
