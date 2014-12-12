@@ -21,7 +21,7 @@ public final class Symbol implements Expression {
 	
 	@Override
 	public final int getElementCount() {
-		return 0;
+		return ELEMENT_COUNT;
 	}
 	
 	@Override
@@ -40,5 +40,7 @@ public final class Symbol implements Expression {
 	}
 	
 	private static final long serialVersionUID = 2799712160346889585L;
+	
+	public static final int ELEMENT_COUNT = 0;
 	
 }

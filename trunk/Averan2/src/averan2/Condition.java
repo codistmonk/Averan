@@ -11,7 +11,7 @@ public final class Condition extends Proposition.Default {
 	
 	@Override
 	public final int getElementCount() {
-		return 2;
+		return ELEMENT_COUNT;
 	}
 	
 	@Override
@@ -32,5 +32,7 @@ public final class Condition extends Proposition.Default {
 	}
 	
 	private static final long serialVersionUID = 2284891648674226439L;
+	
+	public static final int ELEMENT_COUNT = 2;
 	
 }
