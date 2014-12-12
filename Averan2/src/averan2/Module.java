@@ -10,23 +10,45 @@ public final class Module implements Expression {
 	
 	private final Symbol name;
 	
-	private final Composite parameters;
+	private final Composite<Symbol> parameters;
 	
-	private final Composite conditions;
+	private final Composite<Condition> conditions;
 	
-	private final Composite facts;
+	private final Composite<Fact> facts;
 	
 	public Module(final Module context, final Symbol name) {
-		this(context, name, new Composite(), new Composite(), new Composite());
+		this(context, name, new Composite<>(), new Composite<>(), new Composite<>());
 	}
 	
-	public Module(final Module context, final Symbol name, final Composite parameters,
-			final Composite conditions, final Composite facts) {
+	public Module(final Module context, final Symbol name, final Composite<Symbol> parameters,
+			final Composite<Condition> conditions, final Composite<Fact> facts) {
 		this.context = context;
 		this.name = name;
 		this.parameters = parameters;
 		this.conditions = conditions;
 		this.facts = facts;
+	}
+	
+	public final Condition findCondition(final Symbol name) {
+		final Condition result = find(name, this.getConditions().getElements());
+		
+		return result == null && this.getContext() != null ? this.getContext().findCondition(name) : result;
+	}
+	
+	public final Fact findFact(final Symbol name) {
+		final Fact result = find(name, this.getFacts().getElements());
+		
+		return result == null && this.getContext() != null ? this.getContext().findFact(name) : result;
+	}
+	
+	public final Proposition findProposition(final Symbol name) {
+		Proposition result = this.findFact(name);
+		
+		if (result == null) {
+			result = this.findCondition(name);
+		}
+		
+		return result;
 	}
 	
 	public final Module getContext() {
@@ -37,15 +59,15 @@ public final class Module implements Expression {
 		return this.name;
 	}
 	
-	public final Composite getParameters() {
+	public final Composite<Symbol> getParameters() {
 		return this.parameters;
 	}
 	
-	public final Composite getConditions() {
+	public final Composite<Condition> getConditions() {
 		return this.conditions;
 	}
 	
-	public final Composite getFacts() {
+	public final Composite<Fact> getFacts() {
 		return this.facts;
 	}
 	
@@ -98,5 +120,15 @@ public final class Module implements Expression {
 	public static final int FACTS = 4;
 	
 	public static final int ELEMENT_COUNT = 5;
+	
+	public static final <E extends Proposition> E find(final Symbol name, final Iterable<E> propositions) {
+		for (final E proposition : propositions) {
+			if (name.equals(proposition.getName())) {
+				return proposition;
+			}
+		}
+		
+		return null;
+	}
 	
 }

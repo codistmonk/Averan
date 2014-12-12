@@ -41,9 +41,9 @@ public final class Rewriter implements Visitor<Expression> {
 			
 			if (this.visitElements(module, newElements)) {
 				result = new Module(module.getContext(), module.getName(),
-						(Composite) newElements.get(Module.PARAMETERS),
-						(Composite) newElements.get(Module.CONDITIONS),
-						(Composite) newElements.get(Module.FACTS));
+						(Composite<Symbol>) newElements.get(Module.PARAMETERS),
+						(Composite<Condition>) newElements.get(Module.CONDITIONS),
+						(Composite<Fact>) newElements.get(Module.FACTS));
 			}
 		}
 		
@@ -51,13 +51,13 @@ public final class Rewriter implements Visitor<Expression> {
 	}
 	
 	@Override
-	public final Expression visit(final Composite composite) {
+	public final Expression visit(final Composite<?> composite) {
 		Expression result = this.tryReplace(composite);
 		
 		if (result == null) {
-			final Composite newComposite = new Composite();
+			final Composite newComposite = new Composite<>();
 			
-			if (this.visitElements(composite, newComposite.getExpressions())) {
+			if (this.visitElements(composite, newComposite.getElements())) {
 				result = newComposite;
 			}
 		}

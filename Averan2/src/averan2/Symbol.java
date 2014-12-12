@@ -1,5 +1,8 @@
 package averan2;
 
+import static net.sourceforge.aprog.tools.Tools.cast;
+import net.sourceforge.aprog.tools.Tools;
+
 
 /**
  * @author codistmonk (creation 2014-12-11)
@@ -32,6 +35,18 @@ public final class Symbol implements Expression {
 	@Override
 	public final <T> T accept(final Visitor<T> visitor) {
 		return visitor.visit(this);
+	}
+	
+	@Override
+	public final int hashCode() {
+		return this.getContext().hashCode() + this.toString().hashCode();
+	}
+	
+	@Override
+	public final boolean equals(final Object object) {
+		final Symbol that = cast(this.getClass(), object);
+		
+		return that != null && this.getContext() == that.getContext() && this.toString().equals(that.toString());
 	}
 	
 	@Override
