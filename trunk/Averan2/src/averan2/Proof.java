@@ -143,6 +143,7 @@ public abstract class Proof implements Expression {
 		
 		@Override
 		protected final Expression computeConclusion() {
+			
 			// TODO Auto-generated method stub
 			return null;
 		}

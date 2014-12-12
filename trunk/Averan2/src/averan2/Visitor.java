@@ -13,7 +13,7 @@ public abstract interface Visitor<T> extends Serializable {
 	
 	public abstract T visit(Module module);
 	
-	public abstract T visit(Composite composite);
+	public abstract T visit(Composite<?> composite);
 	
 	public abstract T visit(Condition condition);
 	

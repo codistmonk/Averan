@@ -6,27 +6,27 @@ import java.util.List;
 /**
  * @author codistmonk (creation 2014-12-11)
  */
-public final class Composite implements Expression {
+public final class Composite<E extends Expression> implements Expression {
 	
-	private final List<Expression> expressions;
+	private final List<E> elements;
 	
 	public Composite() {
-		this.expressions = new ArrayList<>();
+		this.elements = new ArrayList<>();
 	}
 	
-	public final List<Expression> getExpressions() {
-		return this.expressions;
+	public final List<E> getElements() {
+		return this.elements;
 	}
 	
 	@Override
 	public final int getElementCount() {
-		return this.getExpressions().size();
+		return this.getElements().size();
 	}
 	
 	@Override
-	public <E extends Expression> E getElement(final int index) {
+	public final E getElement(final int index) {
 		if (0 <= index && index < this.getElementCount()) {
-			return (E) this.getExpressions().get(index);
+			return this.getElements().get(index);
 		}
 		
 		return null;
