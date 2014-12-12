@@ -46,21 +46,21 @@ public final class Module implements Expression {
 	
 	@Override
 	public final int getElementCount() {
-		return 5;
+		return ELEMENT_COUNT;
 	}
 	
 	@Override
 	public final <E extends Expression> E getElement(final int index) {
 		switch (index) {
-		case 0:
+		case HELPER_1:
 			return (E) FOR_ALL;
-		case 1:
+		case PARAMETERS:
 			return (E) this.getParameters();
-		case 2:
+		case CONDITIONS:
 			return (E) this.getConditions();
-		case 3:
+		case HELPER_2:
 			return (E) IMPLIES;
-		case 4:
+		case FACTS:
 			return (E) this.getFacts();
 		}
 		
@@ -81,5 +81,17 @@ public final class Module implements Expression {
 	public static final Symbol IMPLIES = new Symbol(ROOT, "→");
 	
 	public static final Symbol EQUALS = new Symbol(ROOT, "=");
+	
+	public static final int HELPER_1 = 0;
+	
+	public static final int PARAMETERS = 1;
+	
+	public static final int CONDITIONS = 2;
+	
+	public static final int HELPER_2 = 3;
+	
+	public static final int FACTS = 4;
+	
+	public static final int ELEMENT_COUNT = 5;
 	
 }

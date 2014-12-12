@@ -29,6 +29,8 @@ public abstract class Proof implements Expression {
 	
 	private static final long serialVersionUID = -8318551923110061376L;
 	
+	public static final int TYPE = 0;
+	
 	/**
 	 * @author codistmonk (creation 2014-12-12)
 	 */
@@ -43,15 +45,15 @@ public abstract class Proof implements Expression {
 		
 		@Override
 		public final int getElementCount() {
-			return 0;
+			return ELEMENT_COUNT;
 		}
 		
 		@Override
 		public final <E extends Expression> E getElement(final int index) {
 			switch (index) {
-			case 0:
+			case TYPE:
 				return (E) ADMIT;
-			case 1:
+			case CONCLUSION:
 				return this.getConclusion();
 			}
 			
@@ -71,6 +73,10 @@ public abstract class Proof implements Expression {
 		private static final long serialVersionUID = 2744181863226646658L;
 		
 		public static final Symbol ADMIT = new Symbol(Module.ROOT, " Admit: ");
+		
+		public static final int CONCLUSION = 1;
+		
+		public static final int ELEMENT_COUNT = 2;
 		
 	}
 	
@@ -107,23 +113,23 @@ public abstract class Proof implements Expression {
 		
 		@Override
 		public final int getElementCount() {
-			return 6;
+			return ELEMENT_COUNT;
 		}
 		
 		@Override
 		public final <E extends Expression> E getElement(final int index) {
 			switch (index) {
-			case 0:
+			case TYPE:
 				return (E) BIND;
-			case 1:
+			case MODULE_NAME:
 				return (E) this.getModuleName();
-			case 2:
+			case HELPER_1:
 				return (E) DOT;
-			case 3:
+			case PARAMETER:
 				return (E) this.getParameter();
-			case 4:
+			case HELPER_2:
 				return (E) USING;
-			case 5:
+			case EXPRESSION:
 				return (E) this.getExpression();
 			}
 			
@@ -148,6 +154,18 @@ public abstract class Proof implements Expression {
 		public static final Symbol DOT = new Symbol(Module.ROOT, ".");
 		
 		public static final Symbol USING = new Symbol(Module.ROOT, " Using: ");
+		
+		public static final int MODULE_NAME = 1;
+		
+		public static final int HELPER_1 = 2;
+		
+		public static final int PARAMETER = 3;
+		
+		public static final int HELPER_2 = 4;
+		
+		public static final int EXPRESSION = 5;
+		
+		public static final int ELEMENT_COUNT = 6;
 		
 	}
 	

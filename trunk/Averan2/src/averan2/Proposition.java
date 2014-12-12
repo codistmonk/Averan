@@ -9,6 +9,10 @@ public abstract interface Proposition extends Expression {
 	
 	public abstract <E extends Expression> E getExpression();
 	
+	public static final int NAME = 0;
+	
+	public static final int EXPRESSION = 1;
+	
 	/**
 	 * @author codistmonk (creation 2014-12-12)
 	 */

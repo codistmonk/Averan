@@ -24,11 +24,11 @@ public final class Fact extends Proposition.Default {
 	@Override
 	public final <E extends Expression> E getElement(final int index) {
 		switch (index) {
-		case 0:
+		case NAME:
 			return (E) this.getName();
-		case 1:
+		case EXPRESSION:
 			return this.getExpression();
-		case 2:
+		case PROOF:
 			return (E) this.getProof();
 		}
 		
@@ -41,5 +41,7 @@ public final class Fact extends Proposition.Default {
 	}
 	
 	private static final long serialVersionUID = 2284891648674226439L;
+	
+	public static final int PROOF = 2;
 	
 }
