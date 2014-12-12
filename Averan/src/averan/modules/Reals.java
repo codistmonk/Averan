@@ -46,6 +46,8 @@ public final class Reals {
 		pushNewSession(MODULE);
 		
 		try {
+			suppose("naturals_are_reals", $$("∀x ((x∈ℕ) → (x∈ℝ))"));
+			
 			suppose("type_of_addition", $$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x+y)∈ℝ)))"));
 			suppose("commutativity_of_addition", $$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x+y)=(y+x))))"));
 			suppose("associativity_of_addition", $$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → (x+(y+z)=x+y+z))))"));
@@ -175,6 +177,10 @@ public final class Reals {
 		} finally {
 			popSession();
 		}
+	}
+	
+	public static final Expression natural(final Expression expression) {
+		return $(expression, "∈", "ℕ");
 	}
 	
 	public static final Expression real(final Expression expression) {
