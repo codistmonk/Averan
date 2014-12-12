@@ -25,11 +25,6 @@ public abstract class Proof implements Expression {
 		return (E) this.conclusion;
 	}
 	
-	@Override
-	public final <T> T accept(final Visitor<T> visitor) {
-		return visitor.visit(this);
-	}
-	
 	protected abstract Expression computeConclusion();
 	
 	private static final long serialVersionUID = -8318551923110061376L;
@@ -61,6 +56,11 @@ public abstract class Proof implements Expression {
 			}
 			
 			return null;
+		}
+		
+		@Override
+		public final <T> T accept(final Visitor<T> visitor) {
+			return visitor.visit(this);
 		}
 		
 		@Override
@@ -128,6 +128,11 @@ public abstract class Proof implements Expression {
 			}
 			
 			return null;
+		}
+		
+		@Override
+		public final <T> T accept(final Visitor<T> visitor) {
+			return visitor.visit(this);
 		}
 		
 		@Override

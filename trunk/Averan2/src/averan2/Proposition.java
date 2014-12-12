@@ -33,11 +33,6 @@ public abstract interface Proposition extends Expression {
 			return (E) this.expression;
 		}
 		
-		@Override
-		public final <T> T accept(final Visitor<T> visitor) {
-			return visitor.visit(this);
-		}
-		
 		private static final long serialVersionUID = 8044074110246201631L;
 		
 	}
