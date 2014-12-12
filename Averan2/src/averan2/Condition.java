@@ -26,6 +26,11 @@ public final class Condition extends Proposition.Default {
 		return null;
 	}
 	
+	@Override
+	public final <T> T accept(final Visitor<T> visitor) {
+		return visitor.visit(this);
+	}
+	
 	private static final long serialVersionUID = 2284891648674226439L;
 	
 }

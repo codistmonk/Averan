@@ -15,8 +15,12 @@ public abstract interface Visitor<T> extends Serializable {
 	
 	public abstract T visit(Composite composite);
 	
-	public abstract T visit(Proposition proposition);
+	public abstract T visit(Condition condition);
 	
-	public abstract T visit(Proof proof);
+	public abstract T visit(Fact fact);
+	
+	public abstract T visit(Proof.Admit admit);
+	
+	public abstract T visit(Proof.Bind bind);
 	
 }
