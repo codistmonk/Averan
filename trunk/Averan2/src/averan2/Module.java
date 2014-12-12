@@ -17,11 +17,16 @@ public final class Module implements Expression {
 	private final Composite facts;
 	
 	public Module(final Module context, final Symbol name) {
+		this(context, name, new Composite(), new Composite(), new Composite());
+	}
+	
+	public Module(final Module context, final Symbol name, final Composite parameters,
+			final Composite conditions, final Composite facts) {
 		this.context = context;
 		this.name = name;
-		this.parameters = new Composite();
-		this.conditions = new Composite();
-		this.facts = new Composite();
+		this.parameters = parameters;
+		this.conditions = conditions;
+		this.facts = facts;
 	}
 	
 	public final Module getContext() {
