@@ -18,7 +18,7 @@ public final class Fact extends Proposition.Default {
 	
 	@Override
 	public final int getElementCount() {
-		return 3;
+		return ELEMENT_COUNT;
 	}
 	
 	@Override
@@ -43,5 +43,7 @@ public final class Fact extends Proposition.Default {
 	private static final long serialVersionUID = 2284891648674226439L;
 	
 	public static final int PROOF = 2;
+	
+	public static final int ELEMENT_COUNT = 3;
 	
 }
