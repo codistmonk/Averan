@@ -37,6 +37,11 @@ public abstract interface Proposition extends Expression {
 			return (E) this.expression;
 		}
 		
+		@Override
+		public final String toString() {
+			return this.getName() + ":" + this.getExpression();
+		}
+		
 		private static final long serialVersionUID = 8044074110246201631L;
 		
 	}

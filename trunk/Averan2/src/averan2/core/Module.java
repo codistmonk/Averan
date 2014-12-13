@@ -29,9 +29,20 @@ public final class Module implements Expression {
 		this.facts = facts;
 	}
 	
-	public final Symbol findParameter(final Symbol name) {
+	public final Symbol parameter(final Object name) {
+		Symbol result = this.findParameter(name);
+		
+		if (result == null) {
+			result = new Symbol(this, name.toString());
+			this.getParameters().getElements().add(result);
+		}
+		
+		return result;
+	}
+	
+	public final Symbol findParameter(final Object name) {
 		for (final Symbol parameter : this.getParameters().getElements()) {
-			if (name.equals(parameter)) {
+			if (name.toString().equals(parameter.toString())) {
 				return parameter;
 			}
 		}
@@ -107,6 +118,11 @@ public final class Module implements Expression {
 	@Override
 	public final <T> T accept(final Visitor<T> visitor) {
 		return visitor.visit(this);
+	}
+	
+	@Override
+	public final String toString() {
+		return FOR_ALL + "" + this.getParameters() + " " + this.getConditions() + IMPLIES + this.getFacts();
 	}
 	
 	private static final long serialVersionUID = 5905556222810031902L;
