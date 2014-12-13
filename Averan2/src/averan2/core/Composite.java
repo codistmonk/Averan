@@ -37,6 +37,11 @@ public final class Composite<E extends Expression> implements Expression {
 		return visitor.visit(this);
 	}
 	
+	@Override
+	public final String toString() {
+		return this.getElements().toString();
+	}
+	
 	private static final long serialVersionUID = 1243299481185522051L;
 	
 }
