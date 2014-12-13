@@ -4,7 +4,7 @@ import static averan.core.ExpressionTools.$;
 import static averan.core.SessionTools.*;
 import static averan.io.ExpressionParser.$$;
 import static averan.modules.Reals.real;
-import static averan.modules.Standard.justificationFor;
+import static averan.modules.Standard.*;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -69,6 +69,23 @@ public final class RealMatrices {
 			suppose("definition_of_transposition_columnCount",
 					$$("∀X ('columnCount'_(Xᵀ)='rowCount'_X)"));
 			
+			claim("matrix_element_is_real",
+					$$("∀X ((X∈≀M) → (∀i,j ((X)_(i,j)∈ℝ)))"));
+			{
+				introduce();
+				introduce();
+				introduce();
+				introduce();
+				
+				final Symbol x = parameter("X");
+				bind("type_of_matrices", x);
+				rewrite(conditionName(-1), factName(-1));
+				bind("definition_of_matrices", x, $("rowCount", "_", x), $("columnCount", "_", x));
+				rewrite(factName(-2), factName(-1));
+				bind(factName(-1));
+				bind(factName(-1), parameter("i"), parameter("j"));
+			}
+			
 			claimMatrixFactMirroringRealFact("associativity_of_matrix_addition", "associativity_of_addition");
 			
 			new SessionExporter(session()).exportSession();
@@ -114,20 +131,74 @@ public final class RealMatrices {
 				final Composite g = (Composite) s.getCurrentGoal();
 				Tools.debugPrint(g);
 				s.bind("definition_of_matrix_equality", (Expression) g.get(0), g.get(2));
-				Expression lastFact = s.getFact(-1);
 				
-				while (lastFact instanceof Module) {
-					final Module lastModule = (Module) lastFact;
-					Reals.proveWithBindAndApply(s, lastModule.getConditions().get(0));
-					s.apply(s.getFactName(-2), s.getFactName(-1));
-					lastFact = s.getFact(-1);
+				{
+					Expression lastFact = s.getFact(-1);
+					
+					while (lastFact instanceof Module) {
+						final Module lastModule = (Module) lastFact;
+						Reals.proveWithBindAndApply(s, lastModule.getConditions().get(0));
+						s.apply(s.getFactName(-2), s.getFactName(-1));
+						lastFact = s.getFact(-1);
+					}
+					
+					s.claim(((Composite) lastFact).get(2));
 				}
 				
-				Tools.debugPrint(justificationFor(s, e));
+				{
+					s.introduce();
+					s.introduce();
+					
+					final Symbol x = s.getParameter("X");
+					final Symbol y = s.getParameter("Y");
+					final Symbol z = s.getParameter("Z");
+					final Symbol i = s.getParameter("i");
+					final Symbol j = s.getParameter("j");
+					final Expression xij = $(x, "_", $(i, ",", j));
+					final Expression yij = $(y, "_", $(i, ",", j));
+					final Expression zij = $(z, "_", $(i, ",", j));
+					final Expression xy = $(x, "+", y);
+					final Expression yz = $(y, "+", z);
+					
+					s.bind("definition_of_matrix_addition", x, yz, i, j);
+					s.bind("definition_of_matrix_addition", y, z, i, j);
+					s.rewrite(s.getFactName(-2), s.getFactName(-1));
+					final String leftExpansion = s.getFactName(-1);
+					
+					s.bind("definition_of_matrix_addition", xy, z, i, j);
+					s.bind("definition_of_matrix_addition", x, y, i, j);
+					s.rewrite(s.getFactName(-2), s.getFactName(-1));
+					final String rightExpansion = s.getFactName(-1);
+					
+					s.bind(realFactName, xij, yij, zij);
+					{
+						s.bind("matrix_element_is_real", x);
+						s.apply(s.getFactName(-1), matrixFactName + ".1");
+						s.bind(s.getFactName(-1), i, j);
+						s.apply(s.getFactName(-4), s.getFactName(-1));
+						
+						s.bind("matrix_element_is_real", y);
+						s.apply(s.getFactName(-1), matrixFactName + ".2");
+						s.bind(s.getFactName(-1), i, j);
+						s.apply(s.getFactName(-4), s.getFactName(-1));
+						
+						s.bind("matrix_element_is_real", z);
+						s.apply(s.getFactName(-1), matrixFactName + ".3");
+						s.bind(s.getFactName(-1), i, j);
+						s.apply(s.getFactName(-4), s.getFactName(-1));
+					}
+					
+					s.rewrite(leftExpansion, s.getFactName(-1));
+					rewriteRight(s, s.getFactName(-1), rightExpansion);
+				}
+				
+				rewriteRight(s, s.getFactName(-1), s.getFactName(-2));
 			}
 		}
 		
-		new SessionExporter(s).exportSession();
+		session.getCurrentModule().new Claim(matrixFactName, s.getCurrentModule()).execute();
+		session.tryToPop();
+//		new SessionExporter(s).exportSession();
 	}
 	
 }
