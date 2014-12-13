@@ -1,4 +1,4 @@
-package averan2;
+package averan2.core;
 
 import static net.sourceforge.aprog.tools.Tools.cast;
 import net.sourceforge.aprog.tools.Tools;

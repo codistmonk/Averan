@@ -1,19 +1,12 @@
-package averan2;
+package averan2.core;
 
 /**
  * @author codistmonk (creation 2014-12-12)
  */
-public final class Fact extends Proposition.Default {
+public final class Condition extends Proposition.Default {
 	
-	private final Proof proof;
-	
-	public Fact(final Symbol name, final Proof proof) {
-		super(name, proof.getConclusion());
-		this.proof = proof;
-	}
-	
-	public final Proof getProof() {
-		return this.proof;
+	public Condition(final Symbol name, final Expression expression) {
+		super(name, expression);
 	}
 	
 	@Override
@@ -28,8 +21,6 @@ public final class Fact extends Proposition.Default {
 			return (E) this.getName();
 		case EXPRESSION:
 			return this.getExpression();
-		case PROOF:
-			return (E) this.getProof();
 		}
 		
 		return null;
@@ -42,8 +33,6 @@ public final class Fact extends Proposition.Default {
 	
 	private static final long serialVersionUID = 2284891648674226439L;
 	
-	public static final int PROOF = 2;
-	
-	public static final int ELEMENT_COUNT = 3;
+	public static final int ELEMENT_COUNT = 2;
 	
 }

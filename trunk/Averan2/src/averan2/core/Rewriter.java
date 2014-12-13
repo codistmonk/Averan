@@ -1,6 +1,6 @@
-package averan2;
+package averan2.core;
 
-import averan2.Proof.Admit;
+import averan2.core.Proof.Admit;
 
 import java.util.ArrayList;
 import java.util.List;

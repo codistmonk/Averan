@@ -1,4 +1,4 @@
-package averan2;
+package averan2.core;
 
 
 /**
