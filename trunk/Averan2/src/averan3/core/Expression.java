@@ -18,6 +18,8 @@ public abstract interface Expression extends Serializable {
 		
 		public abstract Value visit(Module module);
 		
+		public abstract Value visit(Substitution substitution);
+		
 		public abstract Value visit(Module.Symbol symbol);
 		
 		public abstract Value visit(Module.Variable variable);
