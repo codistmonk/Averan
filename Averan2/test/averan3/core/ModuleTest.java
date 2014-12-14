@@ -15,14 +15,20 @@ public final class ModuleTest {
 	
 	@Test
 	public final void test1() {
-		final Module module1 = new Module();
-		
-		module1.setCondition(module1.new Variable("X"));
-		module1.getFacts().add(new Module(module1, module1.getCondition(), Arrays.asList(module1.getCondition())));
+		final Module module1 = newTautology();
 		
 		Tools.debugPrint(module1);
 		
 		fail("TODO");
+	}
+	
+	public static final Module newTautology() {
+		final Module result = new Module();
+		
+		result.setCondition(result.new Variable("P"));
+		result.getFacts().add(new Module(result, result.getCondition(), Arrays.asList(result.getCondition())));
+		
+		return result;
 	}
 	
 }
