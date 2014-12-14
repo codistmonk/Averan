@@ -160,10 +160,6 @@ public final class Module implements Expression {
 				return true;
 			}
 			
-			if (object instanceof Variable) {
-				return object.equals(this);
-			}
-			
 			final Symbol that = cast(this.getClass(), object);
 			
 			return that != null && this.getContext() == that.getContext() && this.toString().equals(that.toString());
@@ -196,6 +192,12 @@ public final class Module implements Expression {
 		
 		public final Expression getMatch() {
 			return this.getContext().getBindings().get(this.name);
+		}
+		
+		public final Variable clearBinding() {
+			this.getContext().getBindings().remove(this.name);
+			
+			return this;
 		}
 		
 		@Override
@@ -272,6 +274,11 @@ public final class Module implements Expression {
 		}
 		
 		@Override
+		public final Expression visit(final Substitution subsitution) {
+			return subsitution;
+		}
+		
+		@Override
 		public final Expression visit(final Symbol symbol) {
 			return symbol;
 		}
@@ -305,6 +312,17 @@ public final class Module implements Expression {
 			module.getFacts().forEach(fact -> fact.accept(this));
 			
 			return module;
+		}
+		
+		@Override
+		public final Substitution visit(final Substitution substitution) {
+			substitution.getExpression().accept(this);
+			substitution.getBindings().forEach(binding -> {
+				binding.getFirst().accept(this);
+				binding.getSecond().accept(this);
+			});
+			
+			return substitution;
 		}
 		
 		@Override
