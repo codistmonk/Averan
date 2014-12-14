@@ -17,6 +17,8 @@ public abstract interface Expression extends Serializable {
 	
 	public abstract <Value> Value accept(Visitor<Value> visitor);
 	
+	public abstract Module getContext();
+	
 	/**
 	 * @author codistmonk (creation 2014-12-14)
 	 */
@@ -45,6 +47,7 @@ public abstract interface Expression extends Serializable {
 			this.bindings = new HashMap<>();
 		}
 		
+		@Override
 		public final Module getContext() {
 			return this.context;
 		}
@@ -130,7 +133,7 @@ public abstract interface Expression extends Serializable {
 			
 			return this.getCondition() + "->" + this.getFacts();
 		}
-
+		
 		/**
 		 * @author codistmonk (creation 2014-12-14)
 		 */
@@ -142,6 +145,7 @@ public abstract interface Expression extends Serializable {
 				this.string = string;
 			}
 			
+			@Override
 			public final Module getContext() {
 				return Module.this;
 			}
@@ -195,6 +199,7 @@ public abstract interface Expression extends Serializable {
 				this.name = name;
 			}
 			
+			@Override
 			public final Module getContext() {
 				return Module.this;
 			}
