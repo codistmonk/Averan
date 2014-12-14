@@ -4,7 +4,6 @@ import static org.junit.Assert.*;
 
 import java.util.Arrays;
 
-import averan3.core.Expression.Module;
 import net.sourceforge.aprog.tools.Tools;
 
 import org.junit.Test;
@@ -12,7 +11,7 @@ import org.junit.Test;
 /**
  * @author codistmonk (creation 2014-12-14)
  */
-public final class ExpressionTest {
+public final class ModuleTest {
 	
 	@Test
 	public final void test1() {
