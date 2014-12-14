@@ -12,7 +12,7 @@ import org.junit.Test;
 /**
  * @author codistmonk (creation 2014-12-14)
  */
-public class ExpressionTest {
+public final class ExpressionTest {
 	
 	@Test
 	public final void test1() {
