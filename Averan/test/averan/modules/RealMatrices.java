@@ -87,7 +87,7 @@ public final class RealMatrices {
 				bind(factName(-1), parameter("i"), parameter("j"));
 			}
 			
-			claimMatrixFactMirroringRealFact("associativity_of_matrix_addition", "associativity_of_addition");
+			claimAssociativityOfMatrixAddition();
 			claimCommutativityOfMatrixAddition();
 			
 			new SessionExporter(session()).exportSession();
@@ -203,11 +203,10 @@ public final class RealMatrices {
 		return $(expression, "∈", "≀M");
 	}
 	
-	public static final void claimMatrixFactMirroringRealFact(final String matrixFactName, final String realFactName) {
-		claimMatrixFactMirroringRealFact(session(), matrixFactName, realFactName);
-	}
-	
-	public static final void claimMatrixFactMirroringRealFact(final Session session, final String matrixFactName, final String realFactName) {
+	public static final void claimAssociativityOfMatrixAddition() {
+		final Session session = session();
+		final String matrixFactName = "associativity_of_matrix_addition";
+		final String realFactName = "associativity_of_addition";
 		final Session s = new Session(new Module(session.getCurrentModule(), matrixFactName));
 		final Module realFact = ((Module) session.getProposition(realFactName)).canonical();
 		final Collection<Expression> remainingConditions = new HashSet<>(realFact.getConditions());
