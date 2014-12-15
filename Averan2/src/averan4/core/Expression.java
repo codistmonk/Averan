@@ -112,6 +112,46 @@ public abstract interface Expression extends Serializable {
 			return this;
 		}
 		
+		public final boolean isApplication() {
+			if (this.getElements().size() != 3) {
+				return false;
+			}
+			
+			if (!APPLY.equals(this.getElements().get(0))) {
+				return false;
+			}
+			
+			final Module implication = cast(Module.class, this.getElements().get(2));
+			
+			if (implication == null || !implication.isImplication()) {
+				return false;
+			}
+			
+			return true;
+		}
+		
+		public final boolean isImplication() {
+			return this.getElements().size() == 3 && IMPLIES.equals(this.getElements().get(1));
+		}
+		
+		public final boolean isSubstitution() {
+			if (this.getElements().size() != 3) {
+				return false;
+			}
+			
+			if (!SUBSTITUTE.equals(this.getElements().get(0))) {
+				return false;
+			}
+			
+			final Module equalities = cast(Module.class, this.getElements().get(2));
+			
+			if (equalities == null || !equalities.isEqualities()) {
+				return false;
+			}
+			
+			return true;
+		}
+		
 		public final boolean isEqualities() {
 			for (final Expression element : this.getElements()) {
 				final Module m = cast(Module.class, element);
