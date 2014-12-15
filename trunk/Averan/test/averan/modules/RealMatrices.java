@@ -6,18 +6,19 @@ import static averan.io.ExpressionParser.$$;
 import static averan.modules.Reals.real;
 import static averan.modules.Standard.*;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Locale;
-
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Module;
 import averan.core.Session;
 import averan.core.Module.Symbol;
 import averan.io.SessionExporter;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Locale;
+
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
-import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2014)
@@ -87,11 +88,115 @@ public final class RealMatrices {
 			}
 			
 			claimMatrixFactMirroringRealFact("associativity_of_matrix_addition", "associativity_of_addition");
+			claimCommutativityOfMatrixAddition();
 			
 			new SessionExporter(session()).exportSession();
 		} finally {
 			popSession();
 		}
+	}
+	
+	public static final void claimCommutativityOfMatrixAddition() {
+		claim("commutativity_of_matrix_addition",
+				$$("∀X,Y (X∈≀M ∧ Y∈≀M) → ((X+Y)=(Y+X))"));
+		{
+			final Symbol x = introduce();
+			final Symbol y = introduce();
+			introduce();
+			bind(conditionName(-1));
+			final Expression xy = $(x, "+", y);
+			final Expression yx = $(y, "+", x);
+			bind("definition_of_matrix_equality", xy, yx);
+			autoApplyLastFact();
+			autoApplyLastFact();
+			claim(((Composite) fact(-1)).get(2));
+			{
+				final Symbol i = introduce();
+				final Symbol j = introduce();
+				
+				bind("definition_of_matrix_addition", x, y, i, j);
+				bind("definition_of_matrix_addition", y, x, i, j);
+				
+				claim($(((Composite) fact(-2)).get(2), "=", ((Composite) fact(-1)).get(2)));
+				{
+					final Expression xij = $(x, "_", $(i, ",", j));
+					final Expression yij = $(y, "_", $(i, ",", j));
+					
+					bind("commutativity_of_addition", xij, yij);
+					
+					{
+						final String lastModuleName = factName(-1);
+						final Module lastModule = fact(-1);
+						
+						claimLastFactApplied(lastModuleName, lastModule);
+						{
+							bind("matrix_element_is_real", x);
+							autoApplyLastFact();
+							bind(factName(-1), i, j);
+							apply(lastModuleName, factName(-1));
+						}
+					}
+					
+					{
+						final String lastModuleName = factName(-1);
+						final Module lastModule = fact(-1);
+						
+						claimLastFactApplied(lastModuleName, lastModule);
+						{
+							bind("matrix_element_is_real", y);
+							autoApplyLastFact();
+							bind(factName(-1), i, j);
+							apply(lastModuleName, factName(-1));
+						}
+					}
+					
+					rewrite(factName(-3), factName(-1));
+					rewriteRight(factName(-1), factName(-3));
+				}
+				
+				rewriteRight(factName(-1), factName(-2));
+			}
+		}
+	}
+	
+	public static final void autoApplyLastFact() {
+		final String lastModuleName = factName(-1);
+		final Module lastModule = fact(-1);
+		
+		claimLastFactApplied(lastModuleName, lastModule);
+		{
+			Reals.proveWithBindAndApply(lastModule.getConditions().get(0));
+			apply(lastModuleName, factName(-1));
+		}
+	}
+
+	public static void claimLastFactApplied(final String lastModuleName, final Module lastModule) {
+		final ArrayList<Symbol> newParameters = new ArrayList<>(lastModule.getParameters());
+		final ArrayList<Expression> newConditions = new ArrayList<>(lastModule.getConditions());
+		final ArrayList<Expression> newFacts = new ArrayList<>(lastModule.getFacts());
+		
+		if (!newParameters.isEmpty()) {
+			throw new IllegalStateException();
+		}
+		
+		if (newConditions.isEmpty()) {
+			bind(factName(-1));
+			
+			return;
+		}
+		
+		newConditions.remove(0);
+		
+		final Expression applied;
+		
+		if (newConditions.isEmpty() && newFacts.size() == 1) {
+			applied = newFacts.get(0);
+		} else {
+			applied = new Module(lastModule.getParent(), session().newPropositionName(), lastModule.getTrustedModules(),
+					newParameters, newConditions, newFacts);
+		}
+		
+		claim(applied);
 	}
 	
 	public static final Composite realMatrix(final Expression expression) {
@@ -122,14 +227,11 @@ public final class RealMatrices {
 			s.getCurrentContext().parameter(parameter.toString());
 		}
 		
-		Tools.debugPrint(realFact);
-		
 		for (final Expression e : s.getCurrentModule().bind(realFact).getFacts()) {
 			s.claim(e);
-			Tools.debugPrint(e);
 			{
 				final Composite g = (Composite) s.getCurrentGoal();
-				Tools.debugPrint(g);
+				
 				s.bind("definition_of_matrix_equality", (Expression) g.get(0), g.get(2));
 				
 				{
