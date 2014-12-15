@@ -123,8 +123,10 @@ public final class RealMatrices {
 						bind("definition_of_matrix_multiplication", xy, z, i, j, k);
 						rewrite(factName(-1), factName(-2));
 						bind("definition_of_matrix_multiplication", x, y, i, k, l);
+						rewrite(factName(-2), factName(-1));
 						bind("definition_of_matrix_multiplication", x, yz, i, j, l);
 						bind("definition_of_matrix_multiplication", y, z, l, j, k);
+						rewrite(factName(-2), factName(-1));
 					}
 				}
 			}
