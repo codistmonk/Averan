@@ -90,50 +90,63 @@ public final class RealMatrices {
 					bind(factName(-1), parameter("i"), parameter("j"));
 				}
 				
+				// TODO claim
+				admit("right_distributivity_on_sum",
+						$$("∀X,Y,n,i ((((Σ_(i=0)^n) X)Y)=((Σ_(i=0)^n) (XY)))"));
+				admit("left_distributivity_on_sum",
+						$$("∀X,Y,n,i ((X ((Σ_(i=0)^n) Y))=((Σ_(i=0)^n) (XY)))"));
+				admit("commutativity_of_sum",
+						$$("∀X,m,n,i,j ((((Σ_(i=0)^m) ((Σ_(j=0)^n) X)))=(((Σ_(j=0)^n) ((Σ_(i=0)^m) X))))"));
+				
 				claimAssociativityOfMatrixAddition();
 				claimCommutativityOfMatrixAddition();
-				claim("associativity_of_matrix_multiplication",
-						$$("∀X,Y,Z (X∈≀M → (Y∈≀M → (Z∈≀M → ((X(YZ))=((XY)Z)))))"));
-				{
-					final Symbol x = introduce();
-					final Symbol y = introduce();
-					final Symbol z = introduce();
-					
-					introduce();
-					introduce();
-					introduce();
-					
-					final Expression xy = $(x, y);
-					final Expression yz = $(y, z);
-					final Expression xyZ = $(xy, z);
-					final Expression xYZ = $(x, yz);
-					
-					bind("definition_of_matrix_equality", xyZ, xYZ);
-					
-					autoApplyLastFact();
-					autoApplyLastFact();
-					claim(((Composite) fact(-1)).get(2));
-					{
-						final Symbol i = introduce();
-						final Symbol j = introduce();
-						final Symbol k = session().getCurrentModule().new Symbol("k");
-						final Symbol l = session().getCurrentModule().new Symbol("l");
-						
-						bind("definition_of_matrix_multiplication_columnCount", x, y);
-						bind("definition_of_matrix_multiplication", xy, z, i, j, k);
-						rewrite(factName(-1), factName(-2));
-						bind("definition_of_matrix_multiplication", x, y, i, k, l);
-						rewrite(factName(-2), factName(-1));
-						bind("definition_of_matrix_multiplication", x, yz, i, j, l);
-						bind("definition_of_matrix_multiplication", y, z, l, j, k);
-						rewrite(factName(-2), factName(-1));
-					}
-				}
+//				claimAssociativityOfMatrixMultiplication();
+				
 			}
 			
 			private static final long serialVersionUID = 8185469030596522271L;
 			
 		};
+	}
+	
+	public static final void claimAssociativityOfMatrixMultiplication() {
+		claim("associativity_of_matrix_multiplication",
+				$$("∀X,Y,Z (X∈≀M → (Y∈≀M → (Z∈≀M → ((X(YZ))=((XY)Z)))))"));
+		{
+			final Symbol x = introduce();
+			final Symbol y = introduce();
+			final Symbol z = introduce();
+			
+			introduce();
+			introduce();
+			introduce();
+			
+			final Expression xy = $(x, y);
+			final Expression yz = $(y, z);
+			final Expression xyZ = $(xy, z);
+			final Expression xYZ = $(x, yz);
+			
+			bind("definition_of_matrix_equality", xyZ, xYZ);
+			
+			autoApplyLastFact();
+			autoApplyLastFact();
+			claim(((Composite) fact(-1)).get(2));
+			{
+				final Symbol i = introduce();
+				final Symbol j = introduce();
+				final Symbol k = session().getCurrentModule().new Symbol("k");
+				final Symbol l = session().getCurrentModule().new Symbol("l");
+				
+				bind("definition_of_matrix_multiplication_columnCount", x, y);
+				bind("definition_of_matrix_multiplication", xy, z, i, j, k);
+				rewrite(factName(-1), factName(-2));
+				bind("definition_of_matrix_multiplication", x, y, i, k, l);
+				rewrite(factName(-2), factName(-1));
+				bind("definition_of_matrix_multiplication", x, yz, i, j, l);
+				bind("definition_of_matrix_multiplication", y, z, l, j, k);
+				rewrite(factName(-2), factName(-1));
+			}
+		}
 	}
 	
 	public static final void claimCommutativityOfMatrixAddition() {
