@@ -947,8 +947,28 @@ public final class RealMatrices {
 				rewrite(factName(-2), factName(-1));
 				xYZFactName = factName(-1);
 				
-				// TODO
+				bind("definition_of_matrix_" + operation, xy, xz, m, o);
+				autoApplyLastFact();
+				autoApplyLastFact();
+				bind(factName(-1), i, j);
+				String xyXZFactName = factName(-1);
+				
+				bind("definition_of_matrix_multiplication", x, y, m, n, o, i, j, k);
+				autoApplyLastFact();
+				autoApplyLastFact();
+				rewrite(xyXZFactName, factName(-1));
+				xyXZFactName = factName(-1);
+				
+				bind("definition_of_matrix_multiplication", x, z, m, n, o, i, j, k);
+				autoApplyLastFact();
+				autoApplyLastFact();
+				rewrite(xyXZFactName, factName(-1));
+				xyXZFactName = factName(-1);
+				
+				rewriteRight(xYZFactName, factName(-1));
 			}
+			
+			rewriteRight(factName(-1), factName(-2));
 		}
 	}
 	
