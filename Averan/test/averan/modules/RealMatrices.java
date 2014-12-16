@@ -4,7 +4,6 @@ import static averan.core.ExpressionTools.$;
 import static averan.core.SessionTools.*;
 import static averan.io.ExpressionParser.$$;
 import static averan.modules.Standard.*;
-
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Module;
@@ -14,6 +13,7 @@ import averan.io.SessionScaffold;
 import java.util.ArrayList;
 
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
+import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2014)
@@ -90,13 +90,14 @@ public final class RealMatrices {
 						$$("∀X,Y,n,i ((((Σ_(i=0)^n) X)Y)=((Σ_(i=0)^n) (XY)))"));
 				admit("left_distributivity_on_sum",
 						$$("∀X,Y,n,i ((X ((Σ_(i=0)^n) Y))=((Σ_(i=0)^n) (XY)))"));
-				admit("commutativity_of_sum",
+				admit("commutativity_of_sum_nesting",
 						$$("∀X,m,n,i,j ((((Σ_(i=0)^m) ((Σ_(j=0)^n) X)))=(((Σ_(j=0)^n) ((Σ_(i=0)^m) X))))"));
 				
 				claimAssociativityOfMatrixAddition();
 				claimCommutativityOfMatrixAddition();
 				claimAssociativityOfMatrixMultiplication();
 				
+				// TODO distributivity
 			}
 			
 			private static final long serialVersionUID = 8185469030596522271L;
@@ -131,16 +132,64 @@ public final class RealMatrices {
 				final Symbol j = introduce();
 				final Symbol k = session().getCurrentModule().new Symbol("k");
 				final Symbol l = session().getCurrentModule().new Symbol("l");
+				final Expression xil = $(x, "_", $(i, ",", l));
+				final Expression ylk = $(y, "_", $(l, ",", k));
+				final Expression zkj = $(z, "_", $(k, ",", j));
+				final Expression colsXMin1 = $($("columnCount", "_", x), "-", "1");
+				final Expression colsYMin1 = $($("columnCount", "_", y), "-", "1");
 				
 				bind("definition_of_matrix_multiplication_columnCount", x, y);
 				bind("definition_of_matrix_multiplication", xy, z, i, j, k);
 				rewrite(factName(-1), factName(-2));
 				bind("definition_of_matrix_multiplication", x, y, i, k, l);
 				rewrite(factName(-2), factName(-1));
+				bind("right_distributivity_on_sum", (Expression) $(xil, ylk), zkj, colsXMin1, l);
+				rewrite(factName(-2), factName(-1));
+				bind("commutativity_of_sum_nesting", (Expression) $($(xil, ylk), zkj), colsXMin1, colsYMin1, l, k);
+				rewriteRight(factName(-2), factName(-1));
+				
+				String xyZijName = factName(-1);
+				
+				bind("associativity_of_multiplication", xil, ylk, zkj);
+				
+				claim(((Module) fact(-1)).getConditions().get(0));
+				{
+					bind("matrix_element_is_real", x);
+					autoApplyLastFact();
+					bind(factName(-1), i, l);
+				}
+				apply(factName(-2), factName(-1));
+				
+				claim(((Module) fact(-1)).getConditions().get(0));
+				{
+					bind("matrix_element_is_real", y);
+					autoApplyLastFact();
+					bind(factName(-1), l, k);
+				}
+				apply(factName(-2), factName(-1));
+				
+				claim(((Module) fact(-1)).getConditions().get(0));
+				{
+					bind("matrix_element_is_real", z);
+					autoApplyLastFact();
+					bind(factName(-1), k, j);
+				}
+				apply(factName(-2), factName(-1));
+				
+				rewriteRight(xyZijName, factName(-1));
+				
+				xyZijName = factName(-1);
+				
 				bind("definition_of_matrix_multiplication", x, yz, i, j, l);
 				bind("definition_of_matrix_multiplication", y, z, l, j, k);
 				rewrite(factName(-2), factName(-1));
+				bind("left_distributivity_on_sum", xil, (Expression) $(ylk, zkj), colsYMin1, k);
+				rewrite(factName(-2), factName(-1));
+				
+				rewriteRight(factName(-1), xyZijName);
 			}
+			
+			rewriteRight(factName(-1), factName(-2));
 		}
 	}
 	
