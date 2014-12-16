@@ -134,30 +134,9 @@ public final class RealMatrices {
 						String xYZFactName = factName(-1);
 						
 						bind("left_distributivity_of_multiplication_over_addition", xik, ykj, zkj);
-						
-						claim(((Module) fact(-1)).getConditions().get(0));
-						{
-							bind("matrix_element_is_real", x);
-							autoApplyLastFact();
-							bind(factName(-1), i, k);
-						}
-						apply(factName(-2), factName(-1));
-						
-						claim(((Module) fact(-1)).getConditions().get(0));
-						{
-							bind("matrix_element_is_real", y);
-							autoApplyLastFact();
-							bind(factName(-1), k, j);
-						}
-						apply(factName(-2), factName(-1));
-						
-						claim(((Module) fact(-1)).getConditions().get(0));
-						{
-							bind("matrix_element_is_real", z);
-							autoApplyLastFact();
-							bind(factName(-1), k, j);
-						}
-						apply(factName(-2), factName(-1));
+						applyLastFactOnMatrixElementRealness(x, k, i);
+						applyLastFactOnMatrixElementRealness(y, j, k);
+						applyLastFactOnMatrixElementRealness(z, j, k);
 						
 						rewrite(xYZFactName, factName(-1));
 						
@@ -217,30 +196,9 @@ public final class RealMatrices {
 				String xyZijName = factName(-1);
 				
 				bind("associativity_of_multiplication", xil, ylk, zkj);
-				
-				claim(((Module) fact(-1)).getConditions().get(0));
-				{
-					bind("matrix_element_is_real", x);
-					autoApplyLastFact();
-					bind(factName(-1), i, l);
-				}
-				apply(factName(-2), factName(-1));
-				
-				claim(((Module) fact(-1)).getConditions().get(0));
-				{
-					bind("matrix_element_is_real", y);
-					autoApplyLastFact();
-					bind(factName(-1), l, k);
-				}
-				apply(factName(-2), factName(-1));
-				
-				claim(((Module) fact(-1)).getConditions().get(0));
-				{
-					bind("matrix_element_is_real", z);
-					autoApplyLastFact();
-					bind(factName(-1), k, j);
-				}
-				apply(factName(-2), factName(-1));
+				applyLastFactOnMatrixElementRealness(x, l, i);
+				applyLastFactOnMatrixElementRealness(y, k, l);
+				applyLastFactOnMatrixElementRealness(z, j, k);
 				
 				rewriteRight(xyZijName, factName(-1));
 				
@@ -303,30 +261,9 @@ public final class RealMatrices {
 				claim($(xYZij, "=", xyZij));
 				{
 					bind("associativity_of_addition", xij, yij, zij);
-					
-					claim(((Module) fact(-1)).getConditions().get(0));
-					{
-						bind("matrix_element_is_real", x);
-						autoApplyLastFact();
-						bind(factName(-1), i, j);
-					}
-					apply(factName(-2), factName(-1));
-					
-					claim(((Module) fact(-1)).getConditions().get(0));
-					{
-						bind("matrix_element_is_real", y);
-						autoApplyLastFact();
-						bind(factName(-1), i, j);
-					}
-					apply(factName(-2), factName(-1));
-					
-					claim(((Module) fact(-1)).getConditions().get(0));
-					{
-						bind("matrix_element_is_real", z);
-						autoApplyLastFact();
-						bind(factName(-1), i, j);
-					}
-					apply(factName(-2), factName(-1));
+					applyLastFactOnMatrixElementRealness(x, j, i);
+					applyLastFactOnMatrixElementRealness(y, j, i);
+					applyLastFactOnMatrixElementRealness(z, j, i);
 				}
 				
 				rewrite(xYZFactName, factName(-1));
@@ -442,6 +379,17 @@ public final class RealMatrices {
 	
 	public static final Composite realMatrix(final Expression expression) {
 		return $(expression, "∈", "≀M");
+	}
+	
+	public static final void applyLastFactOnMatrixElementRealness(
+			final Symbol matrix, final Symbol i, final Symbol j) {
+		claim(((Module) fact(-1)).getConditions().get(0));
+		{
+			bind("matrix_element_is_real", matrix);
+			autoApplyLastFact();
+			bind(factName(-1), j, i);
+		}
+		apply(factName(-2), factName(-1));
 	}
 	
 }
