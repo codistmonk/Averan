@@ -163,6 +163,12 @@ public final class Reals {
 				rewrite(factName(-2), factName(-1));
 			}
 			
+			suppose("left_distributivity_of_multiplication_over_subtraction",
+					$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → ((x(y-z))=(xy-xz)))))"));
+			
+			suppose("right_distributivity_of_multiplication_over_subtraction",
+					$$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → (((x-y)z)=(xz-yz)))))"));
+			
 			final RewriteHint[] distributivityHints = {
 					new RewriteHint("left_distributivity_of_multiplication_over_addition", false),
 					new RewriteHint("right_distributivity_of_multiplication_over_addition", false),
@@ -184,6 +190,8 @@ public final class Reals {
 					$$("∀X,m,n,i,j ((((Σ_(i=0)^m) ((Σ_(j=0)^n) X)))=(((Σ_(j=0)^n) ((Σ_(i=0)^m) X))))"));
 			admit("distributivity_of_sum_over_addition",
 					$$("∀X,Y,n,i (((Σ_(i=0)^n) (X+Y))=(((Σ_(i=0)^n) X)+((Σ_(i=0)^n) Y)))"));
+			admit("distributivity_of_sum_over_subtraction",
+					$$("∀X,Y,n,i (((Σ_(i=0)^n) (X-Y))=(((Σ_(i=0)^n) X)-((Σ_(i=0)^n) Y)))"));
 		} finally {
 			popSession();
 		}
