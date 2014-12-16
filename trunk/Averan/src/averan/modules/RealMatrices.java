@@ -104,7 +104,8 @@ public final class RealMatrices {
 				claimLeftDistributivityOfMatrixMultiplicationOver("subtraction", "-");
 				claimRightDistributivityOfMatrixMultiplicationOver("subtraction", "-");
 				
-				claimTranspositionOfAddition();
+				claimTranspositionOf("addition", "+");
+				claimTranspositionOf("subtraction", "-");
 			}
 			
 			private static final long serialVersionUID = 8185469030596522271L;
@@ -112,17 +113,17 @@ public final class RealMatrices {
 		};
 	}
 	
-	public static final void claimTranspositionOfAddition() {
-		claim("transposition_of_addition",
-				$$("∀X,Y ((X∈≀M) → ((Y∈≀M) → ((X+Y)ᵀ=Xᵀ+Yᵀ)))"));
+	public static final void claimTranspositionOf(final String operation, final String operator) {
+		claim("transposition_of_" + operation,
+				$$("∀X,Y ((X∈≀M) → ((Y∈≀M) → ((X" + operator + "Y)ᵀ=Xᵀ" + operator + "Yᵀ)))"));
 		{
 			final Symbol x = introduce();
 			final Symbol y = introduce();
 			final Expression xt = transpose(x);
 			final Expression yt = transpose(y);
-			final Expression xy = $(x, "+", y);
+			final Expression xy = $(x, operator, y);
 			final Expression xyT = transpose(xy);
-			final Expression xtyt = $(xt, "+", yt);
+			final Expression xtyt = $(xt, operator, yt);
 			
 			introduce();
 			introduce();
@@ -137,12 +138,12 @@ public final class RealMatrices {
 				final Symbol j = introduce();
 				
 				bind("definition_of_transposition", xy, i, j);
-				bind("definition_of_matrix_addition", x, y, j, i);
+				bind("definition_of_matrix_" + operation, x, y, j, i);
 				rewrite(factName(-2), factName(-1));
 				
 				final String xyTFactName = factName(-1);
 				
-				bind("definition_of_matrix_addition", xt, yt, i, j);
+				bind("definition_of_matrix_" + operation, xt, yt, i, j);
 				bind("definition_of_transposition", x, i, j);
 				rewrite(factName(-2), factName(-1));
 				bind("definition_of_transposition", y, i, j);
