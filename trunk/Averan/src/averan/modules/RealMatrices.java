@@ -85,16 +85,6 @@ public final class RealMatrices {
 					bind(factName(-1), parameter("i"), parameter("j"));
 				}
 				
-				// TODO claim
-				admit("right_distributivity_over_sum",
-						$$("∀X,Y,n,i ((((Σ_(i=0)^n) X)Y)=((Σ_(i=0)^n) (XY)))"));
-				admit("left_distributivity_over_sum",
-						$$("∀X,Y,n,i ((X ((Σ_(i=0)^n) Y))=((Σ_(i=0)^n) (XY)))"));
-				admit("commutativity_of_sum_nesting",
-						$$("∀X,m,n,i,j ((((Σ_(i=0)^m) ((Σ_(j=0)^n) X)))=(((Σ_(j=0)^n) ((Σ_(i=0)^m) X))))"));
-				admit("distributivity_of_sum_over_addition",
-						$$("∀X,Y,n,i (((Σ_(i=0)^n) (X+Y))=(((Σ_(i=0)^n) X)+((Σ_(i=0)^n) Y)))"));
-				
 				claimAssociativityOfMatrixAddition();
 				claimCommutativityOfMatrixAddition();
 				claimAssociativityOfMatrixMultiplication();
