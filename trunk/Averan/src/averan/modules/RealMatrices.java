@@ -13,6 +13,7 @@ import averan.io.SessionScaffold;
 import java.util.ArrayList;
 
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
+import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2014)
@@ -30,8 +31,36 @@ public final class RealMatrices {
 			
 			@Override
 			public final void buildSession() {
-				suppose("definition_of_matrices",
-						$$("∀X,m,n (X∈≀M_(m,n) = ('rowCount'_X = m ∧ 'columnCount'_X = n ∧ ∀i,j (X_(i,j)∈ℝ)))"));
+//				suppose("definition_of_matrices",
+//						$$("∀X,m,n (X∈≀M_(m,n) = ('rowCount'_X = m ∧ 'columnCount'_X = n ∧ ∀i,j (X_(i,j)∈ℝ)))"));
+				suppose("type_of_matrix_element",
+						$$("∀X,m,n ((X∈≀M_(m,n)) → (∀i,j (X_(i,j)∈ℝ)))"));
+				suppose("definition_of_matrix_rowCount",
+						$$("∀X,m,n ((X∈≀M_(m,n)) → ('rowCount'_X = m))"));
+				suppose("definition_of_matrix_columnCount",
+						$$("∀X,m,n ((X∈≀M_(m,n)) → ('columnCount'_X = n))"));
+				suppose("definition_of_matrix_equality",
+						$$("∀X,Y,m,n ((X∈≀M_(m,n)) → ((Y∈≀M_(m,n)) → ((X=Y) = (∀i,j ((X)_(i,j)=(Y_(i,j)))))))"));
+				suppose("definition_of_matrix_scalarization",
+						$$("∀X ((X∈≀M_(1,1)) → (⟨X⟩=X_(1,1)))"));
+				suppose("definition_of_matrix_addition",
+						$$("∀X,Y,m,n ((X∈≀M_(m,n)) → ((Y∈≀M_(m,n)) → (∀i,j ((X+Y)_(i,j) = (X_(i,j))+(Y_(i,j))))))"));
+				suppose("type_of_matrix_addition",
+						$$("∀X,Y,m,n ((X∈≀M_(m,n)) → ((Y∈≀M_(m,n)) → ((X+Y)∈≀M_(m,n))))"));
+				suppose("definition_of_matrix_subtraction",
+						$$("∀X,Y,m,n ((X∈≀M_(m,n)) → ((Y∈≀M_(m,n)) → (∀i,j ((X-Y)_(i,j) = (X_(i,j))-(Y_(i,j))))))"));
+				suppose("type_of_matrix_subtraction",
+						$$("∀X,Y,m,n ((X∈≀M_(m,n)) → ((Y∈≀M_(m,n)) → ((X-Y)∈≀M_(m,n))))"));
+				suppose("definition_of_matrix_multiplication",
+						$$("∀X,Y,m,n,o,i,j,k ((X∈≀M_(m,n)) → ((Y∈≀M_(n,o)) → ((XY)_(i,j)=((Σ_(k=0)^(n-1)) ((X_(i,k))(Y_(k,j)))))))"));
+				suppose("type_of_matrix_multiplication",
+						$$("∀X,Y,m,n,o ((X∈≀M_(m,n)) → ((Y∈≀M_(n,o)) → ((XY)∈≀M_(m,o))))"));
+				suppose("definition_of_transposition",
+						$$("∀X,m,n ((X∈≀M_(m,n)) → (∀i,j ((Xᵀ)_(i,j) = (X_(j,i)))))"));
+				suppose("type_of_transposition",
+						$$("∀X,m,n ((X∈≀M_(m,n)) → ((Xᵀ)∈≀M_(n,m)))"));
+				
+				if (true) return;
 				suppose("type_of_matrices",
 						$$("∀X ((X∈≀M)=(X∈≀M_(('rowCount'_X),('columnCount'_X))))"));
 				suppose("definition_of_matrix_equality",

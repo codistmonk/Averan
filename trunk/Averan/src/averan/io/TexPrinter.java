@@ -324,7 +324,11 @@ public final class TexPrinter implements SessionExporter.Output {
 		@Override
 		public final Pair<String, DisplayHint> visit(final Module module) {
 			final StringBuilder resultBuilder = new StringBuilder();
-			final Module m = module.canonical();
+//			final Module m = module.canonical();
+			final Module m = module;
+			
+			Tools.debugPrint(module);
+			Tools.debugPrint(m);
 			
 			if (!m.getParameters().isEmpty()) {
 				resultBuilder.append("\\forall ").append(Tools.join(",",
