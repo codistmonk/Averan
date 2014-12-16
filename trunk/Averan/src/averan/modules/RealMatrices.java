@@ -4,7 +4,6 @@ import static averan.core.ExpressionTools.$;
 import static averan.core.SessionTools.*;
 import static averan.io.ExpressionParser.$$;
 import static averan.modules.Standard.*;
-
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Module;
@@ -73,6 +72,8 @@ public final class RealMatrices {
 						$$("∀X,Y ('columnCount'_(XY) = 'columnCount'_Y)"));
 				suppose("definition_of_transposition",
 						$$("∀X (∀i,j (Xᵀ_(i,j)=X_(j,i)))"));
+				suppose("type_of_transposition",
+						$$("∀X ((X∈≀M) → ((Xᵀ)∈≀M))"));
 				suppose("definition_of_transposition_rowCount",
 						$$("∀X ('rowCount'_(Xᵀ)='columnCount'_X)"));
 				suppose("definition_of_transposition_columnCount",
@@ -102,11 +103,60 @@ public final class RealMatrices {
 				claimRightDistributivityOfMatrixMultiplicationOver("addition", "+");
 				claimLeftDistributivityOfMatrixMultiplicationOver("subtraction", "-");
 				claimRightDistributivityOfMatrixMultiplicationOver("subtraction", "-");
+				
+				claimTranspositionOfAddition();
 			}
 			
 			private static final long serialVersionUID = 8185469030596522271L;
 			
 		};
+	}
+	
+	public static final void claimTranspositionOfAddition() {
+		claim("transposition_of_addition",
+				$$("∀X,Y ((X∈≀M) → ((Y∈≀M) → ((X+Y)ᵀ=Xᵀ+Yᵀ)))"));
+		{
+			final Symbol x = introduce();
+			final Symbol y = introduce();
+			final Expression xt = transpose(x);
+			final Expression yt = transpose(y);
+			final Expression xy = $(x, "+", y);
+			final Expression xyT = transpose(xy);
+			final Expression xtyt = $(xt, "+", yt);
+			
+			introduce();
+			introduce();
+			
+			bind("definition_of_matrix_equality", xyT, xtyt);
+			autoApplyLastFact();
+			autoApplyLastFact();
+			
+			claim(((Composite) fact(-1)).get(2));
+			{
+				final Symbol i = introduce();
+				final Symbol j = introduce();
+				
+				bind("definition_of_transposition", xy, i, j);
+				bind("definition_of_matrix_addition", x, y, j, i);
+				rewrite(factName(-2), factName(-1));
+				
+				final String xyTFactName = factName(-1);
+				
+				bind("definition_of_matrix_addition", xt, yt, i, j);
+				bind("definition_of_transposition", x, i, j);
+				rewrite(factName(-2), factName(-1));
+				bind("definition_of_transposition", y, i, j);
+				rewrite(factName(-2), factName(-1));
+				
+				rewriteRight(xyTFactName, factName(-1));
+			}
+			
+			rewriteRight(factName(-1), factName(-2));
+		}
+	}
+	
+	public static final Composite transpose(final Expression expression) {
+		return $(expression, "ᵀ");
 	}
 	
 	public static final void claimAssociativityOfMatrixMultiplication() {
