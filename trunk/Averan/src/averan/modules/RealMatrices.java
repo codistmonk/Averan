@@ -921,6 +921,31 @@ public final class RealMatrices {
 			{
 				final Symbol i = introduce();
 				final Symbol j = introduce();
+				final Symbol k = session().getCurrentModule().new Symbol("k");
+				final Expression xik = $(x, "_", $(i, ",", k));
+				final Expression ykj = $(y, "_", $(k, ",", j));
+				final Expression zkj = $(z, "_", $(k, ",", j));
+				
+				bind("definition_of_matrix_multiplication", x, yz, m, n, o, i, j, k);
+				autoApplyLastFact();
+				autoApplyLastFact();
+				String xYZFactName = factName(-1);
+				bind("definition_of_matrix_" + operation, y, z, n, o);
+				autoApplyLastFact();
+				autoApplyLastFact();
+				bind(factName(-1), k, j);
+				rewrite(xYZFactName, factName(-1));
+				xYZFactName = factName(-1);
+				
+				bind("left_distributivity_of_multiplication_over_" + operation, xik, ykj, zkj);
+				applyLastFactOnMatrixElementRealness(x, m, n, i, k);
+				applyLastFactOnMatrixElementRealness(y, n, o, k, j);
+				applyLastFactOnMatrixElementRealness(z, n, o, k, j);
+				rewrite(xYZFactName, factName(-1));
+				
+				bind("distributivity_of_sum_over_" + operation, (Expression) $(xik, ykj), $(xik, zkj), $(n, "-", "1"), k);
+				rewrite(factName(-2), factName(-1));
+				xYZFactName = factName(-1);
 				
 				// TODO
 			}
