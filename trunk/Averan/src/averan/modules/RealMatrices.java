@@ -64,7 +64,9 @@ public final class RealMatrices {
 				claimCommutativityOfMatrixAddition2();
 				claimAssociativityOfMatrixMultiplication2();
 				claimLeftDistributivityOfMatrixMultiplicationOver2("addition", "+");
+				claimRightDistributivityOfMatrixMultiplicationOver2("addition", "+");
 				claimLeftDistributivityOfMatrixMultiplicationOver2("subtraction", "-");
+				claimRightDistributivityOfMatrixMultiplicationOver2("subtraction", "-");
 				
 				if (true) return;
 				suppose("type_of_matrices",
@@ -913,7 +915,6 @@ public final class RealMatrices {
 				bind("type_of_matrix_multiplication", x, yz, m, n, o);
 				autoApplyLastFact();
 				autoApplyLastFact();
-				
 			}
 			
 			proveUsingBindAndApply(realMatrix(xyXZ, m, o));
@@ -974,6 +975,115 @@ public final class RealMatrices {
 				xyXZFactName = factName(-1);
 				
 				rewriteRight(xYZFactName, factName(-1));
+			}
+			
+			rewriteRight(factName(-1), factName(-2));
+		}
+	}
+	
+	public static final void claimRightDistributivityOfMatrixMultiplicationOver2(
+			final String operation, final String operator) {
+		claim("right_distributivity_of_matrix_multiplication_over_" + operation,
+				$$("∀X,Y,Z,m,n,o ((X∈≀M_(m,n)) → ((Y∈≀M_(m,n)) → ((Z∈≀M_(n,o)) → (((X" + operator + "Y)Z)=(XZ" + operator + "YZ)))))"));
+		{
+			final Symbol x = introduce();
+			final Symbol y = introduce();
+			final Symbol z = introduce();
+			final Symbol m = introduce();
+			final Symbol n = introduce();
+			final Symbol o = introduce();
+			
+			introduce();
+			introduce();
+			introduce();
+			
+			final Expression yz = $(y, z);
+			final Expression xy = $(x, operator, y);
+			final Expression xz = $(x, z);
+			final Expression xyZ = $(xy, z);
+			final Expression xzYZ = $(xz, operator, yz);
+			
+			claim(realMatrix(yz, m, o));
+			{
+				bind("type_of_matrix_multiplication", y, z, m, n, o);
+				autoApplyLastFact();
+				autoApplyLastFact();
+			}
+			
+			claim(realMatrix(xz, m, o));
+			{
+				bind("type_of_matrix_multiplication", x, z, m, n, o);
+				autoApplyLastFact();
+				autoApplyLastFact();
+			}
+			
+			proveUsingBindAndApply(realMatrix(xy, m, n));
+			
+			claim(realMatrix(xyZ, m, o));
+			{
+				bind("type_of_matrix_multiplication", xy, z, m, n, o);
+				autoApplyLastFact();
+				autoApplyLastFact();
+			}
+			
+			proveUsingBindAndApply(realMatrix(xzYZ, m, o));
+			
+			bind("definition_of_matrix_equality", xyZ, xzYZ, m, o);
+			autoApplyLastFact();
+			autoApplyLastFact();
+			
+			claim(((Composite) fact(-1)).get(2));
+			{
+				final Symbol i = introduce();
+				final Symbol j = introduce();
+				final Symbol k = session().getCurrentModule().new Symbol("k");
+				final Expression xik = $(x, "_", $(i, ",", k));
+				final Expression yik = $(y, "_", $(i, ",", k));
+				final Expression zkj = $(z, "_", $(k, ",", j));
+				
+				bind("definition_of_matrix_multiplication", xy, z, m, n, o);
+				autoApplyLastFact();
+				autoApplyLastFact();
+				bind(factName(-1), i, j, k);
+				String xyZFactName = factName(-1);
+				bind("definition_of_matrix_" + operation, x, y, m, n);
+				autoApplyLastFact();
+				autoApplyLastFact();
+				bind(factName(-1), i, k);
+				rewrite(xyZFactName, factName(-1));
+				xyZFactName = factName(-1);
+				
+				bind("right_distributivity_of_multiplication_over_" + operation, xik, yik, zkj);
+				applyLastFactOnMatrixElementRealness(x, m, n, i, k);
+				applyLastFactOnMatrixElementRealness(y, m, n, i, k);
+				applyLastFactOnMatrixElementRealness(z, n, o, k, j);
+				rewrite(xyZFactName, factName(-1));
+				
+				bind("distributivity_of_sum_over_" + operation, (Expression) $(xik, zkj), $(yik, zkj), $(n, "-", "1"), k);
+				rewrite(factName(-2), factName(-1));
+				xyZFactName = factName(-1);
+				
+				bind("definition_of_matrix_" + operation, xz, yz, m, o);
+				autoApplyLastFact();
+				autoApplyLastFact();
+				bind(factName(-1), i, j);
+				String xzYZFactName = factName(-1);
+				
+				bind("definition_of_matrix_multiplication", x, z, m, n, o);
+				autoApplyLastFact();
+				autoApplyLastFact();
+				bind(factName(-1), i, j, k);
+				rewrite(xzYZFactName, factName(-1));
+				xzYZFactName = factName(-1);
+				
+				bind("definition_of_matrix_multiplication", y, z, m, n, o);
+				autoApplyLastFact();
+				autoApplyLastFact();
+				bind(factName(-1), i, j, k);
+				rewrite(xzYZFactName, factName(-1));
+				xzYZFactName = factName(-1);
+				
+				rewriteRight(xyZFactName, factName(-1));
 			}
 			
 			rewriteRight(factName(-1), factName(-2));
