@@ -63,6 +63,7 @@ public final class RealMatrices {
 				claimAssociativityOfMatrixAddition2();
 				claimCommutativityOfMatrixAddition2();
 				claimAssociativityOfMatrixMultiplication2();
+				claimLeftDistributivityOfMatrixMultiplicationOver2("addition", "+");
 				
 				if (true) return;
 				suppose("type_of_matrices",
@@ -861,6 +862,68 @@ public final class RealMatrices {
 			}
 			
 			rewriteRight(factName(-1), factName(-2));
+		}
+	}
+	
+	public static final void claimLeftDistributivityOfMatrixMultiplicationOver2(
+			final String operation, final String operator) {
+		claim("left_distributivity_of_matrix_multiplication_over_" + operation,
+				$$("∀X,Y,Z,m,n,o ((X∈≀M_(m,n)) → ((Y∈≀M_(n,o)) → ((Z∈≀M_(n,o)) → ((X(Y" + operator + "Z))=(XY" + operator + "XZ)))))"));
+		{
+			final Symbol x = introduce();
+			final Symbol y = introduce();
+			final Symbol z = introduce();
+			final Symbol m = introduce();
+			final Symbol n = introduce();
+			final Symbol o = introduce();
+			
+			introduce();
+			introduce();
+			introduce();
+			
+			final Expression yz = $(y, operator, z);
+			final Expression xy = $(x, y);
+			final Expression xz = $(x, z);
+			final Expression xYZ = $(x, yz);
+			final Expression xyXZ = $(xy, operator, xz);
+			
+			claim(realMatrix(xy, m, o));
+			{
+				bind("type_of_matrix_multiplication", x, y, m, n, o);
+				autoApplyLastFact();
+				autoApplyLastFact();
+			}
+			
+			claim(realMatrix(xz, m, o));
+			{
+				bind("type_of_matrix_multiplication", x, z, m, n, o);
+				autoApplyLastFact();
+				autoApplyLastFact();
+			}
+			
+			proveUsingBindAndApply(realMatrix(yz, n, o));
+			
+			claim(realMatrix(xYZ, m, o));
+			{
+				bind("type_of_matrix_multiplication", x, yz, m, n, o);
+				autoApplyLastFact();
+				autoApplyLastFact();
+				
+			}
+			
+			proveUsingBindAndApply(realMatrix(xyXZ, m, o));
+			
+			bind("definition_of_matrix_equality", xYZ, xyXZ, m, o);
+			autoApplyLastFact();
+			autoApplyLastFact();
+			
+			claim(((Composite) fact(-1)).get(2));
+			{
+				final Symbol i = introduce();
+				final Symbol j = introduce();
+				
+				// TODO
+			}
 		}
 	}
 	
