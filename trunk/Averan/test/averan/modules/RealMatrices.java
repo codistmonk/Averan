@@ -3,20 +3,15 @@ package averan.modules;
 import static averan.core.ExpressionTools.$;
 import static averan.core.SessionTools.*;
 import static averan.io.ExpressionParser.$$;
-import static averan.modules.Reals.real;
 import static averan.modules.Standard.*;
+
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Module;
-import averan.core.Session;
 import averan.core.Module.Symbol;
-import averan.io.SessionExporter;
 import averan.io.SessionScaffold;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Locale;
 
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 
@@ -100,7 +95,7 @@ public final class RealMatrices {
 				
 				claimAssociativityOfMatrixAddition();
 				claimCommutativityOfMatrixAddition();
-//				claimAssociativityOfMatrixMultiplication();
+				claimAssociativityOfMatrixMultiplication();
 				
 			}
 			
@@ -123,10 +118,10 @@ public final class RealMatrices {
 			
 			final Expression xy = $(x, y);
 			final Expression yz = $(y, z);
-			final Expression xyZ = $(xy, z);
 			final Expression xYZ = $(x, yz);
+			final Expression xyZ = $(xy, z);
 			
-			bind("definition_of_matrix_equality", xyZ, xYZ);
+			bind("definition_of_matrix_equality", xYZ, xyZ);
 			
 			autoApplyLastFact();
 			autoApplyLastFact();
@@ -149,14 +144,92 @@ public final class RealMatrices {
 		}
 	}
 	
+	public static final void claimAssociativityOfMatrixAddition() {
+		claim("associativity_of_matrix_addition",
+				$$("∀X,Y,Z (X∈≀M → (Y∈≀M → (Z∈≀M → ((X+(Y+Z))=((X+Y)+Z)))))"));
+		{
+			final Symbol x = introduce();
+			final Symbol y = introduce();
+			final Symbol z = introduce();
+			
+			introduce();
+			introduce();
+			introduce();
+			
+			final Expression xy = $(x, "+", y);
+			final Expression yz = $(y, "+", z);
+			final Expression xYZ = $(x, "+", yz);
+			final Expression xyZ = $(xy, "+", z);
+			
+			bind("definition_of_matrix_equality", xYZ, xyZ);
+			
+			autoApplyLastFact();
+			autoApplyLastFact();
+			claim(((Composite) fact(-1)).get(2));
+			{
+				final Symbol i = introduce();
+				final Symbol j = introduce();
+				final Expression xij = $(x, "_", $(i, ",", j));
+				final Expression yij = $(y, "_", $(i, ",", j));
+				final Expression zij = $(z, "_", $(i, ",", j));
+				
+				bind("definition_of_matrix_addition", x, yz, i, j);
+				bind("definition_of_matrix_addition", y, z, i, j);
+				rewrite(factName(-2), factName(-1));
+				final String xYZFactName = factName(-1);
+				final Expression xYZij = ((Composite) fact(-1)).get(2);
+				
+				bind("definition_of_matrix_addition", xy, z, i, j);
+				bind("definition_of_matrix_addition", x, y, i, j);
+				rewrite(factName(-2), factName(-1));
+				final Expression xyZij = ((Composite) fact(-1)).get(2);
+				final String xyZFactName = factName(-1);
+				
+				claim($(xYZij, "=", xyZij));
+				{
+					bind("associativity_of_addition", xij, yij, zij);
+					
+					claim(((Module) fact(-1)).getConditions().get(0));
+					{
+						bind("matrix_element_is_real", x);
+						autoApplyLastFact();
+						bind(factName(-1), i, j);
+					}
+					apply(factName(-2), factName(-1));
+					
+					claim(((Module) fact(-1)).getConditions().get(0));
+					{
+						bind("matrix_element_is_real", y);
+						autoApplyLastFact();
+						bind(factName(-1), i, j);
+					}
+					apply(factName(-2), factName(-1));
+					
+					claim(((Module) fact(-1)).getConditions().get(0));
+					{
+						bind("matrix_element_is_real", z);
+						autoApplyLastFact();
+						bind(factName(-1), i, j);
+					}
+					apply(factName(-2), factName(-1));
+				}
+				
+				rewrite(xYZFactName, factName(-1));
+				rewriteRight(factName(-1), xyZFactName);
+			}
+			
+			rewriteRight(factName(-1), factName(-2));
+		}
+	}
+	
 	public static final void claimCommutativityOfMatrixAddition() {
 		claim("commutativity_of_matrix_addition",
-				$$("∀X,Y (X∈≀M ∧ Y∈≀M) → ((X+Y)=(Y+X))"));
+				$$("∀X,Y (X∈≀M → (Y∈≀M → ((X+Y)=(Y+X))))"));
 		{
 			final Symbol x = introduce();
 			final Symbol y = introduce();
 			introduce();
-			bind(conditionName(-1));
+			introduce();
 			final Expression xy = $(x, "+", y);
 			final Expression yx = $(y, "+", x);
 			bind("definition_of_matrix_equality", xy, yx);
@@ -254,105 +327,6 @@ public final class RealMatrices {
 	
 	public static final Composite realMatrix(final Expression expression) {
 		return $(expression, "∈", "≀M");
-	}
-	
-	public static final void claimAssociativityOfMatrixAddition() {
-		final Session session = session();
-		final String matrixFactName = "associativity_of_matrix_addition";
-		final String realFactName = "associativity_of_addition";
-		final Session s = new Session(new Module(session.getCurrentModule(), matrixFactName));
-		final Module realFact = ((Module) session.getProposition(realFactName)).canonical();
-		final Collection<Expression> remainingConditions = new HashSet<>(realFact.getConditions());
-		
-		lookForRealParameters:
-		for (final Symbol parameter : realFact.getParameters()) {
-			final Expression typeOfParameter = real(parameter);
-			
-			for (final Expression condition : realFact.getConditions()) {
-				if (typeOfParameter.equals(condition)) {
-					s.suppose(realMatrix(s.getCurrentContext().parameter(parameter.toString().toUpperCase(Locale.ENGLISH))));
-					remainingConditions.remove(condition);
-					continue lookForRealParameters;
-				}
-			}
-			
-			s.getCurrentContext().parameter(parameter.toString());
-		}
-		
-		for (final Expression e : s.getCurrentModule().bind(realFact).getFacts()) {
-			s.claim(e);
-			{
-				final Composite g = (Composite) s.getCurrentGoal();
-				
-				s.bind("definition_of_matrix_equality", (Expression) g.get(0), g.get(2));
-				
-				{
-					Expression lastFact = s.getFact(-1);
-					
-					while (lastFact instanceof Module) {
-						final Module lastModule = (Module) lastFact;
-						Reals.proveWithBindAndApply(s, lastModule.getConditions().get(0));
-						s.apply(s.getFactName(-2), s.getFactName(-1));
-						lastFact = s.getFact(-1);
-					}
-					
-					s.claim(((Composite) lastFact).get(2));
-				}
-				
-				{
-					s.introduce();
-					s.introduce();
-					
-					final Symbol x = s.getParameter("X");
-					final Symbol y = s.getParameter("Y");
-					final Symbol z = s.getParameter("Z");
-					final Symbol i = s.getParameter("i");
-					final Symbol j = s.getParameter("j");
-					final Expression xij = $(x, "_", $(i, ",", j));
-					final Expression yij = $(y, "_", $(i, ",", j));
-					final Expression zij = $(z, "_", $(i, ",", j));
-					final Expression xy = $(x, "+", y);
-					final Expression yz = $(y, "+", z);
-					
-					s.bind("definition_of_matrix_addition", x, yz, i, j);
-					s.bind("definition_of_matrix_addition", y, z, i, j);
-					s.rewrite(s.getFactName(-2), s.getFactName(-1));
-					final String leftExpansion = s.getFactName(-1);
-					
-					s.bind("definition_of_matrix_addition", xy, z, i, j);
-					s.bind("definition_of_matrix_addition", x, y, i, j);
-					s.rewrite(s.getFactName(-2), s.getFactName(-1));
-					final String rightExpansion = s.getFactName(-1);
-					
-					s.bind(realFactName, xij, yij, zij);
-					{
-						s.bind("matrix_element_is_real", x);
-						s.apply(s.getFactName(-1), matrixFactName + ".1");
-						s.bind(s.getFactName(-1), i, j);
-						s.apply(s.getFactName(-4), s.getFactName(-1));
-						
-						s.bind("matrix_element_is_real", y);
-						s.apply(s.getFactName(-1), matrixFactName + ".2");
-						s.bind(s.getFactName(-1), i, j);
-						s.apply(s.getFactName(-4), s.getFactName(-1));
-						
-						s.bind("matrix_element_is_real", z);
-						s.apply(s.getFactName(-1), matrixFactName + ".3");
-						s.bind(s.getFactName(-1), i, j);
-						s.apply(s.getFactName(-4), s.getFactName(-1));
-					}
-					
-					s.rewrite(leftExpansion, s.getFactName(-1));
-					rewriteRight(s, s.getFactName(-1), rightExpansion);
-				}
-				
-				rewriteRight(s, s.getFactName(-1), s.getFactName(-2));
-			}
-		}
-		
-		session.getCurrentModule().new Claim(matrixFactName, s.getCurrentModule()).execute();
-		session.tryToPop();
-//		new SessionExporter(s).exportSession();
 	}
 	
 }
