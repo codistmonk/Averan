@@ -106,6 +106,7 @@ public final class RealMatrices {
 				
 				claimTranspositionOf("addition", "+");
 				claimTranspositionOf("subtraction", "-");
+				claimTranspositionOfMultiplication();
 			}
 			
 			private static final long serialVersionUID = 8185469030596522271L;
@@ -148,6 +149,60 @@ public final class RealMatrices {
 				rewrite(factName(-2), factName(-1));
 				bind("definition_of_transposition", y, i, j);
 				rewrite(factName(-2), factName(-1));
+				
+				rewriteRight(xyTFactName, factName(-1));
+			}
+			
+			rewriteRight(factName(-1), factName(-2));
+		}
+	}
+	
+	public static final void claimTranspositionOfMultiplication() {
+		claim("transposition_of_multiplication",
+				$$("∀X,Y ((X∈≀M) → ((Y∈≀M) → ((XY)ᵀ=YᵀXᵀ)))"));
+		{
+			final Symbol x = introduce();
+			final Symbol y = introduce();
+			final Expression xt = transpose(x);
+			final Expression yt = transpose(y);
+			final Expression xy = $(x, y);
+			final Expression xyT = transpose(xy);
+			final Expression ytxt = $(yt, xt);
+			
+			introduce();
+			introduce();
+			
+			bind("definition_of_matrix_equality", xyT, ytxt);
+			autoApplyLastFact();
+			autoApplyLastFact();
+			
+			claim(((Composite) fact(-1)).get(2));
+			{
+				final Symbol i = introduce();
+				final Symbol j = introduce();
+				final Symbol k = session().getCurrentModule().new Symbol("k");
+				final Expression xjk = $(x, "_", $(j, ",", k));
+				final Expression yki = $(y, "_", $(k, ",", i));
+				
+				bind("definition_of_transposition", xy, i, j);
+				bind("definition_of_matrix_multiplication", x, y, j, i, k);
+				rewrite(factName(-2), factName(-1));
+				
+				final String xyTFactName = factName(-1);
+				
+				bind("definition_of_matrix_multiplication", yt, xt, i, j, k);
+				bind("definition_of_transposition", x, k, j);
+				rewrite(factName(-2), factName(-1));
+				bind("definition_of_transposition", y, i, k);
+				rewrite(factName(-2), factName(-1));
+				
+				final String ytxtFactName = factName(-1);
+				
+				bind("commutativity_of_multiplication", yki, xjk);
+				applyLastFactOnMatrixElementRealness(y, k, i);
+				applyLastFactOnMatrixElementRealness(x, j, k);
+				rewrite(ytxtFactName, factName(-1));
+				if (true) return;
 				
 				rewriteRight(xyTFactName, factName(-1));
 			}
