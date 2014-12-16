@@ -327,9 +327,6 @@ public final class TexPrinter implements SessionExporter.Output {
 //			final Module m = module.canonical();
 			final Module m = module;
 			
-			Tools.debugPrint(module);
-			Tools.debugPrint(m);
-			
 			if (!m.getParameters().isEmpty()) {
 				resultBuilder.append("\\forall ").append(Tools.join(",",
 						Arrays.stream(this.transform(m.getParameters())).map(p -> p.getFirst()).toArray()))
