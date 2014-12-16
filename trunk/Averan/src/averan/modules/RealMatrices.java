@@ -821,6 +821,7 @@ public final class RealMatrices {
 				final Expression xik = $(x, "_", $(i, ",", k));
 				final Expression ykl = $(y, "_", $(k, ",", l));
 				final Expression zlj = $(z, "_", $(l, ",", j));
+				final Expression xikykl = $(xik, ykl);
 				final Expression yklzlj = $(ykl, zlj);
 				
 				bind("definition_of_matrix_multiplication", x, yz, m, n, p, i, j, k);
@@ -845,12 +846,21 @@ public final class RealMatrices {
 				bind("definition_of_matrix_multiplication", xy, z, m, o, p, i, j, l);
 				autoApplyLastFact();
 				autoApplyLastFact();
-				String xyZFactName = factName(-1);
+				final String xyZFactName = factName(-1);
 				bind("definition_of_matrix_multiplication", x, y, m, n, o, i, l, k);
 				autoApplyLastFact();
 				autoApplyLastFact();
 				rewrite(xyZFactName, factName(-1));
+				
+				bind("right_distributivity_over_sum", xikykl, zlj, $(n, "-", "1"), k);
+				rewrite(factName(-2), factName(-1));
+				bind("commutativity_of_sum_nesting", (Expression) $(xikykl, zlj), $(o, "-", "1"), $(n, "-", "1"), l, k);
+				rewrite(factName(-2), factName(-1));
+				
+				rewriteRight(xYZFactName, factName(-1));
 			}
+			
+			rewriteRight(factName(-1), factName(-2));
 		}
 	}
 	
