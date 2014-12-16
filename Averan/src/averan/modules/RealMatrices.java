@@ -47,12 +47,22 @@ public final class RealMatrices {
 						$$("∀X,Y ('rowCount'_(X+Y) = 'rowCount'_X)"));
 				suppose("definition_of_matrix_addition_columnCount",
 						$$("∀X,Y ('columnCount'_(X+Y) = 'columnCount'_X)"));
+				suppose("definition_of_matrix_addition_rowCount_2",
+						$$("∀X,Y ('rowCount'_(X+Y) = 'rowCount'_Y)"));
+				suppose("definition_of_matrix_addition_columnCount_2",
+						$$("∀X,Y ('columnCount'_(X+Y) = 'columnCount'_Y)"));
 				suppose("definition_of_matrix_subtraction",
 						$$("∀X,Y,i,j (((X-Y)_(i,j) = (X_(i,j))-(Y_(i,j))))"));
+				suppose("type_of_matrix_subtraction",
+						$$("∀X,Y ((X∈≀M) → ((Y∈≀M) → ((X-Y)∈≀M)))"));
 				suppose("definition_of_matrix_subtraction_rowCount",
 						$$("∀X,Y ('rowCount'_(X-Y) = 'rowCount'_X)"));
 				suppose("definition_of_matrix_subtraction_columnCount",
 						$$("∀X,Y ('columnCount'_(X-Y) = 'columnCount'_X)"));
+				suppose("definition_of_matrix_subtraction_rowCount_2",
+						$$("∀X,Y ('rowCount'_(X-Y) = 'rowCount'_Y)"));
+				suppose("definition_of_matrix_subtraction_columnCount_2",
+						$$("∀X,Y ('columnCount'_(X-Y) = 'columnCount'_Y)"));
 				suppose("definition_of_matrix_multiplication",
 						$$("∀X,Y,i,j,k ((XY)_(i,j)=((Σ_(k=0)^(('columnCount'_X)-1)) ((X_(i,k))(Y_(k,j)))))"));
 				suppose("type_of_matrix_multiplication",
@@ -90,6 +100,8 @@ public final class RealMatrices {
 				claimAssociativityOfMatrixMultiplication();
 				claimLeftDistributivityOfMatrixMultiplicationOverAddition();
 				claimRightDistributivityOfMatrixMultiplicationOverAddition();
+				claimLeftDistributivityOfMatrixMultiplicationOverSubtraction();
+				claimRightDistributivityOfMatrixMultiplicationOverSubtraction();
 			}
 			
 			private static final long serialVersionUID = 8185469030596522271L;
@@ -469,6 +481,148 @@ public final class RealMatrices {
 				
 				rewrite(factName(-4), factName(-1));
 				bind("distributivity_of_sum_over_addition",
+						(Expression) $(xik, zkj), $(yik, zkj), $($("columnCount", "_", x), "-", "1"), k);
+				rewriteRight(factName(-2), factName(-1));
+				
+				rewriteRight(xYZFactName, factName(-1));
+			}
+			
+			rewriteRight(factName(-1), factName(-2));
+		}
+	}
+	
+	public static final void claimLeftDistributivityOfMatrixMultiplicationOverSubtraction() {
+		final String operation = "subtraction";
+		final String operator = "-";
+		
+		claim("left_distributivity_of_matrix_multiplication_over_" + operation,
+				$$("∀X,Y,Z ((X∈≀M) → ((Y∈≀M) → ((Z∈≀M) → ((X(Y" + operator + "Z))=(XY" + operator + "XZ)))))"));
+		{
+			final Symbol x = introduce();
+			final Symbol y = introduce();
+			final Symbol z = introduce();
+			
+			introduce();
+			introduce();
+			introduce();
+			
+			final Expression yz = $(y, operator, z);
+			final Expression xy = $(x, y);
+			final Expression xz = $(x, z);
+			final Expression xYZ = $(x, yz);
+			final Expression xyXZ = $(xy, operator, xz);
+			
+			bind("definition_of_matrix_equality", xYZ, xyXZ);
+			autoApplyLastFact();
+			autoApplyLastFact();
+			
+			claim(((Composite) fact(-1)).get(2));
+			{
+				final Symbol i = introduce();
+				final Symbol j = introduce();
+				final Symbol k = session().getCurrentModule().new Symbol("k");
+				final Expression xik = $(x, "_", $(i, ",", k));
+				final Expression ykj = $(y, "_", $(k, ",", j));
+				final Expression zkj = $(z, "_", $(k, ",", j));
+				
+				bind("definition_of_matrix_multiplication", x, yz, i, j, k);
+				bind("definition_of_matrix_" + operation, y, z, k, j);
+				rewrite(factName(-2), factName(-1));
+				
+				String xYZFactName = factName(-1);
+				
+				bind("left_distributivity_of_multiplication_over_" + operation, xik, ykj, zkj);
+				applyLastFactOnMatrixElementRealness(x, i, k);
+				applyLastFactOnMatrixElementRealness(y, k, j);
+				applyLastFactOnMatrixElementRealness(z, k, j);
+				
+				rewrite(xYZFactName, factName(-1));
+				
+				xYZFactName = factName(-1);
+				
+				bind("definition_of_matrix_" + operation, xy, xz, i, j);
+				bind("definition_of_matrix_multiplication", x, y, i, j, k);
+				rewrite(factName(-2), factName(-1));
+				bind("definition_of_matrix_multiplication", x, z, i, j, k);
+				rewrite(factName(-2), factName(-1));
+				
+				bind("distributivity_of_sum_over_" + operation, (Expression) $(xik, ykj), $(xik, zkj), $($("columnCount", "_", x), "-", "1"), k);
+				rewriteRight(factName(-2), factName(-1));
+				
+				rewriteRight(xYZFactName, factName(-1));
+			}
+			
+			rewriteRight(factName(-1), factName(-2));
+		}
+	}
+	
+	public static final void claimRightDistributivityOfMatrixMultiplicationOverSubtraction() {
+		final String operation = "subtraction";
+		final String operator = "-";
+		
+		claim("right_distributivity_of_matrix_multiplication_over_" + operation,
+				$$("∀X,Y,Z ((X∈≀M) → ((Y∈≀M) → ((Z∈≀M) → (((X" + operator + "Y)Z)=(XZ" + operator + "YZ)))))"));
+		{
+			final Symbol x = introduce();
+			final Symbol y = introduce();
+			final Symbol z = introduce();
+			
+			introduce();
+			introduce();
+			introduce();
+			
+			final Expression xy = $(x, operator, y);
+			final Expression xz = $(x, z);
+			final Expression yz = $(y, z);
+			final Expression xyZ = $(xy, z);
+			final Expression xzYZ = $(xz, operator, yz);
+			
+			bind("definition_of_matrix_equality", xyZ, xzYZ);
+			autoApplyLastFact();
+			autoApplyLastFact();
+			
+			claim(((Composite) fact(-1)).get(2));
+			{
+				final Symbol i = introduce();
+				final Symbol j = introduce();
+				final Symbol k = session().getCurrentModule().new Symbol("k");
+				final Expression xik = $(x, "_", $(i, ",", k));
+				final Expression yik = $(y, "_", $(i, ",", k));
+				final Expression zkj = $(z, "_", $(k, ",", j));
+				
+				bind("definition_of_matrix_multiplication", xy, z, i, j, k);
+				bind("definition_of_matrix_" + operation, x, y, i, k);
+				rewrite(factName(-2), factName(-1));
+				
+				String xYZFactName = factName(-1);
+				
+				bind("right_distributivity_of_multiplication_over_" + operation, xik, yik, zkj);
+				applyLastFactOnMatrixElementRealness(x, i, k);
+				applyLastFactOnMatrixElementRealness(y, i, k);
+				applyLastFactOnMatrixElementRealness(z, k, j);
+				
+				rewrite(xYZFactName, factName(-1));
+				
+				bind("definition_of_matrix_" + operation + "_columnCount", x, y);
+				final String columnCountXYFactName = factName(-1);
+				rewrite(factName(-2), factName(-1));
+				
+				xYZFactName = factName(-1);
+				
+				bind("definition_of_matrix_" + operation, xz, yz, i, j);
+				bind("definition_of_matrix_multiplication", x, z, i, j, k);
+				rewrite(factName(-2), factName(-1));
+				bind("definition_of_matrix_multiplication", y, z, i, j, k);
+				
+				claim($($("columnCount", "_", y), "=", $("columnCount", "_", x)));
+				{
+					bind("definition_of_matrix_" + operation + "_columnCount_2", x, y);
+					rewrite(columnCountXYFactName, factName(-1));
+				}
+				rewrite(factName(-2), factName(-1));
+				
+				rewrite(factName(-4), factName(-1));
+				bind("distributivity_of_sum_over_" + operation,
 						(Expression) $(xik, zkj), $(yik, zkj), $($("columnCount", "_", x), "-", "1"), k);
 				rewriteRight(factName(-2), factName(-1));
 				
