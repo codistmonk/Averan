@@ -86,9 +86,9 @@ public final class RealMatrices {
 				}
 				
 				// TODO claim
-				admit("right_distributivity_on_sum",
+				admit("right_distributivity_over_sum",
 						$$("∀X,Y,n,i ((((Σ_(i=0)^n) X)Y)=((Σ_(i=0)^n) (XY)))"));
-				admit("left_distributivity_on_sum",
+				admit("left_distributivity_over_sum",
 						$$("∀X,Y,n,i ((X ((Σ_(i=0)^n) Y))=((Σ_(i=0)^n) (XY)))"));
 				admit("commutativity_of_sum_nesting",
 						$$("∀X,m,n,i,j ((((Σ_(i=0)^m) ((Σ_(j=0)^n) X)))=(((Σ_(j=0)^n) ((Σ_(i=0)^m) X))))"));
@@ -97,7 +97,34 @@ public final class RealMatrices {
 				claimCommutativityOfMatrixAddition();
 				claimAssociativityOfMatrixMultiplication();
 				
-				// TODO distributivity
+				claim("left_distributivity_of_matrix_multiplication_over_addition",
+						$$("∀X,Y,Z ((X∈≀M) → ((Y∈≀M) → ((Z∈≀M) → ((X(Y+Z))=(XY+XZ)))))"));
+				{
+					final Symbol x = introduce();
+					final Symbol y = introduce();
+					final Symbol z = introduce();
+					
+					introduce();
+					introduce();
+					introduce();
+					
+					final Expression yz = $(y, "+", z);
+					final Expression xy = $(x, y);
+					final Expression xz = $(x, z);
+					final Expression xYZ = $(x, yz);
+					final Expression xyXZ = $(xy, "+", xz);
+					
+					bind("definition_of_matrix_equality", xYZ, xyXZ);
+					autoApplyLastFact();
+					autoApplyLastFact();
+					
+					claim(((Composite) fact(-1)).get(2));
+					{
+						final Symbol i = introduce();
+						final Symbol j = introduce();
+						
+					}
+				}
 			}
 			
 			private static final long serialVersionUID = 8185469030596522271L;
@@ -143,7 +170,7 @@ public final class RealMatrices {
 				rewrite(factName(-1), factName(-2));
 				bind("definition_of_matrix_multiplication", x, y, i, k, l);
 				rewrite(factName(-2), factName(-1));
-				bind("right_distributivity_on_sum", (Expression) $(xil, ylk), zkj, colsXMin1, l);
+				bind("right_distributivity_over_sum", (Expression) $(xil, ylk), zkj, colsXMin1, l);
 				rewrite(factName(-2), factName(-1));
 				bind("commutativity_of_sum_nesting", (Expression) $($(xil, ylk), zkj), colsXMin1, colsYMin1, l, k);
 				rewriteRight(factName(-2), factName(-1));
@@ -183,7 +210,7 @@ public final class RealMatrices {
 				bind("definition_of_matrix_multiplication", x, yz, i, j, l);
 				bind("definition_of_matrix_multiplication", y, z, l, j, k);
 				rewrite(factName(-2), factName(-1));
-				bind("left_distributivity_on_sum", xil, (Expression) $(ylk, zkj), colsYMin1, k);
+				bind("left_distributivity_over_sum", xil, (Expression) $(ylk, zkj), colsYMin1, k);
 				rewrite(factName(-2), factName(-1));
 				
 				rewriteRight(factName(-1), xyZijName);
