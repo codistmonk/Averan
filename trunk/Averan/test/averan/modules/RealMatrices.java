@@ -122,7 +122,46 @@ public final class RealMatrices {
 					{
 						final Symbol i = introduce();
 						final Symbol j = introduce();
+						final Symbol k = session().getCurrentModule().new Symbol("k");
+						final Expression xik = $(x, "_", $(i, ",", k));
+						final Expression ykj = $(y, "_", $(k, ",", j));
+						final Expression zkj = $(z, "_", $(k, ",", j));
 						
+						bind("definition_of_matrix_multiplication", x, yz, i, j, k);
+						bind("definition_of_matrix_addition", y, z, k, j);
+						rewrite(factName(-2), factName(-1));
+						
+						String xYZFactName = factName(-1);
+						
+						bind("left_distributivity_of_multiplication_over_addition", xik, ykj, zkj);
+						
+						claim(((Module) fact(-1)).getConditions().get(0));
+						{
+							bind("matrix_element_is_real", x);
+							autoApplyLastFact();
+							bind(factName(-1), i, k);
+						}
+						apply(factName(-2), factName(-1));
+						
+						claim(((Module) fact(-1)).getConditions().get(0));
+						{
+							bind("matrix_element_is_real", y);
+							autoApplyLastFact();
+							bind(factName(-1), k, j);
+						}
+						apply(factName(-2), factName(-1));
+						
+						claim(((Module) fact(-1)).getConditions().get(0));
+						{
+							bind("matrix_element_is_real", z);
+							autoApplyLastFact();
+							bind(factName(-1), k, j);
+						}
+						apply(factName(-2), factName(-1));
+						
+						rewrite(xYZFactName, factName(-1));
+						
+						// TODO xyXZ
 					}
 				}
 			}
