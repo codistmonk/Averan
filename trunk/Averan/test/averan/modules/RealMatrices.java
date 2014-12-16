@@ -99,6 +99,7 @@ public final class RealMatrices {
 				claimCommutativityOfMatrixAddition();
 				claimAssociativityOfMatrixMultiplication();
 				claimLeftDistributivityOfMatrixMultiplicationOverAddition();
+				claimRightDistributivityOfMatrixMultiplicationOverAddition();
 			}
 			
 			private static final long serialVersionUID = 8185469030596522271L;
@@ -152,9 +153,9 @@ public final class RealMatrices {
 				String xyZijName = factName(-1);
 				
 				bind("associativity_of_multiplication", xil, ylk, zkj);
-				applyLastFactOnMatrixElementRealness(x, l, i);
-				applyLastFactOnMatrixElementRealness(y, k, l);
-				applyLastFactOnMatrixElementRealness(z, j, k);
+				applyLastFactOnMatrixElementRealness(x, i, l);
+				applyLastFactOnMatrixElementRealness(y, l, k);
+				applyLastFactOnMatrixElementRealness(z, k, j);
 				
 				rewriteRight(xyZijName, factName(-1));
 				
@@ -217,9 +218,9 @@ public final class RealMatrices {
 				claim($(xYZij, "=", xyZij));
 				{
 					bind("associativity_of_addition", xij, yij, zij);
-					applyLastFactOnMatrixElementRealness(x, j, i);
-					applyLastFactOnMatrixElementRealness(y, j, i);
-					applyLastFactOnMatrixElementRealness(z, j, i);
+					applyLastFactOnMatrixElementRealness(x, i, j);
+					applyLastFactOnMatrixElementRealness(y, i, j);
+					applyLastFactOnMatrixElementRealness(z, i, j);
 				}
 				
 				rewrite(xYZFactName, factName(-1));
@@ -343,7 +344,7 @@ public final class RealMatrices {
 		{
 			bind("matrix_element_is_real", matrix);
 			autoApplyLastFact();
-			bind(factName(-1), j, i);
+			bind(factName(-1), i, j);
 		}
 		apply(factName(-2), factName(-1));
 	}
@@ -386,15 +387,14 @@ public final class RealMatrices {
 				String xYZFactName = factName(-1);
 				
 				bind("left_distributivity_of_multiplication_over_addition", xik, ykj, zkj);
-				applyLastFactOnMatrixElementRealness(x, k, i);
-				applyLastFactOnMatrixElementRealness(y, j, k);
-				applyLastFactOnMatrixElementRealness(z, j, k);
+				applyLastFactOnMatrixElementRealness(x, i, k);
+				applyLastFactOnMatrixElementRealness(y, k, j);
+				applyLastFactOnMatrixElementRealness(z, k, j);
 				
 				rewrite(xYZFactName, factName(-1));
 				
 				xYZFactName = factName(-1);
 				
-				// TODO xyXZ
 				bind("definition_of_matrix_addition", xy, xz, i, j);
 				bind("definition_of_matrix_multiplication", x, y, i, j, k);
 				rewrite(factName(-2), factName(-1));
@@ -402,6 +402,72 @@ public final class RealMatrices {
 				rewrite(factName(-2), factName(-1));
 				bind("distributivity_of_sum_over_addition", (Expression) $(xik, ykj), $(xik, zkj), $($("columnCount", "_", x), "-", "1"), k);
 				rewriteRight(factName(-2), factName(-1));
+				
+				rewriteRight(xYZFactName, factName(-1));
+			}
+			
+			rewriteRight(factName(-1), factName(-2));
+		}
+	}
+	
+	public static final void claimRightDistributivityOfMatrixMultiplicationOverAddition() {
+		claim("right_distributivity_of_matrix_multiplication_over_addition",
+				$$("∀X,Y,Z ((X∈≀M) → ((Y∈≀M) → ((Z∈≀M) → (((X+Y)Z)=(XZ+YZ)))))"));
+		{
+			final Symbol x = introduce();
+			final Symbol y = introduce();
+			final Symbol z = introduce();
+			
+			introduce();
+			introduce();
+			introduce();
+			
+			final Expression xy = $(x, "+", y);
+			final Expression xz = $(x, z);
+			final Expression yz = $(y, z);
+			final Expression xyZ = $(xy, z);
+			final Expression xzYZ = $(xz, "+", yz);
+			
+			bind("definition_of_matrix_equality", xyZ, xzYZ);
+			autoApplyLastFact();
+			autoApplyLastFact();
+			
+			claim(((Composite) fact(-1)).get(2));
+			{
+				final Symbol i = introduce();
+				final Symbol j = introduce();
+				final Symbol k = session().getCurrentModule().new Symbol("k");
+				final Expression xik = $(x, "_", $(i, ",", k));
+				final Expression yik = $(y, "_", $(i, ",", k));
+				final Expression zkj = $(z, "_", $(k, ",", j));
+				
+				bind("definition_of_matrix_multiplication", xy, z, i, j, k);
+				bind("definition_of_matrix_addition", x, y, i, k);
+				rewrite(factName(-2), factName(-1));
+				
+				String xYZFactName = factName(-1);
+				
+				bind("right_distributivity_of_multiplication_over_addition", xik, yik, zkj);
+				applyLastFactOnMatrixElementRealness(x, i, k);
+				applyLastFactOnMatrixElementRealness(y, i, k);
+				applyLastFactOnMatrixElementRealness(z, k, j);
+				
+				rewrite(xYZFactName, factName(-1));
+				
+				bind("definition_of_matrix_addition_columnCount", x, y);
+				rewrite(factName(-2), factName(-1));
+				
+				xYZFactName = factName(-1);
+				
+				bind("definition_of_matrix_addition", xz, yz, i, j);
+				bind("definition_of_matrix_multiplication", x, z, i, j, k);
+				rewrite(factName(-2), factName(-1));
+				bind("definition_of_matrix_multiplication", y, z, i, j, k);
+				rewrite(factName(-2), factName(-1));
+				bind("distributivity_of_sum_over_addition", (Expression) $(xik, zkj), $(yik, zkj), $($("columnCount", "_", x), "-", "1"), k);
+				rewriteRight(factName(-2), factName(-1));
+				
+				if (true) return;
 				
 				rewriteRight(xYZFactName, factName(-1));
 			}
