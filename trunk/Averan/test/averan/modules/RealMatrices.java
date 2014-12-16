@@ -4,6 +4,7 @@ import static averan.core.ExpressionTools.$;
 import static averan.core.SessionTools.*;
 import static averan.io.ExpressionParser.$$;
 import static averan.modules.Standard.*;
+
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Module;
@@ -13,7 +14,6 @@ import averan.io.SessionScaffold;
 import java.util.ArrayList;
 
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
-import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2014)
@@ -400,6 +400,7 @@ public final class RealMatrices {
 				rewrite(factName(-2), factName(-1));
 				bind("definition_of_matrix_multiplication", x, z, i, j, k);
 				rewrite(factName(-2), factName(-1));
+				
 				bind("distributivity_of_sum_over_addition", (Expression) $(xik, ykj), $(xik, zkj), $($("columnCount", "_", x), "-", "1"), k);
 				rewriteRight(factName(-2), factName(-1));
 				
@@ -455,6 +456,7 @@ public final class RealMatrices {
 				rewrite(xYZFactName, factName(-1));
 				
 				bind("definition_of_matrix_addition_columnCount", x, y);
+				final String columnCountXYFactName = factName(-1);
 				rewrite(factName(-2), factName(-1));
 				
 				xYZFactName = factName(-1);
@@ -463,11 +465,22 @@ public final class RealMatrices {
 				bind("definition_of_matrix_multiplication", x, z, i, j, k);
 				rewrite(factName(-2), factName(-1));
 				bind("definition_of_matrix_multiplication", y, z, i, j, k);
-				rewrite(factName(-2), factName(-1));
-				bind("distributivity_of_sum_over_addition", (Expression) $(xik, zkj), $(yik, zkj), $($("columnCount", "_", x), "-", "1"), k);
-				rewriteRight(factName(-2), factName(-1));
 				
-				if (true) return;
+				claim($($("columnCount", "_", y), "=", $("columnCount", "_", x)));
+				{
+					bind("commutativity_of_matrix_addition", x, y);
+					autoApplyLastFact();
+					autoApplyLastFact();
+					rewrite(columnCountXYFactName, factName(-1));
+					bind("definition_of_matrix_addition_columnCount", y, x);
+					rewrite(factName(-2), factName(-1));
+				}
+				rewrite(factName(-2), factName(-1));
+				
+				rewrite(factName(-4), factName(-1));
+				bind("distributivity_of_sum_over_addition",
+						(Expression) $(xik, zkj), $(yik, zkj), $($("columnCount", "_", x), "-", "1"), k);
+				rewriteRight(factName(-2), factName(-1));
 				
 				rewriteRight(xYZFactName, factName(-1));
 			}
