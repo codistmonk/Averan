@@ -12,6 +12,7 @@ import averan.core.Module.Symbol;
 import averan.core.Session;
 import averan.io.SessionExporter;
 import averan.io.SessionScaffold;
+import averan.modules.RealMatrices;
 import averan.modules.Reals;
 import averan.modules.Standard;
 import averan.modules.Reals.RewriteHint;
@@ -31,59 +32,12 @@ public final class Demo2 {
 	
 	public static final Module MODULE = new Module(Standard.MODULE);
 	
-	public static final void claimMatrixFactMirroringRealFact(final String matrixFactName, final String realFactName) {
-		claimMatrixFactMirroringRealFact(session(), matrixFactName, realFactName);
-	}
-	
-	public static final Composite realMatrix(final Expression expression) {
-		return $(expression, "∈", "≀M");
-	}
-	
-	public static final void claimMatrixFactMirroringRealFact(final Session session, final String matrixFactName, final String realFactName) {
-		final Session s = new Session(new Module(session.getCurrentModule(), matrixFactName));
-		final Module realFact = ((Module) session.getProposition(realFactName)).canonical();
-		final Collection<Expression> remainingConditions = new HashSet<>(realFact.getConditions());
-		
-		lookForRealParameters:
-		for (final Symbol parameter : realFact.getParameters()) {
-			final Expression typeOfParameter = real(parameter);
-			
-			for (final Expression condition : realFact.getConditions()) {
-				if (typeOfParameter.equals(condition)) {
-					s.suppose(realMatrix(s.getCurrentContext().parameter(parameter.toString().toUpperCase(Locale.ENGLISH))));
-					remainingConditions.remove(condition);
-					continue lookForRealParameters;
-				}
-			}
-			
-			s.getCurrentContext().parameter(parameter.toString());
-		}
-		
-		Tools.debugPrint(realFact);
-		
-		for (final Expression e :s.getCurrentModule().bind(realFact).getFacts()) {
-			s.claim(e);
-			{
-				final Composite g = (Composite) s.getCurrentGoal();
-				s.bind("definition_of_matrix_equality_2", (Expression) g.get(0), g.get(2));
-				Tools.debugPrint(justificationFor(s, e));
-			}
-		}
-		
-		new SessionExporter(s).exportSession();
-	}
-	
 	static {
-		Tools.debugPrint(Reals.hints.get("arithmetic").length);
-		Tools.debugPrint(Reals.hints.get("arithmetic"));
-		
-		final List<RewriteHint> matrixArithmeticHints = new ArrayList<>();
-		
 		new SessionScaffold(MODULE) {
 			
 			@Override
 			public final void buildSession() {
-				trust(Reals.MODULE);
+				trust(RealMatrices.MODULE);
 				
 				suppose("definition_of_conjunction",
 						$$("∀P,Q (P → (Q → (P ∧ Q)))"));
@@ -97,42 +51,10 @@ public final class Demo2 {
 						$$("∀A,B,x (x∈A∩B) = (x∈A ∧ x∈B)"));
 				suppose("definition_of_summation",
 						$$("∀i,a,b,e,s ((s=((Σ_(i=a)^b) e)) → (((b<a) → (s=0)) ∧ ((a≤b) → (s=(s{b=(b-1)})+(e{i=b})))))"));
-				suppose("definition_of_matrices",
-						$$("∀X,m,n (X∈≀M_(m,n) = ('rowCount'_X = m ∧ 'columnCount'_X = n ∧ ∀i,j (X_(i,j)∈ℝ)))"));
-				suppose("type_of_matrices",
-						$$("∀X ((X∈≀M)=(X∈≀M_(('rowCount'_X),('columnCount'_X))))"));
 				suppose("definition_of_matrix_size_equality",
 						$$("∀X,Y (('size'_X='size'_Y) = (('columnCount'_X = 'columnCount'_Y) ∧ ('rowCount'_X = 'rowCount'_Y)))"));
-				suppose("definition_of_matrix_equality",
-						$$("∀X,Y ((X=Y) = (∀i,j ((X)_(i,j)=(Y_(i,j)))))"));
 				suppose("definition_of_matrix_equality_2",
 						$$("∀X,Y ((X∈≀M) → ((Y∈≀M) → ((X=Y) = (∀i,j ((X)_(i,j)=(Y_(i,j)))))))"));
-				suppose("definition_of_matrix_scalarization",
-						$$("∀X ((X∈≀M_(1,1)) → (⟨X⟩=X_(1,1)))"));
-				suppose("definition_of_matrix_addition",
-						$$("∀X,Y,i,j (((X+Y)_(i,j) = (X_(i,j))+(Y_(i,j))))"));
-				suppose("definition_of_matrix_addition_rowCount",
-						$$("∀X,Y ('rowCount'_(X+Y) = 'rowCount'_X)"));
-				suppose("definition_of_matrix_addition_columnCount",
-						$$("∀X,Y ('columnCount'_(X+Y) = 'columnCount'_X)"));
-				suppose("definition_of_matrix_subtraction",
-						$$("∀X,Y,i,j (((X-Y)_(i,j) = (X_(i,j))-(Y_(i,j))))"));
-				suppose("definition_of_matrix_subtraction_rowCount",
-						$$("∀X,Y ('rowCount'_(X-Y) = 'rowCount'_X)"));
-				suppose("definition_of_matrix_subtraction_columnCount",
-						$$("∀X,Y ('columnCount'_(X-Y) = 'columnCount'_X)"));
-				suppose("definition_of_matrix_multiplication",
-						$$("∀X,Y,i,j,k ((XY)_(i,j)=((Σ_(k=0)^(('columnCount'_X)-1)) ((X_(i,k))(Y_(k,j)))))"));
-				suppose("definition_of_matrix_multiplication_rowCount",
-						$$("∀X,Y ('rowCount'_(XY) = 'rowCount'_X)"));
-				suppose("definition_of_matrix_multiplication_columnCount",
-						$$("∀X,Y ('columnCount'_(XY) = 'columnCount'_Y)"));
-				suppose("definition_of_transposition",
-						$$("∀X (∀i,j (Xᵀ_(i,j)=X_(j,i)))"));
-				suppose("definition_of_transposition_rowCount",
-						$$("∀X ('rowCount'_(Xᵀ)='columnCount'_X)"));
-				suppose("definition_of_transposition_columnCount",
-						$$("∀X ('columnCount'_(Xᵀ)='rowCount'_X)"));
 				
 //				claimMatrixFactMirroringRealFact("associativity_of_matrix_addition", "associativity_of_addition");
 				
