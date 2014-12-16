@@ -60,6 +60,8 @@ public final class RealMatrices {
 				suppose("type_of_transposition",
 						$$("∀X,m,n ((X∈≀M_(m,n)) → ((Xᵀ)∈≀M_(n,m)))"));
 				
+				claimAssociativityOfMatrixAddition2();
+				
 				if (true) return;
 				suppose("type_of_matrices",
 						$$("∀X ((X∈≀M)=(X∈≀M_(('rowCount'_X),('columnCount'_X))))"));
@@ -486,6 +488,17 @@ public final class RealMatrices {
 		apply(factName(-2), factName(-1));
 	}
 	
+	public static final void applyLastFactOnMatrixElementRealness(
+			final Symbol matrix, final Symbol m, final Symbol n, final Symbol i, final Symbol j) {
+		claim(((Module) fact(-1)).getConditions().get(0));
+		{
+			bind("type_of_matrix_element", matrix, m, n);
+			autoApplyLastFact();
+			bind(factName(-1), i, j);
+		}
+		apply(factName(-2), factName(-1));
+	}
+	
 	public static final void claimLeftDistributivityOfMatrixMultiplicationOver(
 			final String operation, final String operator) {
 		claim("left_distributivity_of_matrix_multiplication_over_" + operation,
@@ -616,6 +629,74 @@ public final class RealMatrices {
 				bind("distributivity_of_sum_over_" + operation,
 						(Expression) $(xik, zkj), $(yik, zkj), $($("columnCount", "_", x), "-", "1"), k);
 				rewriteRight(factName(-2), factName(-1));
+				
+				rewriteRight(xYZFactName, factName(-1));
+			}
+			
+			rewriteRight(factName(-1), factName(-2));
+		}
+	}
+	
+	public static final void claimAssociativityOfMatrixAddition2() {
+		claim("associativity_of_matrix_addition",
+				$$("∀X,Y,Z,m,n ((X∈≀M_(m,n)) → ((Y∈≀M_(m,n)) → ((Z∈≀M_(m,n)) → ((X+(Y+Z))=((X+Y)+Z)))))"));
+		{
+			final Symbol x = introduce();
+			final Symbol y = introduce();
+			final Symbol z = introduce();
+			final Symbol m = introduce();
+			final Symbol n = introduce();
+			introduce();
+			introduce();
+			introduce();
+			
+			final Expression xy = $(x, "+", y);
+			final Expression yz = $(y, "+", z);
+			final Expression xYZ = $(x, "+", yz);
+			final Expression xyZ = $(xy, "+", z);
+			
+			bind("definition_of_matrix_equality", xYZ, xyZ, m, n);
+			autoApplyLastFact();
+			autoApplyLastFact();
+			
+			claim(((Composite) fact(-1)).get(2));
+			{
+				final Symbol i = introduce();
+				final Symbol j = introduce();
+				final Expression xij = $(x, "_", $(i, ",", j));
+				final Expression yij = $(y, "_", $(i, ",", j));
+				final Expression zij = $(z, "_", $(i, ",", j));
+				final Expression xyij = $(xy, "_", $(i, ",", j));
+				final Expression yzij = $(yz, "_", $(i, ",", j));
+				
+				bind("definition_of_matrix_addition", x, yz, m, n);
+				autoApplyLastFact();
+				autoApplyLastFact();
+				bind(factName(-1), i, j);
+				String xYZFactName = factName(-1);
+				bind("definition_of_matrix_addition", y, z, m, n);
+				autoApplyLastFact();
+				autoApplyLastFact();
+				bind(factName(-1), i, j);
+				rewrite(xYZFactName, factName(-1));
+				xYZFactName = factName(-1);
+				bind("associativity_of_addition", xij, yij, zij);
+				applyLastFactOnMatrixElementRealness(x, m, n, i, j);
+				applyLastFactOnMatrixElementRealness(y, m, n, i, j);
+				applyLastFactOnMatrixElementRealness(z, m, n, i, j);
+				rewrite(xYZFactName, factName(-1));
+				xYZFactName = factName(-1);
+				
+				bind("definition_of_matrix_addition", xy, z, m, n);
+				autoApplyLastFact();
+				autoApplyLastFact();
+				bind(factName(-1), i, j);
+				String xyZFactName = factName(-1);
+				bind("definition_of_matrix_addition", x, y, m, n);
+				autoApplyLastFact();
+				autoApplyLastFact();
+				bind(factName(-1), i, j);
+				rewrite(xyZFactName, factName(-1));
 				
 				rewriteRight(xYZFactName, factName(-1));
 			}
