@@ -214,6 +214,10 @@ public final class TexPrinter implements SessionExporter.Output {
 		
 		private final Map<Object, DisplayHint> displayHints = new HashMap<>();
 		
+		{
+			this.displayHints.put($("ᵀ"), new DisplayHint(1100, "", "", 0));
+		}
+		
 		public final Map<Object, DisplayHint> getDisplayHints() {
 			return this.displayHints;
 		}
@@ -266,6 +270,18 @@ public final class TexPrinter implements SessionExporter.Output {
 				return DisplayHint.DEFAULT.hint(group("\\frac"
 						+ group(children.get(0).accept(this).getFirst())
 						+ group(children.get(2).accept(this).getFirst())));
+			}
+			
+			if (n == 2 && "ᵀ".equals(children.get(1).toString())) {
+				final boolean child0IsLongComposite = children.get(0) instanceof Composite && 1 < ((Composite) children.get(0)).getChildren().size();
+				final Pair<String, DisplayHint> pair1 = children.get(0).accept(this);
+				final Pair<String, DisplayHint> pair2 = children.get(1).accept(this);
+				
+				resultBuilder.append(child0IsLongComposite && pair1.getSecond().getPriority() < pair2.getSecond().getPriority() ?
+						pgroup(pair1.getFirst()) : group(pair1.getFirst()));
+				resultBuilder.append(group(pair2.getFirst()));
+				
+				return DisplayHint.GROUP.hint(group(resultBuilder));
 			}
 			
 			if (isSubscripted(composite)) {
