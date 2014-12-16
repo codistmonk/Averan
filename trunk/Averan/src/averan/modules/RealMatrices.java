@@ -4,6 +4,7 @@ import static averan.core.ExpressionTools.$;
 import static averan.core.SessionTools.*;
 import static averan.io.ExpressionParser.$$;
 import static averan.modules.Standard.*;
+
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Module;
@@ -13,7 +14,6 @@ import averan.io.SessionScaffold;
 import java.util.ArrayList;
 
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
-import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2014)
@@ -61,6 +61,7 @@ public final class RealMatrices {
 						$$("∀X,m,n ((X∈≀M_(m,n)) → ((Xᵀ)∈≀M_(n,m)))"));
 				
 				claimAssociativityOfMatrixAddition2();
+				claimCommutativityOfMatrixAddition2();
 				
 				if (true) return;
 				suppose("type_of_matrices",
@@ -646,6 +647,7 @@ public final class RealMatrices {
 			final Symbol z = introduce();
 			final Symbol m = introduce();
 			final Symbol n = introduce();
+			
 			introduce();
 			introduce();
 			introduce();
@@ -666,8 +668,6 @@ public final class RealMatrices {
 				final Expression xij = $(x, "_", $(i, ",", j));
 				final Expression yij = $(y, "_", $(i, ",", j));
 				final Expression zij = $(z, "_", $(i, ",", j));
-				final Expression xyij = $(xy, "_", $(i, ",", j));
-				final Expression yzij = $(yz, "_", $(i, ",", j));
 				
 				bind("definition_of_matrix_addition", x, yz, m, n);
 				autoApplyLastFact();
@@ -699,6 +699,55 @@ public final class RealMatrices {
 				rewrite(xyZFactName, factName(-1));
 				
 				rewriteRight(xYZFactName, factName(-1));
+			}
+			
+			rewriteRight(factName(-1), factName(-2));
+		}
+	}
+	
+	public static final void claimCommutativityOfMatrixAddition2() {
+		claim("commutativity_of_matrix_addition",
+				$$("∀X,Y,m,n ((X∈≀M_(m,n)) → ((Y∈≀M_(m,n)) → ((X+Y)=(Y+X))))"));
+		{
+			final Symbol x = introduce();
+			final Symbol y = introduce();
+			final Symbol m = introduce();
+			final Symbol n = introduce();
+			
+			introduce();
+			introduce();
+			
+			final Expression xy = $(x, "+", y);
+			final Expression yx = $(y, "+", x);
+			
+			bind("definition_of_matrix_equality", xy, yx, m, n);
+			autoApplyLastFact();
+			autoApplyLastFact();
+			
+			claim(((Composite) fact(-1)).get(2));
+			{
+				final Symbol i = introduce();
+				final Symbol j = introduce();
+				final Expression xij = $(x, "_", $(i, ",", j));
+				final Expression yij = $(y, "_", $(i, ",", j));
+				
+				bind("definition_of_matrix_addition", x, y, m, n);
+				autoApplyLastFact();
+				autoApplyLastFact();
+				bind(factName(-1), i, j);
+				String xyFactName = factName(-1);
+				bind("commutativity_of_addition", xij, yij);
+				applyLastFactOnMatrixElementRealness(x, m, n, i, j);
+				applyLastFactOnMatrixElementRealness(y, m, n, i, j);
+				rewrite(xyFactName, factName(-1));
+				xyFactName = factName(-1);
+				
+				bind("definition_of_matrix_addition", y, x, m, n);
+				autoApplyLastFact();
+				autoApplyLastFact();
+				bind(factName(-1), i, j);
+				
+				rewriteRight(xyFactName, factName(-1));
 			}
 			
 			rewriteRight(factName(-1), factName(-2));
