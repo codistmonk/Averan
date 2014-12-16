@@ -92,6 +92,8 @@ public final class RealMatrices {
 						$$("∀X,Y,n,i ((X ((Σ_(i=0)^n) Y))=((Σ_(i=0)^n) (XY)))"));
 				admit("commutativity_of_sum_nesting",
 						$$("∀X,m,n,i,j ((((Σ_(i=0)^m) ((Σ_(j=0)^n) X)))=(((Σ_(j=0)^n) ((Σ_(i=0)^m) X))))"));
+				admit("distributivity_of_sum_over_addition",
+						$$("∀X,Y,n,i (((Σ_(i=0)^n) (X+Y))=(((Σ_(i=0)^n) X)+((Σ_(i=0)^n) Y)))"));
 				
 				claimAssociativityOfMatrixAddition();
 				claimCommutativityOfMatrixAddition();
@@ -140,7 +142,14 @@ public final class RealMatrices {
 						
 						rewrite(xYZFactName, factName(-1));
 						
+						xYZFactName = factName(-1);
+						
 						// TODO xyXZ
+						bind("definition_of_matrix_addition", xy, xz, i, j);
+						bind("definition_of_matrix_multiplication", x, y, i, j, k);
+						rewrite(factName(-2), factName(-1));
+						bind("definition_of_matrix_multiplication", x, z, i, j, k);
+						rewrite(factName(-2), factName(-1));
 					}
 				}
 			}
