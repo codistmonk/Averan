@@ -27,6 +27,10 @@ public final class RealMatricesTest {
 						$$("∀m,n (1_(m,n)∈≀M_(m,n))"));
 				suppose("definition_of_replicated_mean",
 						$$("∀X,m,n ((X∈≀M_(m,n)) → (M_X=(1/n)X(1_(n,1))(1_(1,n))))"));
+				suppose("definition_of_covariance",
+						$$("∀X,Y,m,n,o ((X∈≀M_(m,n)) → ((Y∈≀M_(m,o)) → (Var_(X,Y)=(X-M_X)ᵀ(Y-M_Y))))"));
+				suppose("definition_of_variance",
+						$$("∀X,m,n ((X∈≀M_(m,n)) → (Var_X=Var_(X,X)))"));
 			}
 			
 			private static final long serialVersionUID = 2969099922483811015L;
