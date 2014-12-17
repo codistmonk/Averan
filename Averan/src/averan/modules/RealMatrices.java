@@ -70,7 +70,7 @@ public final class RealMatrices {
 				
 				claimTranspositionOf2("addition", "+");
 				claimTranspositionOf2("subtraction", "-");
-//				claimTranspositionOfMultiplication2();
+				claimTranspositionOfMultiplication2();
 				
 				if (true) return;
 				suppose("type_of_matrices",
@@ -1159,6 +1159,102 @@ public final class RealMatrices {
 				autoApplyLastFact();
 				bind(factName(-1), i, j);
 				rewrite(xtytFactName, factName(-1));
+				
+				rewriteRight(xyTFactName, factName(-1));
+			}
+			
+			rewriteRight(factName(-1), factName(-2));
+		}
+	}
+	
+	public static final void claimTranspositionOfMultiplication2() {
+		claim("transposition_of_multiplication",
+				$$("∀X,Y,m,n,o ((X∈≀M_(m,n)) → ((Y∈≀M_(n,o)) → ((XY)ᵀ=YᵀXᵀ)))"));
+		{
+			final Symbol x = introduce();
+			final Symbol y = introduce();
+			final Symbol m = introduce();
+			final Symbol n = introduce();
+			final Symbol o = introduce();
+			final Expression xt = transpose(x);
+			final Expression yt = transpose(y);
+			final Expression xy = $(x, y);
+			final Expression xyT = transpose(xy);
+			final Expression ytxt = $(yt, xt);
+			
+			introduce();
+			introduce();
+			
+			
+			claim(realMatrix(xy, m, o));
+			{
+				bind("type_of_matrix_multiplication", x, y, m, n, o);
+				autoApplyLastFact();
+				autoApplyLastFact();
+			}
+			
+			claim(realMatrix(xyT, o, m));
+			{
+				bind("type_of_transposition", xy, m, o);
+				autoApplyLastFact();
+			}
+			
+			claim(realMatrix(xt, n, m));
+			{
+				bind("type_of_transposition", x, m, n);
+				autoApplyLastFact();
+			}
+			
+			claim(realMatrix(yt, o, n));
+			{
+				bind("type_of_transposition", y, n, o);
+				autoApplyLastFact();
+			}
+			
+			claim(realMatrix(ytxt, o, m));
+			{
+				bind("type_of_matrix_multiplication", yt, xt, o, n, m);
+				autoApplyLastFact();
+				autoApplyLastFact();
+			}
+			
+			bind("definition_of_matrix_equality", xyT, ytxt, o, m);
+			autoApplyLastFact();
+			autoApplyLastFact();
+			
+			claim(((Composite) fact(-1)).get(2));
+			{
+				final Symbol i = introduce();
+				final Symbol j = introduce();
+				final Symbol k = session().getCurrentModule().new Symbol("k");
+				final Expression xjk = $(x, "_", $(j, ",", k));
+				final Expression yki = $(y, "_", $(k, ",", i));
+				
+				bind("definition_of_transposition", xy, m, o);
+				autoApplyLastFact();
+				bind(factName(-1), i, j);
+				String xyTFactName = factName(-1);
+				bind("definition_of_matrix_multiplication", x, y, m, n, o);
+				autoApplyLastFact();
+				autoApplyLastFact();
+				bind(factName(-1), j, i, k);
+				rewrite(xyTFactName, factName(-1));
+				xyTFactName = factName(-1);
+				
+				if (true) return;
+				
+				bind("definition_of_matrix_multiplication", yt, xt, i, j, k);
+				bind("definition_of_transposition", x, k, j);
+				rewrite(factName(-2), factName(-1));
+				bind("definition_of_transposition", y, i, k);
+				rewrite(factName(-2), factName(-1));
+				
+				final String ytxtFactName = factName(-1);
+				
+				bind("commutativity_of_multiplication", yki, xjk);
+				applyLastFactOnMatrixElementRealness(y, k, i);
+				applyLastFactOnMatrixElementRealness(x, j, k);
+				rewrite(ytxtFactName, factName(-1));
 				
 				rewriteRight(xyTFactName, factName(-1));
 			}
