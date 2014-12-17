@@ -1241,19 +1241,24 @@ public final class RealMatrices {
 				rewrite(xyTFactName, factName(-1));
 				xyTFactName = factName(-1);
 				
-				if (true) return;
-				
-				bind("definition_of_matrix_multiplication", yt, xt, i, j, k);
-				bind("definition_of_transposition", x, k, j);
-				rewrite(factName(-2), factName(-1));
-				bind("definition_of_transposition", y, i, k);
-				rewrite(factName(-2), factName(-1));
-				
-				final String ytxtFactName = factName(-1);
-				
+				bind("definition_of_matrix_multiplication", yt, xt, o, n, m);
+				autoApplyLastFact();
+				autoApplyLastFact();
+				bind(factName(-1), i, j, k);
+				String ytxtFactName = factName(-1);
+				bind("definition_of_transposition", x, m, n);
+				autoApplyLastFact();
+				bind(factName(-1), k, j);
+				rewrite(ytxtFactName, factName(-1));
+				ytxtFactName = factName(-1);
+				bind("definition_of_transposition", y, n, o);
+				autoApplyLastFact();
+				bind(factName(-1), i, k);
+				rewrite(ytxtFactName, factName(-1));
+				ytxtFactName = factName(-1);
 				bind("commutativity_of_multiplication", yki, xjk);
-				applyLastFactOnMatrixElementRealness(y, k, i);
-				applyLastFactOnMatrixElementRealness(x, j, k);
+				applyLastFactOnMatrixElementRealness(y, n, o, k, i);
+				applyLastFactOnMatrixElementRealness(x, m, n, j, k);
 				rewrite(ytxtFactName, factName(-1));
 				
 				rewriteRight(xyTFactName, factName(-1));
