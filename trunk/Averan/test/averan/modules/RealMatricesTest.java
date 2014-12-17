@@ -44,9 +44,9 @@ public final class RealMatricesTest {
 				suppose("definition_of_variance",
 						$$("∀X,m,n ((X∈≀M_(m,n)) → (Var_X=Var_(X,X)))"));
 				suppose("definition_of_class_means",
-						$$("∀X,m,n,c ((c∈ℕ) → ((∀i ((i∈ℕ_c) → ((n_i∈ℕ) ∧ (X_i∈≀M_(m,n_i))))) → (∀i,j ((j∈ℕ_c) → ((U_X)_(i,j)=(μ_(X_j))_(i,1))))))"));
-				suppose("definition_of_separability",
-						$$("∀w,X,m,n,c,j,k ((w∈≀M_(m,1)) → ((∀i (X_i∈≀M_(m,n_i))) → (S_(wᵀX)=(⟨(Σ_(j=0)^(c-1)) ((Σ_(k=(j+1))^(c-1)) (Var_(wᵀX_j,wᵀX_k)))⟩/⟨(Σ_(j=0)^(c-1)) (Var_(wᵀX_j))⟩))))"));
+						$$("∀X,m,n,c ((c∈ℕ) → ((∀i ((i∈ℕ_c) → ((n_i∈ℕ) ∧ (X_i∈≀M_(m,n_i))))) → (∀i,j ((j∈ℕ_c) → ((U_(X,c))_(i,j)=(μ_(X_j))_(i,1))))))"));
+				suppose("definition_of_fisher_linear_separability",
+						$$("∀w,X,m,n,c,j,k ((w∈≀M_(m,1)) → ((∀i ((i∈ℕ_c) → ((n_i∈ℕ) ∧(X_i∈≀M_(m,n_i))))) → (S_(wᵀX,c)=(⟨Var_(wᵀU_(X,c))⟩/⟨(Σ_(j=0)^(c-1)) (Var_(wᵀX_j))⟩))))"));
 			}
 			
 			private static final long serialVersionUID = 2969099922483811015L;
