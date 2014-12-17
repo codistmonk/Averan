@@ -45,6 +45,10 @@ public final class RealMatricesTest {
 						$$("∀X,m,n ((X∈≀M_(m,n)) → (Var_X=Var_(X,X)))"));
 				suppose("definition_of_class_means",
 						$$("∀X,m,n,c ((c∈ℕ) → ((∀i ((i∈ℕ_c) → ((n_i∈ℕ) ∧ (X_i∈≀M_(m,n_i))))) → (∀i,j ((j∈ℕ_c) → ((U_(X,c))_(i,j)=(μ_(X_j))_(i,1))))))"));
+				// TODO claim (?)
+				suppose("type_of_class_means",
+						$$("∀X,m,n,c ((c∈ℕ) → ((∀i ((i∈ℕ_c) → ((n_i∈ℕ) ∧ (X_i∈≀M_(m,n_i))))) → ((U_(X,c))∈≀M_(m,c))))"));
+				
 				suppose("definition_of_fisher_linear_separability",
 						$$("∀w,X,m,n,c,j,k ((w∈≀M_(m,1)) → ((∀i ((i∈ℕ_c) → ((n_i∈ℕ) ∧(X_i∈≀M_(m,n_i))))) → (S_(wᵀX,c)=(⟨Var_(wᵀU_(X,c))⟩/⟨(Σ_(j=0)^(c-1)) (Var_(wᵀX_j))⟩))))"));
 			}
