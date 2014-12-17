@@ -62,7 +62,7 @@ public final class RealMatrices {
 				suppose("commutativity_of_matrix_scalar_multiplication",
 						$$("∀X,Y,m,n ((X∈ℝ) → ((Y∈≀M_(m,n)) → ((XY)=(YX))))"));
 				suppose("type_of_matrix_scalar_multiplication",
-						$$("∀X,Y,m,n ((X∈≀M_(m,n)) → ((Y∈ℝ) → ((XY)∈≀M_(m,n))))"));
+						$$("∀X,Y,m,n ((X∈ℝ) → ((Y∈≀M_(m,n)) → ((XY)∈≀M_(m,n))))"));
 				suppose("associativity_of_matrix_scalar_multiplication",
 						$$("∀X,Y,Z,m,n,o ((X∈ℝ) → ((Y∈≀M_(m,n)) → ((Z∈≀M_(n,o)) → ((X(YZ))=((XY)Z)))))"));
 				
