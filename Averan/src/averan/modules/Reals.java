@@ -47,6 +47,8 @@ public final class Reals {
 		
 		try {
 			suppose("naturals_are_reals", $$("∀x ((x∈ℕ) → (x∈ℝ))"));
+			suppose("definition_of_natural_range",
+					$$("∀n ((n∈ℕ) → (∀i ((i∈ℕ_n) → (i∈ℕ ∧ i<n))))"));
 			
 			suppose("type_of_inverse", $$("∀x ((x∈ℝ) → ((1/x)∈ℝ))"));
 			
