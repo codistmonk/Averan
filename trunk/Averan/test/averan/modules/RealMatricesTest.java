@@ -39,6 +39,8 @@ public final class RealMatricesTest {
 				claimTypeOfCovariance();
 				suppose("definition_of_variance",
 						$$("∀X,m,n ((X∈≀M_(m,n)) → (Var_X=Var_(X,X)))"));
+				suppose("definition_of_separability",
+						$$("∀w,X,m,n,c,j,k ((w∈≀M_(m,1)) → ((∀i (X_i∈≀M_(m,n_i))) → (S_(wᵀX)=(((Σ_(j=0)^(c-1)) ((Σ_(k=(j+1))^(c-1)) (Var_(wᵀX_j,wᵀX_k))))/((Σ_(j=0)^(c-1)) (Var_(wᵀX_j)))))))"));
 			}
 			
 			private static final long serialVersionUID = 2969099922483811015L;
