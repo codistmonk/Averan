@@ -36,7 +36,7 @@ public final class RealMatricesTest {
 				claimTypeOfReplicatedMean();
 				suppose("definition_of_covariance",
 						$$("∀X,Y,m,n,o ((X∈≀M_(m,n)) → ((Y∈≀M_(m,o)) → (Var_(X,Y)=(X-M_X)ᵀ(Y-M_Y))))"));
-				// TODO type of covariance
+				claimTypeOfCovariance();
 				suppose("definition_of_variance",
 						$$("∀X,m,n ((X∈≀M_(m,n)) → (Var_X=Var_(X,X)))"));
 			}
@@ -44,6 +44,49 @@ public final class RealMatricesTest {
 			private static final long serialVersionUID = 2969099922483811015L;
 			
 		};
+	}
+	
+	public static final void claimTypeOfCovariance() {
+		claim("type_of_covariance",
+				$$("∀X,Y,m,n,o ((n∈ℕ) → ((o∈ℕ) → ((X∈≀M_(m,n)) → ((Y∈≀M_(m,o)) → (Var_(X,Y)∈≀M_(n,o))))))"));
+		{
+			final Symbol x = introduce();
+			final Symbol y = introduce();
+			final Symbol m = introduce();
+			final Symbol n = introduce();
+			final Symbol o = introduce();
+			
+			introduce();
+			introduce();
+			introduce();
+			introduce();
+			
+			bind("definition_of_covariance", x, y, m, n, o);
+			autoApplyLastFact();
+			autoApplyLastFact();
+			
+			final Expression xmx = $(x, "-", $("M", "_", x));
+			final Composite xmxt = transpose(xmx);
+			final Expression ymy = $(y, "-", $("M", "_", y));
+			
+			claim(realMatrix($(xmxt, ymy), n, o));
+			{
+				claim(realMatrix(xmxt, n, m));
+				{
+					proveUsingBindAndApply(realMatrix(xmx, m, n));
+					bind("type_of_transposition", xmx, m, n);
+					autoApplyLastFact();
+				}
+				
+				proveUsingBindAndApply(realMatrix(ymy, m, o));
+				
+				bind("type_of_matrix_multiplication", xmxt, ymy, n, m, o);
+				autoApplyLastFact();
+				autoApplyLastFact();
+			}
+			
+			rewriteRight(factName(-1), factName(-2));
+		}
 	}
 	
 	public static final void claimTypeOfReplicatedMean() {
