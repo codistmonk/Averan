@@ -53,7 +53,7 @@ public final class ExpressionParser implements Serializable {
 	
 	public static final Union DIGIT = union(range('0', '9'));
 	
-	public static final Union LETTER = union(union(range('a', 'z')), union(range('A', 'Z')), disjoin("Σℕℝ"));
+	public static final Union LETTER = union(union(range('a', 'z')), union(range('A', 'Z')), disjoin("Σℕℝαβγδεζηθικλμνξοπρςστυφχψω"));
 	
 	public static final Union GROUPING_OPERATOR = disjoin("(){}[]⟨⟩");
 	
