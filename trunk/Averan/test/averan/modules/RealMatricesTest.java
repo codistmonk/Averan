@@ -21,8 +21,12 @@ public final class RealMatricesTest {
 			
 			@Override
 			public final void buildSession() {
-//				suppose("type_of_ones",
-//						$$(""));
+				suppose("definition_of_ones",
+						$$("∀m,n,i,j ((1_(m,n))_(i,j)=1)"));
+				suppose("type_of_ones",
+						$$("∀m,n (1_(m,n)∈≀M_(m,n))"));
+				suppose("definition_of_replicated_mean",
+						$$("∀X,m,n ((X∈≀M_(m,n)) → (M_X=(1/n)X(1_(n,1))(1_(1,n))))"));
 			}
 			
 			private static final long serialVersionUID = 2969099922483811015L;

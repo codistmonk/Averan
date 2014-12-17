@@ -40,7 +40,7 @@ public final class RealMatrices {
 				suppose("definition_of_matrix_equality",
 						$$("∀X,Y,m,n ((X∈≀M_(m,n)) → ((Y∈≀M_(m,n)) → ((X=Y) = (∀i,j ((X)_(i,j)=(Y_(i,j)))))))"));
 				suppose("definition_of_matrix_scalarization",
-						$$("∀X ((X∈≀M_(1,1)) → (⟨X⟩=X_(1,1)))"));
+						$$("∀X ((X∈≀M_(1,1)) → (⟨X⟩=X_(0,0)))"));
 				suppose("definition_of_matrix_addition",
 						$$("∀X,Y,m,n ((X∈≀M_(m,n)) → ((Y∈≀M_(m,n)) → (∀i,j ((X+Y)_(i,j) = (X_(i,j))+(Y_(i,j))))))"));
 				suppose("type_of_matrix_addition",
@@ -57,6 +57,14 @@ public final class RealMatrices {
 						$$("∀X,m,n ((X∈≀M_(m,n)) → (∀i,j ((Xᵀ)_(i,j) = (X_(j,i)))))"));
 				suppose("type_of_transposition",
 						$$("∀X,m,n ((X∈≀M_(m,n)) → ((Xᵀ)∈≀M_(n,m)))"));
+				
+				// TODO claim
+				suppose("commutativity_of_matrix_scalar_multiplication",
+						$$("∀X,Y,m,n ((X∈ℝ) → ((Y∈≀M_(m,n)) → ((XY)=(YX))))"));
+				suppose("type_of_matrix_scalar_multiplication",
+						$$("∀X,Y,m,n ((X∈≀M_(m,n)) → ((Y∈ℝ) → ((XY)∈≀M_(m,n))))"));
+				suppose("associativity_of_matrix_scalar_multiplication",
+						$$("∀X,Y,Z,m,n,o ((X∈ℝ) → ((Y∈≀M_(m,n)) → ((Z∈≀M_(n,o)) → ((X(YZ))=((XY)Z)))))"));
 				
 				claimAssociativityOfMatrixAddition();
 				claimCommutativityOfMatrixAddition();
