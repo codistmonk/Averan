@@ -27,7 +27,7 @@ public final class RealMatrices {
 	public static final Module MODULE = new Module(Reals.MODULE, RealMatrices.class.getName());
 	
 	static {
-		new SessionScaffold(MODULE) {
+		new SessionScaffold(MODULE, 1, null) {
 			
 			@Override
 			public final void buildSession() {
