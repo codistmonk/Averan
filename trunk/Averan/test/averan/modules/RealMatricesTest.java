@@ -39,10 +39,10 @@ public final class RealMatricesTest {
 						$$("∀X,m,n ((n∈ℕ) → ((X∈≀M_(m,n)) → (M_X=(μ_X)(1_(1,n)))))"));
 				claimTypeOfReplicatedMean();
 				suppose("definition_of_covariance",
-						$$("∀X,Y,m,n ((X∈≀M_(m,n)) → ((Y∈≀M_(m,n)) → (Var_(X,Y)=(X-M_X)(Y-M_Y)ᵀ)))"));
+						$$("∀X,Y,m,n ((X∈≀M_(m,n)) → ((Y∈≀M_(m,n)) → ('Var'_(X,Y)=(X-M_X)(Y-M_Y)ᵀ)))"));
 				claimTypeOfCovariance();
 				suppose("definition_of_variance",
-						$$("∀X,m,n ((X∈≀M_(m,n)) → (Var_X=Var_(X,X)))"));
+						$$("∀X,m,n ((X∈≀M_(m,n)) → ('Var'_X='Var'_(X,X)))"));
 				claimTypeOfVariance();
 				suppose("definition_of_class_means",
 						$$("∀X,m,n,c ((c∈ℕ) → ((∀i ((i∈ℕ_c) → ((n_i∈ℕ) ∧ (X_i∈≀M_(m,n_i))))) → (∀i,j ((j∈ℕ_c) → ((U_(X,c))_(i,j)=(μ_(X_j))_(i,1))))))"));
@@ -51,7 +51,7 @@ public final class RealMatricesTest {
 						$$("∀X,m,n,c ((c∈ℕ) → ((∀i ((i∈ℕ_c) → ((n_i∈ℕ) ∧ (X_i∈≀M_(m,n_i))))) → ((U_(X,c))∈≀M_(m,c))))"));
 				
 				suppose("definition_of_fisher_linear_separability",
-						$$("∀w,X,m,n,c,j,k ((w∈≀M_(m,1)) → ((∀i ((i∈ℕ_c) → ((n_i∈ℕ) ∧(X_i∈≀M_(m,n_i))))) → (S_(wᵀX,c)=(⟨Var_(wᵀU_(X,c))⟩/⟨(Σ_(j=0)^(c-1)) (Var_(wᵀX_j))⟩))))"));
+						$$("∀w,X,m,n,c,j,k ((w∈≀M_(m,1)) → ((∀i ((i∈ℕ_c) → ((n_i∈ℕ) ∧(X_i∈≀M_(m,n_i))))) → (S_(wᵀX,c)=(⟨'Var'_(wᵀU_(X,c))⟩/⟨(Σ_(j=0)^(c-1)) ('Var'_(wᵀX_j))⟩))))"));
 				claim("type_of_fisher_linear_separability",
 						$$("∀w,X,m,n,c,j,k ((c∈ℕ) → ((w∈≀M_(m,1)) → ((∀i ((i∈ℕ_c) → ((n_i∈ℕ) ∧(X_i∈≀M_(m,n_i))))) → (S_(wᵀX,c)∈ℝ))))"));
 				{
@@ -66,6 +66,7 @@ public final class RealMatricesTest {
 					final Expression wt = transpose(w);
 					final Expression uxc = $("U", "_", $(x, ",", c));
 					final Expression wtuxc = $(wt, uxc);
+					final Expression varwtuxc = $("Var", "_", wtuxc);
 					
 					introduce();
 					introduce();
@@ -87,6 +88,13 @@ public final class RealMatricesTest {
 						autoApplyLastFact();
 					}
 					
+					claim(realMatrix(varwtuxc, $("1"), $("1")));
+					{
+						bind("type_of_variance", wtuxc, $("1"), c);
+						autoApplyLastFact();
+						autoApplyLastFact();
+					}
+					
 					bind("definition_of_fisher_linear_separability", w, x, m, n, c, j, k);
 					autoApplyLastFact();
 					apply(factName(-1), conditionName(-1));
@@ -98,29 +106,25 @@ public final class RealMatricesTest {
 						
 						bind("type_of_division", (Expression) fraction.get(0), fraction.get(2));
 						
+						final String moduleName = factName(-1);
+						
 						claimAppliedAndCondition(fact(-1));
 						{
 							{
 								final Expression expression = ((Composite) ((Composite) goal()).get(0)).get(1);
 								
 								bind("definition_of_matrix_scalarization", expression);
+								autoApplyLastFact();
 								
-								final String moduleName = factName(-1);
-								
-								claimAppliedAndCondition(fact(-1));
-								{
-									{
-										bind("type_of_variance", wtuxc, $("1"), c);
-										autoApplyLastFact();
-										autoApplyLastFact();
-									}
-									
-									apply(moduleName, factName(-1));
-								}
-								
-								breakSession();
+								bind("type_of_matrix_element", varwtuxc, $("1"), $("1"));
+								autoApplyLastFact();
+								bind(factName(-1), (Expression) $("0"), $("0"));
+								rewriteRight(factName(-1), factName(-4));
 							}
+							
+							apply(moduleName, factName(-1));
 						}
+						breakSession();
 					}
 				}
 			}
@@ -180,7 +184,7 @@ public final class RealMatricesTest {
 	
 	public static final void claimTypeOfCovariance() {
 		claim("type_of_covariance",
-				$$("∀X,Y,m,n ((n∈ℕ) → ((X∈≀M_(m,n)) → ((Y∈≀M_(m,n)) → (Var_(X,Y)∈≀M_(m,m)))))"));
+				$$("∀X,Y,m,n ((n∈ℕ) → ((X∈≀M_(m,n)) → ((Y∈≀M_(m,n)) → ('Var'_(X,Y)∈≀M_(m,m)))))"));
 		{
 			final Symbol x = introduce();
 			final Symbol y = introduce();
@@ -220,7 +224,7 @@ public final class RealMatricesTest {
 	
 	public static final void claimTypeOfVariance() {
 		claim("type_of_variance",
-				$$("∀X,m,n ((n∈ℕ) → ((X∈≀M_(m,n)) → (Var_X∈≀M_(m,m))))"));
+				$$("∀X,m,n ((n∈ℕ) → ((X∈≀M_(m,n)) → ('Var'_X∈≀M_(m,m))))"));
 		{
 			final Symbol x = introduce();
 			final Symbol m = introduce();
