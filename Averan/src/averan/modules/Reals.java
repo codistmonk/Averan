@@ -16,6 +16,7 @@ import averan.core.Module.Symbol;
 import averan.core.Pattern;
 import averan.core.Rewriter;
 import averan.core.Session;
+import averan.io.SessionExporter;
 import averan.modules.Standard;
 
 import java.io.Serializable;
@@ -50,8 +51,8 @@ public final class Reals {
 		pushNewSession(MODULE);
 		
 		try {
-			suppose(natural(ZERO));
-			suppose(natural(ONE));
+			suppose("type_of_0", natural(ZERO));
+			suppose("type_of_1", natural(ONE));
 			suppose("naturals_are_reals", $$("∀x ((x∈ℕ) → (x∈ℝ))"));
 			suppose("definition_of_natural_range",
 					$$("∀n ((n∈ℕ) → (∀i ((i∈ℕ_n) → (i∈ℕ ∧ i<n))))"));
@@ -139,8 +140,10 @@ public final class Reals {
 			
 			final RewriteHint[] additionAndMultiplicationHints = append(additionHints, multiplicationHints);
 			
-			suppose("definition_of_subtraction", $$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x-y)=(x+(-y)))))"));
+			suppose("definition_of_0", $$("∀x ((x∈ℝ) → (x+0=x))"));
+			suppose("definition_of_opposite", $$("∀x ((x∈ℝ) → (x+(-x)=0))"));
 			suppose("type_of_opposite", $$("∀x ((x∈ℝ) → ((-x)∈ℝ))"));
+			suppose("definition_of_subtraction", $$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x-y)=(x+(-y)))))"));
 			suppose("opposite_of_multiplication", $$("∀x,y ((x∈ℝ) → ((y∈ℝ) → (((-x)y)=(-(xy)))))"));
 			
 			final RewriteHint[] subtractionHints = {
@@ -191,6 +194,26 @@ public final class Reals {
 					append(subtractionHints, distributivityHints));
 			
 			hints.put("arithmetic", arithmeticHints);
+			
+			claim("subtract_1_add_1",
+					$$("∀x ((x∈ℝ) → (((x-1)+1)=x))"));
+			{
+				final Symbol x = introduce();
+				
+				introduce();
+				
+				final Expression left = ((Composite) goal()).get(0);
+				
+				bind("naturals_are_reals", ONE);
+				apply(factName(-1), "type_of_1");
+				proveEquality(equality(left, $(x, "+", $(ONE, "+", $("-", ONE)))), arithmeticHints);
+				bind("definition_of_opposite", ONE);
+				apply(factName(-1), factName(-3));
+				rewrite(factName(-3), factName(-1));
+				bind("definition_of_0", x);
+				apply(factName(-1), conditionName(-1));
+				rewrite(factName(-3), factName(-1));
+			}
 			
 			// TODO claim
 			admit("type_of_sum",

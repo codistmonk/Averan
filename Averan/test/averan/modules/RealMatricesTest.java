@@ -1,17 +1,16 @@
 package averan.modules;
 
 import static averan.core.ExpressionTools.*;
-import static averan.core.Session.breakSession;
 import static averan.core.SessionTools.*;
 import static averan.io.ExpressionParser.$$;
 import static averan.modules.Reals.*;
 import static averan.modules.RealMatrices.*;
 import static averan.modules.Standard.*;
 import static org.junit.Assert.*;
+
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Module;
-import averan.core.Session;
 import averan.core.Module.Symbol;
 import averan.io.SessionScaffold;
 
@@ -52,123 +51,7 @@ public final class RealMatricesTest {
 				
 				suppose("definition_of_fisher_linear_separability",
 						$$("∀w,X,m,n,c,j,k ((w∈≀M_(m,1)) → ((∀i ((i∈ℕ_c) → ((n_i∈ℕ) ∧ (X_i∈≀M_(m,n_i))))) → (S_(wᵀX,c)=(⟨'Var'_(wᵀU_(X,c))⟩/((Σ_(j=0)^(c-1)) ⟨'Var'_(wᵀX_j)⟩)))))"));
-				claim("type_of_fisher_linear_separability",
-						$$("∀w,X,m,n,c,j,k ((c∈ℕ) → ((w∈≀M_(m,1)) → ((∀i ((i∈ℕ_c) → ((n_i∈ℕ) ∧ (X_i∈≀M_(m,n_i))))) → (S_(wᵀX,c)∈ℝ))))"));
-				{
-					final Symbol w = introduce();
-					final Symbol x = introduce();
-					final Symbol m = introduce();
-					final Symbol n = introduce();
-					final Symbol c = introduce();
-					final Symbol j = introduce();
-					final Symbol k = introduce();
-					
-					final Expression wt = transpose(w);
-					final Expression uxc = $("U", "_", $(x, ",", c));
-					final Expression wtuxc = $(wt, uxc);
-					final Expression varwtuxc = $("Var", "_", wtuxc);
-					final Expression xj = $(x, "_", j);
-					final Expression wtxj = $(wt, xj);
-					final Expression varwtxj = $("Var", "_", wtxj);
-					
-					introduce();
-					introduce();
-					introduce();
-					
-					final String complexConditionName = conditionName(-1);
-					
-					proveWithBindAndApply(realMatrix(wt, $("1"), m));
-					
-					claim(realMatrix(uxc, m, c));
-					{
-						bind("type_of_class_means", x, m, n, c);
-						autoApplyLastFact();
-						apply(factName(-1), conditionName(-1));
-					}
-					
-					claim(realMatrix(wtuxc, $("1"), c));
-					{
-						bind("type_of_matrix_multiplication", wt, uxc, $("1"), m, c);
-						autoApplyLastFact();
-						autoApplyLastFact();
-					}
-					
-					claim(realMatrix(varwtuxc, $("1"), $("1")));
-					{
-						bind("type_of_variance", wtuxc, $("1"), c);
-						autoApplyLastFact();
-						autoApplyLastFact();
-					}
-					
-					bind("definition_of_fisher_linear_separability", w, x, m, n, c, j, k);
-					autoApplyLastFact();
-					apply(factName(-1), conditionName(-1));
-					
-					claim(real(((Composite) fact(-1)).get(2)));
-					{
-						final Composite goal = goal();
-						final Composite fraction = goal.get(0);
-						
-						bind("type_of_division", (Expression) fraction.get(0), fraction.get(2));
-						
-						{
-							final String moduleName = factName(-1);
-							
-							claimAppliedAndCondition(fact(-1));
-							{
-								{
-									final Expression expression = ((Composite) ((Composite) goal()).get(0)).get(1);
-									
-									bind("definition_of_matrix_scalarization", expression);
-									autoApplyLastFact();
-									
-									bind("type_of_matrix_element", varwtuxc, $("1"), $("1"));
-									autoApplyLastFact();
-									bind(factName(-1), (Expression) $("0"), $("0"));
-									rewriteRight(factName(-1), factName(-4));
-								}
-								
-								apply(moduleName, factName(-1));
-							}
-						}
-						
-						{
-							final String moduleName = factName(-1);
-							
-							claimAppliedAndCondition(fact(-1));
-							{
-								{
-									bind("type_of_sum", scalarize(varwtxj), $(c, "-", "1"), j);
-									
-									final String moduleName2 = factName(-1);
-									
-									claimAppliedAndCondition(fact(-1));
-									{
-										{
-											introduce();
-											bind(complexConditionName, j);
-											breakSession();
-										}
-										
-										apply(moduleName2, factName(-1));
-									}
-									
-									final Expression expression = ((Composite) ((Composite) goal()).get(0)).get(1);
-									
-									bind("definition_of_matrix_scalarization", expression);
-									autoApplyLastFact();
-									
-									bind("type_of_matrix_element", varwtuxc, $("1"), $("1"));
-									autoApplyLastFact();
-									bind(factName(-1), (Expression) $("0"), $("0"));
-									rewriteRight(factName(-1), factName(-4));
-								}
-								
-								apply(moduleName, factName(-1));
-							}
-						}
-					}
-				}
+				claimTypeOfFisherLinearSeparability();
 			}
 			
 			private static final long serialVersionUID = 2969099922483811015L;
@@ -316,6 +199,156 @@ public final class RealMatricesTest {
 			}
 			
 			rewriteRight(factName(-1), factName(-2));
+		}
+	}
+	
+	public static final void claimTypeOfFisherLinearSeparability() {
+		claim("type_of_fisher_linear_separability",
+				$$("∀w,X,m,n,c,j,k ((c∈ℕ) → ((w∈≀M_(m,1)) → ((∀i ((i∈ℕ_c) → ((n_i∈ℕ) ∧ (X_i∈≀M_(m,n_i))))) → (S_(wᵀX,c)∈ℝ))))"));
+		{
+			final Symbol w = introduce();
+			final Symbol x = introduce();
+			final Symbol m = introduce();
+			final Symbol n = introduce();
+			final Symbol c = introduce();
+			final Symbol j = introduce();
+			final Symbol k = introduce();
+			
+			final Expression wt = transpose(w);
+			final Expression uxc = $("U", "_", $(x, ",", c));
+			final Expression wtuxc = $(wt, uxc);
+			final Expression varwtuxc = $("Var", "_", wtuxc);
+			final Expression xj = $(x, "_", j);
+			final Expression wtxj = $(wt, xj);
+			final Expression varwtxj = $("Var", "_", wtxj);
+			
+			introduce();
+			introduce();
+			introduce();
+			
+			final String complexConditionName = conditionName(-1);
+			
+			proveWithBindAndApply(real(c));
+			
+			proveWithBindAndApply(realMatrix(wt, $("1"), m));
+			
+			claim(realMatrix(uxc, m, c));
+			{
+				bind("type_of_class_means", x, m, n, c);
+				autoApplyLastFact();
+				apply(factName(-1), conditionName(-1));
+			}
+			
+			claim(realMatrix(wtuxc, $("1"), c));
+			{
+				bind("type_of_matrix_multiplication", wt, uxc, $("1"), m, c);
+				autoApplyLastFact();
+				autoApplyLastFact();
+			}
+			
+			claim(realMatrix(varwtuxc, $("1"), $("1")));
+			{
+				bind("type_of_variance", wtuxc, $("1"), c);
+				autoApplyLastFact();
+				autoApplyLastFact();
+			}
+			
+			claim(real(scalarize(varwtuxc)));
+			{
+				bind("definition_of_matrix_scalarization", varwtuxc);
+				autoApplyLastFact();
+				bind("type_of_matrix_element", varwtuxc, ONE, ONE);
+				autoApplyLastFact();
+				bind(factName(-1), ZERO, ZERO);
+				rewriteRight(factName(-1), factName(-4));
+			}
+			
+			bind("definition_of_fisher_linear_separability", w, x, m, n, c, j, k);
+			autoApplyLastFact();
+			apply(factName(-1), conditionName(-1));
+			
+			claim(real(((Composite) fact(-1)).get(2)));
+			{
+				final Composite goal = goal();
+				final Composite fraction = goal.get(0);
+				
+				bind("type_of_division", (Expression) fraction.get(0), fraction.get(2));
+				autoApplyLastFact();
+				
+				{
+					final String moduleName = factName(-1);
+					
+					claimAppliedAndCondition(fact(-1));
+					{
+						{
+							bind("type_of_sum", scalarize(varwtxj), $(c, "-", "1"), j);
+							
+							final String moduleName2 = factName(-1);
+							
+							claimAppliedAndCondition(fact(-1));
+							{
+								{
+									introduce();
+									
+									bind("subtract_1_add_1", c);
+									autoApplyLastFact();
+									rewrite(conditionName(-1), factName(-1));
+									
+									bind(complexConditionName, j);
+									autoApplyLastFact();
+									bind(factName(-1));
+									
+									final Expression nj = $(n, "_", j);
+									
+									claim(realMatrix(wtxj, ONE, nj));
+									{
+										bind("type_of_matrix_multiplication", wt, xj, ONE, m, nj);
+										autoApplyLastFact();
+										autoApplyLastFact();
+									}
+									
+									claim(realMatrix(varwtxj, ONE, ONE));
+									{
+										bind("type_of_variance", wtxj, ONE, nj);
+										autoApplyLastFact();
+										autoApplyLastFact();
+									}
+									
+									bind("definition_of_matrix_scalarization", varwtxj);
+									
+									final String moduleName3 = factName(-1);
+									
+									claimAppliedAndCondition(fact(-1));
+									{
+										{
+											bind("type_of_variance", wtxj, ONE, nj);
+											autoApplyLastFact();
+											autoApplyLastFact();
+										}
+										
+										apply(moduleName3, factName(-1));
+									}
+									
+									claim(real($(varwtxj, "_", $(ZERO, ",", ZERO))));
+									{
+										bind("type_of_matrix_element", varwtxj, ONE, ONE);
+										autoApplyLastFact();
+										bind(factName(-1), ZERO, ZERO);
+									}
+									
+									rewriteRight(factName(-1), factName(-2));
+								}
+								
+								apply(moduleName2, factName(-1));
+							}
+						}
+						
+						apply(moduleName, factName(-1));
+					}
+					
+					rewriteRight(factName(-1), factName(-2));
+				}
+			}
 		}
 	}
 	
