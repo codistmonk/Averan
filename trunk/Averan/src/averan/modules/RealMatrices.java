@@ -128,7 +128,7 @@ public final class RealMatrices {
 		claim(applied);
 	}
 	
-	public static final Composite realMatrix(final Expression expression, final Symbol m, final Symbol n) {
+	public static final Composite realMatrix(final Object expression, final Object m, final Object n) {
 		return $(expression, "∈", $("≀M", "_", $(m, ",", n)));
 	}
 	
