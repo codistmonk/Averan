@@ -49,9 +49,9 @@ public final class RealMatricesTest {
 				suppose("type_of_class_means",
 						$$("∀X,m,n,c ((c∈ℕ) → ((∀i ((i∈ℕ_c) → ((n_i∈ℕ) ∧ (X_i∈≀M_(m,n_i))))) → ((U_(X,c))∈≀M_(m,c))))"));
 				
-				suppose("definition_of_fisher_linear_separability",
-						$$("∀w,X,m,n,c,j,k ((w∈≀M_(m,1)) → ((∀i ((i∈ℕ_c) → ((n_i∈ℕ) ∧ (X_i∈≀M_(m,n_i))))) → (S_(wᵀX,c)=(⟨'Var'_(wᵀU_(X,c))⟩/((Σ_(j=0)^(c-1)) ⟨'Var'_(wᵀX_j)⟩)))))"));
-				claimTypeOfFisherLinearSeparability();
+				suppose("definition_of_fisher_linear_discriminant",
+						$$("∀w,X,m,n,c,j ((w∈≀M_(m,1)) → ((∀i ((i∈ℕ_c) → ((n_i∈ℕ) ∧ (X_i∈≀M_(m,n_i))))) → (S_(wᵀX,c)=(⟨'Var'_(wᵀU_(X,c))⟩/((Σ_(j=0)^(c-1)) ⟨'Var'_(wᵀX_j)⟩)))))"));
+				claimTypeOfFisherLinearDiscriminant();
 			}
 			
 			private static final long serialVersionUID = 2969099922483811015L;
@@ -202,9 +202,9 @@ public final class RealMatricesTest {
 		}
 	}
 	
-	public static final void claimTypeOfFisherLinearSeparability() {
-		claim("type_of_fisher_linear_separability",
-				$$("∀w,X,m,n,c,j,k ((c∈ℕ) → ((w∈≀M_(m,1)) → ((∀i ((i∈ℕ_c) → ((n_i∈ℕ) ∧ (X_i∈≀M_(m,n_i))))) → (S_(wᵀX,c)∈ℝ))))"));
+	public static final void claimTypeOfFisherLinearDiscriminant() {
+		claim("type_of_fisher_linear_discriminant",
+				$$("∀w,X,m,n,c,j ((c∈ℕ) → ((w∈≀M_(m,1)) → ((∀i ((i∈ℕ_c) → ((n_i∈ℕ) ∧ (X_i∈≀M_(m,n_i))))) → (S_(wᵀX,c)∈ℝ))))"));
 		{
 			final Symbol w = introduce();
 			final Symbol x = introduce();
@@ -212,7 +212,6 @@ public final class RealMatricesTest {
 			final Symbol n = introduce();
 			final Symbol c = introduce();
 			final Symbol j = introduce();
-			final Symbol k = introduce();
 			
 			final Expression wt = transpose(w);
 			final Expression uxc = $("U", "_", $(x, ",", c));
@@ -263,7 +262,7 @@ public final class RealMatricesTest {
 				rewriteRight(factName(-1), factName(-4));
 			}
 			
-			bind("definition_of_fisher_linear_separability", w, x, m, n, c, j, k);
+			bind("definition_of_fisher_linear_discriminant", w, x, m, n, c, j);
 			autoApplyLastFact();
 			apply(factName(-1), conditionName(-1));
 			
