@@ -75,6 +75,8 @@ public final class RealMatricesTest {
 					introduce();
 					introduce();
 					
+					final String complexConditionName = conditionName(-1);
+					
 					proveWithBindAndApply(realMatrix(wt, $("1"), m));
 					
 					claim(realMatrix(uxc, m, c));
@@ -97,18 +99,6 @@ public final class RealMatricesTest {
 						autoApplyLastFact();
 						autoApplyLastFact();
 					}
-					
-					claim(realMatrix(xj, m, $(n, "_", j)));
-					{
-						bind(conditionName(-1), j);
-					}
-					
-					breakSession();
-					claim(realMatrix(wtxj, $("1"), $(n, "_", j)));
-					{
-						
-					}
-					breakSession();
 					
 					bind("definition_of_fisher_linear_separability", w, x, m, n, c, j, k);
 					autoApplyLastFact();
@@ -148,8 +138,21 @@ public final class RealMatricesTest {
 							claimAppliedAndCondition(fact(-1));
 							{
 								{
-									bind("type_of_sum");
-									breakSession();
+									bind("type_of_sum", scalarize(varwtxj), $(c, "-", "1"), j);
+									
+									final String moduleName2 = factName(-1);
+									
+									claimAppliedAndCondition(fact(-1));
+									{
+										{
+											introduce();
+											bind(complexConditionName, j);
+											breakSession();
+										}
+										
+										apply(moduleName2, factName(-1));
+									}
+									
 									final Expression expression = ((Composite) ((Composite) goal()).get(0)).get(1);
 									
 									bind("definition_of_matrix_scalarization", expression);
@@ -322,6 +325,10 @@ public final class RealMatricesTest {
 	
 	public static final Expression mean(final Object expression) {
 		return $("μ", "_", expression);
+	}
+	
+	public static final Expression scalarize(final Object expression) {
+		return $("⟨", expression, "⟩");
 	}
 	
 }

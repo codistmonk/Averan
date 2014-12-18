@@ -42,10 +42,16 @@ public final class Reals {
 	
 	public static final Map<String, RewriteHint[]> hints = new HashMap<>();
 	
+	public static final Symbol ZERO = $$("0");
+	
+	public static final Symbol ONE = $$("1");
+	
 	static {
 		pushNewSession(MODULE);
 		
 		try {
+			suppose(natural(ZERO));
+			suppose(natural(ONE));
 			suppose("naturals_are_reals", $$("∀x ((x∈ℕ) → (x∈ℝ))"));
 			suppose("definition_of_natural_range",
 					$$("∀n ((n∈ℕ) → (∀i ((i∈ℕ_n) → (i∈ℕ ∧ i<n))))"));
@@ -188,7 +194,7 @@ public final class Reals {
 			
 			// TODO claim
 			admit("type_of_sum",
-					$$("∀X,n,i ((X∈ℝ) → (((Σ_(i=0)^n) X)∈ℝ))"));
+					$$("∀X,n,i (((i∈ℕ_(n+1)) → (X∈ℝ)) → (((Σ_(i=0)^n) X)∈ℝ))"));
 			admit("left_distributivity_over_sum",
 					$$("∀X,Y,n,i ((X ((Σ_(i=0)^n) Y))=((Σ_(i=0)^n) (XY)))"));
 			admit("right_distributivity_over_sum",
