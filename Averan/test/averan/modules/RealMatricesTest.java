@@ -51,9 +51,9 @@ public final class RealMatricesTest {
 						$$("∀X,m,n,c ((c∈ℕ) → ((∀i ((i∈ℕ_c) → ((n_i∈ℕ) ∧ (X_i∈≀M_(m,n_i))))) → ((U_(X,c))∈≀M_(m,c))))"));
 				
 				suppose("definition_of_fisher_linear_separability",
-						$$("∀w,X,m,n,c,j,k ((w∈≀M_(m,1)) → ((∀i ((i∈ℕ_c) → ((n_i∈ℕ) ∧(X_i∈≀M_(m,n_i))))) → (S_(wᵀX,c)=(⟨'Var'_(wᵀU_(X,c))⟩/⟨(Σ_(j=0)^(c-1)) ('Var'_(wᵀX_j))⟩))))"));
+						$$("∀w,X,m,n,c,j,k ((w∈≀M_(m,1)) → ((∀i ((i∈ℕ_c) → ((n_i∈ℕ) ∧ (X_i∈≀M_(m,n_i))))) → (S_(wᵀX,c)=(⟨'Var'_(wᵀU_(X,c))⟩/((Σ_(j=0)^(c-1)) ⟨'Var'_(wᵀX_j)⟩)))))"));
 				claim("type_of_fisher_linear_separability",
-						$$("∀w,X,m,n,c,j,k ((c∈ℕ) → ((w∈≀M_(m,1)) → ((∀i ((i∈ℕ_c) → ((n_i∈ℕ) ∧(X_i∈≀M_(m,n_i))))) → (S_(wᵀX,c)∈ℝ))))"));
+						$$("∀w,X,m,n,c,j,k ((c∈ℕ) → ((w∈≀M_(m,1)) → ((∀i ((i∈ℕ_c) → ((n_i∈ℕ) ∧ (X_i∈≀M_(m,n_i))))) → (S_(wᵀX,c)∈ℝ))))"));
 				{
 					final Symbol w = introduce();
 					final Symbol x = introduce();
@@ -67,6 +67,9 @@ public final class RealMatricesTest {
 					final Expression uxc = $("U", "_", $(x, ",", c));
 					final Expression wtuxc = $(wt, uxc);
 					final Expression varwtuxc = $("Var", "_", wtuxc);
+					final Expression xj = $(x, "_", j);
+					final Expression wtxj = $(wt, xj);
+					final Expression varwtxj = $("Var", "_", wtxj);
 					
 					introduce();
 					introduce();
@@ -95,6 +98,18 @@ public final class RealMatricesTest {
 						autoApplyLastFact();
 					}
 					
+					claim(realMatrix(xj, m, $(n, "_", j)));
+					{
+						bind(conditionName(-1), j);
+					}
+					
+					breakSession();
+					claim(realMatrix(wtxj, $("1"), $(n, "_", j)));
+					{
+						
+					}
+					breakSession();
+					
 					bind("definition_of_fisher_linear_separability", w, x, m, n, c, j, k);
 					autoApplyLastFact();
 					apply(factName(-1), conditionName(-1));
@@ -106,25 +121,49 @@ public final class RealMatricesTest {
 						
 						bind("type_of_division", (Expression) fraction.get(0), fraction.get(2));
 						
-						final String moduleName = factName(-1);
-						
-						claimAppliedAndCondition(fact(-1));
 						{
-							{
-								final Expression expression = ((Composite) ((Composite) goal()).get(0)).get(1);
-								
-								bind("definition_of_matrix_scalarization", expression);
-								autoApplyLastFact();
-								
-								bind("type_of_matrix_element", varwtuxc, $("1"), $("1"));
-								autoApplyLastFact();
-								bind(factName(-1), (Expression) $("0"), $("0"));
-								rewriteRight(factName(-1), factName(-4));
-							}
+							final String moduleName = factName(-1);
 							
-							apply(moduleName, factName(-1));
+							claimAppliedAndCondition(fact(-1));
+							{
+								{
+									final Expression expression = ((Composite) ((Composite) goal()).get(0)).get(1);
+									
+									bind("definition_of_matrix_scalarization", expression);
+									autoApplyLastFact();
+									
+									bind("type_of_matrix_element", varwtuxc, $("1"), $("1"));
+									autoApplyLastFact();
+									bind(factName(-1), (Expression) $("0"), $("0"));
+									rewriteRight(factName(-1), factName(-4));
+								}
+								
+								apply(moduleName, factName(-1));
+							}
 						}
-						breakSession();
+						
+						{
+							final String moduleName = factName(-1);
+							
+							claimAppliedAndCondition(fact(-1));
+							{
+								{
+									bind("type_of_sum");
+									breakSession();
+									final Expression expression = ((Composite) ((Composite) goal()).get(0)).get(1);
+									
+									bind("definition_of_matrix_scalarization", expression);
+									autoApplyLastFact();
+									
+									bind("type_of_matrix_element", varwtuxc, $("1"), $("1"));
+									autoApplyLastFact();
+									bind(factName(-1), (Expression) $("0"), $("0"));
+									rewriteRight(factName(-1), factName(-4));
+								}
+								
+								apply(moduleName, factName(-1));
+							}
+						}
 					}
 				}
 			}

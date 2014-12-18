@@ -187,6 +187,8 @@ public final class Reals {
 			hints.put("arithmetic", arithmeticHints);
 			
 			// TODO claim
+			admit("type_of_sum",
+					$$("∀X,n,i ((X∈ℝ) → (((Σ_(i=0)^n) X)∈ℝ))"));
 			admit("left_distributivity_over_sum",
 					$$("∀X,Y,n,i ((X ((Σ_(i=0)^n) Y))=((Σ_(i=0)^n) (XY)))"));
 			admit("right_distributivity_over_sum",
