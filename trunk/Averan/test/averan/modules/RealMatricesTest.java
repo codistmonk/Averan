@@ -39,10 +39,11 @@ public final class RealMatricesTest {
 						$$("∀X,m,n ((n∈ℕ) → ((X∈≀M_(m,n)) → (M_X=(μ_X)(1_(1,n)))))"));
 				claimTypeOfReplicatedMean();
 				suppose("definition_of_covariance",
-						$$("∀X,Y,m,n,o ((X∈≀M_(m,n)) → ((Y∈≀M_(m,o)) → (Var_(X,Y)=(X-M_X)ᵀ(Y-M_Y))))"));
+						$$("∀X,Y,m,n ((X∈≀M_(m,n)) → ((Y∈≀M_(m,n)) → (Var_(X,Y)=(X-M_X)(Y-M_Y)ᵀ)))"));
 				claimTypeOfCovariance();
 				suppose("definition_of_variance",
 						$$("∀X,m,n ((X∈≀M_(m,n)) → (Var_X=Var_(X,X)))"));
+				claimTypeOfVariance();
 				suppose("definition_of_class_means",
 						$$("∀X,m,n,c ((c∈ℕ) → ((∀i ((i∈ℕ_c) → ((n_i∈ℕ) ∧ (X_i∈≀M_(m,n_i))))) → (∀i,j ((j∈ℕ_c) → ((U_(X,c))_(i,j)=(μ_(X_j))_(i,1))))))"));
 				// TODO claim (?)
@@ -52,7 +53,7 @@ public final class RealMatricesTest {
 				suppose("definition_of_fisher_linear_separability",
 						$$("∀w,X,m,n,c,j,k ((w∈≀M_(m,1)) → ((∀i ((i∈ℕ_c) → ((n_i∈ℕ) ∧(X_i∈≀M_(m,n_i))))) → (S_(wᵀX,c)=(⟨Var_(wᵀU_(X,c))⟩/⟨(Σ_(j=0)^(c-1)) (Var_(wᵀX_j))⟩))))"));
 				claim("type_of_fisher_linear_separability",
-						$$("∀w,X,m,n,c,j,k ((w∈≀M_(m,1)) → ((∀i ((i∈ℕ_c) → ((n_i∈ℕ) ∧(X_i∈≀M_(m,n_i))))) → (S_(wᵀX,c)∈ℝ)))"));
+						$$("∀w,X,m,n,c,j,k ((c∈ℕ) → ((w∈≀M_(m,1)) → ((∀i ((i∈ℕ_c) → ((n_i∈ℕ) ∧(X_i∈≀M_(m,n_i))))) → (S_(wᵀX,c)∈ℝ))))"));
 				{
 					final Symbol w = introduce();
 					final Symbol x = introduce();
@@ -62,8 +63,29 @@ public final class RealMatricesTest {
 					final Symbol j = introduce();
 					final Symbol k = introduce();
 					
+					final Expression wt = transpose(w);
+					final Expression uxc = $("U", "_", $(x, ",", c));
+					final Expression wtuxc = $(wt, uxc);
+					
 					introduce();
 					introduce();
+					introduce();
+					
+					proveWithBindAndApply(realMatrix(wt, $("1"), m));
+					
+					claim(realMatrix(uxc, m, c));
+					{
+						bind("type_of_class_means", x, m, n, c);
+						autoApplyLastFact();
+						apply(factName(-1), conditionName(-1));
+					}
+					
+					claim(realMatrix(wtuxc, $("1"), c));
+					{
+						bind("type_of_matrix_multiplication", wt, uxc, $("1"), m, c);
+						autoApplyLastFact();
+						autoApplyLastFact();
+					}
 					
 					bind("definition_of_fisher_linear_separability", w, x, m, n, c, j, k);
 					autoApplyLastFact();
@@ -83,12 +105,20 @@ public final class RealMatricesTest {
 								
 								bind("definition_of_matrix_scalarization", expression);
 								
+								final String moduleName = factName(-1);
+								
 								claimAppliedAndCondition(fact(-1));
 								{
 									{
-										
+										bind("type_of_variance", wtuxc, $("1"), c);
+										autoApplyLastFact();
+										autoApplyLastFact();
 									}
+									
+									apply(moduleName, factName(-1));
 								}
+								
+								breakSession();
 							}
 						}
 					}
@@ -147,47 +177,67 @@ public final class RealMatricesTest {
 			rewriteRight(factName(-1), factName(-2));
 		}
 	}
-
+	
 	public static final void claimTypeOfCovariance() {
 		claim("type_of_covariance",
-				$$("∀X,Y,m,n,o ((n∈ℕ) → ((o∈ℕ) → ((X∈≀M_(m,n)) → ((Y∈≀M_(m,o)) → (Var_(X,Y)∈≀M_(n,o))))))"));
+				$$("∀X,Y,m,n ((n∈ℕ) → ((X∈≀M_(m,n)) → ((Y∈≀M_(m,n)) → (Var_(X,Y)∈≀M_(m,m)))))"));
 		{
 			final Symbol x = introduce();
 			final Symbol y = introduce();
 			final Symbol m = introduce();
 			final Symbol n = introduce();
-			final Symbol o = introduce();
 			
 			introduce();
 			introduce();
 			introduce();
-			introduce();
 			
-			bind("definition_of_covariance", x, y, m, n, o);
+			bind("definition_of_covariance", x, y, m, n);
 			autoApplyLastFact();
 			autoApplyLastFact();
 			
 			final Expression xmx = $(x, "-", $("M", "_", x));
-			final Composite xmxt = transpose(xmx);
 			final Expression ymy = $(y, "-", $("M", "_", y));
+			final Composite ymyt = transpose(ymy);
 			
-			claim(realMatrix($(xmxt, ymy), n, o));
+			claim(realMatrix($(xmx, ymyt), m, m));
 			{
-				claim(realMatrix(xmxt, n, m));
+				proveUsingBindAndApply(realMatrix(xmx, m, n));
+				claim(realMatrix(ymyt, n, m));
 				{
-					proveUsingBindAndApply(realMatrix(xmx, m, n));
-					bind("type_of_transposition", xmx, m, n);
+					proveUsingBindAndApply(realMatrix(ymy, m, n));
+					bind("type_of_transposition", ymy, m, n);
 					autoApplyLastFact();
 				}
 				
-				proveUsingBindAndApply(realMatrix(ymy, m, o));
-				
-				bind("type_of_matrix_multiplication", xmxt, ymy, n, m, o);
+				bind("type_of_matrix_multiplication", xmx, ymyt, m, n, m);
 				autoApplyLastFact();
 				autoApplyLastFact();
 			}
 			
 			rewriteRight(factName(-1), factName(-2));
+		}
+	}
+	
+	public static final void claimTypeOfVariance() {
+		claim("type_of_variance",
+				$$("∀X,m,n ((n∈ℕ) → ((X∈≀M_(m,n)) → (Var_X∈≀M_(m,m))))"));
+		{
+			final Symbol x = introduce();
+			final Symbol m = introduce();
+			final Symbol n = introduce();
+			
+			introduce();
+			introduce();
+			
+			bind("type_of_covariance", x, x, m, n);
+			autoApplyLastFact();
+			autoApplyLastFact();
+			autoApplyLastFact();
+			
+			bind("definition_of_variance", x, m, n);
+			autoApplyLastFact();
+			
+			rewriteRight(factName(-3), factName(-1));
 		}
 	}
 	
