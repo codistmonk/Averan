@@ -51,11 +51,58 @@ public final class RealMatricesTest {
 				
 				suppose("definition_of_fisher_linear_separability",
 						$$("∀w,X,m,n,c,j,k ((w∈≀M_(m,1)) → ((∀i ((i∈ℕ_c) → ((n_i∈ℕ) ∧(X_i∈≀M_(m,n_i))))) → (S_(wᵀX,c)=(⟨Var_(wᵀU_(X,c))⟩/⟨(Σ_(j=0)^(c-1)) (Var_(wᵀX_j))⟩))))"));
+				claim("type_of_fisher_linear_separability",
+						$$("∀w,X,m,n,c,j,k ((w∈≀M_(m,1)) → ((∀i ((i∈ℕ_c) → ((n_i∈ℕ) ∧(X_i∈≀M_(m,n_i))))) → (S_(wᵀX,c)∈ℝ)))"));
+				{
+					final Symbol w = introduce();
+					final Symbol x = introduce();
+					final Symbol m = introduce();
+					final Symbol n = introduce();
+					final Symbol c = introduce();
+					final Symbol j = introduce();
+					final Symbol k = introduce();
+					
+					introduce();
+					introduce();
+					
+					bind("definition_of_fisher_linear_separability", w, x, m, n, c, j, k);
+					autoApplyLastFact();
+					apply(factName(-1), conditionName(-1));
+					
+					claim(real(((Composite) fact(-1)).get(2)));
+					{
+						final Composite goal = goal();
+						final Composite fraction = goal.get(0);
+						
+						bind("type_of_division", (Expression) fraction.get(0), fraction.get(2));
+						
+						claimAppliedAndCondition(fact(-1));
+						{
+							{
+								final Expression expression = ((Composite) ((Composite) goal()).get(0)).get(1);
+								
+								bind("definition_of_matrix_scalarization", expression);
+								
+								claimAppliedAndCondition(fact(-1));
+								{
+									{
+										
+									}
+								}
+							}
+						}
+					}
+				}
 			}
 			
 			private static final long serialVersionUID = 2969099922483811015L;
 			
 		};
+	}
+	
+	public static final void claimAppliedAndCondition(final Module module) {
+		claimApplied(module);
+		claim(module.getConditions().get(0));
 	}
 	
 	public static final void claimTypeOfMean() {

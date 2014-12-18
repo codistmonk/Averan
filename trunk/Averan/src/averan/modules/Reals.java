@@ -51,6 +51,7 @@ public final class Reals {
 					$$("∀n ((n∈ℕ) → (∀i ((i∈ℕ_n) → (i∈ℕ ∧ i<n))))"));
 			
 			suppose("type_of_inverse", $$("∀x ((x∈ℝ) → ((1/x)∈ℝ))"));
+			suppose("type_of_division", $$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x/y)∈ℝ)))"));
 			
 			suppose("type_of_addition", $$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x+y)∈ℝ)))"));
 			suppose("commutativity_of_addition", $$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x+y)=(y+x))))"));
