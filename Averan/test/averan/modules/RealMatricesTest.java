@@ -58,7 +58,7 @@ public final class RealMatricesTest {
 				{
 					final Expression m = $("m");
 					final Expression n = $("n");
-					final Expression x = $("x");
+					final Expression x = $("X");
 					
 					admit(natural(n));
 					admit(realMatrix(x, m, n));
@@ -81,6 +81,9 @@ public final class RealMatricesTest {
 						});
 						rewrite(factName(-2), factName(-1));
 					});
+					
+					final Expression mx = $("M", "_", x);
+					
 					claimLastFact(() -> {
 						claimLastFact(() -> {
 							claimLastFact(() -> {
@@ -89,13 +92,45 @@ public final class RealMatricesTest {
 								autoApplyLastFact();
 							});
 							
-							final Expression mx = $("M", "_", x);
-							
 							bind("transposition_of_subtraction", x, mx, m, n);
 							autoApplyLastFact();
 							autoApplyLastFact();
 						});
 						rewrite(factName(-2), factName(-1));
+					});
+					
+					final Expression xt = transpose(x);
+					final Expression xmx = $(x, "-", mx);
+					final Expression mxt = transpose(mx);
+					
+					claimLastFact(() -> {
+						claimLastFact(() -> {
+							claimLastFact(() -> {
+								bind("left_distributivity_of_matrix_multiplication_over_subtraction", xmx, xt, mxt, m, n, m);
+								autoApplyLastFact();
+								autoApplyLastFact();
+								autoApplyLastFact();
+							});
+							rewrite(factName(-2), factName(-1));
+						});
+						claimLastFact(() -> {
+							claimLastFact(() -> {
+								bind("right_distributivity_of_matrix_multiplication_over_subtraction", x, mx, xt, m, n, m);
+								autoApplyLastFact();
+								autoApplyLastFact();
+								autoApplyLastFact();
+							});
+							rewrite(factName(-2), factName(-1));
+						});
+						claimLastFact(() -> {
+							claimLastFact(() -> {
+								bind("right_distributivity_of_matrix_multiplication_over_subtraction", x, mx, mxt, m, n, m);
+								autoApplyLastFact();
+								autoApplyLastFact();
+								autoApplyLastFact();
+							});
+							rewrite(factName(-2), factName(-1));
+						});
 					});
 				}
 			}
