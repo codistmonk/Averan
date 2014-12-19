@@ -132,6 +132,21 @@ public final class RealMatricesTest {
 							rewrite(factName(-2), factName(-1));
 						});
 					});
+					
+					claimLastFact(() -> {
+						claimLastFact(() -> {
+							bind("definition_of_replicated_mean", x, m, n);
+							autoApplyLastFact();
+							autoApplyLastFact();
+						});
+						claimLastFact(() -> {
+							bind("definition_of_mean", x, m, n);
+							autoApplyLastFact();
+							autoApplyLastFact();
+						});
+						rewrite(factName(-2), factName(-1));
+					});
+					rewrite(factName(-2), factName(-1));
 				}
 			}
 			
