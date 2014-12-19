@@ -7,11 +7,11 @@ import static averan.modules.Reals.*;
 import static averan.modules.RealMatrices.*;
 import static averan.modules.Standard.*;
 import static org.junit.Assert.*;
-
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Module;
 import averan.core.Module.Symbol;
+import averan.core.Session;
 import averan.io.SessionScaffold;
 
 import org.junit.Test;
@@ -52,11 +52,60 @@ public final class RealMatricesTest {
 				suppose("definition_of_fisher_linear_discriminant",
 						$$("∀w,X,m,n,c,j " + conditionFisherLinearDiscriminant("S_(wᵀX,c)=(⟨'Var'_(wᵀU_(X,c))⟩/((Σ_(j=0)^(c-1)) ⟨'Var'_(wᵀX_j)⟩))")));
 				claimTypeOfFisherLinearDiscriminant();
+				
+				{
+					final Expression m = $("m");
+					final Expression n = $("n");
+					final Expression x = $("x");
+					
+					admit(natural(n));
+					admit(realMatrix(x, m, n));
+					
+					claimLastFact(() -> {
+						bind("definition_of_variance", x, m, n);
+						autoApplyLastFact();
+					});
+					claimLastFact(() -> {
+						bind("definition_of_covariance", x, x, m, n);
+						autoApplyLastFact();
+						autoApplyLastFact();
+					});
+					claimLastFact(() -> {
+						claimLastFact(() -> {
+							claimLastFact(() -> {
+								bind("type_of_replicated_mean", x, m, n);
+								autoApplyLastFact();
+								autoApplyLastFact();
+							});
+							
+							final Expression mx = $("M", "_", x);
+							
+							bind("transposition_of_subtraction", x, mx, m, n);
+							autoApplyLastFact();
+							autoApplyLastFact();
+						});
+						rewrite(factName(-2), factName(-1));
+					});
+				}
 			}
 			
 			private static final long serialVersionUID = 2969099922483811015L;
 			
 		};
+	}
+	
+	public static final void claimLastFact(final Runnable subSessionBlock) {
+		claimLastFact(null, subSessionBlock);
+	}
+	
+	public static final void claimLastFact(final String factName, final Runnable subSessionBlock) {
+		final Session s = session();
+		pushNewSession(new Module(session().getCurrentModule()));
+		
+		subSessionBlock.run();
+		
+		final Expression fact = fact(-1);
+		s.getCurrentModule().new Claim(factName, fact, popSession().getCurrentModule()).execute();
 	}
 	
 	public static final String conditionFisherLinearDiscriminant(final String expression) {
