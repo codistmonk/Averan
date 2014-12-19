@@ -12,7 +12,9 @@ import averan.core.Expression;
 import averan.core.Module;
 import averan.core.Module.Symbol;
 import averan.core.Session;
+import averan.io.SessionExporter;
 import averan.io.SessionScaffold;
+import net.sourceforge.aprog.tools.Tools;
 
 import org.junit.Test;
 
@@ -61,14 +63,23 @@ public final class RealMatricesTest {
 					admit(natural(n));
 					admit(realMatrix(x, m, n));
 					
+					Tools.debugPrint(session());
 					claimLastFact(() -> {
-						bind("definition_of_variance", x, m, n);
-						autoApplyLastFact();
-					});
-					claimLastFact(() -> {
-						bind("definition_of_covariance", x, x, m, n);
-						autoApplyLastFact();
-						autoApplyLastFact();
+						Tools.debugPrint(session());
+						claimLastFact(() -> {
+							Tools.debugPrint(session());
+							bind("definition_of_variance", x, m, n);
+							autoApplyLastFact();
+						});
+						Tools.debugPrint(session());
+						claimLastFact(() -> {
+							Tools.debugPrint(session());
+							new SessionExporter(session()).exportSession();
+							bind("definition_of_covariance", x, x, m, n);
+							autoApplyLastFact();
+							autoApplyLastFact();
+						});
+						rewrite(factName(-2), factName(-1));
 					});
 					claimLastFact(() -> {
 						claimLastFact(() -> {
@@ -100,12 +111,14 @@ public final class RealMatricesTest {
 	
 	public static final void claimLastFact(final String factName, final Runnable subSessionBlock) {
 		final Session s = session();
-		pushNewSession(new Module(session().getCurrentModule()));
+		
+		pushNewSession(new Module(s.getCurrentModule(), s.getCurrentModule().newPropositionName()));
 		
 		subSessionBlock.run();
 		
-		final Expression fact = fact(-1);
-		s.getCurrentModule().new Claim(factName, fact, popSession().getCurrentModule()).execute();
+		final Expression lastFact = fact(-1);
+		
+		s.getCurrentModule().new Claim(factName, lastFact, popSession().getCurrentModule()).execute();
 	}
 	
 	public static final String conditionFisherLinearDiscriminant(final String expression) {
