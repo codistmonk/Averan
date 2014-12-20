@@ -14,13 +14,20 @@ import java.util.Map;
  */
 public final class Composite<E extends Expression<?>> implements Expression<E> {
 	
+	private final Composite<?> context;
+	
 	private final List<E> elements;
 	
 	private final Map<Class<? extends Interpretation<?>>, Interpretation<E>> interpretations;
 	
-	public Composite() {
+	public Composite(final Composite<?> context) {
+		this.context = context;
 		this.elements = new ArrayList<>();
 		this.interpretations = new HashMap<>();
+	}
+	
+	public final Composite<?> getContext() {
+		return this.context;
 	}
 	
 	public List<E> getElements() {
@@ -166,6 +173,8 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 		
 		public static final int PROOF = 2;
 		
+		public static final int PROOF_TYPE = 0;
+		
 		public static final boolean isConjunction(final Expression<?> expression) {
 			if (!isTriple(expression)) {
 				for (final Expression<?> element : expression) {
@@ -206,7 +215,7 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 			@SuppressWarnings("unchecked")
 			@Override
 			public final Composite<?> visit(final Composite<?> composite) {
-				final Composite<?> candidate = new Composite<>();
+				final Composite<?> candidate = new Composite<>(composite.getContext());
 				
 				if (listAccept((Iterable<Expression<?>>) composite, this,
 						(Collection<Expression<?>>) candidate.getElements())) {
@@ -287,7 +296,7 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 			Expression<?> candidate = this.tryToReplace(composite);
 			
 			if (candidate == composite) {
-				candidate = new Composite<>();
+				candidate = new Composite<>(composite.getContext());
 				
 				if (!Module.Bind.listAccept((Iterable<Expression<?>>) composite, this,
 						(Collection<Expression<?>>) ((Composite<?>) candidate).getElements())) {
@@ -403,6 +412,73 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 		}
 		
 		private static final long serialVersionUID = -3210218161030047944L;
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-12-20)
+	 */
+	public static final class ProofByApply extends Interpretation.Default<Expression<?>> {
+		
+		public ProofByApply(final Composite<Expression<?>> composite) {
+			super(composite);
+			
+			if (!(Module.isTriple(composite)
+					&& APPLY.equals(composite.getElement(0)))) {
+				throw new IllegalArgumentException();
+			}
+		}
+		
+		public static final Symbol APPLY = new Symbol("Apply");
+		
+		private static final long serialVersionUID = -6834557824434528656L;
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-12-20)
+	 */
+	public static final class ProofByRewrite extends Interpretation.Default<Expression<?>> {
+		
+		public ProofByRewrite(final Composite<Expression<?>> composite) {
+			super(composite);
+			
+			if (!(Module.isTriple(composite)
+					&& REWRITE.equals(composite.getElement(0)))) {
+				throw new IllegalArgumentException();
+			}
+		}
+		
+		public static final Symbol REWRITE = new Symbol("Rewrite");
+		
+		private static final long serialVersionUID = -6834557824434528656L;
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-12-20)
+	 */
+	public static final class ProofBySubstitute extends Interpretation.Default<Expression<?>> {
+		
+		public ProofBySubstitute(final Composite<Expression<?>> composite) {
+			super(composite);
+			
+			if (!(Module.isTriple(composite)
+					&& SUBSTITUTE.equals(composite.getElement(0))
+					&& isSubstitution(composite.getElement(2)))) {
+				throw new IllegalArgumentException();
+			}
+		}
+		
+		public static final Symbol SUBSTITUTE = new Symbol("Substitute");
+		
+		private static final long serialVersionUID = -6834557824434528656L;
+		
+		public static final boolean isSubstitution(final Expression<?> expression) {
+			final Composite<?> composite = cast(Composite.class, expression);
+			
+			return composite != null && composite.as(Substitution.class) != null;
+		}
 		
 	}
 	
