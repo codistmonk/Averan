@@ -3,13 +3,12 @@ package averan5.core;
 import static net.sourceforge.aprog.tools.Tools.cast;
 
 import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2014-12-20)
@@ -34,6 +33,8 @@ public interface Expression<E extends Expression<?>> extends Container<E> {
 	public static final Symbol EQUALS = new Symbol("=");
 	
 	public static final Symbol IMPLIES = new Symbol("->");
+	
+	public static final Symbol AND = new Symbol("&&");
 	
 	/**
 	 * @author codistmonk (creation 2014-12-20)
@@ -303,7 +304,9 @@ public interface Expression<E extends Expression<?>> extends Container<E> {
 			public Module(final Composite<Expression<?>> composite) {
 				super(composite);
 				
-				if (composite.getElementCount() != 3 || !IMPLIES.equals(composite.getElement(1))) {
+				if (composite.getElementCount() != 3
+						|| !IMPLIES.equals(composite.getElement(1))
+						|| !isConjunction(composite.getElement(2))) {
 					throw new IllegalArgumentException();
 				}
 			}
@@ -319,17 +322,85 @@ public interface Expression<E extends Expression<?>> extends Container<E> {
 			}
 			
 			public final <E extends Expression<?>> E applyTo(final Expression<?> expression) {
-				return null; // TODO
+				if (this.getCondition().accept(Variable.Reset.INSTANCE).equals(expression)) {
+					return (E) this.getConclusion().accept(Bind.INSTANCE);
+				}
+				
+				return null;
 			}
 			
 			private static final long serialVersionUID = -1926241237530848606L;
+			
+			public static final boolean isConjunction(final Expression<?> expression) {
+				final int n = expression.getElementCount();
+				
+				if ((n & 1) == 0) {
+					return false;
+				}
+				
+				for (int i = 1; i < n; i += 2) {
+					if (!AND.equals(expression.getElement(i))) {
+						return false;
+					}
+				}
+				
+				return true;
+			}
+			
+			/**
+			 * @author codistmonk (creation 2014-12-20)
+			 */
+			public static final class Bind implements Visitor<Expression<?>> {
+				
+				@Override
+				public final Symbol visit(final Symbol symbol) {
+					return symbol;
+				}
+				
+				@Override
+				public final Expression<?> visit(final Variable variable) {
+					final Expression<?> match  = variable.getMatch();
+					
+					return match != null ? match : variable;
+				}
+				
+				@Override
+				public final Composite<?> visit(final Composite<?> composite) {
+					final Composite<?> candidate = new Composite<>();
+					
+					if (listAccept((Iterable<Expression<?>>) composite, this, (Collection<Expression<?>>) candidate.getElements())) {
+						return candidate;
+					}
+					
+					return composite;
+				}
+				
+				private static final long serialVersionUID = -2879093293185572053L;
+				
+				public static final Bind INSTANCE = new Bind();
+				
+				public static final <T> boolean listAccept(final Iterable<Expression<?>> elements, final Visitor<T> visitor, final Collection<T> visitOutput) {
+					final boolean[] result = { false };
+					
+					elements.forEach(e -> {
+						final T object = e.accept(visitor);
+						
+						result[0] |= e != object;
+						
+						visitOutput.add(object);
+					});
+					
+					return result[0];
+				}
+				
+			}
 			
 		}
 		
 		/**
 		 * @author codistmonk (creation 2014-12-20)
 		 */
-		public static final class Substitution extends Interpretation.Default<Expression<?>> {
+		public static final class Substitution extends Interpretation.Default<Expression<?>> implements Visitor<Expression<?>> {
 			
 			private final Map<Expression<?>, Expression<?>> bindings;
 			
@@ -351,20 +422,49 @@ public interface Expression<E extends Expression<?>> extends Container<E> {
 				}
 			}
 			
-			public final Substitution reset() {
-				this.bindings.keySet().forEach(pattern -> pattern.accept(Variable.Reset.INSTANCE));
-				
-				return this;
-			}
-			
 			public final <E extends Expression<?>> E applyTo(final Expression<?> expression) {
-				return null; // TODO
+				return (E) expression.accept(this);
 			}
 			
 			private static final long serialVersionUID = -1572047035151529843L;
 			
 			public static final boolean isEquality(final Expression<?> expression) {
 				return expression.getElementCount() == 3 && EQUALS.equals(expression.getElement(1));
+			}
+			
+			@Override
+			public final Expression<?> visit(final Symbol symbol) {
+				return this.tryToReplace(symbol);
+			}
+			
+			@Override
+			public final Expression<?> visit(final Variable variable) {
+				return this.tryToReplace(variable);
+			}
+			
+			@Override
+			public final Expression<?> visit(final Composite<?> composite) {
+				Expression<?> candidate = this.tryToReplace(composite);
+				
+				if (candidate == composite) {
+					candidate = new Composite<>();
+					
+					if (!Module.Bind.listAccept((Composite) composite, this, (Collection) ((Composite<?>) candidate).getElements())) {
+						return composite;
+					}
+				}
+				
+				return candidate;
+			}
+			
+			private final Expression<?> tryToReplace(final Expression<?> expression) {
+				for (final Map.Entry<Expression<?>, Expression<?>> binding : this.bindings.entrySet()) {
+					if (binding.getKey().accept(Variable.Reset.INSTANCE).equals(expression)) {
+						return binding.getValue().accept(Module.Bind.INSTANCE);
+					}
+				}
+				
+				return expression;
 			}
 			
 		}
