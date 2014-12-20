@@ -34,6 +34,10 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 		return this.elements;
 	}
 	
+	public final Composite<?> getRoot() {
+		return this.getContext() == null ? this : this.getContext().getRoot();
+	}
+	
 	@SuppressWarnings("unchecked")
 	public final <I extends Interpretation<E>> I as(final Class<? extends Interpretation<E>> interpretationClass) {
 			return (I) this.interpretations.computeIfAbsent(interpretationClass, cls -> {
@@ -122,12 +126,90 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 		public Module(final Composite<Expression<?>> composite) {
 			super(composite);
 			
-			if (!(isTriple(composite)
-					&& isPair(composite.getElement(CONDITION))
-					&& IMPLIES.equals(composite.getElement(HELPER_1))
-					&& isConjunction(composite.getElement(CONCLUSION)))) {
+			if (!isModule(composite)) {
 				throw new IllegalArgumentException();
 			}
+		}
+		
+		public static final boolean isModule(final Expression<?> expression) {
+			return isTriple(expression)
+					&& isCondition(expression.getElement(CONDITION))
+					&& IMPLIES.equals(expression.getElement(HELPER_1))
+					&& (isFactList(expression.getElement(CONCLUSION))
+							|| isModule(expression.getElement(CONCLUSION)));
+		}
+		
+		public static final boolean isCondition(final Expression<?> expression) {
+			final Composite<?> composite = cast(Composite.class, expression);
+			
+			return composite != null && isPair(composite);
+		}
+		
+		public final int getConditionCount() {
+			int result = 1;
+			Composite<?> module = this.getComposite();
+			
+			while (isModule(module.getElement(CONCLUSION))) {
+				module = (Composite<?>) module.getElement(CONCLUSION);
+				++result;
+			}
+			
+			return result;
+		}
+		
+		public final List<Expression<?>> getConditions() {
+			final List<Expression<?>> result = new ArrayList<>();
+			Composite<?> module = this.getComposite();
+			result.add(module.getElement(CONDITION));
+			
+			while (isModule(module.getElement(CONCLUSION))) {
+				module = (Composite<?>) module.getElement(CONCLUSION);
+				result.add(module.getElement(CONDITION));
+			}
+			
+			return result;
+		}
+		
+		public final int getFactCount() {
+			return this.getComposite().getElement(CONCLUSION).getElementCount();
+		}
+		
+		public final int getPropositionCount() {
+			return this.getConditionCount() + this.getFactCount();
+		}
+		
+		public final String getPropositionName(final int index) {
+			return this.getProposition(index).getElement(NAME).toString();
+		}
+		
+		public final Expression<?> getProposition(final int index) {
+			if (0 <= index) {
+				throw new IllegalArgumentException();
+			}
+			
+			final int factCount = this.getFactCount();
+			int i = index + factCount;
+			
+			if (0 <= i) {
+				return this.getConclusion().getElement(i);
+			}
+			
+			final List<Expression<?>> conditions = this.getConditions();
+			i += conditions.size();
+			
+			if (0 <= i) {
+				return conditions.get(i);
+			}
+			
+			final Composite<?> context = this.getComposite().getContext();
+			
+			if (context == null) {
+				return null;
+			}
+			
+			final Module module = (Module) context.as(this.getClass()); 
+			
+			return module == null ? null : module.getProposition(i);
 		}
 		
 		@SuppressWarnings("unchecked")
@@ -175,12 +257,10 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 		
 		public static final int PROOF_TYPE = 0;
 		
-		public static final boolean isConjunction(final Expression<?> expression) {
-			if (!isTriple(expression)) {
-				for (final Expression<?> element : expression) {
-					if (!isTriple(element)) {
-						return false;
-					}
+		public static final boolean isFactList(final Expression<?> expression) {
+			for (final Expression<?> element : expression) {
+				if (!isTriple(element)) {
+					return false;
 				}
 			}
 			
@@ -193,6 +273,23 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 		
 		public static final boolean isTriple(final Expression<?> expression) {
 			return expression.getElementCount() == 3;
+		}
+		
+		/**
+		 * @author codistmonk (creation 2014-12-20)
+		 */
+		public static final class FactList extends Interpretation.Default<Expression<?>> {
+			
+			public FactList(final Composite<Expression<?>> composite) {
+				super(composite);
+				
+				if (!isFactList(composite)) {
+					throw new IllegalArgumentException();
+				}
+			}
+			
+			private static final long serialVersionUID = -2562022375060416809L;
+			
 		}
 		
 		/**
