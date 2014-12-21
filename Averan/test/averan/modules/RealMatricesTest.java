@@ -8,6 +8,7 @@ import static averan.modules.Reals.*;
 import static averan.modules.RealMatrices.*;
 import static averan.modules.Standard.*;
 import static org.junit.Assert.*;
+
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Module;
@@ -15,7 +16,6 @@ import averan.core.Module.Symbol;
 import averan.core.Session;
 import averan.io.SessionExporter;
 import averan.io.SessionScaffold;
-import net.sourceforge.aprog.tools.Tools;
 
 import org.junit.Test;
 
@@ -26,6 +26,10 @@ public final class RealMatricesTest {
 	
 	@Test
 	public final void test1() {
+//		SessionScaffold.exportLatexPNG(new Session(Reals.MODULE), 0, "reals.png");
+//		
+//		if (true) return;
+		
 		new SessionScaffold(RealMatrices.MODULE) {
 			
 			@Override
@@ -108,6 +112,59 @@ public final class RealMatricesTest {
 						});
 						rewrite(factName(-2), factName(-1));
 					});
+					
+					final Expression p = equality(sum(k, n, ONE), $(n, "+", ONE));
+					bind("mathematical_induction", p, n);
+					{
+						final String moduleName = factName(-1);
+						
+						claimAppliedAndCondition(fact(-1));
+						{
+							{
+								substitute(goal());
+								claim(lastEqualityRight());
+								{
+									bind("definition_of_sum_0", ONE, k);
+									substitute(lastEqualityRight());
+									rewrite(factName(-2), factName(-1));
+									
+									claimLastFact(() -> {
+										claimLastFact(() -> {
+											bind("definition_of_0", ONE);
+											autoApplyLastFact();
+										});
+										claimLastFact(() -> {
+											bind("commutativity_of_addition", ONE, ZERO);
+											autoApplyLastFact();
+											autoApplyLastFact();
+										});
+										rewrite(factName(-2), factName(-1));
+									});
+									
+									rewriteRight(factName(-2), factName(-1), 1);
+								}
+								rewriteRight(factName(-1), factName(-2));
+							}
+							apply(moduleName, factName(-1));
+						}
+					}
+					{
+						final String moduleName = factName(-1);
+						
+						claimAppliedAndCondition(fact(-1));
+						{
+							{
+								introduce();
+								introduce();
+								
+								substitute(goal());
+								claim(lastEqualityRight());
+								{
+									bind("definition_of_sum_n", ONE, $(n, "+", ONE), k);
+								}
+							}
+						}
+					}
 				}
 				breakSession();
 				
@@ -260,7 +317,7 @@ public final class RealMatricesTest {
 				autoApplyLastFact();
 			});
 			
-			claim(((Composite) fact(-1)).get(2));
+			claim(lastEqualityRight());
 			{
 				final Symbol i = introduce();
 				final Symbol j = introduce();
@@ -325,7 +382,7 @@ public final class RealMatricesTest {
 			autoApplyLastFact();
 			autoApplyLastFact();
 			
-			claim(realMatrix(((Composite) fact(-1)).get(2), m, $("1")));
+			claim(realMatrix(lastEqualityRight(), m, $("1")));
 			{
 				final Expression invN = inverse(n);
 				final Expression invNx = $(invN, x);
@@ -431,7 +488,7 @@ public final class RealMatricesTest {
 			autoApplyLastFact();
 			autoApplyLastFact();
 			
-			claim(realMatrix(((Composite) fact(-1)).get(2), m, n));
+			claim(realMatrix(lastEqualityRight(), m, n));
 			{
 				bind("type_of_mean", x, m, n);
 				autoApplyLastFact();
@@ -513,7 +570,7 @@ public final class RealMatricesTest {
 			autoApplyLastFact();
 			apply(factName(-1), conditionName(-1));
 			
-			claim(real(((Composite) fact(-1)).get(2)));
+			claim(real(lastEqualityRight()));
 			{
 				final Composite goal = goal();
 				final Composite fraction = goal.get(0);
@@ -608,6 +665,14 @@ public final class RealMatricesTest {
 	
 	public static final Expression scalarize(final Object expression) {
 		return $("⟨", expression, "⟩");
+	}
+	
+	public static final Composite sum(final Object i, final Object n, final Object x) {
+		return $($($("Σ", "_", $(i, "=", ZERO)), "^", n), x);
+	}
+	
+	public static final <E extends Expression> E lastEqualityRight() {
+		return ((Composite) fact(-1)).get(2);
 	}
 	
 }
