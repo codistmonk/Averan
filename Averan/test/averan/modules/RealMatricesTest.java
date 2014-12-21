@@ -1,6 +1,7 @@
 package averan.modules;
 
 import static averan.core.ExpressionTools.*;
+import static averan.core.Session.breakSession;
 import static averan.core.SessionTools.*;
 import static averan.io.ExpressionParser.$$;
 import static averan.modules.Reals.*;
@@ -54,6 +55,8 @@ public final class RealMatricesTest {
 				suppose("definition_of_fisher_linear_discriminant",
 						$$("∀w,X,m,n,c,j " + conditionFisherLinearDiscriminant("S_(wᵀX,c)=(⟨'Var'_(wᵀU_(X,c))⟩/((Σ_(j=0)^(c-1)) ⟨'Var'_(wᵀX_j)⟩))")));
 				claimTypeOfFisherLinearDiscriminant();
+				
+				claimTranspositionOfOnes();
 				
 				{
 					final Expression m = $("m");
@@ -145,10 +148,11 @@ public final class RealMatricesTest {
 						rewrite(factName(-2), factName(-1), 1, 2, 3);
 					});
 					
+					final Expression onen1 = ones(n, ONE);
+					final Expression one1n = ones(ONE, n);
+					
 					claimLastFact(() -> {
 						claimLastFact(() -> {
-							final Expression onen1 = ones(n, ONE);
-							final Expression one1n = ones(ONE, n);
 							final Expression invn = $(ONE, "/", n);
 							final Expression invnx = $(invn, x);
 							final Expression invnx1n1 = $(invnx, onen1);
@@ -172,6 +176,12 @@ public final class RealMatricesTest {
 						});
 						rewrite(factName(-2), factName(-1));
 					});
+					
+					claimLastFact(() -> {
+						bind("transposition_of_ones", ONE, n);
+						rewrite(factName(-2), factName(-1));
+					});
+					
 					// TODO
 				}
 			}
@@ -181,6 +191,47 @@ public final class RealMatricesTest {
 		};
 	}
 	
+	public static final void claimTranspositionOfOnes() {
+		claim("transposition_of_ones",
+				$$("∀m,n ((1_(m,n))ᵀ=(1_(n,m)))"));
+		{
+			final Symbol m = introduce();
+			final Symbol n = introduce();
+			final Expression onemn = ones(m, n);
+			final Expression onemnt = transpose(onemn);
+			final Expression onenm = ones(n, m);
+			
+			claimLastFact(() -> {
+				bind("definition_of_matrix_equality", onemnt, onenm, n, m);
+				autoApplyLastFact();
+				autoApplyLastFact();
+			});
+			
+			claim(((Composite) fact(-1)).get(2));
+			{
+				final Symbol i = introduce();
+				final Symbol j = introduce();
+				
+				claimLastFact(() -> {
+					claimLastFact(() -> {
+						bind("definition_of_transposition", onemn, m, n);
+						autoApplyLastFact();
+						bind(factName(-1), i, j);
+					});
+					
+					bind("definition_of_ones", m, n, j, i);
+					rewrite(factName(-2), factName(-1));
+				});
+				
+				bind("definition_of_ones", n, m, i, j);
+				
+				rewriteRight(factName(-2), factName(-1), 1);
+			}
+			
+			rewriteRight(factName(-1), factName(-2));
+		}
+	}
+
 	public static final void claimLastFact(final Runnable subSessionBlock) {
 		claimLastFact(null, subSessionBlock);
 	}
