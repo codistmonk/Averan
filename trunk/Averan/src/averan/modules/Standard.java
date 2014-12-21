@@ -5,7 +5,6 @@ import static averan.core.Module.ROOT;
 import static averan.core.SessionTools.*;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.ignore;
-
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Module;
@@ -16,6 +15,7 @@ import averan.core.Module.Bind;
 import averan.core.Module.Symbol;
 import averan.core.Pattern.Any;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -116,7 +116,7 @@ public final class Standard {
 		final Composite equality = session.getProposition(equalityName);
 		
 		session.claim(factName == null ? session.newPropositionName() : factName,
-				source.accept(new Rewriter().rewrite(equality.get(2), equality.get(0))));
+				source.accept(new Rewriter().rewrite(equality.get(2), equality.get(0)).atIndices(Arrays.asList(indices))));
 		{
 			unifyAndApply(session, SYMMETRY_OF_EQUALITY, equalityName);
 			session.rewrite(sourceName, session.getFactName(-1), indices);
