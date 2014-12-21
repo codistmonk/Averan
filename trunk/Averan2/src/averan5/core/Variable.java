@@ -2,6 +2,8 @@ package averan5.core;
 
 import static net.sourceforge.aprog.tools.Tools.cast;
 
+import java.util.Collection;
+
 /**
  * @author codistmonk (creation 2014-12-20)
  */
@@ -78,6 +80,10 @@ public final class Variable implements Expression<Variable> {
 	
 	private static final long serialVersionUID = 3015338717755848327L;
 	
+	public static final Reset RESET = Reset.INSTANCE;
+	
+	public static final Bind BIND = Bind.INSTANCE;
+	
 	/**
 	 * @author codistmonk (creation 2014-12-20)
 	 */
@@ -105,6 +111,42 @@ public final class Variable implements Expression<Variable> {
 		private static final long serialVersionUID = 6438401380761494994L;
 		
 		public static final Variable.Reset INSTANCE = new Reset();
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-12-20)
+	 */
+	public static final class Bind implements Expression.Visitor<Expression<?>> {
+		
+		@Override
+		public final Symbol visit(final Symbol symbol) {
+			return symbol;
+		}
+		
+		@Override
+		public final Expression<?> visit(final Variable variable) {
+			final Expression<?> match  = variable.getMatch();
+			
+			return match != null ? match : variable;
+		}
+		
+		@SuppressWarnings("unchecked")
+		@Override
+		public final Composite<?> visit(final Composite<?> composite) {
+			final Composite<?> candidate = new Composite<>(composite.getContext());
+			
+			if (Composite.listAccept((Iterable<Expression<?>>) composite, this,
+					(Collection<Expression<?>>) candidate.getElements())) {
+				return candidate.setElementContexts();
+			}
+			
+			return composite;
+		}
+		
+		private static final long serialVersionUID = -2879093293185572053L;
+		
+		public static final Bind INSTANCE = new Bind();
 		
 	}
 	
