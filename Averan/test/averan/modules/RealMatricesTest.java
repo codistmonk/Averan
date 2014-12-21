@@ -113,58 +113,97 @@ public final class RealMatricesTest {
 						rewrite(factName(-2), factName(-1));
 					});
 					
-					final Expression p = equality(sum(k, n, ONE), $(n, "+", ONE));
-					bind("mathematical_induction", p, n);
-					{
-						final String moduleName = factName(-1);
-						
-						claimAppliedAndCondition(fact(-1));
+					claimLastFact(() -> {
+						final Expression p = equality(sum(k, n, ONE), $(n, "+", ONE));
+						bind("mathematical_induction", p, n);
 						{
+							final String moduleName = factName(-1);
+							
+							claimAppliedAndCondition(fact(-1));
 							{
-								substitute(goal());
-								claim(lastEqualityRight());
 								{
-									bind("definition_of_sum_0", ONE, k);
-									substitute(lastEqualityRight());
-									rewrite(factName(-2), factName(-1));
-									
-									claimLastFact(() -> {
-										claimLastFact(() -> {
-											bind("definition_of_0", ONE);
-											autoApplyLastFact();
-										});
-										claimLastFact(() -> {
-											bind("commutativity_of_addition", ONE, ZERO);
-											autoApplyLastFact();
-											autoApplyLastFact();
-										});
+									substitute(goal());
+									claim(lastEqualityRight());
+									{
+										bind("definition_of_sum_0", ONE, k);
+										substitute(lastEqualityRight());
 										rewrite(factName(-2), factName(-1));
-									});
+										
+										claimLastFact(() -> {
+											claimLastFact(() -> {
+												bind("definition_of_0", ONE);
+												autoApplyLastFact();
+											});
+											claimLastFact(() -> {
+												bind("commutativity_of_addition", ONE, ZERO);
+												autoApplyLastFact();
+												autoApplyLastFact();
+											});
+											rewrite(factName(-2), factName(-1));
+										});
+										
+										rewriteRight(factName(-2), factName(-1), 1);
+									}
+									rewriteRight(factName(-1), factName(-2));
+								}
+								apply(moduleName, factName(-1));
+							}
+						}
+						{
+							final String moduleName = factName(-1);
+							
+							claimAppliedAndCondition(fact(-1));
+							{
+								{
+									introduce();
+									introduce();
 									
-									rewriteRight(factName(-2), factName(-1), 1);
+									final String inductionHypothesis = conditionName(-1);
+									
+									substitute(goal());
+									claim(lastEqualityRight());
+									{
+										bind("definition_of_sum_n", ONE, $(n, "+", ONE), k);
+										claim(equality($($(n, "+", ONE), "-", ONE), n));
+										{
+											claimLastFact(() -> {
+												claimLastFact(() -> {
+													claimLastFact(() -> {
+														bind("definition_of_subtraction", (Expression) $(n, "+", ONE), ONE);
+														autoApplyLastFact();
+														autoApplyLastFact();
+													});
+													claimLastFact(() -> {
+														bind("associativity_of_addition", n, ONE, $("-", ONE));
+														autoApplyLastFact();
+														autoApplyLastFact();
+														autoApplyLastFact();
+													});
+													rewriteRight(factName(-2), factName(-1));
+												});
+												claimLastFact(() -> {
+													bind("definition_of_opposite", ONE);
+													autoApplyLastFact();
+												});
+												rewrite(factName(-2), factName(-1));
+											});
+											claimLastFact(() -> {
+												bind("definition_of_0", n);
+												autoApplyLastFact();
+											});
+											rewrite(factName(-2), factName(-1));
+										}
+										rewrite(factName(-2), factName(-1));
+									}
+									rewrite(factName(-1), inductionHypothesis);
+									substitute(substitution(ONE, equality(k, $(n, "+", ONE))));
+									rewrite(factName(-2), factName(-1));
 								}
 								rewriteRight(factName(-1), factName(-2));
 							}
 							apply(moduleName, factName(-1));
 						}
-					}
-					{
-						final String moduleName = factName(-1);
-						
-						claimAppliedAndCondition(fact(-1));
-						{
-							{
-								introduce();
-								introduce();
-								
-								substitute(goal());
-								claim(lastEqualityRight());
-								{
-									bind("definition_of_sum_n", ONE, $(n, "+", ONE), k);
-								}
-							}
-						}
-					}
+					});
 				}
 				breakSession();
 				
