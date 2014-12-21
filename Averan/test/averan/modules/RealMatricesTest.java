@@ -141,7 +141,36 @@ public final class RealMatricesTest {
 						});
 						rewrite(factName(-2), factName(-1));
 					});
-					rewrite(factName(-2), factName(-1));
+					rewrite(factName(-2), factName(-1), 1, 2, 3);
+					
+					claimLastFact(() -> {
+						claimLastFact(() -> {
+							final Expression onen1 = ones(n, ONE);
+							final Expression one1n = ones(ONE, n);
+							final Expression invn = $(ONE, "/", n);
+							final Expression invnx = $(invn, x);
+							final Expression invnx1n1 = $(invnx, onen1);
+							
+							bind("transposition_of_multiplication", (Expression) invnx1n1, one1n, m, ONE, n);
+							{
+								final String moduleName = factName(-1);
+								
+								claimAppliedAndCondition(fact(-1));
+								{
+									{
+										bind("type_of_matrix_multiplication", invnx, onen1, m, n, ONE);
+										autoApplyLastFact();
+										autoApplyLastFact();
+									}
+									
+									apply(moduleName, factName(-1));
+								}
+							}
+							autoApplyLastFact();
+						});
+						rewrite(factName(-2), factName(-1));
+					});
+					// TODO
 				}
 			}
 			
