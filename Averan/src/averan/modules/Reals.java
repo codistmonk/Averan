@@ -6,6 +6,7 @@ import static averan.io.ExpressionParser.$$;
 import static averan.modules.Standard.*;
 import static net.sourceforge.aprog.tools.Tools.append;
 import static net.sourceforge.aprog.tools.Tools.cast;
+
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.IndexFinder;
@@ -16,7 +17,6 @@ import averan.core.Module.Symbol;
 import averan.core.Pattern;
 import averan.core.Rewriter;
 import averan.core.Session;
-import averan.io.SessionExporter;
 import averan.modules.Standard;
 
 import java.io.Serializable;
@@ -99,6 +99,7 @@ public final class Reals {
 			
 			hints.put("addition", additionHints);
 			
+			suppose("definition_of_1", $$("∀x ((x∈ℝ) → (x1=x))"));
 			suppose("type_of_multiplication", $$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((xy)∈ℝ)))"));
 			suppose("commutativity_of_multiplication", $$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((xy)=(yx))))"));
 			suppose("associativity_of_multiplication", $$("∀x,y,z ((x∈ℝ) → ((y∈ℝ) → ((z∈ℝ) → (x(yz)=xyz))))"));
@@ -131,6 +132,7 @@ public final class Reals {
 			}
 			
 			final RewriteHint[] multiplicationHints = {
+					new RewriteHint("definition_of_1", false),
 					new RewriteHint("commutativity_of_multiplication", true),
 					new RewriteHint("associativity_of_multiplication", false),
 					new RewriteHint("ordering_of_factors", true),
