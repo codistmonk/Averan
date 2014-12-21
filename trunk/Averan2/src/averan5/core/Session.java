@@ -1,5 +1,7 @@
 package averan5.core;
 
+import averan5.core.Composite.Module;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,8 +50,24 @@ public final class Session implements Serializable {
 		return this.accept();
 	}
 	
-	public final Session suppose(final String conditionName, final Expression<?> condition) {
-		// TODO
+	public final Session suppose(final String conditionName, final Expression<?> conditionProposition) {
+		final Composite<Expression<?>> module = (Composite<Expression<?>>) this.getCurrentFrame().getModule();
+		final Composite<Expression<?>> condition = new Composite<>(module);
+		
+		condition.getElements().add(new Symbol(conditionName));
+		condition.getElements().add(condition.attach(conditionProposition));
+		
+		final Composite<Expression<?>> fact;
+		if (module.getElementCount() == 0) {
+			fact = module;
+		} else {
+			module.as(Module.class).getConclusion().getElements().add(fact = new Composite<>(module));
+		}
+		
+		fact.getElements().add(condition);
+		fact.getElements().add(Composite.IMPLIES);
+		fact.getElements().add(new Composite<>(module));
+		
 		return this.accept();
 	}
 	
