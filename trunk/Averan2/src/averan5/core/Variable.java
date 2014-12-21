@@ -19,6 +19,7 @@ public final class Variable implements Expression<Variable> {
 		return this.name;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public final <E extends Expression<?>> E getMatch() {
 		return (E) this.match;
 	}

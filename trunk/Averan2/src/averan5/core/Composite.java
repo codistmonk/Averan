@@ -82,6 +82,21 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 	
 	private static final long serialVersionUID = -3768801167161895932L;
 	
+	public static final <T> boolean listAccept(final Iterable<Expression<?>> elements,
+			final Visitor<T> visitor, final Collection<T> visitOutput) {
+		final boolean[] result = { false };
+		
+		elements.forEach(e -> {
+			final T object = e.accept(visitor);
+			
+			result[0] |= e != object;
+			
+			visitOutput.add(object);
+		});
+		
+		return result[0];
+	}
+	
 	/**
 	 * @author codistmonk (creation 2014-12-20)
 	 */
@@ -186,15 +201,9 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 		
 		public static final boolean isModule(final Expression<?> expression) {
 			return isTriple(expression)
-					&& isCondition(expression.getElement(CONDITION))
+					&& Condition.isCondition(expression.getElement(CONDITION))
 					&& IMPLIES.equals(expression.getElement(HELPER_1))
 					&& FactList.isFactList(expression.getElement(CONCLUSION));
-		}
-		
-		public static final boolean isCondition(final Expression<?> expression) {
-			final Composite<?> composite = cast(Composite.class, expression);
-			
-			return composite != null && isPair(composite);
 		}
 		
 	}
@@ -204,8 +213,8 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 	 */
 	public static final class FactList extends Interpretation.Default<Composite<?>> {
 		
-		public FactList(final Composite<?> composite) {
-			super((Composite) composite);
+		public FactList(final Composite<Composite<?>> composite) {
+			super(composite);
 			
 			if (!isFactList(composite)) {
 				throw new IllegalArgumentException();
@@ -260,21 +269,6 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 		
 		public static final Bind INSTANCE = new Bind();
 		
-		public static final <T> boolean listAccept(final Iterable<Expression<?>> elements,
-				final Visitor<T> visitor, final Collection<T> visitOutput) {
-			final boolean[] result = { false };
-			
-			elements.forEach(e -> {
-				final T object = e.accept(visitor);
-				
-				result[0] |= e != object;
-				
-				visitOutput.add(object);
-			});
-			
-			return result[0];
-		}
-		
 	}
 	
 	/**
@@ -292,7 +286,7 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 			this.bindings = new HashMap<>();
 			
 			for (final Expression<?> element : composite) {
-				if (isEquality(element)) {
+				if (Equality.isEquality(element)) {
 					this.bindings.put(element.getElement(0), element.getElement(2));
 				} else {
 					throw new IllegalArgumentException();
@@ -323,7 +317,7 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 			if (candidate == composite) {
 				candidate = new Composite<>(composite.getContext());
 				
-				if (!Bind.listAccept((Iterable<Expression<?>>) composite, this,
+				if (!listAccept((Iterable<Expression<?>>) composite, this,
 						(Collection<Expression<?>>) ((Composite<?>) candidate).getElements())) {
 					return composite;
 				}
@@ -344,8 +338,14 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 		
 		private static final long serialVersionUID = -1572047035151529843L;
 		
-		public static final boolean isEquality(final Expression<?> expression) {
-			return expression.getElementCount() == 3 && EQUALS.equals(expression.getElement(1));
+		public static final boolean isSubstitution(final Expression<?> expression) {
+			for (final Expression<?> element : expression) {
+				if (!Equality.isEquality(element)) {
+					return false;
+				}
+			}
+			
+			return true;
 		}
 		
 	}
@@ -358,7 +358,7 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 		public Equality(final Composite<Expression<?>> composite) {
 			super(composite);
 			
-			if (!Substitution.isEquality(composite)) {
+			if (!isEquality(composite)) {
 				throw new IllegalArgumentException();
 			}
 		}
@@ -375,9 +375,15 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 		
 		public static final int LEFT = 0;
 		
-		public static final int RIGHT = 1;
+		public static final int HELPER_1 = 1;
+		
+		public static final int RIGHT = 2;
 		
 		private static final long serialVersionUID = 6188931718222618805L;
+		
+		public static final boolean isEquality(final Expression<?> expression) {
+			return expression.getElementCount() == 3 && EQUALS.equals(expression.getElement(HELPER_1));
+		}
 		
 	}
 	
@@ -389,7 +395,7 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 		public Condition(final Composite<Expression<?>> composite) {
 			super(composite);
 			
-			if (!Module.isPair(composite)) {
+			if (!isCondition(composite)) {
 				throw new IllegalArgumentException();
 			}
 		}
@@ -406,6 +412,10 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 		
 		private static final long serialVersionUID = -3056503743467136403L;
 		
+		public static final boolean isCondition(final Expression<?> expression) {
+			return isPair(expression);
+		}
+		
 	}
 	
 	/**
@@ -416,7 +426,7 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 		public Fact(final Composite<Expression<?>> composite) {
 			super(composite);
 			
-			if (!Module.isTriple(composite)) {
+			if (!isFact(composite)) {
 				throw new IllegalArgumentException();
 			}
 		}
@@ -437,6 +447,10 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 		}
 		
 		private static final long serialVersionUID = -3210218161030047944L;
+		
+		public static final boolean isFact(final Expression<?> expression) {
+			return isTriple(expression);
+		}
 		
 	}
 	
