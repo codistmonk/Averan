@@ -65,7 +65,7 @@ public final class Session implements Serializable {
 		}
 		
 		fact.getElements().add(condition);
-		fact.getElements().add(Composite.IMPLIES);
+		fact.getElements().add(Expression.IMPLIES);
 		fact.getElements().add(new Composite<>(module));
 		
 		return this.accept();
@@ -125,5 +125,97 @@ public final class Session implements Serializable {
 	}
 	
 	private static final long serialVersionUID = 181621455530572267L;
+	
+	/**
+	 * @author codistmonk (creation 2014-12-21)
+	 */
+	public static final class Exporter implements Serializable {
+		
+		public static final void export(final Session session, final Output output) {
+			output.beginSession(session);
+			
+			exportFrame(session, 0, output);
+			
+			output.endSession();
+		}
+		
+		public static final void exportFrame(final Session session, final int index, final Output output) {
+			final Frame frame = session.frames.get(index);
+			
+			output.beginFrame(frame);
+			
+			output.beginModule(frame.getModule());
+			
+			// TODO
+			
+			if (index + 1 < session.frames.size()) {
+				exportFrame(session, index + 1, output);
+			}
+			
+			output.processGoal(frame.getGoal());
+			
+			output.endModule();
+			
+			output.endFrame();
+		}
+		
+		private static final long serialVersionUID = 4419798598555424573L;
+		
+		/**
+		 * @author codistmonk (creation 2014-12-21)
+		 */
+		public static abstract interface Output extends Serializable {
+			
+			public default void beginSession(final Session session) {
+				// NOP
+			}
+			
+			public default void beginFrame(final Frame frame) {
+				// NOP
+			}
+			
+			public default void beginModule(final Composite<?> module) {
+				// NOP
+			}
+			
+			public default void processCondition(final Composite<?> condition) {
+				// NOP
+			}
+			
+			public default void beginFact(final Composite<?> fact) {
+				// NOP
+			}
+			
+			public default void beginProof(final Composite<?> proof) {
+				// NOP
+			}
+			
+			public default void endProof() {
+				// NOP
+			}
+			
+			public default void endFact() {
+				// NOP
+			}
+			
+			public default void endModule() {
+				// NOP
+			}
+			
+			public default void processGoal(final Expression<?> goal) {
+				// NOP
+			}
+			
+			public default void endFrame() {
+				// NOP
+			}
+			
+			public default void endSession() {
+				// NOP
+			}
+			
+		}
+		
+	}
 	
 }
