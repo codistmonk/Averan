@@ -1,11 +1,15 @@
 package averan5.core;
 
+import static java.util.Collections.nCopies;
+import static net.sourceforge.aprog.tools.Tools.join;
 import static org.junit.Assert.*;
 
 import java.io.PrintStream;
+import java.util.Collections;
 
 import averan5.core.Session.Exporter.Output;
 import averan5.core.Session.Frame;
+import net.sourceforge.aprog.tools.Tools;
 
 import org.junit.Test;
 
@@ -19,6 +23,12 @@ public final class SessionTest {
 		final Session session = new Session();
 		
 		session.prove("test", null);
+		{
+			final Variable x = new Variable("x");
+			
+			session.suppose("c1", x);
+			session.suppose("c2", x);
+		}
 		session.accept();
 		
 		Session.Exporter.export(session, new ConsoleOutput());
@@ -33,6 +43,8 @@ public final class SessionTest {
 		
 		private int frameLevel;
 		
+		private String indent;
+		
 		public ConsoleOutput() {
 			this(System.out);
 		}
@@ -40,17 +52,34 @@ public final class SessionTest {
 		public ConsoleOutput(final PrintStream out) {
 			this.out = out;
 			this.frameLevel = -1;
+			this.indent = "";
 		}
 		
 		@Override
 		public final void beginFrame(final Frame frame) {
 			++this.frameLevel;
-			this.out.println("((MODULE " + frame.getName() + "))");
+			this.indent = join("", nCopies(this.frameLevel, '	').toArray());
+			this.out.println(this.indent + "((MODULE " + frame.getName() + "))");
 		}
 		
 		@Override
-		public final void beginModule(final Composite<?> module) {
-			// TODO
+		public final void beginConditions() {
+			this.out.println(this.indent + "((CONDITIONS))");
+		}
+		
+		@Override
+		public final void processCondition(final Composite<?> condition) {
+			this.out.println(this.indent + "	" + condition);
+		}
+
+		@Override
+		public final void beginFacts() {
+			this.out.println(this.indent + "((FACTS))");
+		}
+		
+		@Override
+		public final void beginFact(final Composite<?> fact) {
+			this.out.println(this.indent + "	" + fact);
 		}
 		
 		@Override

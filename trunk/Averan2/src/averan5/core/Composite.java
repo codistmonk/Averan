@@ -451,9 +451,8 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 			return (E) this.getComposite().getElement(Module.PROPOSITION);
 		}
 		
-		@SuppressWarnings("unchecked")
-		public final <E extends Expression<?>> E getProof() {
-			return (E) this.getComposite().getElement(Module.PROOF);
+		public final Composite<?> getProof() {
+			return (Composite<?>) this.getComposite().getElement(Module.PROOF);
 		}
 		
 		private static final long serialVersionUID = -3210218161030047944L;
