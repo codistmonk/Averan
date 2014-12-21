@@ -63,17 +63,12 @@ public final class RealMatricesTest {
 					admit(natural(n));
 					admit(realMatrix(x, m, n));
 					
-					Tools.debugPrint(session());
 					claimLastFact(() -> {
-						Tools.debugPrint(session());
 						claimLastFact(() -> {
-							Tools.debugPrint(session());
 							bind("definition_of_variance", x, m, n);
 							autoApplyLastFact();
 						});
-						Tools.debugPrint(session());
 						claimLastFact(() -> {
-							Tools.debugPrint(session());
 							new SessionExporter(session()).exportSession();
 							bind("definition_of_covariance", x, x, m, n);
 							autoApplyLastFact();
