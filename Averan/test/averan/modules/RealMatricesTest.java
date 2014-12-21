@@ -130,18 +130,20 @@ public final class RealMatricesTest {
 					
 					claimLastFact(() -> {
 						claimLastFact(() -> {
-							bind("definition_of_replicated_mean", x, m, n);
-							autoApplyLastFact();
-							autoApplyLastFact();
+							claimLastFact(() -> {
+								bind("definition_of_replicated_mean", x, m, n);
+								autoApplyLastFact();
+								autoApplyLastFact();
+							});
+							claimLastFact(() -> {
+								bind("definition_of_mean", x, m, n);
+								autoApplyLastFact();
+								autoApplyLastFact();
+							});
+							rewrite(factName(-2), factName(-1));
 						});
-						claimLastFact(() -> {
-							bind("definition_of_mean", x, m, n);
-							autoApplyLastFact();
-							autoApplyLastFact();
-						});
-						rewrite(factName(-2), factName(-1));
+						rewrite(factName(-2), factName(-1), 1, 2, 3);
 					});
-					rewrite(factName(-2), factName(-1), 1, 2, 3);
 					
 					claimLastFact(() -> {
 						claimLastFact(() -> {
