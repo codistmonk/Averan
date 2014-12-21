@@ -77,7 +77,7 @@ public final class TexPrinter implements SessionExporter.Output {
 	@Override
 	public final void subcontext(final String name) {
 		this.hline();
-		this.center(pgroup(pgroup(word("MODULE " + name))));
+		this.center(ppgroup(word("MODULE " + name)));
 		this.hline();
 	}
 	
@@ -89,7 +89,7 @@ public final class TexPrinter implements SessionExporter.Output {
 	@Override
 	public final void beginModuleConditions(final Module module) {
 		this.newLine();
-		this.center(pgroup(pgroup(word("CONDITIONS"))));
+		this.center(ppgroup(word("CONDITIONS")));
 	}
 	
 	@Override
@@ -105,7 +105,7 @@ public final class TexPrinter implements SessionExporter.Output {
 	@Override
 	public final void beginModuleFacts(final Module module) {
 		this.newLine();
-		this.center(pgroup(pgroup(word("FACTS"))));
+		this.center(ppgroup(word("FACTS")));
 	}
 	
 	@Override
@@ -117,7 +117,7 @@ public final class TexPrinter implements SessionExporter.Output {
 	public final void beginModuleFactProof() {
 		this.output.println("\\begin{array}{|c|}");
 		this.hline();
-		this.center(pgroup(pgroup(word("PROOF"))));
+		this.center(ppgroup(word("PROOF")));
 	}
 	
 	@Override
@@ -145,7 +145,7 @@ public final class TexPrinter implements SessionExporter.Output {
 	public final void processCurrentGoal(final Expression currentGoal) {
 		this.newLine();
 		this.hline();
-		this.center(pgroup(pgroup(word("GOAL"))));
+		this.center(ppgroup(word("GOAL")));
 		this.center(currentGoal.accept(this.texStringGenerator).getFirst());
 	}
 	
@@ -179,8 +179,42 @@ public final class TexPrinter implements SessionExporter.Output {
 		return "{" + object + "}";
 	}
 	
+	public static final String ppgroup(final Object object) {
+		final String left = "\\left(";
+		final String right = "\\right)";
+		
+		return left + left + object + right + right;
+	}
+	
 	public static final String pgroup(final Object object) {
-		return "\\left(" + object + "\\right)";
+		final String left = "\\left(";
+		final String right = "\\right)";
+		final String s = object.toString();
+		final int n = s.length();
+		
+		// XXX redundant parentheses should be handled before getting here
+		{
+			int level = 0;
+			
+			for (int i = 0; i < n; ++i) {
+				if (s.startsWith(left, i)) {
+					++level;
+				} else if (s.startsWith(right, i)) {
+					--level;
+					
+					if (level == 0) {
+						if (i + right.length() == n) {
+							return s;
+						}
+						
+						break;
+					}
+				}
+			}
+		}
+		
+		
+		return left + s + right;
 	}
 	
 	public static final String cgroup(final Object object) {
