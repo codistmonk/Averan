@@ -188,7 +188,7 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 			return isTriple(expression)
 					&& isCondition(expression.getElement(CONDITION))
 					&& IMPLIES.equals(expression.getElement(HELPER_1))
-					&& isFactList(expression.getElement(CONCLUSION));
+					&& FactList.isFactList(expression.getElement(CONCLUSION));
 		}
 		
 		public static final boolean isCondition(final Expression<?> expression) {
@@ -196,6 +196,23 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 			
 			return composite != null && isPair(composite);
 		}
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-12-20)
+	 */
+	public static final class FactList extends Interpretation.Default<Composite<?>> {
+		
+		public FactList(final Composite<?> composite) {
+			super((Composite) composite);
+			
+			if (!isFactList(composite)) {
+				throw new IllegalArgumentException();
+			}
+		}
+		
+		private static final long serialVersionUID = -2562022375060416809L;
 		
 		public static final boolean isFactList(final Expression<?> expression) {
 			for (final Expression<?> element : expression) {
@@ -207,72 +224,55 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 			return true;
 		}
 		
-		/**
-		 * @author codistmonk (creation 2014-12-20)
-		 */
-		public static final class FactList extends Interpretation.Default<Composite<?>> {
-			
-			public FactList(final Composite<?> composite) {
-				super((Composite) composite);
-				
-				if (!isFactList(composite)) {
-					throw new IllegalArgumentException();
-				}
-			}
-			
-			private static final long serialVersionUID = -2562022375060416809L;
-			
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-12-20)
+	 */
+	public static final class Bind implements Expression.Visitor<Expression<?>> {
+		
+		@Override
+		public final Symbol visit(final Symbol symbol) {
+			return symbol;
 		}
 		
-		/**
-		 * @author codistmonk (creation 2014-12-20)
-		 */
-		public static final class Bind implements Expression.Visitor<Expression<?>> {
+		@Override
+		public final Expression<?> visit(final Variable variable) {
+			final Expression<?> match  = variable.getMatch();
 			
-			@Override
-			public final Symbol visit(final Symbol symbol) {
-				return symbol;
+			return match != null ? match : variable;
+		}
+		
+		@SuppressWarnings("unchecked")
+		@Override
+		public final Composite<?> visit(final Composite<?> composite) {
+			final Composite<?> candidate = new Composite<>(composite.getContext());
+			
+			if (listAccept((Iterable<Expression<?>>) composite, this,
+					(Collection<Expression<?>>) candidate.getElements())) {
+				return candidate;
 			}
 			
-			@Override
-			public final Expression<?> visit(final Variable variable) {
-				final Expression<?> match  = variable.getMatch();
-				
-				return match != null ? match : variable;
-			}
+			return composite;
+		}
+		
+		private static final long serialVersionUID = -2879093293185572053L;
+		
+		public static final Bind INSTANCE = new Bind();
+		
+		public static final <T> boolean listAccept(final Iterable<Expression<?>> elements,
+				final Visitor<T> visitor, final Collection<T> visitOutput) {
+			final boolean[] result = { false };
 			
-			@SuppressWarnings("unchecked")
-			@Override
-			public final Composite<?> visit(final Composite<?> composite) {
-				final Composite<?> candidate = new Composite<>(composite.getContext());
+			elements.forEach(e -> {
+				final T object = e.accept(visitor);
 				
-				if (listAccept((Iterable<Expression<?>>) composite, this,
-						(Collection<Expression<?>>) candidate.getElements())) {
-					return candidate;
-				}
+				result[0] |= e != object;
 				
-				return composite;
-			}
+				visitOutput.add(object);
+			});
 			
-			private static final long serialVersionUID = -2879093293185572053L;
-			
-			public static final Module.Bind INSTANCE = new Bind();
-			
-			public static final <T> boolean listAccept(final Iterable<Expression<?>> elements,
-					final Visitor<T> visitor, final Collection<T> visitOutput) {
-				final boolean[] result = { false };
-				
-				elements.forEach(e -> {
-					final T object = e.accept(visitor);
-					
-					result[0] |= e != object;
-					
-					visitOutput.add(object);
-				});
-				
-				return result[0];
-			}
-			
+			return result[0];
 		}
 		
 	}
@@ -291,15 +291,11 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 			
 			this.bindings = new HashMap<>();
 			
-			if (isEquality(composite)) {
-				this.bindings.put(composite.getElement(0), composite.getElement(2));
-			} else {
-				for (final Expression<?> element : composite) {
-					if (isEquality(element)) {
-						this.bindings.put(element.getElement(0), element.getElement(2));
-					} else {
-						throw new IllegalArgumentException();
-					}
+			for (final Expression<?> element : composite) {
+				if (isEquality(element)) {
+					this.bindings.put(element.getElement(0), element.getElement(2));
+				} else {
+					throw new IllegalArgumentException();
 				}
 			}
 		}
@@ -327,7 +323,7 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 			if (candidate == composite) {
 				candidate = new Composite<>(composite.getContext());
 				
-				if (!Module.Bind.listAccept((Iterable<Expression<?>>) composite, this,
+				if (!Bind.listAccept((Iterable<Expression<?>>) composite, this,
 						(Collection<Expression<?>>) ((Composite<?>) candidate).getElements())) {
 					return composite;
 				}
@@ -339,7 +335,7 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 		private final Expression<?> tryToReplace(final Expression<?> expression) {
 			for (final Map.Entry<Expression<?>, Expression<?>> binding : this.bindings.entrySet()) {
 				if (binding.getKey().accept(Variable.Reset.INSTANCE).equals(expression)) {
-					return binding.getValue().accept(Module.Bind.INSTANCE);
+					return binding.getValue().accept(Bind.INSTANCE);
 				}
 			}
 			
