@@ -1,5 +1,7 @@
 package averan5.core;
 
+import averan5.core.Composite.Fact;
+import averan5.core.Composite.FactList;
 import averan5.core.Composite.Module;
 
 import java.io.Serializable;
@@ -154,7 +156,36 @@ public final class Session implements Serializable {
 			
 			output.beginModule(frame.getModule());
 			
-			// TODO
+			{
+				Expression<?> expression = frame.getModule();
+				Module module = expression.as(Module.class);
+				
+				output.beginConditions();
+				
+				while (module != null) {
+					output.processCondition(module.getCondition());
+					expression = module.getConclusion();
+					module = expression.as(Module.class);
+				}
+				
+				output.endConditions();
+				
+				output.beginFacts();
+				
+				final FactList factList = expression.as(FactList.class);
+				
+				for (final Composite<?> fact : factList.getComposite()) {
+					output.beginFact(fact);
+					
+					final Composite<?> proof = fact.as(Fact.class).getProof();
+					
+					output.beginProof(proof);
+					// TODO
+					output.endProof();
+				}
+				
+				output.endFacts();
+			}
 			
 			if (index + 1 < session.frames.size()) {
 				exportFrame(session, index + 1, output);
@@ -186,7 +217,19 @@ public final class Session implements Serializable {
 				// NOP
 			}
 			
+			public default void beginConditions() {
+				// NOP
+			}
+			
 			public default void processCondition(final Composite<?> condition) {
+				// NOP
+			}
+			
+			public default void endConditions() {
+				// NOP
+			}
+			
+			public default void beginFacts() {
 				// NOP
 			}
 			
@@ -203,6 +246,10 @@ public final class Session implements Serializable {
 			}
 			
 			public default void endFact() {
+				// NOP
+			}
+			
+			public default void endFacts() {
 				// NOP
 			}
 			
