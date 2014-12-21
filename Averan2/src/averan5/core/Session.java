@@ -53,22 +53,29 @@ public final class Session implements Serializable {
 	}
 	
 	public final Session suppose(final String conditionName, final Expression<?> conditionProposition) {
+		@SuppressWarnings("unchecked")
 		final Composite<Expression<?>> module = (Composite<Expression<?>>) this.getCurrentFrame().getModule();
 		final Composite<Expression<?>> condition = new Composite<>(module);
 		
 		condition.getElements().add(new Symbol(conditionName));
 		condition.getElements().add(condition.attach(conditionProposition));
 		
-		final Composite<Expression<?>> fact;
 		if (module.getElementCount() == 0) {
-			fact = module;
+			module.getElements().add(condition);
+			module.getElements().add(Expression.IMPLIES);
+			module.getElements().add(new Composite<>(module));
 		} else {
-			module.as(Module.class).getConclusion().getElements().add(fact = new Composite<>(module));
+			final Composite<Composite<?>> facts = module.as(Module.class).getFacts();
+			@SuppressWarnings("unchecked")
+			final Composite<Expression<?>> oldTerminalModule = (Composite<Expression<?>>) facts.getContext();
+			final Composite<Expression<?>> newTerminalModule = new Composite<>(oldTerminalModule);
+			
+			newTerminalModule.getElements().add(newTerminalModule.attach(condition));
+			newTerminalModule.getElements().add(Expression.IMPLIES);
+			newTerminalModule.getElements().add(newTerminalModule.attach(facts));
+			
+			oldTerminalModule.getElements().set(Module.CONCLUSION, newTerminalModule);
 		}
-		
-		fact.getElements().add(condition);
-		fact.getElements().add(Expression.IMPLIES);
-		fact.getElements().add(new Composite<>(module));
 		
 		return this.accept();
 	}
