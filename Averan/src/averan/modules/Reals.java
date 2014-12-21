@@ -53,6 +53,7 @@ public final class Reals {
 		try {
 			suppose("type_of_0", natural(ZERO));
 			suppose("type_of_1", natural(ONE));
+			suppose("mathematical_induction", $$("∀P,i (P{i=0} → (i∈ℕ → (P → (P{i=(i+1)})) → (∀n (P{i=n}))))"));
 			suppose("naturals_are_reals", $$("∀x ((x∈ℕ) → (x∈ℝ))"));
 			suppose("definition_of_natural_range",
 					$$("∀n ((n∈ℕ) → (∀i ((i∈ℕ_n) → (i∈ℕ ∧ i<n))))"));
@@ -217,6 +218,10 @@ public final class Reals {
 				rewrite(factName(-3), factName(-1));
 			}
 			
+			suppose("definition_of_sum_0",
+					$$("∀X,i (((Σ_(i=0)^0) X)=(X{i=0}))"));
+			suppose("definition_of_sum_n",
+					$$("∀X,n,i (((Σ_(i=0)^n) X)=((Σ_(i=0)^(n-1)) X)+(X{i=n}))"));
 			// TODO claim
 			admit("type_of_sum",
 					$$("∀X,n,i (((i∈ℕ_(n+1)) → (X∈ℝ)) → (((Σ_(i=0)^n) X)∈ℝ))"));
