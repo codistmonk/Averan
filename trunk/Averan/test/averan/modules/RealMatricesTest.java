@@ -58,6 +58,59 @@ public final class RealMatricesTest {
 				
 				claimTranspositionOfOnes();
 				
+				claim("multiplication_of_ones",
+						$$("∀n (⟨(1_(1,n))(1_(n,1))⟩=n)"));
+				{
+					final Symbol n = introduce();
+					final Expression one1n = ones(ONE, n);
+					final Expression onen1 = ones(n, ONE);
+					final Expression one1nonen1 = $(one1n, onen1);
+					final Symbol k = session().getCurrentModule().new Symbol("k");
+					
+					claimLastFact(() -> {
+						bind("definition_of_matrix_scalarization", one1nonen1);
+						
+						{
+							final String moduleName = factName(-1);
+							
+							claimAppliedAndCondition(fact(-1));
+							{
+								{
+									bind("type_of_matrix_multiplication", one1n, onen1, ONE, n, ONE);
+									autoApplyLastFact();
+									autoApplyLastFact();
+								}
+								
+								apply(moduleName, factName(-1));
+							}
+						}
+					});
+					
+					claimLastFact(() -> {
+						claimLastFact(() -> {
+							bind("definition_of_matrix_multiplication", one1n, onen1, ONE, n, ONE);
+							autoApplyLastFact();
+							autoApplyLastFact();
+							bind(factName(-1), ZERO, ZERO, k);
+						});
+						
+						rewrite(factName(-2), factName(-1));
+					});
+					
+					claimLastFact(() -> {
+						bind("definition_of_ones", ONE, n, ZERO, k);
+						rewrite(factName(-2), factName(-1));
+						bind("definition_of_ones", n, ONE, k, ZERO);
+						rewrite(factName(-2), factName(-1));
+						claimLastFact(() -> {
+							bind("definition_of_1", ONE);
+							autoApplyLastFact();
+						});
+						rewrite(factName(-2), factName(-1));
+					});
+				}
+				breakSession();
+				
 				{
 					final Expression m = $("m");
 					final Expression n = $("n");
