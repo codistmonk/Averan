@@ -63,13 +63,15 @@ public final class RealMatricesTest {
 				claimTranspositionOfOnes();
 				
 				claim("multiplication_of_ones",
-						$$("∀n (⟨(1_(1,n))(1_(n,1))⟩=n)"));
+						$$("∀n (n∈ℕ → (⟨(1_(1,n))(1_(n,1))⟩=n))"));
 				{
 					final Symbol n = introduce();
 					final Expression one1n = ones(ONE, n);
 					final Expression onen1 = ones(n, ONE);
 					final Expression one1nonen1 = $(one1n, onen1);
 					final Symbol k = session().getCurrentModule().new Symbol("k");
+					
+					introduce();
 					
 					claimLastFact(() -> {
 						bind("definition_of_matrix_scalarization", one1nonen1);
@@ -164,35 +166,10 @@ public final class RealMatricesTest {
 									claim(lastEqualityRight());
 									{
 										bind("definition_of_sum_n", ONE, $(n, "+", ONE), k);
-										claim(equality($($(n, "+", ONE), "-", ONE), n));
-										{
-											claimLastFact(() -> {
-												claimLastFact(() -> {
-													claimLastFact(() -> {
-														bind("definition_of_subtraction", (Expression) $(n, "+", ONE), ONE);
-														autoApplyLastFact();
-														autoApplyLastFact();
-													});
-													claimLastFact(() -> {
-														bind("associativity_of_addition", n, ONE, $("-", ONE));
-														autoApplyLastFact();
-														autoApplyLastFact();
-														autoApplyLastFact();
-													});
-													rewriteRight(factName(-2), factName(-1));
-												});
-												claimLastFact(() -> {
-													bind("definition_of_opposite", ONE);
-													autoApplyLastFact();
-												});
-												rewrite(factName(-2), factName(-1));
-											});
-											claimLastFact(() -> {
-												bind("definition_of_0", n);
-												autoApplyLastFact();
-											});
-											rewrite(factName(-2), factName(-1));
-										}
+										claimLastFact(() -> {
+											bind("add_1_subtract_1", n);
+											autoApplyLastFact();
+										});
 										rewrite(factName(-2), factName(-1));
 									}
 									rewrite(factName(-1), inductionHypothesis);
@@ -204,8 +181,20 @@ public final class RealMatricesTest {
 							apply(moduleName, factName(-1));
 						}
 					});
+					
+					claimLastFact(() -> {
+						bind(factName(-1), (Expression) $(n, "-", ONE));
+						substitute(fact(-1));
+						rewrite(factName(-2), factName(-1));
+						claimLastFact(() -> {
+							bind("subtract_1_add_1", n);
+							autoApplyLastFact();
+						});
+						rewrite(factName(-2), factName(-1));
+					});
+					
+					rewrite(factName(-3), factName(-1));
 				}
-				breakSession();
 				
 				{
 					final Expression m = $("m");
