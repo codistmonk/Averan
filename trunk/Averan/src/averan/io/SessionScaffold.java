@@ -54,12 +54,7 @@ public abstract class SessionScaffold implements Serializable {
 		}
 		
 		if (this.latexPNGOutputPath != null) {
-			final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-			
-			new SessionExporter(session, new TexPrinter(buffer)
-			, 1 < session.getStack().size() ? 0 : this.successfulBuildMaximumProofDepth).exportSession();
-			
-			new TeXFormula(buffer.toString()).createPNG(0, 18F, this.latexPNGOutputPath, WHITE, BLACK);
+			exportLatexPNG(session, this.successfulBuildMaximumProofDepth, this.latexPNGOutputPath);
 		}
 	}
 	
@@ -71,5 +66,14 @@ public abstract class SessionScaffold implements Serializable {
 	 * {@value}.
 	 */
 	public static final String DEFAULT_LATEX_PNG_OUTPUT_PATH = "view.png";
+	
+	public static final void exportLatexPNG(final Session session, final int successfulBuildMaximumProofDepth, final String latexPNGOutputPath) {
+		final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+		
+		new SessionExporter(session, new TexPrinter(buffer)
+		, 1 < session.getStack().size() ? 0 : successfulBuildMaximumProofDepth).exportSession();
+		
+		new TeXFormula(buffer.toString()).createPNG(0, 18F, latexPNGOutputPath, WHITE, BLACK);
+	}
 	
 }
