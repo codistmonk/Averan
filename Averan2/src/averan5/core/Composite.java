@@ -45,16 +45,20 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 		final Composite<E> result = new Composite<>(context);
 		
 		for (final E element : this) {
-			final Composite<?> composite = cast(Composite.class, element);
-			
-			if (composite != null) {
-				result.getElements().add((E) composite.copyUnder(result));
-			} else {
-				result.getElements().add(element);
-			}
+			result.getElements().add((E) result.attach(element));
 		}
 		
 		return result;
+	}
+	
+	public final Expression<?> attach(final Expression<?> expression) {
+		final Composite<?> composite = cast(Composite.class, expression);
+		
+		if (composite != null && composite.getContext() != this) {
+			return composite.copyUnder(this);
+		}
+		
+		return expression;
 	}
 	
 	public final Composite<?> getContext() {
@@ -203,6 +207,15 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 		@SuppressWarnings("unchecked")
 		public final Composite<Composite<?>> getConclusion() {
 			return (Composite<Composite<?>>) this.getComposite().getElement(CONCLUSION);
+		}
+		
+		public final Module setConclusion(final Composite<Composite<?>> conclusion) {
+			final Composite<Expression<?>> thisComposite = this.getComposite();
+			
+			thisComposite.getElements().set(CONCLUSION,
+					conclusion.getContext() == thisComposite ? conclusion : conclusion.copyUnder(thisComposite));
+			
+			return this;
 		}
 		
 		@SuppressWarnings("unchecked")
