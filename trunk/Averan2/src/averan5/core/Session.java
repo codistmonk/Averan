@@ -87,8 +87,14 @@ public final class Session implements Serializable {
 		return this.accept();
 	}
 	
+	public final Composite getCurrentModule() {
+		final Frame currentFrame = this.getCurrentFrame();
+		
+		return currentFrame == null ? null : currentFrame.getModule();
+	}
+	
 	public final Frame getCurrentFrame() {
-		return this.frames.get(this.frames.size() - 1);
+		return this.frames.isEmpty() ? null : this.frames.get(this.frames.size() - 1);
 	}
 	
 	/**
@@ -104,7 +110,7 @@ public final class Session implements Serializable {
 		
 		public Frame(final String name, final Expression<?> goal) {
 			this.name = name;
-			this.module = new Composite<>(getCurrentFrame().getModule());
+			this.module = new Composite<>(getCurrentModule());
 			this.goal = goal;
 		}
 		
@@ -134,7 +140,9 @@ public final class Session implements Serializable {
 		public static final void export(final Session session, final Output output) {
 			output.beginSession(session);
 			
-			exportFrame(session, 0, output);
+			if (!session.frames.isEmpty()) {
+				exportFrame(session, 0, output);
+			}
 			
 			output.endSession();
 		}
