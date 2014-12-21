@@ -218,6 +218,26 @@ public final class Reals {
 				rewrite(factName(-3), factName(-1));
 			}
 			
+			claim("add_1_subtract_1",
+					$$("∀x ((x∈ℝ) → (((x+1)-1)=x))"));
+			{
+				final Symbol x = introduce();
+				
+				introduce();
+				
+				final Expression left = ((Composite) goal()).get(0);
+				
+				bind("naturals_are_reals", ONE);
+				apply(factName(-1), "type_of_1");
+				proveEquality(equality(left, $(x, "+", $(ONE, "+", $("-", ONE)))), arithmeticHints);
+				bind("definition_of_opposite", ONE);
+				apply(factName(-1), factName(-3));
+				rewrite(factName(-3), factName(-1));
+				bind("definition_of_0", x);
+				apply(factName(-1), conditionName(-1));
+				rewrite(factName(-3), factName(-1));
+			}
+			
 			suppose("definition_of_sum_0",
 					$$("∀X,i (((Σ_(i=0)^0) X)=(X{i=0}))"));
 			suppose("definition_of_sum_n",
