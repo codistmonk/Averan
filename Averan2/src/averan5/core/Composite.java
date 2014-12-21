@@ -2,7 +2,6 @@ package averan5.core;
 
 import static net.sourceforge.aprog.tools.Tools.cast;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -22,15 +21,47 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 	
 	public Composite(final Composite<?> context) {
 		this.context = context;
-		this.elements = new ArrayList<>();
+		this.elements = new ArrayList<E>();
 		this.interpretations = new HashMap<>();
+	}
+	
+	@SuppressWarnings("unchecked")
+	public final Composite<E> setElementContexts() {
+		final int n = this.getElementCount();
+		
+		for (int i = 0; i < n; ++i) {
+			final Composite<?> composite = cast(Composite.class, this.getElement(i));
+			
+			if (composite != null && composite.getContext() != this) {
+				this.getElements().set(i, (E) composite.copyUnder(this));
+			}
+		}
+		
+		return this;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public final Composite<E> copyUnder(final Composite<?> context) {
+		final Composite<E> result = new Composite<>(context);
+		
+		for (final E element : this) {
+			final Composite<?> composite = cast(Composite.class, element);
+			
+			if (composite != null) {
+				result.getElements().add((E) composite.copyUnder(result));
+			} else {
+				result.getElements().add(element);
+			}
+		}
+		
+		return result;
 	}
 	
 	public final Composite<?> getContext() {
 		return this.context;
 	}
 	
-	public List<E> getElements() {
+	public final List<E> getElements() {
 		return this.elements;
 	}
 	
@@ -176,8 +207,8 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 		
 		@SuppressWarnings("unchecked")
 		public final <E extends Expression<?>> E applyTo(final Expression<?> expression) {
-			if (this.getCondition().getElement(PROPOSITION).accept(Variable.Reset.INSTANCE).equals(expression)) {
-				return (E) this.getConclusion().getElement(PROPOSITION).accept(Bind.INSTANCE);
+			if (this.getCondition().getElement(PROPOSITION).accept(Variable.RESET).equals(expression)) {
+				return (E) this.getConclusion().getElement(PROPOSITION).accept(Variable.BIND);
 			}
 			
 			return null;
@@ -238,42 +269,6 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 	/**
 	 * @author codistmonk (creation 2014-12-20)
 	 */
-	public static final class Bind implements Expression.Visitor<Expression<?>> {
-		
-		@Override
-		public final Symbol visit(final Symbol symbol) {
-			return symbol;
-		}
-		
-		@Override
-		public final Expression<?> visit(final Variable variable) {
-			final Expression<?> match  = variable.getMatch();
-			
-			return match != null ? match : variable;
-		}
-		
-		@SuppressWarnings("unchecked")
-		@Override
-		public final Composite<?> visit(final Composite<?> composite) {
-			final Composite<?> candidate = new Composite<>(composite.getContext());
-			
-			if (listAccept((Iterable<Expression<?>>) composite, this,
-					(Collection<Expression<?>>) candidate.getElements())) {
-				return candidate;
-			}
-			
-			return composite;
-		}
-		
-		private static final long serialVersionUID = -2879093293185572053L;
-		
-		public static final Bind INSTANCE = new Bind();
-		
-	}
-	
-	/**
-	 * @author codistmonk (creation 2014-12-20)
-	 */
 	public static final class Substitution extends Interpretation.Default<Expression<?>> implements Expression.Visitor<Expression<?>> {
 		
 		private final Map<Expression<?>, Expression<?>> bindings;
@@ -321,6 +316,8 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 						(Collection<Expression<?>>) ((Composite<?>) candidate).getElements())) {
 					return composite;
 				}
+				
+				((Composite<?>) candidate).setElementContexts();
 			}
 			
 			return candidate;
@@ -328,8 +325,8 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 		
 		private final Expression<?> tryToReplace(final Expression<?> expression) {
 			for (final Map.Entry<Expression<?>, Expression<?>> binding : this.bindings.entrySet()) {
-				if (binding.getKey().accept(Variable.Reset.INSTANCE).equals(expression)) {
-					return binding.getValue().accept(Bind.INSTANCE);
+				if (binding.getKey().accept(Variable.RESET).equals(expression)) {
+					return binding.getValue().accept(Variable.BIND);
 				}
 			}
 			
