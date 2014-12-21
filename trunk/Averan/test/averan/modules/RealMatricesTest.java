@@ -61,140 +61,7 @@ public final class RealMatricesTest {
 				claimTypeOfFisherLinearDiscriminant();
 				
 				claimTranspositionOfOnes();
-				
-				claim("multiplication_of_ones",
-						$$("∀n (n∈ℕ → (⟨(1_(1,n))(1_(n,1))⟩=n))"));
-				{
-					final Symbol n = introduce();
-					final Expression one1n = ones(ONE, n);
-					final Expression onen1 = ones(n, ONE);
-					final Expression one1nonen1 = $(one1n, onen1);
-					final Symbol k = session().getCurrentModule().new Symbol("k");
-					
-					introduce();
-					
-					claimLastFact(() -> {
-						bind("definition_of_matrix_scalarization", one1nonen1);
-						
-						{
-							final String moduleName = factName(-1);
-							
-							claimAppliedAndCondition(fact(-1));
-							{
-								{
-									bind("type_of_matrix_multiplication", one1n, onen1, ONE, n, ONE);
-									autoApplyLastFact();
-									autoApplyLastFact();
-								}
-								
-								apply(moduleName, factName(-1));
-							}
-						}
-					});
-					
-					claimLastFact(() -> {
-						claimLastFact(() -> {
-							bind("definition_of_matrix_multiplication", one1n, onen1, ONE, n, ONE);
-							autoApplyLastFact();
-							autoApplyLastFact();
-							bind(factName(-1), ZERO, ZERO, k);
-						});
-						
-						rewrite(factName(-2), factName(-1));
-					});
-					
-					claimLastFact(() -> {
-						bind("definition_of_ones", ONE, n, ZERO, k);
-						rewrite(factName(-2), factName(-1));
-						bind("definition_of_ones", n, ONE, k, ZERO);
-						rewrite(factName(-2), factName(-1));
-						claimLastFact(() -> {
-							bind("definition_of_1", ONE);
-							autoApplyLastFact();
-						});
-						rewrite(factName(-2), factName(-1));
-					});
-					
-					claimLastFact(() -> {
-						final Expression p = equality(sum(k, n, ONE), $(n, "+", ONE));
-						bind("mathematical_induction", p, n);
-						{
-							final String moduleName = factName(-1);
-							
-							claimAppliedAndCondition(fact(-1));
-							{
-								{
-									substitute(goal());
-									claim(lastEqualityRight());
-									{
-										bind("definition_of_sum_0", ONE, k);
-										substitute(lastEqualityRight());
-										rewrite(factName(-2), factName(-1));
-										
-										claimLastFact(() -> {
-											claimLastFact(() -> {
-												bind("definition_of_0", ONE);
-												autoApplyLastFact();
-											});
-											claimLastFact(() -> {
-												bind("commutativity_of_addition", ONE, ZERO);
-												autoApplyLastFact();
-												autoApplyLastFact();
-											});
-											rewrite(factName(-2), factName(-1));
-										});
-										
-										rewriteRight(factName(-2), factName(-1), 1);
-									}
-									rewriteRight(factName(-1), factName(-2));
-								}
-								apply(moduleName, factName(-1));
-							}
-						}
-						{
-							final String moduleName = factName(-1);
-							
-							claimAppliedAndCondition(fact(-1));
-							{
-								{
-									introduce();
-									introduce();
-									
-									final String inductionHypothesis = conditionName(-1);
-									
-									substitute(goal());
-									claim(lastEqualityRight());
-									{
-										bind("definition_of_sum_n", ONE, $(n, "+", ONE), k);
-										claimLastFact(() -> {
-											bind("add_1_subtract_1", n);
-											autoApplyLastFact();
-										});
-										rewrite(factName(-2), factName(-1));
-									}
-									rewrite(factName(-1), inductionHypothesis);
-									substitute(substitution(ONE, equality(k, $(n, "+", ONE))));
-									rewrite(factName(-2), factName(-1));
-								}
-								rewriteRight(factName(-1), factName(-2));
-							}
-							apply(moduleName, factName(-1));
-						}
-					});
-					
-					claimLastFact(() -> {
-						bind(factName(-1), (Expression) $(n, "-", ONE));
-						substitute(fact(-1));
-						rewrite(factName(-2), factName(-1));
-						claimLastFact(() -> {
-							bind("subtract_1_add_1", n);
-							autoApplyLastFact();
-						});
-						rewrite(factName(-2), factName(-1));
-					});
-					
-					rewrite(factName(-3), factName(-1));
-				}
+				claimMultiplicationOfOnes();
 				
 				{
 					final Expression m = $("m");
@@ -329,6 +196,142 @@ public final class RealMatricesTest {
 		};
 	}
 	
+	public static final void claimMultiplicationOfOnes() {
+		claim("multiplication_of_ones",
+				$$("∀n (n∈ℕ → (⟨(1_(1,n))(1_(n,1))⟩=n))"));
+		{
+			final Symbol n = introduce();
+			final Expression one1n = ones(ONE, n);
+			final Expression onen1 = ones(n, ONE);
+			final Expression one1nonen1 = $(one1n, onen1);
+			final Symbol k = session().getCurrentModule().new Symbol("k");
+			
+			introduce();
+			
+			claimLastFact(() -> {
+				bind("definition_of_matrix_scalarization", one1nonen1);
+				
+				{
+					final String moduleName = factName(-1);
+					
+					claimAppliedAndCondition(fact(-1));
+					{
+						{
+							bind("type_of_matrix_multiplication", one1n, onen1, ONE, n, ONE);
+							autoApplyLastFact();
+							autoApplyLastFact();
+						}
+						
+						apply(moduleName, factName(-1));
+					}
+				}
+			});
+			
+			claimLastFact(() -> {
+				claimLastFact(() -> {
+					bind("definition_of_matrix_multiplication", one1n, onen1, ONE, n, ONE);
+					autoApplyLastFact();
+					autoApplyLastFact();
+					bind(factName(-1), ZERO, ZERO, k);
+				});
+				
+				rewrite(factName(-2), factName(-1));
+			});
+			
+			claimLastFact(() -> {
+				bind("definition_of_ones", ONE, n, ZERO, k);
+				rewrite(factName(-2), factName(-1));
+				bind("definition_of_ones", n, ONE, k, ZERO);
+				rewrite(factName(-2), factName(-1));
+				claimLastFact(() -> {
+					bind("definition_of_1", ONE);
+					autoApplyLastFact();
+				});
+				rewrite(factName(-2), factName(-1));
+			});
+			
+			claimLastFact(() -> {
+				final Expression p = equality(sum(k, n, ONE), $(n, "+", ONE));
+				bind("mathematical_induction", p, n);
+				{
+					final String moduleName = factName(-1);
+					
+					claimAppliedAndCondition(fact(-1));
+					{
+						{
+							substitute(goal());
+							claim(lastEqualityRight());
+							{
+								bind("definition_of_sum_0", ONE, k);
+								substitute(lastEqualityRight());
+								rewrite(factName(-2), factName(-1));
+								
+								claimLastFact(() -> {
+									claimLastFact(() -> {
+										bind("definition_of_0", ONE);
+										autoApplyLastFact();
+									});
+									claimLastFact(() -> {
+										bind("commutativity_of_addition", ONE, ZERO);
+										autoApplyLastFact();
+										autoApplyLastFact();
+									});
+									rewrite(factName(-2), factName(-1));
+								});
+								
+								rewriteRight(factName(-2), factName(-1), 1);
+							}
+							rewriteRight(factName(-1), factName(-2));
+						}
+						apply(moduleName, factName(-1));
+					}
+				}
+				{
+					final String moduleName = factName(-1);
+					
+					claimAppliedAndCondition(fact(-1));
+					{
+						{
+							introduce();
+							introduce();
+							
+							final String inductionHypothesis = conditionName(-1);
+							
+							substitute(goal());
+							claim(lastEqualityRight());
+							{
+								bind("definition_of_sum_n", ONE, $(n, "+", ONE), k);
+								claimLastFact(() -> {
+									bind("add_1_subtract_1", n);
+									autoApplyLastFact();
+								});
+								rewrite(factName(-2), factName(-1));
+							}
+							rewrite(factName(-1), inductionHypothesis);
+							substitute(substitution(ONE, equality(k, $(n, "+", ONE))));
+							rewrite(factName(-2), factName(-1));
+						}
+						rewriteRight(factName(-1), factName(-2));
+					}
+					apply(moduleName, factName(-1));
+				}
+			});
+			
+			claimLastFact(() -> {
+				bind(factName(-1), (Expression) $(n, "-", ONE));
+				substitute(fact(-1));
+				rewrite(factName(-2), factName(-1));
+				claimLastFact(() -> {
+					bind("subtract_1_add_1", n);
+					autoApplyLastFact();
+				});
+				rewrite(factName(-2), factName(-1));
+			});
+			
+			rewrite(factName(-3), factName(-1));
+		}
+	}
+
 	public static final void claimTranspositionOfOnes() {
 		claim("transposition_of_ones",
 				$$("∀m,n ((1_(m,n))ᵀ=(1_(n,m)))"));
