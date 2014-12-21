@@ -301,9 +301,18 @@ public final class TexPrinter implements SessionExporter.Output {
 			}
 			
 			if (n == 3 && "/".equals(children.get(1).toString())) {
-				return DisplayHint.DEFAULT.hint(group("\\frac"
+				return DisplayHint.GROUP.hint(group("\\frac"
 						+ group(children.get(0).accept(this).getFirst())
 						+ group(children.get(2).accept(this).getFirst())));
+			}
+			
+			if (n == 3 && "-".equals(children.get(1).toString())) {
+				final Pair<String, DisplayHint> right = children.get(2).accept(this);
+				
+				return DisplayHint.SUBTRACTION.hint(
+						group(children.get(0).accept(this).getFirst())
+						+ group(children.get(1).accept(this).getFirst())
+						+ (right.getSecond().equals(DisplayHint.SUBTRACTION) ? pgroup(right.getFirst()) : right.getFirst()));
 			}
 			
 			if (n == 2 && "ᵀ".equals(children.get(1).toString())) {
@@ -526,6 +535,8 @@ public final class TexPrinter implements SessionExporter.Output {
 		private static final long serialVersionUID = 8176839660157109283L;
 		
 		public static final DisplayHint DEFAULT = new DisplayHint();
+		
+		public static final DisplayHint SUBTRACTION = new DisplayHint(100, "", "", 0);
 		
 		public static final DisplayHint IMPLICATION = new DisplayHint(5, "", "", 0);
 		
