@@ -146,6 +146,22 @@ public final class SessionTools {
 		return session().trust(module);
 	}
 	
+	public static final void claimLastFact(final Runnable subsessionBlock) {
+		claimLastFact(null, subsessionBlock);
+	}
+	
+	public static final void claimLastFact(final String factName, final Runnable subsessionBlock) {
+		final Session s = session();
+		
+		pushNewSession(new Module(s.getCurrentModule(), s.getCurrentModule().newPropositionName()));
+		
+		subsessionBlock.run();
+		
+		final Expression lastFact = fact(-1);
+		
+		s.getCurrentModule().new Claim(factName, lastFact, popSession().getCurrentModule()).execute();
+	}
+	
 	public static final void unifyAndApply(final String moduleName, final String conditionName) {
 		unifyAndApply(session(), moduleName, conditionName);
 	}
