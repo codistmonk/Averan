@@ -37,7 +37,7 @@ public final class RealMatrices {
 				suppose("type_of_matrix_element",
 						$$("∀X,m,n ((X∈≀M_(m,n)) → (∀i,j (X_(i,j)∈ℝ)))"));
 				suppose("definition_of_matrix_equality",
-						$$("∀X,Y,m,n ((m∈ℕ) → ((n∈ℕ) → ((X∈≀M_(m,n)) → ((Y∈≀M_(m,n)) → ((X=Y) = (∀i,j ((X)_(i,j)=(Y_(i,j)))))))))"));
+						$$("∀X,Y,m,n ((m∈ℕ) → ((n∈ℕ) → ((X∈≀M_(m,n)) → ((Y∈≀M_(m,n)) → ((X=Y) = (∀i,j ((i∈ℕ_m) → ((j∈ℕ_n) → (X_(i,j)=Y_(i,j))))))))))"));
 				suppose("definition_of_matrix_scalarization",
 						$$("∀X ((X∈≀M_(1,1)) → (⟨X⟩=X_(0,0)))"));
 				claimTypeOfMatrixScalarization();
@@ -852,6 +852,7 @@ public final class RealMatrices {
 			final Symbol x = introduce();
 			
 			introduce();
+			
 			claimLastFact(() -> {
 				bind("definition_of_matrix_scalarization", x);
 				autoApplyLastFact();

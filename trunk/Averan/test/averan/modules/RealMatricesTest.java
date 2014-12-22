@@ -8,13 +8,14 @@ import static averan.modules.Reals.*;
 import static averan.modules.RealMatrices.*;
 import static averan.modules.Standard.*;
 import static org.junit.Assert.*;
-
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Module;
 import averan.core.Module.Symbol;
+import averan.core.Session;
 import averan.io.SessionExporter;
 import averan.io.SessionScaffold;
+import net.sourceforge.aprog.tools.Tools;
 
 import org.junit.Test;
 
@@ -63,80 +64,14 @@ public final class RealMatricesTest {
 				
 				claimTranspositionOfOnes();
 				claimMultiplicationOfOnes();
-				claim("scalarization_in_multiplication",
-						$$("∀X,Y,n ((m∈ℕ) → ((n∈ℕ) → ((X∈≀M_(1,1)) → ((Y∈≀M_(1,n)) → (XY=⟨X⟩Y)))))"));
-				{
-					final Symbol x = introduce();
-					final Symbol y = introduce();
-					final Symbol n = introduce();
-					
-					introduce();
-					introduce();
-					introduce();
-					introduce();
-					
-					final Expression xy = $(x, y);
-					final Expression sxy = $(scalarize(x), y);
-					
-					claimLastFact(() -> {
-						claimLastFact(() -> {
-							bind("definition_of_matrix_equality", xy, sxy, ONE, n);
-							autoApplyLastFact();
-							autoApplyLastFact();
-							claimLastFact(() -> {
-								bind("type_of_matrix_multiplication", x, y, ONE, ONE, n);
-								autoApplyLastFact();
-								autoApplyLastFact();
-							});
-							apply(factName(-2), factName(-1));
-						});
-						autoApplyLastFact();
-					});
-					claim(lastEqualityRight());
-					{
-						final Symbol i = introduce();
-						final Symbol j = introduce();
-						final Symbol k = session().getCurrentModule().new Symbol("k");
-						
-						claimLastFact(() -> {
-							bind("definition_of_matrix_multiplication", x, y, ONE, ONE, n);
-							autoApplyLastFact();
-							autoApplyLastFact();
-							bind(factName(-1), i, j, k);
-							claimLastFact(() -> {
-								bind("definition_of_opposite", ONE);
-								autoApplyLastFact();
-								claimLastFact(() -> {
-									bind("definition_of_subtraction", ONE, ONE);
-									autoApplyLastFact();
-									autoApplyLastFact();
-								});
-								rewrite(factName(-1), factName(-2));
-							});
-							rewrite(factName(-2), factName(-1));
-							
-							bind("definition_of_sum_0", (Expression) $($(x, "_", $(i, ",", k)), $(y, "_", $(k, ",", j))), k);
-							rewrite(factName(-2), factName(-1));
-							substitute(lastEqualityRight());
-							rewrite(factName(-2), factName(-1));
-						});
-						
-						claimLastFact(() -> {
-							bind("definition_of_matrix_scalar_multiplication", scalarize(x), y, ONE, n);
-							autoApplyLastFact();
-							autoApplyLastFact();
-							bind(factName(-1), i, j);
-						});
-					}
-					
-					breakSession();
-				}
+				claimScalarizationInMultiplication();
 				
 				{
 					final Expression m = $("m");
 					final Expression n = $("n");
 					final Expression x = $("X");
 					
+					admit(natural(m));
 					admit(natural(n));
 					admit(realMatrix(x, m, n));
 					
@@ -167,6 +102,8 @@ public final class RealMatricesTest {
 							bind("transposition_of_subtraction", x, mx, m, n);
 							autoApplyLastFact();
 							autoApplyLastFact();
+							autoApplyLastFact();
+							autoApplyLastFact();
 						});
 						rewrite(factName(-2), factName(-1));
 					});
@@ -182,6 +119,9 @@ public final class RealMatricesTest {
 								autoApplyLastFact();
 								autoApplyLastFact();
 								autoApplyLastFact();
+								autoApplyLastFact();
+								autoApplyLastFact();
+								autoApplyLastFact();
 							});
 							rewrite(factName(-2), factName(-1));
 						});
@@ -191,12 +131,18 @@ public final class RealMatricesTest {
 								autoApplyLastFact();
 								autoApplyLastFact();
 								autoApplyLastFact();
+								autoApplyLastFact();
+								autoApplyLastFact();
+								autoApplyLastFact();
 							});
 							rewrite(factName(-2), factName(-1));
 						});
 						claimLastFact(() -> {
 							claimLastFact(() -> {
 								bind("right_distributivity_of_matrix_multiplication_over_subtraction", x, mx, mxt, m, n, m);
+								autoApplyLastFact();
+								autoApplyLastFact();
+								autoApplyLastFact();
 								autoApplyLastFact();
 								autoApplyLastFact();
 								autoApplyLastFact();
@@ -232,6 +178,9 @@ public final class RealMatricesTest {
 							final Expression invnx1n1 = $(invnx, onen1);
 							
 							bind("transposition_of_multiplication", invnx1n1, one1n, m, ONE, n);
+							autoApplyLastFact();
+							autoApplyLastFact();
+							autoApplyLastFact();
 							{
 								final String moduleName = factName(-1);
 								
@@ -252,17 +201,115 @@ public final class RealMatricesTest {
 					});
 					
 					claimLastFact(() -> {
-						bind("transposition_of_ones", ONE, n);
+						claimLastFact(() -> {
+							bind("transposition_of_ones", ONE, n);
+							autoApplyLastFact();
+							autoApplyLastFact();
+						});
 						rewrite(factName(-2), factName(-1));
 					});
 					
 					// TODO
+					breakSession();
 				}
 			}
 			
 			private static final long serialVersionUID = 2969099922483811015L;
 			
 		};
+	}
+	
+	public static final void claimScalarizationInMultiplication() {
+		claim("scalarization_in_multiplication",
+				$$("∀X,Y,n ((m∈ℕ) → ((n∈ℕ) → ((X∈≀M_(1,1)) → ((Y∈≀M_(1,n)) → (XY=⟨X⟩Y)))))"));
+		{
+			final Symbol x = introduce();
+			final Symbol y = introduce();
+			final Symbol n = introduce();
+			
+			introduce();
+			introduce();
+			introduce();
+			introduce();
+			
+			final Expression xy = $(x, y);
+			final Expression sxy = $(scalarize(x), y);
+			
+			claimLastFact(() -> {
+				claimLastFact(() -> {
+					bind("definition_of_matrix_equality", xy, sxy, ONE, n);
+					autoApplyLastFact();
+					autoApplyLastFact();
+					claimLastFact(() -> {
+						bind("type_of_matrix_multiplication", x, y, ONE, ONE, n);
+						autoApplyLastFact();
+						autoApplyLastFact();
+					});
+					apply(factName(-2), factName(-1));
+				});
+				autoApplyLastFact();
+			});
+			claim(lastEqualityRight());
+			{
+				final Symbol i = introduce();
+				final Symbol j = introduce();
+				final Symbol k = session().getCurrentModule().new Symbol("k");
+				
+				introduce();
+				introduce();
+				
+				claimLastFact(() -> {
+					bind("elements_of_natural_range_1", i);
+					autoApplyLastFact();
+				});
+				
+				final String definitionOfI = factName(-1);
+				
+				claimLastFact(() -> {
+					bind("definition_of_matrix_multiplication", x, y, ONE, ONE, n);
+					autoApplyLastFact();
+					autoApplyLastFact();
+					bind(factName(-1), i, j, k);
+					claimLastFact(() -> {
+						bind("definition_of_opposite", ONE);
+						autoApplyLastFact();
+						claimLastFact(() -> {
+							bind("definition_of_subtraction", ONE, ONE);
+							autoApplyLastFact();
+							autoApplyLastFact();
+						});
+						rewrite(factName(-1), factName(-2));
+					});
+					rewrite(factName(-2), factName(-1));
+					
+					bind("definition_of_sum_0", (Expression) $($(x, "_", $(i, ",", k)), $(y, "_", $(k, ",", j))), k);
+					rewrite(factName(-2), factName(-1));
+					substitute(lastEqualityRight());
+					rewrite(factName(-2), factName(-1));
+					
+					rewrite(factName(-1), definitionOfI, 1);
+				});
+				
+				claimLastFact(() -> {
+					bind("definition_of_matrix_scalar_multiplication", scalarize(x), y, ONE, n);
+					autoApplyLastFact();
+					autoApplyLastFact();
+					bind(factName(-1), i, j);
+					
+					claimLastFact(() -> {
+						bind("definition_of_matrix_scalarization", x);
+						autoApplyLastFact();
+					});
+					rewrite(factName(-2), factName(-1), 1);
+					
+					rewrite(factName(-1), definitionOfI, 1);
+				});
+				
+				rewriteRight(factName(-2), factName(-1));
+			}
+			
+			rewriteRight(factName(-1), factName(-2));
+		}
 	}
 	
 	public static final void claimMultiplicationOfOnes() {
