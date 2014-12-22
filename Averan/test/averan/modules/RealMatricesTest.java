@@ -9,20 +9,12 @@ import static averan.modules.RealMatrices.*;
 import static averan.modules.Standard.*;
 import static org.junit.Assert.*;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Module;
-import averan.core.Pattern.Any;
-import averan.core.Visitor;
 import averan.core.Module.Symbol;
-import averan.core.Session;
 import averan.io.SessionExporter;
 import averan.io.SessionScaffold;
-import net.sourceforge.aprog.tools.Pair;
-import net.sourceforge.aprog.tools.Tools;
 
 import org.junit.Test;
 
@@ -49,7 +41,6 @@ public final class RealMatricesTest {
 						$$("∀m,n (1_(m,n)∈≀M_(m,n))"));
 				suppose("definition_of_mean",
 						$$("∀X,m,n ((n∈ℕ) → ((X∈≀M_(m,n)) → (μ_X=(1/n)X(1_(n,1)))))"));
-				breakSession();
 				claimTypeOfMean();
 				suppose("definition_of_replicated_mean",
 						$$("∀X,m,n ((n∈ℕ) → ((X∈≀M_(m,n)) → (M_X=(μ_X)(1_(1,n)))))"));
@@ -69,7 +60,7 @@ public final class RealMatricesTest {
 				suppose("definition_of_fisher_linear_discriminant",
 						$$("∀w,X,m,n,c,j " + conditionFisherLinearDiscriminant("S_(wᵀX,c)=(⟨'Var'_(wᵀU_(X,c))⟩/((Σ_(j=0)^(c-1)) ⟨'Var'_(wᵀX_j)⟩))")));
 				claimTypeOfFisherLinearDiscriminant();
-				
+				breakSession();
 				
 				claimTranspositionOfOnes();
 				claimMultiplicationOfOnes();
@@ -655,10 +646,12 @@ public final class RealMatricesTest {
 				rewriteRight(factName(-1), factName(-4));
 			}
 			
-			bind("definition_of_fisher_linear_discriminant", w, x, m, n, c, j);
-			autoApplyLastFact();
-			autoApplyLastFact();
-			apply(factName(-1), conditionName(-1));
+			claimLastFact(() -> {
+				bind("definition_of_fisher_linear_discriminant", w, x, m, n, c, j);
+				autoApplyLastFact();
+				autoApplyLastFact();
+				apply(factName(-1), conditionName(-1));
+			});
 			
 			claim(real(lastEqualityRight()));
 			{
