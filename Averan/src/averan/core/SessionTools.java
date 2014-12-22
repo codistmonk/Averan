@@ -20,7 +20,7 @@ public final class SessionTools {
 	private static final List<Session> sessions = new ArrayList<>();
 	
 	public static final Session session() {
-		return sessions.get(0);
+		return sessions.isEmpty() ? null : sessions.get(0);
 	}
 	
 	public static final Session pushNewSession(final Module module) {
@@ -160,6 +160,15 @@ public final class SessionTools {
 		final Expression lastFact = fact(-1);
 		
 		s.getCurrentModule().new Claim(factName, lastFact, popSession().getCurrentModule()).execute();
+	}
+	
+	public static final <E extends Expression> E lastEqualityRight() {
+		return ((Composite) fact(-1)).get(2);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static final <E extends Expression> E lastModuleCondition() {
+		return (E) ((Module) fact(-1)).getConditions().get(0);
 	}
 	
 	public static final void unifyAndApply(final String moduleName, final String conditionName) {
