@@ -60,10 +60,10 @@ public final class RealMatricesTest {
 				suppose("definition_of_fisher_linear_discriminant",
 						$$("∀w,X,m,n,c,j " + conditionFisherLinearDiscriminant("S_(wᵀX,c)=(⟨'Var'_(wᵀU_(X,c))⟩/((Σ_(j=0)^(c-1)) ⟨'Var'_(wᵀX_j)⟩))")));
 				claimTypeOfFisherLinearDiscriminant();
-				breakSession();
 				
 				claimTranspositionOfOnes();
 				claimMultiplicationOfOnes();
+				breakSession();
 				claim("scalarization_in_multiplication",
 						$$("∀X,Y,n ((X∈≀M_(1,1)) → ((Y∈≀M_(1,n)) → (XY=⟨X⟩Y)))"));
 				{
@@ -400,7 +400,7 @@ public final class RealMatricesTest {
 
 	public static final void claimTranspositionOfOnes() {
 		claim("transposition_of_ones",
-				$$("∀m,n ((1_(m,n))ᵀ=(1_(n,m)))"));
+				$$("∀m,n ((m∈ℕ) → ((n∈ℕ) → ((1_(m,n))ᵀ=(1_(n,m)))))"));
 		{
 			final Symbol m = introduce();
 			final Symbol n = introduce();
@@ -408,8 +408,13 @@ public final class RealMatricesTest {
 			final Expression onemnt = transpose(onemn);
 			final Expression onenm = ones(n, m);
 			
+			introduce();
+			introduce();
+			
 			claimLastFact(() -> {
 				bind("definition_of_matrix_equality", onemnt, onenm, n, m);
+				autoApplyLastFact();
+				autoApplyLastFact();
 				autoApplyLastFact();
 				autoApplyLastFact();
 			});
