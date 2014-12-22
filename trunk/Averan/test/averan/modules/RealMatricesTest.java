@@ -34,22 +34,22 @@ public final class RealMatricesTest {
 	@Test
 	public final void test1() {
 //		SessionScaffold.exportLatexPNG(new Session(Reals.MODULE), 0, "reals.png");
-		Tools.debugPrint(RealMatrices.MODULE != null);
-		SessionScaffold.exportLatexPNG(session() == null ? new Session(RealMatrices.MODULE) : session(), 0, "view.png");
-		
-		if (true) return;
+//		Tools.debugPrint(RealMatrices.MODULE != null);
+//		SessionScaffold.exportLatexPNG(session() == null ? new Session(RealMatrices.MODULE) : session(), 0, "view.png");
+//		
+//		if (true) return;
 		
 		new SessionScaffold(RealMatrices.MODULE) {
 			
 			@Override
 			public final void buildSession() {
-				breakSession();
 				suppose("definition_of_ones",
 						$$("∀m,n,i,j ((1_(m,n))_(i,j)=1)"));
 				suppose("type_of_ones",
 						$$("∀m,n (1_(m,n)∈≀M_(m,n))"));
 				suppose("definition_of_mean",
 						$$("∀X,m,n ((n∈ℕ) → ((X∈≀M_(m,n)) → (μ_X=(1/n)X(1_(n,1)))))"));
+				breakSession();
 				claimTypeOfMean();
 				suppose("definition_of_replicated_mean",
 						$$("∀X,m,n ((n∈ℕ) → ((X∈≀M_(m,n)) → (M_X=(μ_X)(1_(1,n)))))"));

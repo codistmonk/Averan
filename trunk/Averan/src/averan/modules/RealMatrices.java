@@ -1,24 +1,22 @@
 package averan.modules;
 
 import static averan.core.ExpressionTools.$;
-import static averan.core.Session.breakSession;
 import static averan.core.SessionTools.*;
 import static averan.io.ExpressionParser.$$;
 import static averan.modules.Reals.ONE;
 import static averan.modules.Reals.ZERO;
 import static averan.modules.Standard.*;
+
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Module;
 import averan.core.Session;
-import averan.core.SessionTools;
 import averan.core.Module.Symbol;
 import averan.io.SessionScaffold;
 
 import java.util.ArrayList;
 
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
-import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2014)
@@ -79,7 +77,6 @@ public final class RealMatrices {
 				
 				claimTranspositionOf("addition", "+");
 				claimTranspositionOf("subtraction", "-");
-				breakSession();
 				claimTranspositionOfMultiplication();
 			}
 			
@@ -738,7 +735,7 @@ public final class RealMatrices {
 	
 	public static final void claimTranspositionOfMultiplication() {
 		claim("transposition_of_multiplication",
-				$$("∀X,Y,m,n,o ((X∈≀M_(m,n)) → ((Y∈≀M_(n,o)) → ((XY)ᵀ=YᵀXᵀ)))"));
+				$$("∀X,Y,m,n,o ((m∈ℕ) → ((n∈ℕ) → ((o∈ℕ) → ((X∈≀M_(m,n)) → ((Y∈≀M_(n,o)) → ((XY)ᵀ=YᵀXᵀ))))))"));
 		{
 			final Symbol x = introduce();
 			final Symbol y = introduce();
@@ -753,7 +750,9 @@ public final class RealMatrices {
 			
 			introduce();
 			introduce();
-			
+			introduce();
+			introduce();
+			introduce();
 			
 			claim(realMatrix(xy, m, o));
 			{
@@ -787,11 +786,15 @@ public final class RealMatrices {
 				autoApplyLastFact();
 			}
 			
-			bind("definition_of_matrix_equality", xyT, ytxt, o, m);
-			autoApplyLastFact();
-			autoApplyLastFact();
+			claimLastFact(() -> {
+				bind("definition_of_matrix_equality", xyT, ytxt, o, m);
+				autoApplyLastFact();
+				autoApplyLastFact();
+				autoApplyLastFact();
+				autoApplyLastFact();
+			});
 			
-			claim(((Composite) fact(-1)).get(2));
+			claim(lastEqualityRight());
 			{
 				final Symbol i = introduce();
 				final Symbol j = introduce();
@@ -799,38 +802,45 @@ public final class RealMatrices {
 				final Expression xjk = $(x, "_", $(j, ",", k));
 				final Expression yki = $(y, "_", $(k, ",", i));
 				
-				bind("definition_of_transposition", xy, m, o);
-				autoApplyLastFact();
-				bind(factName(-1), i, j);
-				String xyTFactName = factName(-1);
-				bind("definition_of_matrix_multiplication", x, y, m, n, o);
-				autoApplyLastFact();
-				autoApplyLastFact();
-				bind(factName(-1), j, i, k);
-				rewrite(xyTFactName, factName(-1));
-				xyTFactName = factName(-1);
+				claimLastFact(() -> {
+					bind("definition_of_transposition", xy, m, o);
+					autoApplyLastFact();
+					bind(factName(-1), i, j);
+					claimLastFact(() -> {
+						bind("definition_of_matrix_multiplication", x, y, m, n, o);
+						autoApplyLastFact();
+						autoApplyLastFact();
+						bind(factName(-1), j, i, k);
+					});
+					rewrite(factName(-2), factName(-1));
+				});
 				
-				bind("definition_of_matrix_multiplication", yt, xt, o, n, m);
-				autoApplyLastFact();
-				autoApplyLastFact();
-				bind(factName(-1), i, j, k);
-				String ytxtFactName = factName(-1);
-				bind("definition_of_transposition", x, m, n);
-				autoApplyLastFact();
-				bind(factName(-1), k, j);
-				rewrite(ytxtFactName, factName(-1));
-				ytxtFactName = factName(-1);
-				bind("definition_of_transposition", y, n, o);
-				autoApplyLastFact();
-				bind(factName(-1), i, k);
-				rewrite(ytxtFactName, factName(-1));
-				ytxtFactName = factName(-1);
-				bind("commutativity_of_multiplication", yki, xjk);
-				applyLastFactOnMatrixElementRealness(y, n, o, k, i);
-				applyLastFactOnMatrixElementRealness(x, m, n, j, k);
-				rewrite(ytxtFactName, factName(-1));
+				claimLastFact(() -> {
+					bind("definition_of_matrix_multiplication", yt, xt, o, n, m);
+					autoApplyLastFact();
+					autoApplyLastFact();
+					bind(factName(-1), i, j, k);
+					claimLastFact(() -> {
+						bind("definition_of_transposition", x, m, n);
+						autoApplyLastFact();
+						bind(factName(-1), k, j);
+					});
+					rewrite(factName(-2), factName(-1));
+					claimLastFact(() -> {
+						bind("definition_of_transposition", y, n, o);
+						autoApplyLastFact();
+						bind(factName(-1), i, k);
+					});
+					rewrite(factName(-2), factName(-1));
+					claimLastFact(() -> {
+						bind("commutativity_of_multiplication", yki, xjk);
+						applyLastFactOnMatrixElementRealness(y, n, o, k, i);
+						applyLastFactOnMatrixElementRealness(x, m, n, j, k);
+					});
+					rewrite(factName(-2), factName(-1));
+				});
 				
-				rewriteRight(xyTFactName, factName(-1));
+				rewriteRight(factName(-2), factName(-1));
 			}
 			
 			rewriteRight(factName(-1), factName(-2));
