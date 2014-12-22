@@ -22,6 +22,7 @@ import averan.core.Session;
 import averan.io.SessionExporter;
 import averan.io.SessionScaffold;
 import net.sourceforge.aprog.tools.Pair;
+import net.sourceforge.aprog.tools.Tools;
 
 import org.junit.Test;
 
@@ -33,13 +34,16 @@ public final class RealMatricesTest {
 	@Test
 	public final void test1() {
 //		SessionScaffold.exportLatexPNG(new Session(Reals.MODULE), 0, "reals.png");
-//		
-//		if (true) return;
+		Tools.debugPrint(RealMatrices.MODULE != null);
+		SessionScaffold.exportLatexPNG(session() == null ? new Session(RealMatrices.MODULE) : session(), 0, "view.png");
+		
+		if (true) return;
 		
 		new SessionScaffold(RealMatrices.MODULE) {
 			
 			@Override
 			public final void buildSession() {
+				breakSession();
 				suppose("definition_of_ones",
 						$$("∀m,n,i,j ((1_(m,n))_(i,j)=1)"));
 				suppose("type_of_ones",
@@ -755,10 +759,6 @@ public final class RealMatricesTest {
 	
 	public static final Composite sum(final Object i, final Object n, final Object x) {
 		return $($($("Σ", "_", $(i, "=", ZERO)), "^", n), x);
-	}
-	
-	public static final <E extends Expression> E lastEqualityRight() {
-		return ((Composite) fact(-1)).get(2);
 	}
 	
 }
