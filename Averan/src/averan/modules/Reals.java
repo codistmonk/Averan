@@ -58,6 +58,10 @@ public final class Reals {
 			suppose("definition_of_natural_range",
 					$$("∀n ((n∈ℕ) → (∀i ((i∈ℕ_n) → (i∈ℕ ∧ i<n))))"));
 			
+			// TODO claim or change definition of natural range
+			admit("elements_of_natural_range_1",
+					$$("∀i ((i∈ℕ_1) → (i=0))"));
+			
 			suppose("type_of_inverse", $$("∀x ((x∈ℝ) → ((1/x)∈ℝ))"));
 			suppose("type_of_division", $$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x/y)∈ℝ)))"));
 			
