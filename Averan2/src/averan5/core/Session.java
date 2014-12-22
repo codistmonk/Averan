@@ -80,12 +80,12 @@ public final class Session implements Serializable {
 		return this.accept();
 	}
 	
-	public final Session apply(final String factName, final String moduleName, final Expression<?> value) {
+	public final Session apply(final String factName, final String moduleName, final String conditionName) {
 		// TODO
 		return this.accept();
 	}
 	
-	public final Session apply(final String factName, final String moduleName, final String conditionName) {
+	public final Session substitute(final String factName, final Expression<?> expression, final Composite<?>... equalities) {
 		// TODO
 		return this.accept();
 	}
@@ -96,7 +96,7 @@ public final class Session implements Serializable {
 		return this.accept();
 	}
 	
-	public final Composite getCurrentModule() {
+	public final Composite<?> getCurrentModule() {
 		final Frame currentFrame = this.getCurrentFrame();
 		
 		return currentFrame == null ? null : currentFrame.getModule();
