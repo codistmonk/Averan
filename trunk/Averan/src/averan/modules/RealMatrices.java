@@ -76,10 +76,10 @@ public final class RealMatrices {
 				claimRightDistributivityOfMatrixMultiplicationOver("addition", "+");
 				claimLeftDistributivityOfMatrixMultiplicationOver("subtraction", "-");
 				claimRightDistributivityOfMatrixMultiplicationOver("subtraction", "-");
-				breakSession();
 				
 				claimTranspositionOf("addition", "+");
 				claimTranspositionOf("subtraction", "-");
+				breakSession();
 				claimTranspositionOfMultiplication();
 			}
 			
@@ -622,7 +622,6 @@ public final class RealMatrices {
 					bind("distributivity_of_sum_over_" + operation, (Expression) $(xik, zkj), $(yik, zkj), $(n, "-", "1"), k);
 					rewrite(factName(-2), factName(-1));
 				});
-				String xyZFactName = factName(-1);
 				
 				claimLastFact(() -> {
 					bind("definition_of_matrix_" + operation, xz, yz, m, o);
@@ -654,7 +653,7 @@ public final class RealMatrices {
 	
 	public static final void claimTranspositionOf(final String operation, final String operator) {
 		claim("transposition_of_" + operation,
-				$$("∀X,Y,m,n ((X∈≀M_(m,n)) → ((Y∈≀M_(m,n)) → ((X" + operator + "Y)ᵀ=Xᵀ" + operator + "Yᵀ)))"));
+				$$("∀X,Y,m,n ((m∈ℕ) → ((n∈ℕ) → ((X∈≀M_(m,n)) → ((Y∈≀M_(m,n)) → ((X" + operator + "Y)ᵀ=Xᵀ" + operator + "Yᵀ)))))"));
 		{
 			final Symbol x = introduce();
 			final Symbol y = introduce();
@@ -666,6 +665,8 @@ public final class RealMatrices {
 			final Expression xyT = transpose(xy);
 			final Expression xtyt = $(xt, operator, yt);
 			
+			introduce();
+			introduce();
 			introduce();
 			introduce();
 			
@@ -683,42 +684,52 @@ public final class RealMatrices {
 			
 			proveUsingBindAndApply(realMatrix(xtyt, n, m));
 			
-			bind("definition_of_matrix_equality", xyT, xtyt, n, m);
-			autoApplyLastFact();
-			autoApplyLastFact();
+			claimLastFact(() -> {
+				bind("definition_of_matrix_equality", xyT, xtyt, n, m);
+				autoApplyLastFact();
+				autoApplyLastFact();
+				autoApplyLastFact();
+				autoApplyLastFact();
+			});
 			
-			claim(((Composite) fact(-1)).get(2));
+			claim(lastEqualityRight());
 			{
 				final Symbol i = introduce();
 				final Symbol j = introduce();
 				
-				bind("definition_of_transposition", xy, m, n);
-				autoApplyLastFact();
-				bind(factName(-1), i, j);
-				String xyTFactName = factName(-1);
-				bind("definition_of_matrix_" + operation, x, y, m, n);
-				autoApplyLastFact();
-				autoApplyLastFact();
-				bind(factName(-1), j, i);
-				rewrite(xyTFactName, factName(-1));
-				xyTFactName = factName(-1);
+				claimLastFact(() -> {
+					bind("definition_of_transposition", xy, m, n);
+					autoApplyLastFact();
+					bind(factName(-1), i, j);
+					claimLastFact(() -> {
+						bind("definition_of_matrix_" + operation, x, y, m, n);
+						autoApplyLastFact();
+						autoApplyLastFact();
+						bind(factName(-1), j, i);
+					});
+					rewrite(factName(-2), factName(-1));
+				});
 				
-				bind("definition_of_matrix_" + operation, xt, yt, n, m);
-				autoApplyLastFact();
-				autoApplyLastFact();
-				bind(factName(-1), i, j);
-				String xtytFactName = factName(-1);
-				bind("definition_of_transposition", x, m, n);
-				autoApplyLastFact();
-				bind(factName(-1), i, j);
-				rewrite(xtytFactName, factName(-1));
-				xtytFactName = factName(-1);
-				bind("definition_of_transposition", y, m, n);
-				autoApplyLastFact();
-				bind(factName(-1), i, j);
-				rewrite(xtytFactName, factName(-1));
+				claimLastFact(() -> {
+					bind("definition_of_matrix_" + operation, xt, yt, n, m);
+					autoApplyLastFact();
+					autoApplyLastFact();
+					bind(factName(-1), i, j);
+					claimLastFact(() -> {
+						bind("definition_of_transposition", x, m, n);
+						autoApplyLastFact();
+						bind(factName(-1), i, j);
+					});
+					rewrite(factName(-2), factName(-1));
+					claimLastFact(() -> {
+						bind("definition_of_transposition", y, m, n);
+						autoApplyLastFact();
+						bind(factName(-1), i, j);
+					});
+					rewrite(factName(-2), factName(-1));
+				});
 				
-				rewriteRight(xyTFactName, factName(-1));
+				rewriteRight(factName(-2), factName(-1));
 			}
 			
 			rewriteRight(factName(-1), factName(-2));
