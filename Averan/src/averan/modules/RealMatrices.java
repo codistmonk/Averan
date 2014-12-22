@@ -1,21 +1,23 @@
 package averan.modules;
 
 import static averan.core.ExpressionTools.$;
+import static averan.core.Session.breakSession;
 import static averan.core.SessionTools.*;
 import static averan.io.ExpressionParser.$$;
 import static averan.modules.Reals.ONE;
 import static averan.modules.Reals.ZERO;
 import static averan.modules.Standard.*;
-
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Module;
+import averan.core.SessionTools;
 import averan.core.Module.Symbol;
 import averan.io.SessionScaffold;
 
 import java.util.ArrayList;
 
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
+import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2014)
@@ -34,13 +36,9 @@ public final class RealMatrices {
 			@Override
 			public final void buildSession() {
 				suppose("type_of_matrix_element",
-						$$("∀X,m,n ((X∈≀M_(m,n)) → (∀i,j (X_(i,j)∈ℝ)))"));
-				suppose("definition_of_matrix_rowCount",
-						$$("∀X,m,n ((X∈≀M_(m,n)) → ('rowCount'_X = m))"));
-				suppose("definition_of_matrix_columnCount",
-						$$("∀X,m,n ((X∈≀M_(m,n)) → ('columnCount'_X = n))"));
+						$$("∀X,m,n ((m∈ℕ) → ((n∈ℕ) → ((X∈≀M_(m,n)) → (∀i,j (X_(i,j)∈ℝ)))))"));
 				suppose("definition_of_matrix_equality",
-						$$("∀X,Y,m,n ((X∈≀M_(m,n)) → ((Y∈≀M_(m,n)) → ((X=Y) = (∀i,j ((X)_(i,j)=(Y_(i,j)))))))"));
+						$$("∀X,Y,m,n ((m∈ℕ) → ((n∈ℕ) → ((X∈≀M_(m,n)) → ((Y∈≀M_(m,n)) → ((X=Y) = (∀i,j ((X)_(i,j)=(Y_(i,j)))))))))"));
 				suppose("definition_of_matrix_scalarization",
 						$$("∀X ((X∈≀M_(1,1)) → (⟨X⟩=X_(0,0)))"));
 				claimTypeOfMatrixScalarization();
@@ -60,7 +58,6 @@ public final class RealMatrices {
 						$$("∀X,m,n ((X∈≀M_(m,n)) → (∀i,j ((Xᵀ)_(i,j) = (X_(j,i)))))"));
 				suppose("type_of_transposition",
 						$$("∀X,m,n ((X∈≀M_(m,n)) → ((Xᵀ)∈≀M_(n,m)))"));
-				
 				// TODO claim
 				suppose("definition_of_matrix_scalar_multiplication",
 						$$("∀X,Y,m,n ((X∈ℝ) → ((Y∈≀M_(m,n)) → (∀i,j ((XY)_(i,j))=X(Y_(i,j)))))"));
@@ -72,6 +69,7 @@ public final class RealMatrices {
 						$$("∀X,Y,Z,m,n,o ((X∈ℝ) → ((Y∈≀M_(m,n)) → ((Z∈≀M_(n,o)) → ((X(YZ))=((XY)Z)))))"));
 				
 				claimAssociativityOfMatrixAddition();
+				breakSession();
 				claimCommutativityOfMatrixAddition();
 				claimAssociativityOfMatrixMultiplication();
 				claimLeftDistributivityOfMatrixMultiplicationOver("addition", "+");
@@ -139,9 +137,11 @@ public final class RealMatrices {
 	
 	public static final void applyLastFactOnMatrixElementRealness(
 			final Symbol matrix, final Symbol m, final Symbol n, final Symbol i, final Symbol j) {
-		claim(((Module) fact(-1)).getConditions().get(0));
+		claim(lastModuleCondition());
 		{
 			bind("type_of_matrix_element", matrix, m, n);
+			autoApplyLastFact();
+			autoApplyLastFact();
 			autoApplyLastFact();
 			bind(factName(-1), i, j);
 		}
@@ -150,7 +150,7 @@ public final class RealMatrices {
 	
 	public static final void claimAssociativityOfMatrixAddition() {
 		claim("associativity_of_matrix_addition",
-				$$("∀X,Y,Z,m,n ((X∈≀M_(m,n)) → ((Y∈≀M_(m,n)) → ((Z∈≀M_(m,n)) → ((X+(Y+Z))=((X+Y)+Z)))))"));
+				$$("∀X,Y,Z,m,n ((m∈ℕ) → ((n∈ℕ) → ((X∈≀M_(m,n)) → ((Y∈≀M_(m,n)) → ((Z∈≀M_(m,n)) → ((X+(Y+Z))=((X+Y)+Z)))))))"));
 		{
 			final Symbol x = introduce();
 			final Symbol y = introduce();
@@ -161,17 +161,23 @@ public final class RealMatrices {
 			introduce();
 			introduce();
 			introduce();
+			introduce();
+			introduce();
 			
 			final Expression xy = $(x, "+", y);
 			final Expression yz = $(y, "+", z);
 			final Expression xYZ = $(x, "+", yz);
 			final Expression xyZ = $(xy, "+", z);
 			
-			bind("definition_of_matrix_equality", xYZ, xyZ, m, n);
-			autoApplyLastFact();
-			autoApplyLastFact();
+			claimLastFact(() -> {
+				bind("definition_of_matrix_equality", xYZ, xyZ, m, n);
+				autoApplyLastFact();
+				autoApplyLastFact();
+				autoApplyLastFact();
+				autoApplyLastFact();
+			});
 			
-			claim(((Composite) fact(-1)).get(2));
+			claim(lastEqualityRight());
 			{
 				final Symbol i = introduce();
 				final Symbol j = introduce();
@@ -179,36 +185,42 @@ public final class RealMatrices {
 				final Expression yij = $(y, "_", $(i, ",", j));
 				final Expression zij = $(z, "_", $(i, ",", j));
 				
-				bind("definition_of_matrix_addition", x, yz, m, n);
-				autoApplyLastFact();
-				autoApplyLastFact();
-				bind(factName(-1), i, j);
-				String xYZFactName = factName(-1);
-				bind("definition_of_matrix_addition", y, z, m, n);
-				autoApplyLastFact();
-				autoApplyLastFact();
-				bind(factName(-1), i, j);
-				rewrite(xYZFactName, factName(-1));
-				xYZFactName = factName(-1);
-				bind("associativity_of_addition", xij, yij, zij);
-				applyLastFactOnMatrixElementRealness(x, m, n, i, j);
-				applyLastFactOnMatrixElementRealness(y, m, n, i, j);
-				applyLastFactOnMatrixElementRealness(z, m, n, i, j);
-				rewrite(xYZFactName, factName(-1));
-				xYZFactName = factName(-1);
+				claimLastFact(() -> {
+					bind("definition_of_matrix_addition", x, yz, m, n);
+					autoApplyLastFact();
+					autoApplyLastFact();
+					bind(factName(-1), i, j);
+					claimLastFact(() -> {
+						bind("definition_of_matrix_addition", y, z, m, n);
+						autoApplyLastFact();
+						autoApplyLastFact();
+						bind(factName(-1), i, j);
+					});
+					rewrite(factName(-2), factName(-1));
+					claimLastFact(() -> {
+						bind("associativity_of_addition", xij, yij, zij);
+						applyLastFactOnMatrixElementRealness(x, m, n, i, j);
+						applyLastFactOnMatrixElementRealness(y, m, n, i, j);
+						applyLastFactOnMatrixElementRealness(z, m, n, i, j);
+					});
+					rewrite(factName(-2), factName(-1));
+				});
 				
-				bind("definition_of_matrix_addition", xy, z, m, n);
-				autoApplyLastFact();
-				autoApplyLastFact();
-				bind(factName(-1), i, j);
-				String xyZFactName = factName(-1);
-				bind("definition_of_matrix_addition", x, y, m, n);
-				autoApplyLastFact();
-				autoApplyLastFact();
-				bind(factName(-1), i, j);
-				rewrite(xyZFactName, factName(-1));
+				claimLastFact(() -> {
+					bind("definition_of_matrix_addition", xy, z, m, n);
+					autoApplyLastFact();
+					autoApplyLastFact();
+					bind(factName(-1), i, j);
+					claimLastFact(() -> {
+						bind("definition_of_matrix_addition", x, y, m, n);
+						autoApplyLastFact();
+						autoApplyLastFact();
+						bind(factName(-1), i, j);
+					});
+					rewrite(factName(-2), factName(-1));
+				});
 				
-				rewriteRight(xYZFactName, factName(-1));
+				rewriteRight(factName(-2), factName(-1));
 			}
 			
 			rewriteRight(factName(-1), factName(-2));
@@ -772,7 +784,6 @@ public final class RealMatrices {
 			final Symbol x = introduce();
 			
 			introduce();
-			
 			claimLastFact(() -> {
 				bind("definition_of_matrix_scalarization", x);
 				autoApplyLastFact();
@@ -780,6 +791,8 @@ public final class RealMatrices {
 			
 			claimLastFact(() -> {
 				bind("type_of_matrix_element", x, ONE, ONE);
+				autoApplyLastFact();
+				autoApplyLastFact();
 				autoApplyLastFact();
 				bind(factName(-1), ZERO, ZERO);
 			});
