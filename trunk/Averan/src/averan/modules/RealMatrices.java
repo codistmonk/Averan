@@ -72,9 +72,9 @@ public final class RealMatrices {
 				claimAssociativityOfMatrixAddition();
 				claimCommutativityOfMatrixAddition();
 				claimAssociativityOfMatrixMultiplication();
-				breakSession();
 				claimLeftDistributivityOfMatrixMultiplicationOver("addition", "+");
 				claimRightDistributivityOfMatrixMultiplicationOver("addition", "+");
+				breakSession();
 				claimLeftDistributivityOfMatrixMultiplicationOver("subtraction", "-");
 				claimRightDistributivityOfMatrixMultiplicationOver("subtraction", "-");
 				
@@ -414,7 +414,7 @@ public final class RealMatrices {
 	public static final void claimLeftDistributivityOfMatrixMultiplicationOver(
 			final String operation, final String operator) {
 		claim("left_distributivity_of_matrix_multiplication_over_" + operation,
-				$$("∀X,Y,Z,m,n,o ((X∈≀M_(m,n)) → ((Y∈≀M_(n,o)) → ((Z∈≀M_(n,o)) → ((X(Y" + operator + "Z))=(XY" + operator + "XZ)))))"));
+				$$("∀X,Y,Z,m,n,o ((m∈ℕ) → ((n∈ℕ) → ((o∈ℕ) → ((X∈≀M_(m,n)) → ((Y∈≀M_(n,o)) → ((Z∈≀M_(n,o)) → ((X(Y" + operator + "Z))=(XY" + operator + "XZ))))))))"));
 		{
 			final Symbol x = introduce();
 			final Symbol y = introduce();
@@ -423,6 +423,9 @@ public final class RealMatrices {
 			final Symbol n = introduce();
 			final Symbol o = introduce();
 			
+			introduce();
+			introduce();
+			introduce();
 			introduce();
 			introduce();
 			introduce();
@@ -458,11 +461,15 @@ public final class RealMatrices {
 			
 			proveUsingBindAndApply(realMatrix(xyXZ, m, o));
 			
-			bind("definition_of_matrix_equality", xYZ, xyXZ, m, o);
-			autoApplyLastFact();
-			autoApplyLastFact();
+			claimLastFact(() -> {
+				bind("definition_of_matrix_equality", xYZ, xyXZ, m, o);
+				autoApplyLastFact();
+				autoApplyLastFact();
+				autoApplyLastFact();
+				autoApplyLastFact();
+			});
 			
-			claim(((Composite) fact(-1)).get(2));
+			claim(lastEqualityRight());
 			{
 				final Symbol i = introduce();
 				final Symbol j = introduce();
@@ -471,49 +478,55 @@ public final class RealMatrices {
 				final Expression ykj = $(y, "_", $(k, ",", j));
 				final Expression zkj = $(z, "_", $(k, ",", j));
 				
-				bind("definition_of_matrix_multiplication", x, yz, m, n, o);
-				autoApplyLastFact();
-				autoApplyLastFact();
-				bind(factName(-1), i, j, k);
-				String xYZFactName = factName(-1);
-				bind("definition_of_matrix_" + operation, y, z, n, o);
-				autoApplyLastFact();
-				autoApplyLastFact();
-				bind(factName(-1), k, j);
-				rewrite(xYZFactName, factName(-1));
-				xYZFactName = factName(-1);
+				claimLastFact(() -> {
+					bind("definition_of_matrix_multiplication", x, yz, m, n, o);
+					autoApplyLastFact();
+					autoApplyLastFact();
+					bind(factName(-1), i, j, k);
+					claimLastFact(() -> {
+						claimLastFact(() -> {
+							bind("definition_of_matrix_" + operation, y, z, n, o);
+							autoApplyLastFact();
+							autoApplyLastFact();
+							bind(factName(-1), k, j);
+						});
+						rewrite(factName(-2), factName(-1));
+					});
+					claimLastFact(() -> {
+						claimLastFact(() -> {
+							bind("left_distributivity_of_multiplication_over_" + operation, xik, ykj, zkj);
+							applyLastFactOnMatrixElementRealness(x, m, n, i, k);
+							applyLastFactOnMatrixElementRealness(y, n, o, k, j);
+							applyLastFactOnMatrixElementRealness(z, n, o, k, j);
+						});
+						rewrite(factName(-2), factName(-1));
+					});
+					bind("distributivity_of_sum_over_" + operation, (Expression) $(xik, ykj), $(xik, zkj), $(n, "-", "1"), k);
+					rewrite(factName(-2), factName(-1));
+				});
 				
-				bind("left_distributivity_of_multiplication_over_" + operation, xik, ykj, zkj);
-				applyLastFactOnMatrixElementRealness(x, m, n, i, k);
-				applyLastFactOnMatrixElementRealness(y, n, o, k, j);
-				applyLastFactOnMatrixElementRealness(z, n, o, k, j);
-				rewrite(xYZFactName, factName(-1));
+				claimLastFact(() -> {
+					bind("definition_of_matrix_" + operation, xy, xz, m, o);
+					autoApplyLastFact();
+					autoApplyLastFact();
+					bind(factName(-1), i, j);
+					claimLastFact(() -> {
+						bind("definition_of_matrix_multiplication", x, y, m, n, o);
+						autoApplyLastFact();
+						autoApplyLastFact();
+						bind(factName(-1), i, j, k);
+					});
+					rewrite(factName(-2), factName(-1));
+					claimLastFact(() -> {
+						bind("definition_of_matrix_multiplication", x, z, m, n, o);
+						autoApplyLastFact();
+						autoApplyLastFact();
+						bind(factName(-1), i, j, k);
+					});
+					rewrite(factName(-2), factName(-1));
+				});
 				
-				bind("distributivity_of_sum_over_" + operation, (Expression) $(xik, ykj), $(xik, zkj), $(n, "-", "1"), k);
-				rewrite(factName(-2), factName(-1));
-				xYZFactName = factName(-1);
-				
-				bind("definition_of_matrix_" + operation, xy, xz, m, o);
-				autoApplyLastFact();
-				autoApplyLastFact();
-				bind(factName(-1), i, j);
-				String xyXZFactName = factName(-1);
-				
-				bind("definition_of_matrix_multiplication", x, y, m, n, o);
-				autoApplyLastFact();
-				autoApplyLastFact();
-				bind(factName(-1), i, j, k);
-				rewrite(xyXZFactName, factName(-1));
-				xyXZFactName = factName(-1);
-				
-				bind("definition_of_matrix_multiplication", x, z, m, n, o);
-				autoApplyLastFact();
-				autoApplyLastFact();
-				bind(factName(-1), i, j, k);
-				rewrite(xyXZFactName, factName(-1));
-				xyXZFactName = factName(-1);
-				
-				rewriteRight(xYZFactName, factName(-1));
+				rewriteRight(factName(-2), factName(-1));
 			}
 			
 			rewriteRight(factName(-1), factName(-2));
@@ -523,7 +536,7 @@ public final class RealMatrices {
 	public static final void claimRightDistributivityOfMatrixMultiplicationOver(
 			final String operation, final String operator) {
 		claim("right_distributivity_of_matrix_multiplication_over_" + operation,
-				$$("∀X,Y,Z,m,n,o ((X∈≀M_(m,n)) → ((Y∈≀M_(m,n)) → ((Z∈≀M_(n,o)) → (((X" + operator + "Y)Z)=(XZ" + operator + "YZ)))))"));
+				$$("∀X,Y,Z,m,n,o ((m∈ℕ) → ((n∈ℕ) → ((o∈ℕ) → ((X∈≀M_(m,n)) → ((Y∈≀M_(m,n)) → ((Z∈≀M_(n,o)) → (((X" + operator + "Y)Z)=(XZ" + operator + "YZ))))))))"));
 		{
 			final Symbol x = introduce();
 			final Symbol y = introduce();
@@ -532,6 +545,9 @@ public final class RealMatrices {
 			final Symbol n = introduce();
 			final Symbol o = introduce();
 			
+			introduce();
+			introduce();
+			introduce();
 			introduce();
 			introduce();
 			introduce();
@@ -567,6 +583,7 @@ public final class RealMatrices {
 			
 			proveUsingBindAndApply(realMatrix(xzYZ, m, o));
 			
+			breakSession();
 			bind("definition_of_matrix_equality", xyZ, xzYZ, m, o);
 			autoApplyLastFact();
 			autoApplyLastFact();
