@@ -3,6 +3,8 @@ package averan.modules;
 import static averan.core.ExpressionTools.$;
 import static averan.core.SessionTools.*;
 import static averan.io.ExpressionParser.$$;
+import static averan.modules.Reals.ONE;
+import static averan.modules.Reals.ZERO;
 import static averan.modules.Standard.*;
 
 import averan.core.Composite;
@@ -41,6 +43,7 @@ public final class RealMatrices {
 						$$("∀X,Y,m,n ((X∈≀M_(m,n)) → ((Y∈≀M_(m,n)) → ((X=Y) = (∀i,j ((X)_(i,j)=(Y_(i,j)))))))"));
 				suppose("definition_of_matrix_scalarization",
 						$$("∀X ((X∈≀M_(1,1)) → (⟨X⟩=X_(0,0)))"));
+				claimTypeOfMatrixScalarization();
 				suppose("definition_of_matrix_addition",
 						$$("∀X,Y,m,n ((X∈≀M_(m,n)) → ((Y∈≀M_(m,n)) → (∀i,j ((X+Y)_(i,j) = (X_(i,j))+(Y_(i,j))))))"));
 				suppose("type_of_matrix_addition",
@@ -59,10 +62,12 @@ public final class RealMatrices {
 						$$("∀X,m,n ((X∈≀M_(m,n)) → ((Xᵀ)∈≀M_(n,m)))"));
 				
 				// TODO claim
-				suppose("commutativity_of_matrix_scalar_multiplication",
-						$$("∀X,Y,m,n ((X∈ℝ) → ((Y∈≀M_(m,n)) → ((XY)=(YX))))"));
+				suppose("definition_of_matrix_scalar_multiplication",
+						$$("∀X,Y,m,n ((X∈ℝ) → ((Y∈≀M_(m,n)) → (∀i,j ((XY)_(i,j))=X(Y_(i,j)))))"));
 				suppose("type_of_matrix_scalar_multiplication",
 						$$("∀X,Y,m,n ((X∈ℝ) → ((Y∈≀M_(m,n)) → ((XY)∈≀M_(m,n))))"));
+				suppose("commutativity_of_matrix_scalar_multiplication",
+						$$("∀X,Y,m,n ((X∈ℝ) → ((Y∈≀M_(m,n)) → ((XY)=(YX))))"));
 				suppose("associativity_of_matrix_scalar_multiplication",
 						$$("∀X,Y,Z,m,n,o ((X∈ℝ) → ((Y∈≀M_(m,n)) → ((Z∈≀M_(n,o)) → ((X(YZ))=((XY)Z)))))"));
 				
@@ -755,6 +760,29 @@ public final class RealMatrices {
 				
 				rewriteRight(xyTFactName, factName(-1));
 			}
+			
+			rewriteRight(factName(-1), factName(-2));
+		}
+	}
+	
+	public static final void claimTypeOfMatrixScalarization() {
+		claim("type_of_matrix_scalarization",
+				$$("∀X ((X∈≀M_(1,1)) → (⟨X⟩∈ℝ))"));
+		{
+			final Symbol x = introduce();
+			
+			introduce();
+			
+			claimLastFact(() -> {
+				bind("definition_of_matrix_scalarization", x);
+				autoApplyLastFact();
+			});
+			
+			claimLastFact(() -> {
+				bind("type_of_matrix_element", x, ONE, ONE);
+				autoApplyLastFact();
+				bind(factName(-1), ZERO, ZERO);
+			});
 			
 			rewriteRight(factName(-1), factName(-2));
 		}

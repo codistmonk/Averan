@@ -9,13 +9,19 @@ import static averan.modules.RealMatrices.*;
 import static averan.modules.Standard.*;
 import static org.junit.Assert.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import averan.core.Composite;
 import averan.core.Expression;
 import averan.core.Module;
+import averan.core.Pattern.Any;
+import averan.core.Visitor;
 import averan.core.Module.Symbol;
 import averan.core.Session;
 import averan.io.SessionExporter;
 import averan.io.SessionScaffold;
+import net.sourceforge.aprog.tools.Pair;
 
 import org.junit.Test;
 
@@ -60,8 +66,73 @@ public final class RealMatricesTest {
 						$$("∀w,X,m,n,c,j " + conditionFisherLinearDiscriminant("S_(wᵀX,c)=(⟨'Var'_(wᵀU_(X,c))⟩/((Σ_(j=0)^(c-1)) ⟨'Var'_(wᵀX_j)⟩))")));
 				claimTypeOfFisherLinearDiscriminant();
 				
+				
 				claimTranspositionOfOnes();
 				claimMultiplicationOfOnes();
+				claim("scalarization_in_multiplication",
+						$$("∀X,Y,n ((X∈≀M_(1,1)) → ((Y∈≀M_(1,n)) → (XY=⟨X⟩Y)))"));
+				{
+					final Symbol x = introduce();
+					final Symbol y = introduce();
+					final Symbol n = introduce();
+					
+					introduce();
+					introduce();
+					
+					final Expression xy = $(x, y);
+					final Expression sxy = $(scalarize(x), y);
+					
+					claimLastFact(() -> {
+						claimLastFact(() -> {
+							bind("definition_of_matrix_equality", xy, sxy, ONE, n);
+							claimLastFact(() -> {
+								bind("type_of_matrix_multiplication", x, y, ONE, ONE, n);
+								autoApplyLastFact();
+								autoApplyLastFact();
+							});
+							apply(factName(-2), factName(-1));
+						});
+						autoApplyLastFact();
+					});
+					claim(lastEqualityRight());
+					{
+						final Symbol i = introduce();
+						final Symbol j = introduce();
+						final Symbol k = session().getCurrentModule().new Symbol("k");
+						
+						claimLastFact(() -> {
+							bind("definition_of_matrix_multiplication", x, y, ONE, ONE, n);
+							autoApplyLastFact();
+							autoApplyLastFact();
+							bind(factName(-1), i, j, k);
+							claimLastFact(() -> {
+								bind("definition_of_opposite", ONE);
+								autoApplyLastFact();
+								claimLastFact(() -> {
+									bind("definition_of_subtraction", ONE, ONE);
+									autoApplyLastFact();
+									autoApplyLastFact();
+								});
+								rewrite(factName(-1), factName(-2));
+							});
+							rewrite(factName(-2), factName(-1));
+							
+							bind("definition_of_sum_0", (Expression) $($(x, "_", $(i, ",", k)), $(y, "_", $(k, ",", j))), k);
+							rewrite(factName(-2), factName(-1));
+							substitute(lastEqualityRight());
+							rewrite(factName(-2), factName(-1));
+						});
+						
+						claimLastFact(() -> {
+							bind("definition_of_matrix_scalar_multiplication", scalarize(x), y, ONE, n);
+							autoApplyLastFact();
+							autoApplyLastFact();
+							bind(factName(-1), i, j);
+						});
+					}
+					
+					breakSession();
+				}
 				
 				{
 					final Expression m = $("m");
@@ -162,7 +233,7 @@ public final class RealMatricesTest {
 							final Expression invnx = $(invn, x);
 							final Expression invnx1n1 = $(invnx, onen1);
 							
-							bind("transposition_of_multiplication", (Expression) invnx1n1, one1n, m, ONE, n);
+							bind("transposition_of_multiplication", invnx1n1, one1n, m, ONE, n);
 							{
 								final String moduleName = factName(-1);
 								
@@ -371,22 +442,6 @@ public final class RealMatricesTest {
 			
 			rewriteRight(factName(-1), factName(-2));
 		}
-	}
-
-	public static final void claimLastFact(final Runnable subSessionBlock) {
-		claimLastFact(null, subSessionBlock);
-	}
-	
-	public static final void claimLastFact(final String factName, final Runnable subSessionBlock) {
-		final Session s = session();
-		
-		pushNewSession(new Module(s.getCurrentModule(), s.getCurrentModule().newPropositionName()));
-		
-		subSessionBlock.run();
-		
-		final Expression lastFact = fact(-1);
-		
-		s.getCurrentModule().new Claim(factName, lastFact, popSession().getCurrentModule()).execute();
 	}
 	
 	public static final String conditionFisherLinearDiscriminant(final String expression) {
