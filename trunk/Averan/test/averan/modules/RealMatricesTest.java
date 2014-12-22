@@ -63,14 +63,15 @@ public final class RealMatricesTest {
 				
 				claimTranspositionOfOnes();
 				claimMultiplicationOfOnes();
-				breakSession();
 				claim("scalarization_in_multiplication",
-						$$("∀X,Y,n ((X∈≀M_(1,1)) → ((Y∈≀M_(1,n)) → (XY=⟨X⟩Y)))"));
+						$$("∀X,Y,n ((m∈ℕ) → ((n∈ℕ) → ((X∈≀M_(1,1)) → ((Y∈≀M_(1,n)) → (XY=⟨X⟩Y)))))"));
 				{
 					final Symbol x = introduce();
 					final Symbol y = introduce();
 					final Symbol n = introduce();
 					
+					introduce();
+					introduce();
 					introduce();
 					introduce();
 					
@@ -80,6 +81,8 @@ public final class RealMatricesTest {
 					claimLastFact(() -> {
 						claimLastFact(() -> {
 							bind("definition_of_matrix_equality", xy, sxy, ONE, n);
+							autoApplyLastFact();
+							autoApplyLastFact();
 							claimLastFact(() -> {
 								bind("type_of_matrix_multiplication", x, y, ONE, ONE, n);
 								autoApplyLastFact();
