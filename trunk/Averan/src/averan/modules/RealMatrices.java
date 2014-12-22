@@ -35,7 +35,7 @@ public final class RealMatrices {
 			@Override
 			public final void buildSession() {
 				suppose("type_of_matrix_element",
-						$$("∀X,m,n ((m∈ℕ) → ((n∈ℕ) → ((X∈≀M_(m,n)) → (∀i,j (X_(i,j)∈ℝ)))))"));
+						$$("∀X,m,n ((X∈≀M_(m,n)) → (∀i,j (X_(i,j)∈ℝ)))"));
 				suppose("definition_of_matrix_equality",
 						$$("∀X,Y,m,n ((m∈ℕ) → ((n∈ℕ) → ((X∈≀M_(m,n)) → ((Y∈≀M_(m,n)) → ((X=Y) = (∀i,j ((X)_(i,j)=(Y_(i,j)))))))))"));
 				suppose("definition_of_matrix_scalarization",
@@ -143,8 +143,6 @@ public final class RealMatrices {
 		claim(lastModuleCondition());
 		{
 			bind("type_of_matrix_element", matrix, m, n);
-			autoApplyLastFact();
-			autoApplyLastFact();
 			autoApplyLastFact();
 			bind(factName(-1), i, j);
 		}
@@ -861,8 +859,6 @@ public final class RealMatrices {
 			
 			claimLastFact(() -> {
 				bind("type_of_matrix_element", x, ONE, ONE);
-				autoApplyLastFact();
-				autoApplyLastFact();
 				autoApplyLastFact();
 				bind(factName(-1), ZERO, ZERO);
 			});
