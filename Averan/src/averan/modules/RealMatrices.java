@@ -66,6 +66,8 @@ public final class RealMatrices {
 						$$("∀X,Y,m,n ((X∈ℝ) → ((Y∈≀M_(m,n)) → ((XY)=(YX))))"));
 				suppose("associativity_of_matrix_scalar_multiplication",
 						$$("∀X,Y,Z,m,n,o ((X∈ℝ) → ((Y∈≀M_(m,n)) → ((Z∈≀M_(n,o)) → ((X(YZ))=((XY)Z)))))"));
+				suppose("associativity_of_matrix_scalar_multiplication_2",
+						$$("∀X,Y,Z,m,n ((X∈ℝ) → ((Y∈ℝ) → ((Z∈≀M_(m,n)) → ((X(YZ))=((XY)Z)))))"));
 				
 				claimAssociativityOfMatrixAddition();
 				claimCommutativityOfMatrixAddition();
