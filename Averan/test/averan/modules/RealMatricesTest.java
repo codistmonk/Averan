@@ -292,8 +292,30 @@ public final class RealMatricesTest {
 							autoApplyLastFact();
 						});
 						rewrite(factName(-2), factName(-1));
+						claimLastFact(() -> {
+							bind("definition_of_inverse", n);
+							autoApplyLastFact();
+						});
+						rewrite(factName(-2), factName(-1));
+						claimLastFact(() -> {
+							bind("matrix_scalar_multiplication_1", (Expression) $(x, onen1), m, ONE);
+							claimLastFact(() -> {
+								bind("type_of_matrix_multiplication", x, onen1, m, n, ONE);
+								autoApplyLastFact();
+								autoApplyLastFact();
+							});
+							apply(factName(-2), factName(-1));
+							claimLastFact(() -> {
+								bind("associativity_of_matrix_scalar_multiplication", ONE, x, onen1, m, n, ONE);
+								autoApplyLastFact();
+								autoApplyLastFact();
+								autoApplyLastFact();
+							});
+							rewrite(factName(-2), factName(-1));
+						});
+						rewrite(factName(-2), factName(-1));
 					});
-//					rewrite(factName(-2), factName(-1));
+					rewrite(factName(-2), factName(-1));
 					
 					// TODO
 					breakSession();
