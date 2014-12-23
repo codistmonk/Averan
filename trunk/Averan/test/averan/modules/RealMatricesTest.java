@@ -64,7 +64,8 @@ public final class RealMatricesTest {
 				
 				claimTranspositionOfOnes();
 				claimMultiplicationOfOnes();
-				claimScalarizationInMultiplication();
+				claimLeftScalarizationInMultiplication();
+				claimRightScalarizationInMultiplication();
 				
 				{
 					final Expression m = $("m");
@@ -257,6 +258,9 @@ public final class RealMatricesTest {
 						rewrite(factName(-2), factName(-1));
 					});
 					
+					final Expression one1nn1 = $(onen1, onen1);
+//					bind("scalarization_in_multiplication", inv)
+					
 					// TODO
 					breakSession();
 				}
@@ -267,15 +271,14 @@ public final class RealMatricesTest {
 		};
 	}
 	
-	public static final void claimScalarizationInMultiplication() {
-		claim("scalarization_in_multiplication",
-				$$("∀X,Y,n ((m∈ℕ) → ((n∈ℕ) → ((X∈≀M_(1,1)) → ((Y∈≀M_(1,n)) → (XY=⟨X⟩Y)))))"));
+	public static final void claimLeftScalarizationInMultiplication() {
+		claim("left_scalarization_in_multiplication",
+				$$("∀X,Y,n ((n∈ℕ) → ((X∈≀M_(1,1)) → ((Y∈≀M_(1,n)) → (XY=⟨X⟩Y))))"));
 		{
 			final Symbol x = introduce();
 			final Symbol y = introduce();
 			final Symbol n = introduce();
 			
-			introduce();
 			introduce();
 			introduce();
 			introduce();
@@ -340,6 +343,100 @@ public final class RealMatricesTest {
 				
 				claimLastFact(() -> {
 					bind("definition_of_matrix_scalar_multiplication", scalarize(x), y, ONE, n);
+					autoApplyLastFact();
+					autoApplyLastFact();
+					bind(factName(-1), i, j);
+					
+					claimLastFact(() -> {
+						bind("definition_of_matrix_scalarization", x);
+						autoApplyLastFact();
+					});
+					rewrite(factName(-2), factName(-1), 1);
+					
+					rewrite(factName(-1), definitionOfI, 1);
+				});
+				
+				rewriteRight(factName(-2), factName(-1));
+			}
+			
+			rewriteRight(factName(-1), factName(-2));
+		}
+	}
+	
+	public static final void claimRightScalarizationInMultiplication() {
+		claim("right_scalarization_in_multiplication",
+				$$("∀X,Y,m ((m∈ℕ) → ((X∈≀M_(m,1)) → ((Y∈≀M_(1,1)) → (XY=X⟨Y⟩))))"));
+		{
+			final Symbol x = introduce();
+			final Symbol y = introduce();
+			final Symbol m = introduce();
+			
+			introduce();
+			introduce();
+			introduce();
+			
+			
+			final Expression xy = $(x, y);
+			final Expression xsy = $(x, scalarize(y));
+			
+//			claimLastFact(() -> {
+				claimLastFact(() -> {
+					bind("definition_of_matrix_equality", xy, xsy, m, ONE);
+					autoApplyLastFact();
+					autoApplyLastFact();
+					claimLastFact(() -> {
+						bind("type_of_matrix_multiplication", x, y, m, ONE, ONE);
+						autoApplyLastFact();
+						autoApplyLastFact();
+					});
+					apply(factName(-2), factName(-1));
+				});
+				breakSession();
+				autoApplyLastFact();
+//			});
+			claim(lastEqualityRight());
+			{
+				final Symbol i = introduce();
+				final Symbol j = introduce();
+				final Symbol k = session().getCurrentModule().new Symbol("k");
+				
+				introduce();
+				introduce();
+				
+				claimLastFact(() -> {
+					bind("elements_of_natural_range_1", i);
+					autoApplyLastFact();
+				});
+				
+				final String definitionOfI = factName(-1);
+				
+				claimLastFact(() -> {
+					bind("definition_of_matrix_multiplication", x, y, ONE, ONE, m);
+					autoApplyLastFact();
+					autoApplyLastFact();
+					bind(factName(-1), i, j, k);
+					claimLastFact(() -> {
+						bind("definition_of_opposite", ONE);
+						autoApplyLastFact();
+						claimLastFact(() -> {
+							bind("definition_of_subtraction", ONE, ONE);
+							autoApplyLastFact();
+							autoApplyLastFact();
+						});
+						rewrite(factName(-1), factName(-2));
+					});
+					rewrite(factName(-2), factName(-1));
+					
+					bind("definition_of_sum_0", (Expression) $($(x, "_", $(i, ",", k)), $(y, "_", $(k, ",", j))), k);
+					rewrite(factName(-2), factName(-1));
+					substitute(lastEqualityRight());
+					rewrite(factName(-2), factName(-1));
+					
+					rewrite(factName(-1), definitionOfI, 1);
+				});
+				
+				claimLastFact(() -> {
+					bind("definition_of_matrix_scalar_multiplication", scalarize(x), y, ONE, m);
 					autoApplyLastFact();
 					autoApplyLastFact();
 					bind(factName(-1), i, j);
