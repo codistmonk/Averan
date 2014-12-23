@@ -61,7 +61,7 @@ public final class RealMatrices {
 				suppose("type_of_ones",
 						$$("∀m,n (1_(m,n)∈≀M_(m,n))"));
 				suppose("definition_of_zeros",
-						$$("∀m,n,i,j ((0_(m,n))_(i,j)=1)"));
+						$$("∀m,n,i,j ((0_(m,n))_(i,j)=0)"));
 				suppose("type_of_zeros",
 						$$("∀m,n (0_(m,n)∈≀M_(m,n))"));
 				// TODO claim
@@ -94,6 +94,8 @@ public final class RealMatrices {
 				claimMultiplicationOfOnes();
 				claimLeftScalarizationInMultiplication();
 				claimRightScalarizationInMultiplication();
+				
+				claimMatrixSelfSubtractionIs0();
 			}
 			
 			private static final long serialVersionUID = 8185469030596522271L;
@@ -166,14 +168,18 @@ public final class RealMatrices {
 		return $(expression, "∈", $("≀M", "_", $(m, ",", n)));
 	}
 	
-	public static final void applyLastFactOnMatrixElementRealness(
+	public static final void claimMatrixElementRealness(
 			final Symbol matrix, final Symbol m, final Symbol n, final Symbol i, final Symbol j) {
-		claim(lastModuleCondition());
-		{
+		claimLastFact(() -> {
 			bind("type_of_matrix_element", matrix, m, n);
 			autoApplyLastFact();
 			bind(factName(-1), i, j);
-		}
+		});
+	}
+	
+	public static final void applyLastFactOnMatrixElementRealness(
+			final Symbol matrix, final Symbol m, final Symbol n, final Symbol i, final Symbol j) {
+		claimMatrixElementRealness(matrix, m, n, i, j);
 		apply(factName(-2), factName(-1));
 	}
 	
@@ -1292,6 +1298,66 @@ public final class RealMatrices {
 	public static final void claimAppliedAndCondition(final Module module) {
 		claimApplied(module);
 		claim(module.getConditions().get(0));
+	}
+	
+	public static final void claimMatrixSelfSubtractionIs0() {
+		claim("matrix_self_subtraction_is_0",
+				$$("∀X,m,n ((m∈ℕ) → ((n∈ℕ) → ((X∈≀M_(m,n)) → (X-X=0_(m,n))))) "));
+		{
+			final Symbol x = introduce();
+			final Symbol m = introduce();
+			final Symbol n = introduce();
+			final Expression xx = $(x, "-", x);
+			final Expression zeros = zeros(m, n);
+			
+			introduce();
+			introduce();
+			introduce();
+			
+			claimLastFact(() -> {
+				bind("definition_of_matrix_equality", xx, zeros, m, n);
+				autoApplyLastFact();
+				autoApplyLastFact();
+				autoApplyLastFact();
+				autoApplyLastFact();
+			});
+			
+			claim(lastEqualityRight());
+			{
+				final Symbol i = introduce();
+				final Symbol j = introduce();
+				final Expression xij = $(x, "_", $(i, ",", j));
+				
+				introduce();
+				introduce();
+				
+				claimMatrixElementRealness(x, m, n, i, j);
+				
+				claimLastFact(() -> {
+					bind("definition_of_matrix_subtraction", x, x, m, n);
+					autoApplyLastFact();
+					autoApplyLastFact();
+					bind(factName(-1), i, j);
+					claimLastFact(() -> {
+						bind("definition_of_subtraction", xij, xij);
+						autoApplyLastFact();
+						autoApplyLastFact();
+						claimLastFact(() -> {
+							bind("definition_of_opposite", xij);
+							autoApplyLastFact();
+						});
+						rewrite(factName(-2), factName(-1));
+					});
+					rewrite(factName(-2), factName(-1));
+				});
+				
+				bind("definition_of_zeros", m, n, i, j);
+				
+				rewriteRight(factName(-2), factName(-1));
+			}
+			
+			rewriteRight(factName(-1), factName(-2));
+		}
 	}
 	
 }
