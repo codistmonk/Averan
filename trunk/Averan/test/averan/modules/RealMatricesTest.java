@@ -76,6 +76,12 @@ public final class RealMatricesTest {
 					admit(realMatrix(x, m, n));
 					
 					claimLastFact(() -> {
+						bind("type_of_mean", x, m, n);
+						autoApplyLastFact();
+						autoApplyLastFact();
+					});
+					
+					claimLastFact(() -> {
 						claimLastFact(() -> {
 							bind("definition_of_variance", x, m, n);
 							autoApplyLastFact();
@@ -153,54 +159,33 @@ public final class RealMatricesTest {
 					
 					claimLastFact(() -> {
 						claimLastFact(() -> {
-							claimLastFact(() -> {
-								bind("definition_of_replicated_mean", x, m, n);
-								autoApplyLastFact();
-								autoApplyLastFact();
-							});
-							claimLastFact(() -> {
-								bind("definition_of_mean", x, m, n);
-								autoApplyLastFact();
-								autoApplyLastFact();
-							});
-							rewrite(factName(-2), factName(-1));
+							bind("definition_of_replicated_mean", x, m, n);
+							autoApplyLastFact();
+							autoApplyLastFact();
 						});
 						rewrite(factName(-2), factName(-1), 1, 2, 3);
+						claimLastFact(() -> {
+							bind("definition_of_mean", x, m, n);
+							autoApplyLastFact();
+							autoApplyLastFact();
+						});
+						rewrite(factName(-2), factName(-1), 1);
 					});
 					
 					final Expression onen1 = ones(n, ONE);
 					final Expression one1n = ones(ONE, n);
+					final Expression mux = $("μ", "_", x);
 					
 					claimLastFact(() -> {
 						claimLastFact(() -> {
-							final Expression invn = $(ONE, "/", n);
-							final Expression invnx = $(invn, x);
-							final Expression invnx1n1 = $(invnx, onen1);
-							
-							bind("transposition_of_multiplication", invnx1n1, one1n, m, ONE, n);
+							bind("transposition_of_multiplication", mux, one1n, m, ONE, n);
 							autoApplyLastFact();
 							autoApplyLastFact();
 							autoApplyLastFact();
-							{
-								final String moduleName = factName(-1);
-								
-								claimAppliedAndCondition(fact(-1));
-								{
-									{
-										bind("type_of_matrix_multiplication", invnx, onen1, m, n, ONE);
-										autoApplyLastFact();
-										autoApplyLastFact();
-									}
-									
-									apply(moduleName, factName(-1));
-								}
-							}
+							autoApplyLastFact();
 							autoApplyLastFact();
 						});
 						rewrite(factName(-2), factName(-1));
-					});
-					
-					claimLastFact(() -> {
 						claimLastFact(() -> {
 							bind("transposition_of_ones", ONE, n);
 							autoApplyLastFact();
