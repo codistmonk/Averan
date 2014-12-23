@@ -96,6 +96,7 @@ public final class RealMatrices {
 				claimRightScalarizationInMultiplication();
 				
 				claimMatrixSelfSubtractionIs0();
+				claimMatrixMinus0();
 			}
 			
 			private static final long serialVersionUID = 8185469030596522271L;
@@ -1356,6 +1357,69 @@ public final class RealMatrices {
 				rewriteRight(factName(-2), factName(-1));
 			}
 			
+			rewriteRight(factName(-1), factName(-2));
+		}
+	}
+	
+	public static final void claimMatrixMinus0() {
+		claim("matrix_minus_0",
+				$$("∀X,m,n ((m∈ℕ) → ((n∈ℕ) → ((X∈≀M_(m,n)) → (X-0_(m,n)=X))))"));
+		{
+			final Symbol x = introduce();
+			final Symbol m = introduce();
+			final Symbol n = introduce();
+			final Expression zeros = zeros(m, n);
+			final Expression xmzeros = $(x, "-", zeros);
+			
+			introduce();
+			introduce();
+			introduce();
+			
+			claimLastFact(() -> {
+				bind("definition_of_matrix_equality", xmzeros, x, m, n);
+				autoApplyLastFact();
+				autoApplyLastFact();
+				autoApplyLastFact();
+				autoApplyLastFact();
+			});
+			
+			claim(lastEqualityRight());
+			{
+				final Symbol i = introduce();
+				final Symbol j = introduce();
+				final Expression xij = $(x, "_", $(i, ",", j));
+				
+				introduce();
+				introduce();
+				
+				claimMatrixElementRealness(x, m, n, i, j);
+				
+				claimLastFact(() -> {
+					bind("definition_of_matrix_subtraction", x, zeros, m, n);
+					autoApplyLastFact();
+					autoApplyLastFact();
+					bind(factName(-1), i, j);
+				});
+				
+				bind("definition_of_zeros", m, n, i, j);
+				rewrite(factName(-2), factName(-1));
+				
+				claimLastFact(() -> {
+					claimLastFact(() -> {
+						bind("definition_of_subtraction", xij, ZERO);
+						autoApplyLastFact();
+						autoApplyLastFact();
+					});
+					rewrite(factName(-1), "opposite_of_0");
+					claimLastFact(() -> {
+						bind("definition_of_0", xij);
+						autoApplyLastFact();
+					});
+					rewrite(factName(-2), factName(-1));
+				});
+				
+				rewrite(factName(-2), factName(-1));
+			}
 			rewriteRight(factName(-1), factName(-2));
 		}
 	}
