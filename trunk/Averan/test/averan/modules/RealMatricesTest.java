@@ -71,6 +71,7 @@ public final class RealMatricesTest {
 					final Expression m = $("m");
 					final Expression n = $("n");
 					final Expression x = $("X");
+					final Expression invn = $(ONE, "/", n);
 					
 					admit(natural(m));
 					admit(natural(n));
@@ -222,7 +223,6 @@ public final class RealMatricesTest {
 						rewrite(factName(-2), factName(-1));
 					});
 					
-					final Expression invn = $(ONE, "/", n);
 					final Expression invnx = $(invn, x);
 					final Expression invnx1n1 = $(invnx, onen1);
 					final Expression invnx1n111n = $(invnx1n1, one1n);
@@ -272,8 +272,27 @@ public final class RealMatricesTest {
 							autoApplyLastFact();
 						});
 						rewrite(factName(-2), factName(-1));
+						claimLastFact(() -> {
+							bind("commutativity_of_matrix_scalar_multiplication", n, invnx1n1, m, ONE);
+							autoApplyLastFact();
+							autoApplyLastFact();
+						});
+						rewriteRight(factName(-2), factName(-1));
+						claimLastFact(() -> {
+							bind("associativity_of_matrix_scalar_multiplication", n, invnx, onen1, m, n, ONE);
+							autoApplyLastFact();
+							autoApplyLastFact();
+							autoApplyLastFact();
+						});
+						rewrite(factName(-2), factName(-1));
+						claimLastFact(() -> {
+							bind("associativity_of_matrix_scalar_multiplication_2", n, invn, x, m, n);
+							autoApplyLastFact();
+							autoApplyLastFact();
+							autoApplyLastFact();
+						});
+						rewrite(factName(-2), factName(-1));
 					});
-					
 //					rewrite(factName(-2), factName(-1));
 					
 					// TODO
