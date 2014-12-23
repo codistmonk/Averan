@@ -17,7 +17,6 @@ import averan.core.Module.Symbol;
 import averan.core.Pattern;
 import averan.core.Rewriter;
 import averan.core.Session;
-import averan.modules.Standard;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -276,6 +275,10 @@ public final class Reals {
 	
 	public static final Expression inverse(final Expression expression) {
 		return $("1", "/", expression);
+	}
+	
+	public static final Composite sum(final Object i, final Object n, final Object x) {
+		return $($($("Σ", "_", $(i, "=", ZERO)), "^", n), x);
 	}
 	
 	public static final int getProveWithBindAndApplyDepth() {
