@@ -228,7 +228,7 @@ public final class RealMatricesTest {
 					final Expression invnx1n111n = $(invnx1n1, one1n);
 					final Expression muxt = transpose(mux);
 					final Expression onen1muxt = $(onen1, muxt);
-					
+					final Expression one1nn1 = $(one1n, onen1);
 					
 					claimLastFact(() -> {
 						claimLastFact(() -> {
@@ -255,11 +255,26 @@ public final class RealMatricesTest {
 							autoApplyLastFact();
 							autoApplyLastFact();
 						});
+						rewriteRight(factName(-2), factName(-1));
+					});
+					claimLastFact(() -> {
+						bind("right_scalarization_in_multiplication", invnx1n1, one1nn1, m);
+						autoApplyLastFact();
+						autoApplyLastFact();
+						claimLastFact(() -> {
+							bind("type_of_matrix_multiplication", one1n, onen1, ONE, n, ONE);
+							autoApplyLastFact();
+							autoApplyLastFact();
+						});
+						apply(factName(-2), factName(-1));
+						claimLastFact(() -> {
+							bind("multiplication_of_ones", n);
+							autoApplyLastFact();
+						});
 						rewrite(factName(-2), factName(-1));
 					});
 					
-					final Expression one1nn1 = $(onen1, onen1);
-//					bind("scalarization_in_multiplication", inv)
+//					rewrite(factName(-2), factName(-1));
 					
 					// TODO
 					breakSession();
@@ -375,25 +390,33 @@ public final class RealMatricesTest {
 			introduce();
 			introduce();
 			
-			
 			final Expression xy = $(x, y);
 			final Expression xsy = $(x, scalarize(y));
 			
-//			claimLastFact(() -> {
+			claimLastFact(() -> {
+				bind("definition_of_matrix_equality", xy, xsy, m, ONE);
+				autoApplyLastFact();
+				autoApplyLastFact();
 				claimLastFact(() -> {
-					bind("definition_of_matrix_equality", xy, xsy, m, ONE);
+					bind("type_of_matrix_multiplication", x, y, m, ONE, ONE);
+					autoApplyLastFact();
+					autoApplyLastFact();
+				});
+				apply(factName(-2), factName(-1));
+				claimLastFact(() -> {
+					bind("type_of_matrix_scalar_multiplication", scalarize(y), x, m, ONE);
 					autoApplyLastFact();
 					autoApplyLastFact();
 					claimLastFact(() -> {
-						bind("type_of_matrix_multiplication", x, y, m, ONE, ONE);
+						bind("commutativity_of_matrix_scalar_multiplication", scalarize(y), x, m, ONE);
 						autoApplyLastFact();
 						autoApplyLastFact();
 					});
-					apply(factName(-2), factName(-1));
+					rewrite(factName(-2), factName(-1));
 				});
-				breakSession();
-				autoApplyLastFact();
-//			});
+				apply(factName(-2), factName(-1));
+			});
+			
 			claim(lastEqualityRight());
 			{
 				final Symbol i = introduce();
@@ -404,14 +427,14 @@ public final class RealMatricesTest {
 				introduce();
 				
 				claimLastFact(() -> {
-					bind("elements_of_natural_range_1", i);
+					bind("elements_of_natural_range_1", j);
 					autoApplyLastFact();
 				});
 				
-				final String definitionOfI = factName(-1);
+				final String definitionOfJ = factName(-1);
 				
 				claimLastFact(() -> {
-					bind("definition_of_matrix_multiplication", x, y, ONE, ONE, m);
+					bind("definition_of_matrix_multiplication", x, y, m, ONE, ONE);
 					autoApplyLastFact();
 					autoApplyLastFact();
 					bind(factName(-1), i, j, k);
@@ -432,22 +455,39 @@ public final class RealMatricesTest {
 					substitute(lastEqualityRight());
 					rewrite(factName(-2), factName(-1));
 					
-					rewrite(factName(-1), definitionOfI, 1);
+					rewrite(factName(-1), definitionOfJ, 1);
 				});
 				
 				claimLastFact(() -> {
-					bind("definition_of_matrix_scalar_multiplication", scalarize(x), y, ONE, m);
+					bind("definition_of_matrix_scalar_multiplication", scalarize(y), x, m, ONE);
 					autoApplyLastFact();
 					autoApplyLastFact();
 					bind(factName(-1), i, j);
+					claimLastFact(() -> {
+						bind("commutativity_of_matrix_scalar_multiplication", scalarize(y), x, m, ONE);
+						autoApplyLastFact();
+						autoApplyLastFact();
+					});
+					rewrite(factName(-2), factName(-1));
+					claimLastFact(() -> {
+						bind("commutativity_of_multiplication", scalarize(y), $(x, "_", $(i, ",", j)));
+						autoApplyLastFact();
+						claimLastFact(() -> {
+							bind("type_of_matrix_element", x, m, ONE);
+							autoApplyLastFact();
+							bind(factName(-1), i, j);
+						});
+						apply(factName(-2), factName(-1));
+					});
+					rewrite(factName(-2), factName(-1));
 					
 					claimLastFact(() -> {
-						bind("definition_of_matrix_scalarization", x);
+						bind("definition_of_matrix_scalarization", y);
 						autoApplyLastFact();
 					});
 					rewrite(factName(-2), factName(-1), 1);
 					
-					rewrite(factName(-1), definitionOfI, 1);
+					rewrite(factName(-1), definitionOfJ, 1);
 				});
 				
 				rewriteRight(factName(-2), factName(-1));
