@@ -151,6 +151,7 @@ public final class Reals {
 			suppose("definition_of_0", $$("∀x ((x∈ℝ) → (x+0=x))"));
 			suppose("definition_of_opposite", $$("∀x ((x∈ℝ) → (x+(-x)=0))"));
 			suppose("type_of_opposite", $$("∀x ((x∈ℝ) → ((-x)∈ℝ))"));
+			suppose("opposite_of_0", $$("-0=0"));
 			suppose("definition_of_subtraction", $$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x-y)=(x+(-y)))))"));
 			suppose("opposite_of_multiplication", $$("∀x,y ((x∈ℝ) → ((y∈ℝ) → (((-x)y)=(-(xy)))))"));
 			
