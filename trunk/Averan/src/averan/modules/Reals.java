@@ -62,7 +62,9 @@ public final class Reals {
 			admit("elements_of_natural_range_1",
 					$$("∀i ((i∈ℕ_1) → (i=0))"));
 			
+			suppose("definition_of_inverse", $$("∀x ((x∈ℝ) → (x(1/x)=1))"));
 			suppose("type_of_inverse", $$("∀x ((x∈ℝ) → ((1/x)∈ℝ))"));
+			suppose("definition_of_division", $$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x/y)=x(1/y))))"));
 			suppose("type_of_division", $$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x/y)∈ℝ)))"));
 			
 			suppose("type_of_addition", $$("∀x,y ((x∈ℝ) → ((y∈ℝ) → ((x+y)∈ℝ)))"));
