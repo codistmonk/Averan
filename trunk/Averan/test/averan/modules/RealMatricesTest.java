@@ -48,6 +48,7 @@ public final class RealMatricesTest {
 				suppose("definition_of_variance",
 						$$("∀X,m,n ((X∈≀M_(m,n)) → ('Var'_X='Var'_(X,X)))"));
 				claimTypeOfVariance();
+				claimSimplifiedDefinitionOfVariance();
 				suppose("definition_of_class_means",
 						$$("∀X,m,n,c ((c∈ℕ) → ((∀i ((i∈ℕ_c) → ((n_i∈ℕ) ∧ (X_i∈≀M_(m,n_i))))) → (∀i,j ((j∈ℕ_c) → ((U_(X,c))_(i,j)=(μ_(X_j))_(i,1))))))"));
 				// TODO claim (?)
@@ -57,8 +58,6 @@ public final class RealMatricesTest {
 				suppose("definition_of_fisher_linear_discriminant",
 						$$("∀w,X,m,n,c,j " + conditionFisherLinearDiscriminant("S_(wᵀX,c)=(⟨'Var'_(wᵀU_(X,c))⟩/((Σ_(j=0)^(c-1)) ⟨'Var'_(wᵀX_j)⟩))")));
 				claimTypeOfFisherLinearDiscriminant();
-				
-				claimSimplifiedDefinitionOfVariance();
 			}
 			
 			private static final long serialVersionUID = 2969099922483811015L;
@@ -68,7 +67,7 @@ public final class RealMatricesTest {
 	
 	public static final void claimSimplifiedDefinitionOfVariance() {
 		claim("simplified_definition_of_variance",
-				$$("∀X,m,n ((m∈ℕ) → ((n∈ℕ) → ((X∈≀M_(m,n)) → ('Var'_X=X(Xᵀ)-(M_X)(Xᵀ)))))"));
+				$$("∀X,m,n ((m∈ℕ) → ((n∈ℕ) → ((X∈≀M_(m,n)) → ('Var'_X=X(Xᵀ)-(1/n)((X1_(n,1))(X1_(n,1))ᵀ)))))"));
 		{
 			final Expression x = introduce();
 			final Expression m = introduce();
@@ -141,21 +140,29 @@ public final class RealMatricesTest {
 			});
 			
 			claimLastFact(() -> {
+				bind("definition_of_replicated_mean", x, m, n);
+				autoApplyLastFact();
+				autoApplyLastFact();
+			});
+			
+			final String definitionOfReplicatedMeans = factName(-1);
+			
+			claimLastFact(() -> {
+				claimLastFact(() -> {
+					bind("definition_of_mean", x, m, n);
+					autoApplyLastFact();
+					autoApplyLastFact();
+				});
+				rewrite(definitionOfReplicatedMeans, factName(-1));
+			});
+			
+			final String expandedDefinitionOfReplicatedMeans = factName(-1);
+			
+			claimLastFact(() -> {
 				bind("type_of_replicated_mean", x, m, n);
 				autoApplyLastFact();
 				autoApplyLastFact();
-				claimLastFact(() -> {
-					bind("definition_of_replicated_mean", x, m, n);
-					autoApplyLastFact();
-					autoApplyLastFact();
-					claimLastFact(() -> {
-						bind("definition_of_mean", x, m, n);
-						autoApplyLastFact();
-						autoApplyLastFact();
-					});
-					rewrite(factName(-2), factName(-1));
-				});
-				rewrite(factName(-2), factName(-1));
+				rewrite(factName(-1), expandedDefinitionOfReplicatedMeans);
 			});
 			
 			claimLastFact(() -> {
@@ -232,12 +239,7 @@ public final class RealMatricesTest {
 			});
 			
 			claimLastFact(() -> {
-				claimLastFact(() -> {
-					bind("definition_of_replicated_mean", x, m, n);
-					autoApplyLastFact();
-					autoApplyLastFact();
-				});
-				rewrite(factName(-2), factName(-1), 1, 2, 3);
+				rewrite(factName(-1), definitionOfReplicatedMeans, 1, 2, 3);
 				claimLastFact(() -> {
 					bind("definition_of_mean", x, m, n);
 					autoApplyLastFact();
@@ -385,9 +387,55 @@ public final class RealMatricesTest {
 				autoApplyLastFact();
 			});
 			rewrite(factName(-2), factName(-1));
+			
+			rewrite(factName(-1), expandedDefinitionOfReplicatedMeans);
+			
+			claimLastFact(() -> {
+				claimLastFact(() -> {
+					bind("associativity_of_matrix_multiplication", invnx1n1, one1n, xt, m, ONE, n, m);
+					autoApplyLastFact();
+					autoApplyLastFact();
+					autoApplyLastFact();
+					autoApplyLastFact();
+					autoApplyLastFact();
+					autoApplyLastFact();
+					autoApplyLastFact();
+				});
+				rewriteRight(factName(-2), factName(-1));
+				claimLastFact(() -> {
+					bind("transposition_of_ones", n, ONE);
+					autoApplyLastFact();
+					autoApplyLastFact();
+				});
+				rewriteRight(factName(-2), factName(-1));
+				claimLastFact(() -> {
+					bind("transposition_of_multiplication", x, onen1, m, n, ONE);
+					autoApplyLastFact();
+					autoApplyLastFact();
+					autoApplyLastFact();
+					autoApplyLastFact();
+					autoApplyLastFact();
+				});
+				rewriteRight(factName(-2), factName(-1));
+				claimLastFact(() -> {
+					bind("associativity_of_matrix_scalar_multiplication", invn, x, onen1, m, n, ONE);
+					autoApplyLastFact();
+					autoApplyLastFact();
+					autoApplyLastFact();
+				});
+				rewriteRight(factName(-2), factName(-1));
+			});
+			
+			claimLastFact(() -> {
+				bind("associativity_of_matrix_scalar_multiplication", invn, $(x, onen1), transpose($(x, onen1)), m, ONE, m);
+				autoApplyLastFact();
+				autoApplyLastFact();
+				autoApplyLastFact();
+			});
+			rewriteRight(factName(-2), factName(-1));
 		}
 	}
-
+	
 	public static final String conditionFisherLinearDiscriminant(final String expression) {
 		return "((c∈ℕ) → ((w∈≀M_(m,1)) → ((∀i ((i∈ℕ_c) → ((n_i∈ℕ) ∧ (X_i∈≀M_(m,n_i))))) → (" + expression + "))))";
 	}
