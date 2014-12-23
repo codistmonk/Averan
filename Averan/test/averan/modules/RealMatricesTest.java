@@ -64,10 +64,20 @@ public final class RealMatricesTest {
 					final Expression n = $("n");
 					final Expression x = $("X");
 					final Expression invn = $(ONE, "/", n);
+					final Expression onen1 = ones(n, ONE);
+					final Expression one1n = ones(ONE, n);
+					final Expression mux = $("μ", "_", x);
+					final Expression muxt = transpose(mux);
 					
 					admit(natural(m));
 					admit(natural(n));
 					admit(realMatrix(x, m, n));
+					
+					claimLastFact(() -> {
+						bind("type_of_matrix_multiplication", x, onen1, m, n, ONE);
+						autoApplyLastFact();
+						autoApplyLastFact();
+					});
 					
 					claimLastFact(() -> {
 						bind("type_of_mean", x, m, n);
@@ -82,6 +92,12 @@ public final class RealMatricesTest {
 							autoApplyLastFact();
 						});
 						rewrite(factName(-2), factName(-1));
+					});
+					
+					claimLastFact(() -> {
+						bind("type_of_matrix_multiplication", (Expression) $(x, onen1), muxt, m, ONE, m);
+						autoApplyLastFact();
+						autoApplyLastFact();
 					});
 					
 					claimLastFact(() -> {
@@ -193,10 +209,6 @@ public final class RealMatricesTest {
 						rewrite(factName(-2), factName(-1), 1);
 					});
 					
-					final Expression onen1 = ones(n, ONE);
-					final Expression one1n = ones(ONE, n);
-					final Expression mux = $("μ", "_", x);
-					
 					claimLastFact(() -> {
 						claimLastFact(() -> {
 							bind("transposition_of_multiplication", mux, one1n, m, ONE, n);
@@ -218,7 +230,6 @@ public final class RealMatricesTest {
 					final Expression invnx = $(invn, x);
 					final Expression invnx1n1 = $(invnx, onen1);
 					final Expression invnx1n111n = $(invnx1n1, one1n);
-					final Expression muxt = transpose(mux);
 					final Expression onen1muxt = $(onen1, muxt);
 					final Expression one1nn1 = $(one1n, onen1);
 					
@@ -306,6 +317,26 @@ public final class RealMatricesTest {
 							rewrite(factName(-2), factName(-1));
 						});
 						rewrite(factName(-2), factName(-1));
+					});
+					rewrite(factName(-2), factName(-1));
+					
+					claimLastFact(() -> {
+						bind("associativity_of_matrix_multiplication", x, onen1, muxt, m, n, ONE, m);
+						autoApplyLastFact();
+						autoApplyLastFact();
+						autoApplyLastFact();
+						autoApplyLastFact();
+						autoApplyLastFact();
+						autoApplyLastFact();
+						autoApplyLastFact();
+					});
+					rewrite(factName(-2), factName(-1));
+					
+					claimLastFact(() -> {
+						bind("matrix_self_subtraction_is_0", (Expression) $($(x, onen1), muxt), m, m);
+						autoApplyLastFact();
+						autoApplyLastFact();
+						autoApplyLastFact();
 					});
 					rewrite(factName(-2), factName(-1));
 					
