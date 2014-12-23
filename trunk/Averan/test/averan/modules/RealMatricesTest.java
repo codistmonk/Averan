@@ -83,6 +83,33 @@ public final class RealMatricesTest {
 					
 					claimLastFact(() -> {
 						claimLastFact(() -> {
+							bind("definition_of_mean", x, m, n);
+							autoApplyLastFact();
+							autoApplyLastFact();
+						});
+						rewrite(factName(-2), factName(-1));
+					});
+					
+					claimLastFact(() -> {
+						bind("type_of_replicated_mean", x, m, n);
+						autoApplyLastFact();
+						autoApplyLastFact();
+						claimLastFact(() -> {
+							bind("definition_of_replicated_mean", x, m, n);
+							autoApplyLastFact();
+							autoApplyLastFact();
+							claimLastFact(() -> {
+								bind("definition_of_mean", x, m, n);
+								autoApplyLastFact();
+								autoApplyLastFact();
+							});
+							rewrite(factName(-2), factName(-1));
+						});
+						rewrite(factName(-2), factName(-1));
+					});
+					
+					claimLastFact(() -> {
+						claimLastFact(() -> {
 							bind("definition_of_variance", x, m, n);
 							autoApplyLastFact();
 						});
@@ -188,6 +215,42 @@ public final class RealMatricesTest {
 						rewrite(factName(-2), factName(-1));
 						claimLastFact(() -> {
 							bind("transposition_of_ones", ONE, n);
+							autoApplyLastFact();
+							autoApplyLastFact();
+						});
+						rewrite(factName(-2), factName(-1));
+					});
+					
+					final Expression invn = $(ONE, "/", n);
+					final Expression invnx = $(invn, x);
+					final Expression invnx1n1 = $(invnx, onen1);
+					final Expression invnx1n111n = $(invnx1n1, one1n);
+					final Expression muxt = transpose(mux);
+					final Expression onen1muxt = $(onen1, muxt);
+					
+					
+					claimLastFact(() -> {
+						claimLastFact(() -> {
+							bind("associativity_of_matrix_multiplication", invnx1n111n, onen1, muxt, m, n, ONE, m);
+							autoApplyLastFact();
+							autoApplyLastFact();
+							autoApplyLastFact();
+							autoApplyLastFact();
+							autoApplyLastFact();
+							autoApplyLastFact();
+							autoApplyLastFact();
+						});
+						rewrite(factName(-2), factName(-1));
+					});
+					
+					claimLastFact(() -> {
+						claimLastFact(() -> {
+							bind("associativity_of_matrix_multiplication", invnx1n1, one1n, onen1, m, ONE, n, ONE);
+							autoApplyLastFact();
+							autoApplyLastFact();
+							autoApplyLastFact();
+							autoApplyLastFact();
+							autoApplyLastFact();
 							autoApplyLastFact();
 							autoApplyLastFact();
 						});
