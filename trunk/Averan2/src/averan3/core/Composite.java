@@ -76,7 +76,17 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 	@Override
 	@SuppressWarnings("unchecked")
 	public final <I extends Interpretation<E>> I as(final Class<I> interpretationClass) {
-		return (I) this.interpretations.computeIfAbsent(interpretationClass, cls -> Expression.super.as(interpretationClass));
+		try {
+			if (Proof.class.equals(interpretationClass)) {
+				return (I) this.interpretations.computeIfAbsent(
+						interpretationClass, cls -> (I) Proof.interpret((Composite<Expression<?>>) this));
+			}
+			
+			return (I) this.interpretations.computeIfAbsent(
+					interpretationClass, cls -> Expression.super.as(interpretationClass));
+		} catch (final Exception exception) {
+			return null;
+		}
 	}
 	
 	@Override
@@ -466,18 +476,67 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 	/**
 	 * @author codistmonk (creation 2014-12-20)
 	 */
-	public static final class ProofByApply extends Interpretation.Default<Expression<?>> {
+	public static abstract interface Proof extends Interpretation<Expression<?>> {
+		
+		@SuppressWarnings("unchecked")
+		public static <P extends Proof> P interpret(final Composite<Expression<?>> composite) {
+			final Symbol tag = (Symbol) composite.get(0);
+			
+			if (NoProof.TAG.equals(tag)) {
+				return (P) new NoProof(composite);
+			}
+			
+			if (ProofByApply.TAG.equals(tag)) {
+				return (P) new ProofByApply(composite);
+			}
+			
+			if (ProofByRewrite.TAG.equals(tag)) {
+				return (P) new ProofByRewrite(composite);
+			}
+			
+			if (ProofBySubstitute.TAG.equals(tag)) {
+				return (P) new ProofBySubstitute(composite);
+			}
+			
+			return null;
+		}
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-12-24)
+	 */
+	public static final class NoProof extends Interpretation.Default<Expression<?>> implements Proof {
+		
+		public NoProof(final Composite<Expression<?>> composite) {
+			super(composite);
+			
+			if (!(composite.size() == 1 && Symbol.EMPTY.equals(composite.get(0)))) {
+				throw new IllegalArgumentException();
+			}
+		}
+		
+		private static final long serialVersionUID = 1978589716308033753L;
+		
+		public static final Symbol TAG = Symbol.EMPTY;
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-12-20)
+	 */
+	public static final class ProofByApply extends Interpretation.Default<Expression<?>> implements Proof {
 		
 		public ProofByApply(final Composite<Expression<?>> composite) {
 			super(composite);
 			
-			if (!(Module.isTriple(composite)
-					&& APPLY.equals(composite.get(0)))) {
+			if (!(isTriple(composite)
+					&& TAG.equals(composite.get(0)))) {
 				throw new IllegalArgumentException();
 			}
 		}
 		
-		public static final Symbol APPLY = new Symbol("Apply");
+		public static final Symbol TAG = new Symbol("Apply");
 		
 		private static final long serialVersionUID = -6834557824434528656L;
 		
@@ -486,18 +545,18 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 	/**
 	 * @author codistmonk (creation 2014-12-20)
 	 */
-	public static final class ProofByRewrite extends Interpretation.Default<Expression<?>> {
+	public static final class ProofByRewrite extends Interpretation.Default<Expression<?>> implements Proof {
 		
 		public ProofByRewrite(final Composite<Expression<?>> composite) {
 			super(composite);
 			
-			if (!(Module.isTriple(composite)
-					&& REWRITE.equals(composite.get(0)))) {
+			if (!(isTriple(composite)
+					&& TAG.equals(composite.get(0)))) {
 				throw new IllegalArgumentException();
 			}
 		}
 		
-		public static final Symbol REWRITE = new Symbol("Rewrite");
+		public static final Symbol TAG = new Symbol("Rewrite");
 		
 		private static final long serialVersionUID = -6834557824434528656L;
 		
@@ -506,21 +565,21 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 	/**
 	 * @author codistmonk (creation 2014-12-20)
 	 */
-	public static final class ProofBySubstitute extends Interpretation.Default<Expression<?>> {
+	public static final class ProofBySubstitute extends Interpretation.Default<Expression<?>> implements Proof {
 		
 		public ProofBySubstitute(final Composite<Expression<?>> composite) {
 			super(composite);
 			
-			if (!(Module.isTriple(composite)
-					&& SUBSTITUTE.equals(composite.get(0))
+			if (!(isTriple(composite)
+					&& TAG.equals(composite.get(0))
 					&& isSubstitution(composite.get(2)))) {
 				throw new IllegalArgumentException();
 			}
 		}
 		
-		public static final Symbol SUBSTITUTE = new Symbol("Substitute");
-		
 		private static final long serialVersionUID = -6834557824434528656L;
+		
+		public static final Symbol TAG = new Symbol("Substitute");
 		
 		public static final boolean isSubstitution(final Expression<?> expression) {
 			final Composite<?> composite = cast(Composite.class, expression);

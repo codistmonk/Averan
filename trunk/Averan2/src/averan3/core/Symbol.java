@@ -55,4 +55,6 @@ public final class Symbol implements Expression<Symbol> {
 	
 	private static final long serialVersionUID = -2105054482894427294L;
 	
+	public static final Symbol EMPTY = new Symbol("");
+	
 }
