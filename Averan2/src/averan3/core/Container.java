@@ -7,9 +7,9 @@ import java.io.Serializable;
  */
 public abstract interface Container<E> extends Serializable, Iterable<E> {
 	
-	public abstract int getElementCount();
+	public abstract int size();
 	
-	public abstract E getElement(int index);
+	public abstract E get(int index);
 	
 	@Override
 	public default java.util.Iterator<E> iterator() {
@@ -43,12 +43,12 @@ public abstract interface Container<E> extends Serializable, Iterable<E> {
 		
 		@Override
 		public final boolean hasNext() {
-			return this.getIndex() < this.getExpression().getElementCount();
+			return this.getIndex() < this.getExpression().size();
 		}
 		
 		@Override
 		public final E next() {
-			final E result = this.getExpression().getElement(this.getIndex());
+			final E result = this.getExpression().get(this.getIndex());
 			
 			this.setIndex(this.getIndex() + 1);
 			

@@ -27,10 +27,10 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 	
 	@SuppressWarnings("unchecked")
 	public final Composite<E> setElementContexts() {
-		final int n = this.getElementCount();
+		final int n = this.size();
 		
 		for (int i = 0; i < n; ++i) {
-			final Composite<?> composite = cast(Composite.class, this.getElement(i));
+			final Composite<?> composite = cast(Composite.class, this.get(i));
 			
 			if (composite != null && composite.getContext() != this) {
 				this.getElements().set(i, (E) composite.copyUnder(this));
@@ -80,12 +80,12 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 	}
 	
 	@Override
-	public final int getElementCount() {
+	public final int size() {
 		return this.getElements().size();
 	}
 	
 	@Override
-	public final E getElement(final int index) {
+	public final E get(final int index) {
 		return this.getElements().get(index);
 	}
 	
@@ -148,8 +148,8 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 		public final Composite<Composite<?>> getFacts() {
 			final FactList conclusion = this.getConclusion().as(FactList.class);
 			
-			if (conclusion.getComposite().getElementCount() == 1) {
-				final Module module = conclusion.getComposite().getElement(1).as(Module.class);
+			if (conclusion.getComposite().size() == 1) {
+				final Module module = conclusion.getComposite().get(1).as(Module.class);
 				
 				if (module != null) {
 					return module.getFacts();
@@ -160,7 +160,7 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 		}
 		
 		public final String getPropositionName(final int index) {
-			return this.getProposition(index).getElement(NAME).toString();
+			return this.getProposition(index).get(NAME).toString();
 		}
 		
 		public final Expression<?> getProposition(final int index) {
@@ -169,10 +169,10 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 			}
 			
 			final Composite<Composite<?>> facts = this.getFacts();
-			int i = index + facts.getElementCount();
+			int i = index + facts.size();
 			
 			if (0 <= i) {
-				return facts.getElement(i);
+				return facts.get(i);
 			}
 			
 			Module module = facts.getContext().as(Module.class);
@@ -191,22 +191,22 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 		}
 		
 		public final Composite<?> getCondition() {
-			return (Composite<?>) this.getComposite().getElement(CONDITION);
+			return (Composite<?>) this.getComposite().get(CONDITION);
 		}
 		
 		@SuppressWarnings("unchecked")
 		public final <E extends Expression<?>> E getConditionName() {
-			return (E) this.getCondition().getElement(NAME);
+			return (E) this.getCondition().get(NAME);
 		}
 		
 		@SuppressWarnings("unchecked")
 		public final <E extends Expression<?>> E getConditionProposition() {
-			return (E) this.getCondition().getElement(PROPOSITION);
+			return (E) this.getCondition().get(PROPOSITION);
 		}
 		
 		@SuppressWarnings("unchecked")
 		public final Composite<Composite<?>> getConclusion() {
-			return (Composite<Composite<?>>) this.getComposite().getElement(CONCLUSION);
+			return (Composite<Composite<?>>) this.getComposite().get(CONCLUSION);
 		}
 		
 		public final Module setConclusion(final Composite<Composite<?>> conclusion) {
@@ -220,8 +220,8 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 		
 		@SuppressWarnings("unchecked")
 		public final <E extends Expression<?>> E applyTo(final Expression<?> expression) {
-			if (this.getCondition().getElement(PROPOSITION).accept(Variable.RESET).equals(expression)) {
-				return (E) this.getConclusion().getElement(PROPOSITION).accept(Variable.BIND);
+			if (this.getCondition().get(PROPOSITION).accept(Variable.RESET).equals(expression)) {
+				return (E) this.getConclusion().get(PROPOSITION).accept(Variable.BIND);
 			}
 			
 			return null;
@@ -245,9 +245,9 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 		
 		public static final boolean isModule(final Expression<?> expression) {
 			return isTriple(expression)
-					&& Condition.isCondition(expression.getElement(CONDITION))
-					&& IMPLIES.equals(expression.getElement(HELPER_1))
-					&& FactList.isFactList(expression.getElement(CONCLUSION));
+					&& Condition.isCondition(expression.get(CONDITION))
+					&& IMPLIES.equals(expression.get(HELPER_1))
+					&& FactList.isFactList(expression.get(CONCLUSION));
 		}
 		
 	}
@@ -295,7 +295,7 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 			
 			for (final Expression<?> element : composite) {
 				if (Equality.isEquality(element)) {
-					this.bindings.put(element.getElement(0), element.getElement(2));
+					this.bindings.put(element.get(0), element.get(2));
 				} else {
 					throw new IllegalArgumentException();
 				}
@@ -375,12 +375,12 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 		
 		@SuppressWarnings("unchecked")
 		public final <E extends Expression<?>> E getLeft() {
-			return (E) this.getComposite().getElement(LEFT);
+			return (E) this.getComposite().get(LEFT);
 		}
 		
 		@SuppressWarnings("unchecked")
 		public final <E extends Expression<?>> E getRight() {
-			return (E) this.getComposite().getElement(RIGHT);
+			return (E) this.getComposite().get(RIGHT);
 		}
 		
 		public static final int LEFT = 0;
@@ -392,7 +392,7 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 		private static final long serialVersionUID = 6188931718222618805L;
 		
 		public static final boolean isEquality(final Expression<?> expression) {
-			return expression.getElementCount() == 3 && EQUALS.equals(expression.getElement(HELPER_1));
+			return expression.size() == 3 && EQUALS.equals(expression.get(HELPER_1));
 		}
 		
 	}
@@ -412,12 +412,12 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 		
 		@SuppressWarnings("unchecked")
 		public final <E extends Expression<?>> E getName() {
-			return (E) this.getComposite().getElement(Module.NAME);
+			return (E) this.getComposite().get(Module.NAME);
 		}
 		
 		@SuppressWarnings("unchecked")
 		public final <E extends Expression<?>> E getProposition() {
-			return (E) this.getComposite().getElement(Module.PROPOSITION);
+			return (E) this.getComposite().get(Module.PROPOSITION);
 		}
 		
 		private static final long serialVersionUID = -3056503743467136403L;
@@ -443,16 +443,16 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 		
 		@SuppressWarnings("unchecked")
 		public final <E extends Expression<?>> E getName() {
-			return (E) this.getComposite().getElement(Module.NAME);
+			return (E) this.getComposite().get(Module.NAME);
 		}
 		
 		@SuppressWarnings("unchecked")
 		public final <E extends Expression<?>> E getProposition() {
-			return (E) this.getComposite().getElement(Module.PROPOSITION);
+			return (E) this.getComposite().get(Module.PROPOSITION);
 		}
 		
 		public final Composite<?> getProof() {
-			return (Composite<?>) this.getComposite().getElement(Module.PROOF);
+			return (Composite<?>) this.getComposite().get(Module.PROOF);
 		}
 		
 		private static final long serialVersionUID = -3210218161030047944L;
@@ -472,7 +472,7 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 			super(composite);
 			
 			if (!(Module.isTriple(composite)
-					&& APPLY.equals(composite.getElement(0)))) {
+					&& APPLY.equals(composite.get(0)))) {
 				throw new IllegalArgumentException();
 			}
 		}
@@ -492,7 +492,7 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 			super(composite);
 			
 			if (!(Module.isTriple(composite)
-					&& REWRITE.equals(composite.getElement(0)))) {
+					&& REWRITE.equals(composite.get(0)))) {
 				throw new IllegalArgumentException();
 			}
 		}
@@ -512,8 +512,8 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 			super(composite);
 			
 			if (!(Module.isTriple(composite)
-					&& SUBSTITUTE.equals(composite.getElement(0))
-					&& isSubstitution(composite.getElement(2)))) {
+					&& SUBSTITUTE.equals(composite.get(0))
+					&& isSubstitution(composite.get(2)))) {
 				throw new IllegalArgumentException();
 			}
 		}

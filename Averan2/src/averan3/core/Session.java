@@ -60,7 +60,7 @@ public final class Session implements Serializable {
 		condition.getElements().add(new Symbol(conditionName));
 		condition.getElements().add(condition.attach(conditionProposition));
 		
-		if (module.getElementCount() == 0) {
+		if (module.size() == 0) {
 			module.getElements().add(condition);
 			module.getElements().add(Expression.IMPLIES);
 			module.getElements().add(new Composite<>(module));
