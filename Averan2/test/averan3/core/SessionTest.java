@@ -1,4 +1,4 @@
-package averan5.core;
+package averan3.core;
 
 import static java.util.Collections.nCopies;
 import static net.sourceforge.aprog.tools.Tools.join;
@@ -7,8 +7,12 @@ import static org.junit.Assert.*;
 import java.io.PrintStream;
 import java.util.Collections;
 
-import averan5.core.Session.Exporter.Output;
-import averan5.core.Session.Frame;
+import averan3.core.Composite;
+import averan3.core.Expression;
+import averan3.core.Session;
+import averan3.core.Variable;
+import averan3.core.Session.Frame;
+import averan3.core.Session.Exporter.Output;
 import net.sourceforge.aprog.tools.Tools;
 
 import org.junit.Test;
