@@ -33,12 +33,12 @@ public final class Variable implements Expression<Variable> {
 	}
 	
 	@Override
-	public final int getElementCount() {
+	public final int size() {
 		return 1;
 	}
 	
 	@Override
-	public final Variable getElement(final int index) {
+	public final Variable get(final int index) {
 		return index == 0 ? this : null;
 	}
 	

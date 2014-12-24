@@ -18,12 +18,12 @@ public final class Symbol implements Expression<Symbol> {
 	}
 	
 	@Override
-	public final int getElementCount() {
+	public final int size() {
 		return 1;
 	}
 	
 	@Override
-	public final Symbol getElement(final int index) {
+	public final Symbol get(final int index) {
 		return index == 0 ? this : null;
 	}
 	
