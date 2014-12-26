@@ -18,7 +18,7 @@ public abstract interface Expression<E extends Expression<?>> extends Container<
 	 */
 	public static abstract interface Visitor<V> extends Serializable {
 		
-		public default V visit(final Symbol symbol) {
+		public default V visit(final Symbol<?> symbol) {
 			return this.visit((Expression<?>) symbol);
 		}
 		
