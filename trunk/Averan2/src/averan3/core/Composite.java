@@ -3,6 +3,7 @@ package averan3.core;
 import static net.sourceforge.aprog.tools.Tools.cast;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -21,7 +22,7 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 	
 	public Composite(final Composite<?> context) {
 		this.context = context;
-		this.elements = new ArrayList<E>();
+		this.elements = new ArrayList<>();
 		this.interpretations = new HashMap<>();
 	}
 	
@@ -296,24 +297,44 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 		
 		private final Map<Expression<?>, Expression<?>> bindings;
 		
-		// TODO add indices
+		private final int[] indices;
+		
+		private int currentIndex;
 		
 		public Substitution(final Composite<Expression<?>> composite) {
 			super(composite);
 			
 			this.bindings = new HashMap<>();
 			
-			for (final Expression<?> element : composite) {
+			final int n = composite.size() - 1;
+			
+			for (int i = 0; i < n; ++i) {
+				final Expression<?> element = composite.get(i);
+				
 				if (Equality.isEquality(element)) {
 					this.bindings.put(element.get(0), element.get(2));
 				} else {
 					throw new IllegalArgumentException();
 				}
 			}
+			
+			{
+				final Composite<?> indices = (Composite<?>) composite.get(n);
+				final int indexCount = indices.size();
+				
+				this.indices = new int[indexCount];
+				
+				for (int i = 0; i < indexCount; ++i) {
+					this.indices[i] = Integer.parseInt(indices.get(i).toString());
+				}
+			}
+			
 		}
 		
 		@SuppressWarnings("unchecked")
 		public final <E extends Expression<?>> E applyTo(final Expression<?> expression) {
+			this.currentIndex = -1;
+			
 			return (E) expression.accept(this);
 		}
 		
@@ -348,7 +369,8 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 		
 		private final Expression<?> tryToReplace(final Expression<?> expression) {
 			for (final Map.Entry<Expression<?>, Expression<?>> binding : this.bindings.entrySet()) {
-				if (binding.getKey().accept(Variable.RESET).equals(expression)) {
+				if (binding.getKey().accept(Variable.RESET).equals(expression)
+						&& (this.indices.length == 0 || 0 <= Arrays.binarySearch(this.indices, ++this.currentIndex))) {
 					return binding.getValue().accept(Variable.BIND);
 				}
 			}
