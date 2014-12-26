@@ -54,7 +54,7 @@ public final class Session implements Serializable {
 	
 	public final Session suppose(final String conditionName, final Expression<?> conditionProposition) {
 		@SuppressWarnings("unchecked")
-		final Composite<Expression<?>> module = (Composite<Expression<?>>) this.getCurrentFrame().getModule();
+		final Composite<Expression<?>> module = this.getCurrentFrame().getModule();
 		final Composite<Expression<?>> condition = new Composite<>(module);
 		
 		condition.getElements().add(new Symbol(conditionName));
@@ -74,7 +74,7 @@ public final class Session implements Serializable {
 			newTerminalModule.getElements().add(Expression.IMPLIES);
 			newTerminalModule.getElements().add(newTerminalModule.attach(facts));
 			
-			oldTerminalModule.getElements().set(Module.CONCLUSION, newTerminalModule);
+			oldTerminalModule.getElements().set(oldTerminalModule.size() - 1, newTerminalModule);
 		}
 		
 		return this.accept();
@@ -111,23 +111,23 @@ public final class Session implements Serializable {
 	 */
 	public final class Frame implements Serializable {
 		
-		private final String name;
-		
-		private final Composite<?> module;
+		private final Composite<Expression<?>> module;
 		
 		private Expression<?> goal;
 		
 		public Frame(final String name, final Expression<?> goal) {
-			this.name = name;
 			this.module = new Composite<>(getCurrentModule());
 			this.goal = goal;
+			
+			this.module.getElements().add(new Composite<>(this.module));
+			this.module.as(Module.class).setFrameName(name);
 		}
 		
 		public final String getName() {
-			return this.name;
+			return this.getModule().as(Module.class).getFrameName();
 		}
 		
-		public final Composite<?> getModule() {
+		public final Composite<Expression<?>> getModule() {
 			return this.module;
 		}
 		
