@@ -142,7 +142,7 @@ public final class Session implements Serializable {
 				
 				output.beginConditions();
 				
-				for (final Map.Entry<String, Integer> entry : module.getConditionIndices().entrySet()) {
+				for (final Map.Entry<String, Integer> entry : module.getConditionIds().entrySet()) {
 					final Expression<?> condition = module.getConditions().get(entry.getValue());
 					output.processCondition(entry.getKey(), condition);
 				}
@@ -153,7 +153,7 @@ public final class Session implements Serializable {
 				
 				final Composite<Expression<?>> factList = module.get(1);
 				
-				for (final Map.Entry<String, Integer> entry : module.getFactIndices().entrySet()) {
+				for (final Map.Entry<String, Integer> entry : module.getFactIds().entrySet()) {
 					final Expression<?> fact = module.getConditions().get(entry.getValue());
 					output.beginFact(entry.getKey(), fact);
 					
