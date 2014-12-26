@@ -18,13 +18,25 @@ public abstract interface Expression<E extends Expression<?>> extends Container<
 	 */
 	public static abstract interface Visitor<V> extends Serializable {
 		
-		public abstract V visit(Symbol symbol);
+		public default V visit(final Symbol symbol) {
+			return this.visit((Expression<?>) symbol);
+		}
 		
-		public abstract V visit(Variable variable);
+		public default V visit(final Variable variable) {
+			return this.visit((Expression<?>) variable);
+		}
 		
-		public abstract V visit(Composite<?> composite);
+		public default V visit(final Composite<?> composite) {
+			return this.visit((Expression<?>) composite);
+		}
 		
-		public abstract V visit(Module module);
+		public default V visit(final Module module) {
+			return this.visit((Expression<?>) module);
+		}
+		
+		public default V visit(final Expression<?> expression) {
+			return null;
+		}
 		
 	}
 	
