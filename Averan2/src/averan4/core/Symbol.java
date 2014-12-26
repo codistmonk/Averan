@@ -5,15 +5,15 @@ import static net.sourceforge.aprog.tools.Tools.cast;
 /**
  * @author codistmonk (creation 2014-12-20)
  */
-public final class Symbol implements Expression<Symbol> {
+public final class Symbol<T> implements Expression<Symbol<T>> {
 	
-	private final Object object;
+	private final T object;
 	
-	public Symbol(final Object object) {
+	public Symbol(final T object) {
 		this.object = object;
 	}
 	
-	public final Object getObject() {
+	public final T getObject() {
 		return this.object;
 	}
 	
@@ -24,7 +24,7 @@ public final class Symbol implements Expression<Symbol> {
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public final Symbol get(final int index) {
+	public final Symbol<T> get(final int index) {
 		return index == 0 ? this : null;
 	}
 	
@@ -44,7 +44,7 @@ public final class Symbol implements Expression<Symbol> {
 			return true;
 		}
 		
-		final Symbol that = cast(this.getClass(), object);
+		final Symbol<?> that = cast(this.getClass(), object);
 		
 		return that != null && this.getObject().equals(that.getObject());
 	}
