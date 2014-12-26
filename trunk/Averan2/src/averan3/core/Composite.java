@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.sourceforge.aprog.tools.Tools;
+
 /**
  * @author codistmonk (creation 2014-12-20)
  */
@@ -148,17 +150,63 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 	 */
 	public static final class Module extends Interpretation.Default<Expression<?>> {
 		
+		private String frameName;
+		
+		private int frameSize;
+		
 		public Module(final Composite<Expression<?>> composite) {
 			super(composite);
 			
 			if (!isModule(composite)) {
+				Tools.debugPrint(composite);
 				throw new IllegalArgumentException();
 			}
 		}
 		
+		public final String getFrameName() {
+			return this.frameName;
+		}
+		
+		public final Module setFrameName(final String frameName) {
+			this.frameName = frameName;
+			
+			return this;
+		}
+		
+		public final int getFrameSize() {
+			return this.frameSize;
+		}
+		
+		public final String newPropositionName() {
+			final Module parent;
+			
+			if (this.getFrameName() != null || (parent = this.getParent()) == null) {
+				return Integer.toString(++this.frameSize);
+			}
+			
+			return parent.newPropositionName();
+		}
+		
+		public final Module getParent() {
+			Composite<?> superContext = this.getComposite().getContext();
+			
+			while (superContext != null) {
+				final Module result = superContext.as(Module.class);
+				
+				if (result != null) {
+					return result;
+				}
+				
+				superContext = superContext.getContext();
+			}
+			
+			return null;
+		}
+		
 		public final Composite<Composite<?>> getFacts() {
 			final FactList conclusion = this.getConclusion().as(FactList.class);
-			
+			Tools.debugPrint(this.getConclusion());
+			Tools.debugPrint(conclusion);
 			if (conclusion.getComposite().size() == 1) {
 				final Module module = conclusion.getComposite().get(1).as(Module.class);
 				
@@ -202,7 +250,7 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 		}
 		
 		public final Composite<?> getCondition() {
-			return (Composite<?>) this.getComposite().get(CONDITION);
+			return isSingle(this.getComposite()) ? null : (Composite<?>) this.getComposite().get(0);
 		}
 		
 		@SuppressWarnings("unchecked")
@@ -217,13 +265,13 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 		
 		@SuppressWarnings("unchecked")
 		public final Composite<Composite<?>> getConclusion() {
-			return (Composite<Composite<?>>) this.getComposite().get(CONCLUSION);
+			return (Composite<Composite<?>>) this.getComposite().get(this.getComposite().size() - 1);
 		}
 		
 		public final Module setConclusion(final Composite<Composite<?>> conclusion) {
 			final Composite<Expression<?>> thisComposite = this.getComposite();
 			
-			thisComposite.getElements().set(CONCLUSION,
+			thisComposite.getElements().set(this.getComposite().size() - 1,
 					conclusion.getContext() == thisComposite ? conclusion : conclusion.copyUnder(thisComposite));
 			
 			return this;
@@ -240,12 +288,6 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 		
 		private static final long serialVersionUID = -1926241237530848606L;
 		
-		public static final int CONDITION = 0;
-		
-		public static final int HELPER_1 = 1;
-		
-		public static final int CONCLUSION = 2;
-		
 		public static final int NAME = 0;
 		
 		public static final int PROPOSITION = 1;
@@ -255,10 +297,12 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 		public static final int PROOF_TYPE = 0;
 		
 		public static final boolean isModule(final Expression<?> expression) {
-			return isTriple(expression)
-					&& Condition.isCondition(expression.get(CONDITION))
-					&& IMPLIES.equals(expression.get(HELPER_1))
-					&& FactList.isFactList(expression.get(CONCLUSION));
+			Tools.debugPrint(expression);
+			return isSingle(expression) && FactList.isFactList(expression.get(0))
+					|| isTriple(expression)
+					&& Condition.isCondition(expression.get(0))
+					&& IMPLIES.equals(expression.get(1))
+					&& FactList.isFactList(expression.get(2));
 		}
 		
 	}
@@ -279,6 +323,7 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 		private static final long serialVersionUID = -2562022375060416809L;
 		
 		public static final boolean isFactList(final Expression<?> expression) {
+			Tools.debugPrint(expression);
 			for (final Expression<?> element : expression) {
 				if (!isTriple(element)) {
 					return false;

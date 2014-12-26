@@ -61,6 +61,10 @@ public abstract interface Expression<E extends Expression<?>> extends Container<
 			
 			private static final long serialVersionUID = 3493628090781849471L;
 			
+			public static final boolean isSingle(final Expression<?> expression) {
+				return expression.size() == 1;
+			}
+			
 			public static final boolean isPair(final Expression<?> expression) {
 				return expression.size() == 2;
 			}
