@@ -22,6 +22,7 @@ public final class Symbol implements Expression<Symbol> {
 		return 1;
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public final Symbol get(final int index) {
 		return index == 0 ? this : null;
