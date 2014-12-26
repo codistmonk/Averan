@@ -18,20 +18,20 @@ public final class Module implements Expression<Composite<?>> {
 	
 	private final Composite<Expression<?>> conditions;
 	
-	private final IndexedMap<String, Integer> conditionIndices;
+	private final IndexedMap<String, Integer> conditionIds;
 	
 	private final Composite<Expression<?>> facts;
 	
-	private final IndexedMap<String, Integer> factIndices;
+	private final IndexedMap<String, Integer> factIds;
 	
 	private final List<Proof> proofs;
 	
 	public Module(final Module context) {
 		this.context = context;
 		this.conditions = new Composite<Expression<?>>();
-		this.conditionIndices = new IndexedMap<>();
+		this.conditionIds = new IndexedMap<>();
 		this.facts = new Composite<Expression<?>>();
-		this.factIndices = new IndexedMap<>();
+		this.factIds = new IndexedMap<>();
 		this.proofs = new ArrayList<>();
 	}
 	
@@ -66,20 +66,20 @@ public final class Module implements Expression<Composite<?>> {
 		return this.conditions;
 	}
 	
-	public final IndexedMap<String, Integer> getConditionIndices() {
-		return this.conditionIndices;
+	public final IndexedMap<String, Integer> getConditionIds() {
+		return this.conditionIds;
 	}
 	
 	public final Composite<Expression<?>> getFacts() {
 		return this.facts;
 	}
 	
-	public final IndexedMap<String, Integer> getFactIndices() {
-		return this.factIndices;
+	public final IndexedMap<String, Integer> getFactIds() {
+		return this.factIds;
 	}
 	
 	public final Proof getProof(final String factName) {
-		return this.proofs.get(this.getFactIndices().get(factName));
+		return this.proofs.get(this.getFactIds().get(factName));
 	}
 	
 	private static final long serialVersionUID = 9140955565054672814L;
