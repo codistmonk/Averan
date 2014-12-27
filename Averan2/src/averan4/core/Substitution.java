@@ -210,7 +210,7 @@ public final class Substitution implements Expression.Visitor<Expression<?>>, Ex
 	}
 	
 	/**
-	 * @author codistmonk (creation 2014-12-26)
+	 * @author codistmonk (creation 2014-12-27)
 	 */
 	public static final class MutableInteger extends Number {
 		

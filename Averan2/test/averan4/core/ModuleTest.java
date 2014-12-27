@@ -4,7 +4,6 @@ import static averan4.core.Composite.composite;
 import static averan4.core.Equality.equality;
 import static averan4.core.Symbol.symbol;
 import static org.junit.Assert.*;
-import net.sourceforge.aprog.tools.Tools;
 
 import org.junit.Test;
 
@@ -109,10 +108,36 @@ public final class ModuleTest {
 		assertEquals(B, context.getFacts().get(0));
 	}
 	
+	@Test
+	public final void testProofByDeduce1() {
+		final Module context = new Module();
+		
+		context.addCondition("p1", implication(A, B));
+		context.addCondition("p2", implication(B, C));
+		
+		final Module subcontext = new Module(context);
+		{
+			subcontext.addCondition("p3", A);
+			
+			subcontext.new ProofByApply("p4", "p1", "p3").apply();
+			subcontext.new ProofByApply("p5", "p2", "p4").apply();
+		}
+		
+		context.new ProofByDeduce("p3", subcontext).apply();
+		
+		assertEquals(2L, context.getConditions().size());
+		assertEquals(1L, context.getFacts().size());
+		assertEquals(implication(A, C), context.getFacts().get(0));
+	}
+	
 	public static final Symbol<String> A = symbol("A");
 	
 	public static final Symbol<String> B = symbol("B");
 	
 	public static final Symbol<String> C = symbol("C");
+	
+	public static final Module implication(final Expression<?> condition, final Expression<?> fact) {
+		return new Module().addCondition(null, condition).addFact(null, fact, null);
+	}
 	
 }
