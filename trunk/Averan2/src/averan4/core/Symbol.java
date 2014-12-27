@@ -56,6 +56,10 @@ public final class Symbol<T> implements Expression<Symbol<T>> {
 	
 	private static final long serialVersionUID = -2105054482894427294L;
 	
-	public static final Symbol<String> EMPTY = new Symbol<>("");
+	public static final Symbol<String> EMPTY = symbol("");
+	
+	public static final <T> Symbol<T> symbol(final T object) {
+		return new Symbol<>(object);
+	}
 	
 }
