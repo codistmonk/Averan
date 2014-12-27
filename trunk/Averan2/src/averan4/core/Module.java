@@ -8,8 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import net.sourceforge.aprog.tools.Tools;
-
 /**
  * @author codistmonk (creation 2014-12-26)
  */
@@ -45,7 +43,7 @@ public final class Module implements Expression<Composite<?>> {
 			}
 			
 			for (final Map.Entry<String, Integer> id : fact.getFactIds().entrySet()) {
-				this.addFact(id.getKey(), fact.getConditions().get(id.getValue()), fact.getProof(id.getKey()));
+				this.addFact(id.getKey(), fact.getFacts().get(id.getValue()), fact.getProof(id.getKey()));
 			}
 		}
 		
@@ -110,14 +108,13 @@ public final class Module implements Expression<Composite<?>> {
 	public final boolean equals(final Object object) {
 		final Module that = cast(this.getClass(), object);
 		
-		return that != null && this.canonicalize().getConditions().equals(that.getConditions())
+		return that != null && this.canonicalize().getConditions().equals(that.canonicalize().getConditions())
 				&& this.getFacts().equals(that.getFacts());
 	}
 	
 	@Override
 	public final String toString() {
-		return join("->", this.getConditions().getElements().toArray())
-				+ "->" + join("/\\", this.getFacts().getElements().toArray());
+		return formatPropositions("->", this.getConditions()) + "->" + formatPropositions("/\\", this.getFacts());
 	}
 	
 	final Module addCondition(final String name, final Expression<?> proposition) {
@@ -143,6 +140,10 @@ public final class Module implements Expression<Composite<?>> {
 	}
 	
 	private static final long serialVersionUID = 9140955565054672814L;
+	
+	public static final String formatPropositions(final String separator, final Composite<Expression<?>> propositions) {
+		return propositions.size() == 0 ? "()" : join(separator, propositions.getElements().toArray());
+	}
 	
 	/**
 	 * @author codistmonk (creation 2014-12-26)
