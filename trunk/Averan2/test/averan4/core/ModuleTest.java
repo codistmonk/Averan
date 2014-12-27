@@ -12,8 +12,8 @@ public final class ModuleTest {
 	
 	@Test
 	public final void testCanonicalize1() {
-		final Module module = new Module(null);
-		final Module canonical = new Module(null);
+		final Module module = new Module();
+		final Module canonical = new Module();
 		
 		module.addCondition("p1", new Symbol<>("A"));
 		module.addCondition("p2", new Symbol<>("B"));
@@ -29,8 +29,8 @@ public final class ModuleTest {
 	
 	@Test
 	public final void testCanonicalize2() {
-		final Module module = new Module(null);
-		final Module canonical = new Module(null);
+		final Module module = new Module();
+		final Module canonical = new Module();
 		
 		module.addCondition("p1", new Symbol<>("A"));
 		module.addFact("p2", new Module(null).addCondition("p3", new Symbol<>("B")).addFact("p4", new Symbol<>("C"), null), null);
@@ -45,7 +45,7 @@ public final class ModuleTest {
 	
 	@Test
 	public final void testProofByApply1() {
-		final Module context = new Module(null);
+		final Module context = new Module();
 		
 		context.addCondition("p1", new Symbol<>("A"));
 		context.addCondition("p2", new Module(context).addCondition("p3", new Symbol<>("A")).addFact("p4", new Symbol<>("B"), null));
@@ -62,7 +62,7 @@ public final class ModuleTest {
 	
 	@Test
 	public final void testProofByApply2() {
-		final Module context = new Module(null);
+		final Module context = new Module();
 		
 		context.addCondition("p1_1", new Symbol<>("A1"));
 		context.addCondition("p1_2", new Symbol<>("A2"));

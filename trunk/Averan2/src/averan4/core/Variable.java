@@ -158,7 +158,7 @@ public final class Variable implements Expression<Variable> {
 		
 		@Override
 		public final Expression<?> visit(final Module module) {
-			final Module newModule = new Module(null);
+			final Module newModule = new Module();
 			
 			if (Composite.listAccept(module.getConditions(), this, newModule.getConditions().getElements())
 					| Composite.listAccept(module.getFacts(), this, newModule.getFacts().getElements())) {

@@ -25,6 +25,10 @@ public final class Module implements Expression<Composite<?>> {
 	
 	private final List<Proof> proofs;
 	
+	public Module() {
+		this(null);
+	}
+	
 	public Module(final Module context) {
 		this.context = context;
 		this.conditions = new Composite<>();
