@@ -3,7 +3,6 @@ package averan4.core;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author codistmonk (creation 2014-12-20)
@@ -16,14 +15,18 @@ public final class Session implements Serializable {
 		this.frames = new ArrayList<>();
 	}
 	
+	public final List<Frame> getFrames() {
+		return this.frames;
+	}
+	
 	public final Session prove(final String factName, final Expression<?> fact) {
-		this.frames.add(this.new Frame(factName, fact));
+		this.getFrames().add(this.new Frame(factName, fact));
 		
 		return this;
 	}
 	
 	public final Session cancelFrame() {
-		this.frames.remove(this.frames.size() - 1);
+		this.getFrames().remove(this.getFrames().size() - 1);
 		
 		return this;
 	}
@@ -33,7 +36,7 @@ public final class Session implements Serializable {
 	}
 	
 	public final Session accept(final String... factNames) {
-		final Frame frame = this.frames.get(this.frames.size() - 1);
+		final Frame frame = this.getFrames().get(this.getFrames().size() - 1);
 		
 		if (frame.getGoal() == null) {
 			// TODO
@@ -77,7 +80,7 @@ public final class Session implements Serializable {
 	}
 	
 	public final Frame getCurrentFrame() {
-		return this.frames.isEmpty() ? null : this.frames.get(this.frames.size() - 1);
+		return this.getFrames().isEmpty() ? null : this.getFrames().get(this.getFrames().size() - 1);
 	}
 	
 	/**
@@ -114,141 +117,5 @@ public final class Session implements Serializable {
 	}
 	
 	private static final long serialVersionUID = 181621455530572267L;
-	
-	/**
-	 * @author codistmonk (creation 2014-12-21)
-	 */
-	public static final class Exporter implements Serializable {
-		
-		public static final void export(final Session session, final Output output) {
-			output.beginSession(session);
-			
-			if (!session.frames.isEmpty()) {
-				exportFrame(session, 0, output);
-			}
-			
-			output.endSession();
-		}
-		
-		public static final void exportFrame(final Session session, final int index, final Output output) {
-			final Frame frame = session.frames.get(index);
-			
-			output.beginFrame(frame);
-			
-			output.beginModule(frame.getModule());
-			
-			{
-				final Module module = frame.getModule();
-				
-				output.beginConditions();
-				
-				for (final Map.Entry<String, Integer> entry : module.getConditionIds().entrySet()) {
-					final Expression<?> condition = module.getConditions().get(entry.getValue());
-					output.processCondition(entry.getKey(), condition);
-				}
-				
-				output.endConditions();
-				
-				output.beginFacts();
-				
-				final Composite<Expression<?>> factList = module.get(1);
-				
-				for (final Map.Entry<String, Integer> entry : module.getFactIds().entrySet()) {
-					final Expression<?> fact = module.getConditions().get(entry.getValue());
-					output.beginFact(entry.getKey(), fact);
-					
-					output.beginProof(module.getProof(entry.getKey()));
-					// TODO
-					output.endProof();
-				}
-				
-				output.endFacts();
-			}
-			
-			if (index + 1 < session.frames.size()) {
-				exportFrame(session, index + 1, output);
-			}
-			
-			output.processGoal(frame.getGoal());
-			
-			output.endModule();
-			
-			output.endFrame();
-		}
-		
-		private static final long serialVersionUID = 4419798598555424573L;
-		
-		/**
-		 * @author codistmonk (creation 2014-12-21)
-		 */
-		public static abstract interface Output extends Serializable {
-			
-			public default void beginSession(final Session session) {
-				// NOP
-			}
-			
-			public default void beginFrame(final Frame frame) {
-				// NOP
-			}
-			
-			public default void beginModule(final Module module) {
-				// NOP
-			}
-			
-			public default void beginConditions() {
-				// NOP
-			}
-			
-			public default void processCondition(final String conditionName, final Expression<?> conditionProposition) {
-				// NOP
-			}
-			
-			public default void endConditions() {
-				// NOP
-			}
-			
-			public default void beginFacts() {
-				// NOP
-			}
-			
-			public default void beginFact(final String factName, final Expression<?> factProposition) {
-				// NOP
-			}
-			
-			public default void beginProof(final Module.Proof factProof) {
-				// NOP
-			}
-			
-			public default void endProof() {
-				// NOP
-			}
-			
-			public default void endFact() {
-				// NOP
-			}
-			
-			public default void endFacts() {
-				// NOP
-			}
-			
-			public default void endModule() {
-				// NOP
-			}
-			
-			public default void processGoal(final Expression<?> goal) {
-				// NOP
-			}
-			
-			public default void endFrame() {
-				// NOP
-			}
-			
-			public default void endSession() {
-				// NOP
-			}
-			
-		}
-		
-	}
 	
 }
