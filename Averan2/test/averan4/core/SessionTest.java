@@ -21,6 +21,7 @@ public final class SessionTest {
 		{
 			session.introduce();
 			session.introduce();
+			session.substitute(session.getCurrentFrame().newPropositionName(), new Symbol<>("X"));
 		}
 		// TODO
 		

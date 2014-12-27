@@ -85,8 +85,15 @@ public final class Session implements Serializable {
 		return this.accept();
 	}
 	
-	public final Session substitute(final String factName, final Expression<?> expression, final Composite<?>... equalities) {
-		// TODO
+	public final Session substitute(final String factName, final Expression<?> expression, final Equality... equalities) {
+		final Substitution substitution = new Substitution();
+		
+		for (final Equality equality : equalities) {
+			substitution.bind(equality);
+		}
+		
+		this.getCurrentModule().new ProofBySubstitute(factName, expression, substitution).apply();
+		
 		return this.accept();
 	}
 	
