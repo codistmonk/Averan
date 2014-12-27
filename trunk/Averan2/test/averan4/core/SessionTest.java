@@ -22,6 +22,7 @@ public final class SessionTest {
 			session.introduce();
 			session.introduce();
 			session.substitute(session.getCurrentFrame().newPropositionName(), new Symbol<>("X"));
+			session.rewrite(session.getCurrentFrame().newPropositionName(), "tautology.2", "tautology.2");
 		}
 		// TODO
 		

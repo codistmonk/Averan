@@ -8,8 +8,6 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
-import net.sourceforge.aprog.tools.Tools;
-
 /**
  * @author codistmonk (creation 2014-12-20)
  */
@@ -99,7 +97,8 @@ public final class Session implements Serializable {
 	
 	public final Session rewrite(final String factName, final String propositionName, final String equalityName,
 			final int... indices) {
-		// TODO
+		this.getCurrentModule().new ProofByRewrite(factName, propositionName).using(equalityName).at(indices).apply();
+		
 		return this.accept();
 	}
 	
