@@ -1,5 +1,7 @@
 package averan4.core;
 
+import static averan4.core.Composite.composite;
+import static averan4.core.Equality.equality;
 import static org.junit.Assert.*;
 import net.sourceforge.aprog.tools.Tools;
 
@@ -78,6 +80,19 @@ public final class ModuleTest {
 		assertEquals(2L, context.getFacts().size());
 		assertEquals(new Symbol<>("B"), context.getFacts().get(0));
 		assertEquals(new Symbol<>("B"), context.getFacts().get(1));
+	}
+	
+	@Test
+	public final void testProofBySubstitute1() {
+		final Module context = new Module();
+		final Composite<Expression<?>> expression = composite(new Symbol<>("A"), new Symbol<>("B"), new Symbol<>("B"));
+		final Substitution substitution = new Substitution().bind(new Symbol<>("B"), new Symbol<>("C")).at(1);
+		
+		context.new ProofBySubstitute("p1", expression, substitution).apply();
+		
+		assertEquals(0L, context.getConditions().size());
+		assertEquals(1L, context.getFacts().size());
+		assertEquals(equality(composite(expression, substitution), composite(new Symbol<>("A"), new Symbol<>("B"), new Symbol<>("C"))), context.getFacts().get(0));
 	}
 	
 }

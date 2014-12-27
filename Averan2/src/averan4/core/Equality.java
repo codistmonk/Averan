@@ -11,7 +11,7 @@ public final class Equality implements Expression<Expression<?>> {
 	
 	private final Expression<?> right;
 	
-	public Equality(final Expression<?> left, final Expression<?> right) {
+	private Equality(final Expression<?> left, final Expression<?> right) {
 		this.left = left;
 		this.right = right;
 	}
@@ -66,5 +66,9 @@ public final class Equality implements Expression<Expression<?>> {
 	}
 	
 	private static final long serialVersionUID = 6733893065994517695L;
+	
+	public static final Equality equality(final Expression<?> left, final Expression<?> right) {
+		return new Equality(left, right);
+	}
 	
 }

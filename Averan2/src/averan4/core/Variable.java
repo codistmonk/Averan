@@ -1,5 +1,6 @@
 package averan4.core;
 
+import static averan4.core.Equality.equality;
 import static net.sourceforge.aprog.tools.Tools.cast;
 
 import java.util.Collection;
@@ -189,7 +190,7 @@ public final class Variable implements Expression<Variable> {
 			final Expression<?> newRight = equality.getRight().accept(this);
 			
 			if (newLeft != equality.getLeft() || newRight != equality.getRight()) {
-				return new Equality(newLeft, newRight);
+				return equality(newLeft, newRight);
 			}
 			
 			return equality;
