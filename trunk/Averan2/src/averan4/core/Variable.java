@@ -93,7 +93,7 @@ public final class Variable implements Expression<Variable> {
 	public static final class Reset implements Expression.Visitor<Expression<?>> {
 		
 		@Override
-		public final Symbol visit(final Symbol symbol) {
+		public final Symbol<?> visit(final Symbol<?> symbol) {
 			return symbol;
 		}
 		
@@ -103,20 +103,23 @@ public final class Variable implements Expression<Variable> {
 		}
 		
 		@Override
-		public final Composite<?> visit(final Composite<?> composite) {
-			for (final Expression<?> element : composite) {
-				element.accept(this);
-			}
-			
-			return composite;
+		public final Composite<?> visit(final Composite<Expression<?>> composite) {
+			return Visitor.visitElementsOf(composite, this);
 		}
 		
 		@Override
 		public final Module visit(final Module module) {
-			module.getConditions().accept(this);
-			module.getFacts().accept(this);
-			
-			return module;
+			return Visitor.visitElementsOf(module, this);
+		}
+		
+		@Override
+		public final Substitution visit(final Substitution substitution) {
+			return Visitor.visitElementsOf(substitution, this);
+		}
+		
+		@Override
+		public final Equality visit(final Equality equality) {
+			return Visitor.visitElementsOf(equality, this);
 		}
 		
 		private static final long serialVersionUID = 6438401380761494994L;
@@ -128,19 +131,10 @@ public final class Variable implements Expression<Variable> {
 	/**
 	 * @author codistmonk (creation 2014-12-20)
 	 */
-	public static final class Bind implements Expression.Visitor<Expression<?>> {
-		
-		private List<Module> stack = new ArrayList<>();
-		
-		public final Bind reset() {
-			this.stack.clear();
-			this.stack.add(null);
-			
-			return this;
-		}
+	public static final class Bind extends Expression.Visitor.ExpressionRewriter {
 		
 		@Override
-		public final Symbol visit(final Symbol symbol) {
+		public final Symbol<?> visit(final Symbol<?> symbol) {
 			return symbol;
 		}
 		
@@ -153,10 +147,10 @@ public final class Variable implements Expression<Variable> {
 		
 		@SuppressWarnings("unchecked")
 		@Override
-		public final Composite<?> visit(final Composite<?> composite) {
+		public final Composite<?> visit(final Composite<Expression<?>> composite) {
 			final Composite<?> candidate = new Composite<>();
 			
-			if (Composite.listAccept((Iterable<Expression<?>>) composite, this,
+			if (Composite.listAccept(composite, this,
 					(Collection<Expression<?>>) candidate.getElements())) {
 				return candidate;
 			}
@@ -180,18 +174,31 @@ public final class Variable implements Expression<Variable> {
 			}
 		}
 		
-		private final Module push(final Module module) {
-			this.stack.add(module);
+		@SuppressWarnings("unchecked")
+		@Override
+		public final Expression<?> visit(final Substitution substitution) {
+			final Substitution candidate = new Substitution();
 			
-			return module;
+			if (Composite.listAccept((Iterable) substitution.getBindings(), this,
+					(Collection) candidate.getBindings().getElements())
+					| Composite.listAccept((Iterable) substitution.getIndices(), this,
+							(Collection) candidate.getBindings().getElements())) {
+				return candidate;
+			}
+			
+			return substitution;
 		}
 		
-		private final Module peek() {
-			return this.stack.get(this.stack.size() - 1);
-		}
-		
-		private final Module pop() {
-			return this.stack.remove(this.stack.size() - 1);
+		@Override
+		public final Expression<?> visit(final Equality equality) {
+			final Expression<?> newLeft = equality.getLeft().accept(this);
+			final Expression<?> newRight = equality.getRight().accept(this);
+			
+			if (newLeft != equality.getLeft() || newRight != equality.getRight()) {
+				return new Equality(newLeft, newRight);
+			}
+			
+			return equality;
 		}
 		
 		private static final long serialVersionUID = -2879093293185572053L;

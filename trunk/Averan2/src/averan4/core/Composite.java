@@ -17,10 +17,6 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 		this.elements = new ArrayList<E>();
 	}
 	
-	public final List<E> getElements() {
-		return this.elements;
-	}
-	
 	@Override
 	public final int size() {
 		return this.getElements().size();
@@ -31,9 +27,10 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 		return this.getElements().get(index);
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public final <V> V accept(final Expression.Visitor<V> visitor) {
-		return visitor.visit(this);
+		return visitor.visit((Composite<Expression<?>>) this);
 	}
 	
 	@Override
@@ -55,6 +52,10 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 	@Override
 	public final String toString() {
 		return this.getElements().toString();
+	}
+	
+	final List<E> getElements() {
+		return this.elements;
 	}
 	
 	private static final long serialVersionUID = -3768801167161895932L;
