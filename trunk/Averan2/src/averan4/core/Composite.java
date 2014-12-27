@@ -14,7 +14,7 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 	private final List<E> elements;
 	
 	public Composite() {
-		this.elements = new ArrayList<E>();
+		this.elements = new ArrayList<>();
 	}
 	
 	@Override
@@ -22,9 +22,10 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 		return this.getElements().size();
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
-	public final E get(final int index) {
-		return this.getElements().get(index);
+	public final <F extends E> F get(final int index) {
+		return (F) this.getElements().get(index);
 	}
 	
 	@SuppressWarnings("unchecked")
