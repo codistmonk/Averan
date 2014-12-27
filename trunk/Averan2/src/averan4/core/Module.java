@@ -60,6 +60,10 @@ public final class Module implements Expression<Composite<?>> {
 	}
 	
 	public final <E extends Expression<?>> E findProposition(final String name) {
+		if (name == null) {
+			return null;
+		}
+		
 		Integer index = this.getFactIds().get(name);
 		
 		if (index != null) {
@@ -197,7 +201,7 @@ public final class Module implements Expression<Composite<?>> {
 	}
 	
 	/**
-	 * @author codistmonk (creation 2014-12-26)
+	 * @author codistmonk (creation 2014-12-27)
 	 */
 	public final class ProofByApply extends Proof {
 		
@@ -265,7 +269,7 @@ public final class Module implements Expression<Composite<?>> {
 	}
 	
 	/**
-	 * @author codistmonk (creation 2014-12-26)
+	 * @author codistmonk (creation 2014-12-27)
 	 */
 	public final class ProofBySubstitute extends Proof {
 		
@@ -298,7 +302,7 @@ public final class Module implements Expression<Composite<?>> {
 	}
 	
 	/**
-	 * @author codistmonk (creation 2014-12-26)
+	 * @author codistmonk (creation 2014-12-27)
 	 */
 	public final class ProofByRewrite extends Proof {
 		
@@ -354,6 +358,50 @@ public final class Module implements Expression<Composite<?>> {
 		}
 		
 		private static final long serialVersionUID = 5020773952478671657L;
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-12-27)
+	 */
+	public final class ProofByDeduce extends Proof {
+		
+		private final Module deduction;
+		
+		public ProofByDeduce(final String factName, final Module deduction) {
+			super(factName);
+			
+			if (Module.this != deduction.getContext()) {
+				throw new IllegalArgumentException();
+			}
+			
+			this.deduction = deduction.canonicalize();
+		}
+		
+		public final Module getDeduction() {
+			return this.deduction;
+		}
+		
+		@Override
+		public final ProofByDeduce apply() {
+			final Composite<Expression<?>> deducedFacts = this.getDeduction().getFacts();
+			final Expression<?> lastDeducedFact = deducedFacts.get(deducedFacts.size() - 1);
+			final Expression<?> fact;
+			
+			if (this.getDeduction().getConditions().size() == 0) {
+				fact = lastDeducedFact;
+			} else {
+				fact = new Module();
+				
+				((Module) fact).getConditions().getElements().addAll(this.getDeduction().getConditions().getElements());
+				((Module) fact).getFacts().getElements().add(lastDeducedFact);
+				((Module) fact).canonicalize();
+			}
+			
+			return this.addFactToContext(fact);
+		}
+		
+		private static final long serialVersionUID = 8959982180068107269L;
 		
 	}
 	
