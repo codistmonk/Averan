@@ -70,7 +70,7 @@ public final class Substitution implements Expression.Visitor<Expression<?>>, Ex
 		Expression<?> candidate = this.tryToReplace(module);
 		
 		if (candidate == module) {
-			candidate = new Module(null);
+			candidate = new Module();
 			
 			if (!listAccept(module.getConditions(), this,
 					((Module) candidate).getConditions().getElements())
