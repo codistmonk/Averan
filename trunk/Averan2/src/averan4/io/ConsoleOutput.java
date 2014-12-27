@@ -39,6 +39,7 @@ public final class ConsoleOutput implements Output {
 		++this.frameLevel;
 		this.indent = join("", nCopies(this.frameLevel, '	').toArray());
 		this.out.println(this.indent + "((MODULE " + frame.getName() + "))");
+		this.out.println(this.indent + "	∀" + join(",", frame.getIntroducedForVariables().toArray()));
 	}
 	
 	@Override
@@ -48,6 +49,7 @@ public final class ConsoleOutput implements Output {
 	
 	@Override
 	public final void processCondition(final String name, final Expression<?> condition) {
+		this.out.println(this.indent + "	(" + name + ")");
 		this.out.println(this.indent + "	" + condition);
 	}
 
@@ -58,6 +60,7 @@ public final class ConsoleOutput implements Output {
 	
 	@Override
 	public final void beginFact(final String name, final Expression<?> fact) {
+		this.out.println(this.indent + "	(" + name + ")");
 		this.out.println(this.indent + "	" + fact);
 	}
 	

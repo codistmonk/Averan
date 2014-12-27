@@ -13,6 +13,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
+import net.sourceforge.aprog.tools.Tools;
+
 /**
  * @author codistmonk (creation 2014-12-26)
  */
@@ -146,7 +148,7 @@ public final class Module implements Expression<Composite<?>> {
 		return formatPropositions("->", this.getConditions()) + "->" + formatPropositions("/\\", this.getFacts());
 	}
 	
-	final Module addCondition(final String name, final Expression<?> proposition) {
+	public final Module addCondition(final String name, final Expression<?> proposition) {
 		return this.addProposition(name, proposition, this.getConditions(), this.getConditionIds());
 	}
 	
@@ -242,26 +244,7 @@ public final class Module implements Expression<Composite<?>> {
 				return this;
 			}
 			
-			{
-				final Expression<?> condition = context.findProposition(this.getConditionName());
-				
-				if (!module.getConditions().get(0).accept(Variable.RESET).equals(condition)) {
-					throw new IllegalArgumentException();
-				}
-				
-				if (module.getConditions().size() == 1 && module.getFacts().size() == 1) {
-					return this.addFactToContext(module.getFacts().get(0).accept(Variable.BIND));
-				}
-				
-				{
-					final Module fact = new Module(null);
-					
-					fact.getConditions().getElements().addAll(module.getConditions().getElements().subList(1, module.getConditions().size() - 1));
-					fact.getFacts().getElements().addAll(module.getFacts().getElements());
-					
-					return this.addFactToContext(fact.accept(Variable.BIND));
-				}
-			}
+			return this.addFactToContext(Module.apply(module, context.findProposition(this.getConditionName())));
 		}
 		
 		private static final long serialVersionUID = 1974410943023589433L;
@@ -409,6 +392,26 @@ public final class Module implements Expression<Composite<?>> {
 	
 	public static final String formatPropositions(final String separator, final Composite<Expression<?>> propositions) {
 		return propositions.size() == 0 ? "()" : join(separator, propositions.getElements().toArray());
+	}
+	
+	public static final Expression<?> apply(final Module module, final Expression<?> condition) {
+		Tools.debugPrint(condition);
+		if (!module.getConditions().get(0).accept(Variable.RESET).equals(condition)) {
+			throw new IllegalArgumentException();
+		}
+		
+		if (module.getConditions().size() == 1 && module.getFacts().size() == 1) {
+			return module.getFacts().get(0).accept(Variable.BIND);
+		}
+		
+		{
+			final Module fact = new Module();
+			
+			fact.getConditions().getElements().addAll(module.getConditions().getElements().subList(1, module.getConditions().size() - 1));
+			fact.getFacts().getElements().addAll(module.getFacts().getElements());
+			
+			return fact.accept(Variable.BIND);
+		}
 	}
 	
 }
