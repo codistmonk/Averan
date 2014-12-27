@@ -2,11 +2,14 @@ package averan4.core;
 
 import static averan4.core.Composite.composite;
 import static averan4.core.Equality.equality;
+import static averan4.core.Substitution.ANY_INDEX;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.join;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -291,6 +294,66 @@ public final class Module implements Expression<Composite<?>> {
 		}
 		
 		private static final long serialVersionUID = -2849009520329956261L;
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-12-26)
+	 */
+	public final class ProofByRewrite extends Proof {
+		
+		private final String propositionName;
+		
+		private final Collection<String> equalityNames;
+		
+		private int[] indices;
+		
+		public ProofByRewrite(final String factName, final String propositionName) {
+			super(factName);
+			this.propositionName = propositionName;
+			this.equalityNames = new LinkedHashSet<>();
+		}
+		
+		public final String getPropositionName() {
+			return this.propositionName;
+		}
+		
+		public final Collection<String> getEqualityNames() {
+			return this.equalityNames;
+		}
+		
+		public final int[] getIndices() {
+			return this.indices;
+		}
+		
+		public final ProofByRewrite using(final String equalityName) {
+			if (this.getIndices() != null) {
+				throw new IllegalStateException();
+			}
+			
+			this.getEqualityNames().add(equalityName);
+			
+			return this;
+		}
+		
+		public final ProofByRewrite at(final int... indices) {
+			this.indices = indices;
+			
+			return this;
+		}
+		
+		@Override
+		public final ProofByRewrite apply() {
+			final Substitution substitution = new Substitution().at(this.getIndices() == null ? ANY_INDEX : this.getIndices());
+			
+			for (final String equalityName : this.getEqualityNames()) {
+				substitution.bind(Module.this.findProposition(equalityName));
+			}
+			
+			return this.addFactToContext(Module.this.findProposition(this.getPropositionName()).accept(substitution.reset()));
+		}
+		
+		private static final long serialVersionUID = 5020773952478671657L;
 		
 	}
 	
