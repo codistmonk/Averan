@@ -2,9 +2,7 @@ package averan4.core;
 
 import static net.sourceforge.aprog.tools.Tools.cast;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * @author codistmonk (creation 2014-12-20)
@@ -131,7 +129,7 @@ public final class Variable implements Expression<Variable> {
 	/**
 	 * @author codistmonk (creation 2014-12-20)
 	 */
-	public static final class Bind extends Expression.Visitor.ExpressionRewriter {
+	public static final class Bind implements Expression.Visitor<Expression<?>> {
 		
 		@Override
 		public final Symbol<?> visit(final Symbol<?> symbol) {
@@ -160,18 +158,14 @@ public final class Variable implements Expression<Variable> {
 		
 		@Override
 		public final Expression<?> visit(final Module module) {
-			final Module newModule = this.push(new Module(this.peek()));
+			final Module newModule = new Module(null);
 			
-			try {
-				if (Composite.listAccept(module.getConditions(), this, newModule.getConditions().getElements())
-						| Composite.listAccept(module.getFacts(), this, newModule.getFacts().getElements())) {
-					return newModule;
-				}
-				
-				return module;
-			} finally {
-				this.pop();
+			if (Composite.listAccept(module.getConditions(), this, newModule.getConditions().getElements())
+					| Composite.listAccept(module.getFacts(), this, newModule.getFacts().getElements())) {
+				return newModule;
 			}
+			
+			return module;
 		}
 		
 		@SuppressWarnings("unchecked")

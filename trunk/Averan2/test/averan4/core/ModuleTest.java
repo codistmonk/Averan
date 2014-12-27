@@ -60,4 +60,24 @@ public final class ModuleTest {
 		assertEquals(new Symbol<>("B"), context.getFacts().get(0));
 	}
 	
+	@Test
+	public final void testProofByApply2() {
+		final Module context = new Module(null);
+		
+		context.addCondition("p1_1", new Symbol<>("A1"));
+		context.addCondition("p1_2", new Symbol<>("A2"));
+		context.addCondition("p2", new Module(context).addCondition("p3", new Variable("X")).addFact("p4", new Symbol<>("B"), null));
+		
+		assertEquals(3L, context.getConditions().size());
+		assertEquals(0L, context.getFacts().size());
+		
+		context.new ProofByApply("p5", "p2", "p1_1").apply();
+		context.new ProofByApply("p6", "p2", "p1_2").apply();
+		
+		assertEquals(3L, context.getConditions().size());
+		assertEquals(2L, context.getFacts().size());
+		assertEquals(new Symbol<>("B"), context.getFacts().get(0));
+		assertEquals(new Symbol<>("B"), context.getFacts().get(1));
+	}
+	
 }

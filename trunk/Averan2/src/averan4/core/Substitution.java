@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * @author codistmonk (creation 2014-12-20)
  */
-public final class Substitution extends Expression.Visitor.ExpressionRewriter implements Expression<Expression<?>> {
+public final class Substitution implements Expression.Visitor<Expression<?>>, Expression<Expression<?>> {
 	
 	private final Composite<Equality> bindings;
 	
@@ -32,10 +32,7 @@ public final class Substitution extends Expression.Visitor.ExpressionRewriter im
 		return this.indices;
 	}
 	
-	@Override
 	public final Substitution reset() {
-		super.reset();
-		
 		this.currentIndex.getObject().set(0);
 		
 		return this;
@@ -73,17 +70,13 @@ public final class Substitution extends Expression.Visitor.ExpressionRewriter im
 		Expression<?> candidate = this.tryToReplace(module);
 		
 		if (candidate == module) {
-			candidate = this.push(new Module(this.peek()));
+			candidate = new Module(null);
 			
-			try {
-				if (!listAccept(module.getConditions(), this,
-						((Module) candidate).getConditions().getElements())
-						& !listAccept(module.getFacts(), this,
-								((Module) candidate).getFacts().getElements())) {
-					return module;
-				}
-			} finally {
-				this.pop();
+			if (!listAccept(module.getConditions(), this,
+					((Module) candidate).getConditions().getElements())
+					& !listAccept(module.getFacts(), this,
+							((Module) candidate).getFacts().getElements())) {
+				return module;
 			}
 		}
 		
@@ -170,7 +163,7 @@ public final class Substitution extends Expression.Visitor.ExpressionRewriter im
 		for (final Equality binding : this.bindings) {
 			if (binding.getLeft().accept(Variable.RESET).equals(expression)
 					&& (this.indices.size() == 0 || 0 <= indexOf(this.nextIndex(), this.indices))) {
-				return binding.getRight().accept(Variable.BIND.reset());
+				return binding.getRight().accept(Variable.BIND);
 			}
 		}
 		

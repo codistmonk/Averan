@@ -225,19 +225,19 @@ public final class Module implements Expression<Composite<?>> {
 			{
 				final Expression<?> condition = context.findProposition(this.getConditionName());
 				
-				if (!module.getConditions().get(0).equals(condition)) {
+				if (!module.getConditions().get(0).accept(Variable.RESET).equals(condition)) {
 					throw new IllegalArgumentException();
 				}
 				
 				if (module.getConditions().size() == 1 && module.getFacts().size() == 1) {
-					context.addFact(this.getFactName(), module.getFacts().get(0).accept(Variable.BIND.reset()), this);
+					context.addFact(this.getFactName(), module.getFacts().get(0).accept(Variable.BIND), this);
 				} else {
-					final Module fact = new Module(context);
+					final Module fact = new Module(null);
 					
 					fact.getConditions().getElements().addAll(module.getConditions().getElements().subList(1, module.getConditions().size() - 1));
 					fact.getFacts().getElements().addAll(module.getFacts().getElements());
 					
-					context.addFact(this.getFactName(), fact.accept(Variable.BIND.reset()), this);
+					context.addFact(this.getFactName(), fact.accept(Variable.BIND), this);
 				}
 				
 				return this;
