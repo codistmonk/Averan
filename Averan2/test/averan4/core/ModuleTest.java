@@ -1,6 +1,7 @@
 package averan4.core;
 
 import static org.junit.Assert.*;
+import net.sourceforge.aprog.tools.Tools;
 
 import org.junit.Test;
 
@@ -40,6 +41,23 @@ public final class ModuleTest {
 		
 		assertEquals(canonical, module);
 		assertEquals(module, canonical);
+	}
+	
+	@Test
+	public final void testProofByApply1() {
+		final Module context = new Module(null);
+		
+		context.addCondition("p1", new Symbol<>("A"));
+		context.addCondition("p2", new Module(context).addCondition("p3", new Symbol<>("A")).addFact("p4", new Symbol<>("B"), null));
+		
+		assertEquals(2L, context.getConditions().size());
+		assertEquals(0L, context.getFacts().size());
+		
+		context.new ProofByApply("p5", "p2", "p1").apply();
+		
+		assertEquals(2L, context.getConditions().size());
+		assertEquals(1L, context.getFacts().size());
+		assertEquals(new Symbol<>("B"), context.getFacts().get(0));
 	}
 	
 }

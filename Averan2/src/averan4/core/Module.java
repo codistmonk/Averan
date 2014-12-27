@@ -50,6 +50,22 @@ public final class Module implements Expression<Composite<?>> {
 		return this;
 	}
 	
+	public final <E extends Expression<?>> E findProposition(final String name) {
+		Integer index = this.getFactIds().get(name);
+		
+		if (index != null) {
+			return this.getFacts().get(index);
+		}
+		
+		index = this.getConditionIds().get(name);
+		
+		if (index != null) {
+			return this.getConditions().get(index);
+		}
+		
+		return this.getContext() != null ? this.getContext().findProposition(name) : null;
+	}
+	
 	public final Module getContext() {
 		return this.context;
 	}
@@ -127,6 +143,10 @@ public final class Module implements Expression<Composite<?>> {
 	
 	private final Module addProposition(final String name, final Expression<?> proposition,
 			final Composite<Expression<?>> propositions, final IndexedMap<String, Integer> propositionIds) {
+		if (this.findProposition(name) != null) {
+			throw new IllegalArgumentException("Duplicate proposition name: " + name);
+		}
+		
 		propositionIds.put(name, propositions.size());
 		propositions.getElements().add(proposition);
 		
@@ -139,17 +159,99 @@ public final class Module implements Expression<Composite<?>> {
 		return this;
 	}
 	
-	private static final long serialVersionUID = 9140955565054672814L;
-	
-	public static final String formatPropositions(final String separator, final Composite<Expression<?>> propositions) {
-		return propositions.size() == 0 ? "()" : join(separator, propositions.getElements().toArray());
+	/**
+	 * @author codistmonk (creation 2014-12-26)
+	 */
+	public abstract class Proof implements Serializable {
+		
+		private final String factName;
+		
+		protected Proof(final String factName) {
+			this.factName = factName;
+		}
+		
+		public final String getFactName() {
+			return this.factName;
+		}
+		
+		abstract Proof apply();
+		
+		private static final long serialVersionUID = 5282247624876197313L;
+		
 	}
 	
 	/**
 	 * @author codistmonk (creation 2014-12-26)
 	 */
-	public static abstract interface Proof extends Serializable {
+	public final class ProofByApply extends Proof {
 		
+		private final String moduleName;
+		
+		private final String conditionName;
+		
+		public ProofByApply(final String factName, final String moduleName, final String conditionName) {
+			super(factName);
+			this.moduleName = moduleName;
+			this.conditionName = conditionName;
+		}
+		
+		public final String getModuleName() {
+			return this.moduleName;
+		}
+		
+		public final String getConditionName() {
+			return this.conditionName;
+		}
+		
+		@Override
+		final ProofByApply apply() {
+			final Module context = Module.this;
+			final Module module = context.<Module>findProposition(this.getModuleName()).canonicalize();
+			
+			if (module.getConditions().size() == 0) {
+				if (this.getConditionName() != null) {
+					throw new IllegalArgumentException();
+				}
+				
+				int i = 0;
+				
+				for (final Map.Entry<String, Integer> id : module.getFactIds().entrySet()) {
+					context.addFact(this.getFactName() + "." + (++i), module.getFacts().get(id.getValue()), this);
+				}
+				
+				return this;
+			}
+			
+			{
+				final Expression<?> condition = context.findProposition(this.getConditionName());
+				
+				if (!module.getConditions().get(0).equals(condition)) {
+					throw new IllegalArgumentException();
+				}
+				
+				if (module.getConditions().size() == 1 && module.getFacts().size() == 1) {
+					context.addFact(this.getFactName(), module.getFacts().get(0).accept(Variable.BIND.reset()), this);
+				} else {
+					final Module fact = new Module(context);
+					
+					fact.getConditions().getElements().addAll(module.getConditions().getElements().subList(1, module.getConditions().size() - 1));
+					fact.getFacts().getElements().addAll(module.getFacts().getElements());
+					
+					context.addFact(this.getFactName(), fact.accept(Variable.BIND.reset()), this);
+				}
+				
+				return this;
+			}
+		}
+		
+		private static final long serialVersionUID = 1974410943023589433L;
+		
+	}
+	
+	private static final long serialVersionUID = 9140955565054672814L;
+	
+	public static final String formatPropositions(final String separator, final Composite<Expression<?>> propositions) {
+		return propositions.size() == 0 ? "()" : join(separator, propositions.getElements().toArray());
 	}
 	
 }
