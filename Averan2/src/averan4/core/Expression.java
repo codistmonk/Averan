@@ -9,10 +9,6 @@ public abstract interface Expression<E extends Expression<?>> extends Container<
 	
 	public abstract <V> V accept(Visitor<V> visitor);
 	
-	public static final Symbol<String> EQUALS = new Symbol<>("=");
-	
-	public static final Symbol<String> IMPLIES = new Symbol<>("->");
-	
 	/**
 	 * @author codistmonk (creation 2014-12-20)
 	 */

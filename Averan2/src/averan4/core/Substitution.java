@@ -2,6 +2,7 @@ package averan4.core;
 
 import static averan4.core.Composite.listAccept;
 import static averan4.core.Equality.equality;
+import static averan4.core.Symbol.symbol;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.join;
 
@@ -21,7 +22,7 @@ public final class Substitution implements Expression.Visitor<Expression<?>>, Ex
 	public Substitution() {
 		this.bindings = new Composite<>();
 		this.indices = new Composite<>();
-		this.currentIndex = new Symbol<>(new MutableInteger());
+		this.currentIndex = symbol(new MutableInteger());
 	}
 	
 	public final Substitution bind(final Expression<?> pattern, final Expression<?> replacement) {
@@ -32,7 +33,7 @@ public final class Substitution implements Expression.Visitor<Expression<?>>, Ex
 	
 	public final Substitution at(final int... indices) {
 		for (final int index : indices) {
-			this.getIndices().getElements().add(new Symbol<>(new Integer(index)));
+			this.getIndices().getElements().add(symbol(new Integer(index)));
 		}
 		
 		return this;
