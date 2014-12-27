@@ -76,4 +76,14 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 		return result[0];
 	}
 	
+	public static final Composite<Expression<?>> composite(final Expression<?>... expressions) {
+		final Composite<Expression<?>> result = new Composite<>();
+		
+		for (final Expression<?> element : expressions) {
+			result.getElements().add(element);
+		}
+		
+		return result;
+	}
+	
 }

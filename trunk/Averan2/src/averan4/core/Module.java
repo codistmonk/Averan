@@ -1,5 +1,7 @@
 package averan4.core;
 
+import static averan4.core.Composite.composite;
+import static averan4.core.Equality.equality;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.join;
 
@@ -178,7 +180,14 @@ public final class Module implements Expression<Composite<?>> {
 			return this.factName;
 		}
 		
-		abstract Proof apply();
+		public abstract Proof apply();
+		
+		@SuppressWarnings("unchecked")
+		protected final <P extends Proof> P addFactToContext(final Expression<?> proposition) {
+			Module.this.addFact(this.getFactName(), proposition, this);
+			
+			return (P) this;
+		}
 		
 		private static final long serialVersionUID = 5282247624876197313L;
 		
@@ -208,7 +217,7 @@ public final class Module implements Expression<Composite<?>> {
 		}
 		
 		@Override
-		final ProofByApply apply() {
+		public final ProofByApply apply() {
 			final Module context = Module.this;
 			final Module module = context.<Module>findProposition(this.getModuleName()).canonicalize();
 			
@@ -234,21 +243,54 @@ public final class Module implements Expression<Composite<?>> {
 				}
 				
 				if (module.getConditions().size() == 1 && module.getFacts().size() == 1) {
-					context.addFact(this.getFactName(), module.getFacts().get(0).accept(Variable.BIND), this);
-				} else {
+					return this.addFactToContext(module.getFacts().get(0).accept(Variable.BIND));
+				}
+				
+				{
 					final Module fact = new Module(null);
 					
 					fact.getConditions().getElements().addAll(module.getConditions().getElements().subList(1, module.getConditions().size() - 1));
 					fact.getFacts().getElements().addAll(module.getFacts().getElements());
 					
-					context.addFact(this.getFactName(), fact.accept(Variable.BIND), this);
+					return this.addFactToContext(fact.accept(Variable.BIND));
 				}
-				
-				return this;
 			}
 		}
 		
 		private static final long serialVersionUID = 1974410943023589433L;
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-12-26)
+	 */
+	public final class ProofBySubstitute extends Proof {
+		
+		private final Expression<?> expression;
+		
+		private final Substitution substitution;
+		
+		public ProofBySubstitute(final String factName, Expression<?> expression,
+				final Substitution substitution) {
+			super(factName);
+			this.expression = expression;
+			this.substitution = substitution;
+		}
+		
+		public final Expression<?> getExpression() {
+			return this.expression;
+		}
+		
+		public final Substitution getSubstitution() {
+			return this.substitution;
+		}
+		
+		@Override
+		public final ProofBySubstitute apply() {
+			return this.addFactToContext(equality(composite(this.getExpression(), this.getSubstitution()), this.getExpression().accept(this.getSubstitution().reset())));
+		}
+		
+		private static final long serialVersionUID = -2849009520329956261L;
 		
 	}
 	

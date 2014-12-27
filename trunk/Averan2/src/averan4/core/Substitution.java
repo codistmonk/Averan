@@ -1,11 +1,11 @@
 package averan4.core;
 
 import static averan4.core.Composite.listAccept;
+import static averan4.core.Equality.equality;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.join;
 
 import java.util.Collection;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author codistmonk (creation 2014-12-20)
@@ -14,26 +14,40 @@ public final class Substitution implements Expression.Visitor<Expression<?>>, Ex
 	
 	private final Composite<Equality> bindings;
 	
-	private final Composite<Symbol<AtomicInteger>> indices;
+	private final Composite<Symbol<Integer>> indices;
 	
-	private final Symbol<AtomicInteger> currentIndex;
+	private final Symbol<MutableInteger> currentIndex;
 	
 	public Substitution() {
 		this.bindings = new Composite<>();
 		this.indices = new Composite<>();
-		this.currentIndex = new Symbol<>(new AtomicInteger());
+		this.currentIndex = new Symbol<>(new MutableInteger());
+	}
+	
+	public final Substitution bind(final Expression<?> pattern, final Expression<?> replacement) {
+		this.getBindings().getElements().add(equality(pattern, replacement));
+		
+		return this;
+	}
+	
+	public final Substitution at(final int... indices) {
+		for (final int index : indices) {
+			this.getIndices().getElements().add(new Symbol<>(new Integer(index)));
+		}
+		
+		return this;
 	}
 	
 	public final Composite<Equality> getBindings() {
 		return this.bindings;
 	}
 	
-	public final Composite<Symbol<AtomicInteger>> getIndices() {
+	public final Composite<Symbol<Integer>> getIndices() {
 		return this.indices;
 	}
 	
 	public final Substitution reset() {
-		this.currentIndex.getObject().set(0);
+		this.currentIndex.getObject().set(-1);
 		
 		return this;
 	}
@@ -110,7 +124,7 @@ public final class Substitution implements Expression.Visitor<Expression<?>>, Ex
 			final Expression<?> newRight = equality.getRight().accept(this);
 			
 			if (newLeft != equality.getLeft() || newRight != equality.getRight()) {
-				return new Equality(newLeft, newRight);
+				return equality(newLeft, newRight);
 			}
 		}
 		
@@ -159,10 +173,11 @@ public final class Substitution implements Expression.Visitor<Expression<?>>, Ex
 				+ "}[" + join(",", this.getIndices().getElements().toArray()) + "]";
 	}
 	
+	@SuppressWarnings("unchecked")
 	private final Expression<?> tryToReplace(final Expression<?> expression) {
 		for (final Equality binding : this.bindings) {
 			if (binding.getLeft().accept(Variable.RESET).equals(expression)
-					&& (this.indices.size() == 0 || 0 <= indexOf(this.nextIndex(), this.indices))) {
+					&& (this.indices.size() == 0 || 0 <= indexOf((Symbol) this.nextIndex(), this.indices))) {
 				return binding.getRight().accept(Variable.BIND);
 			}
 		}
@@ -170,8 +185,8 @@ public final class Substitution implements Expression.Visitor<Expression<?>>, Ex
 		return expression;
 	}
 	
-	private final Symbol<AtomicInteger> nextIndex() {
-		this.currentIndex.getObject().incrementAndGet();
+	private final Symbol<MutableInteger> nextIndex() {
+		this.currentIndex.getObject().increment();
 		
 		return this.currentIndex;
 	}
@@ -188,6 +203,70 @@ public final class Substitution implements Expression.Visitor<Expression<?>>, Ex
 		}
 		
 		return -1;
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-12-26)
+	 */
+	public static final class MutableInteger extends Number {
+		
+		private int value;
+		
+		public final MutableInteger set(final int value) {
+			this.value = value;
+			
+			return this;
+		}
+		
+		public final MutableInteger increment() {
+			return this.increment(1);
+		}
+		
+		public final MutableInteger increment(final int amount) {
+			this.value += amount;
+			
+			return this;
+		}
+		
+		@Override
+		public final int intValue() {
+			return this.value;
+		}
+		
+		@Override
+		public final long longValue() {
+			return this.intValue();
+		}
+		
+		@Override
+		public final float floatValue() {
+			return this.intValue();
+		}
+		
+		@Override
+		public final double doubleValue() {
+			return this.intValue();
+		}
+		
+		@Override
+		public final int hashCode() {
+			return this.intValue();
+		}
+		
+		@Override
+		public final boolean equals(final Object object) {
+			final Number that = cast(Number.class, object);
+			
+			return that != null && this.intValue() == that.intValue();
+		}
+		
+		@Override
+		public final String toString() {
+			return Integer.toString(this.intValue());
+		}
+		
+		private static final long serialVersionUID = -4135566800174496145L;
+		
 	}
 	
 }
