@@ -2,8 +2,8 @@ package averan4.io;
 
 import static java.util.Collections.nCopies;
 import static net.sourceforge.aprog.tools.Tools.join;
-
 import averan4.core.Composite;
+import averan4.core.Equality;
 import averan4.core.Expression;
 import averan4.core.Session.Frame;
 import averan4.io.SessionExporter.Output;
@@ -39,7 +39,10 @@ public final class ConsoleOutput implements Output {
 		++this.frameLevel;
 		this.indent = join("", nCopies(this.frameLevel, '	').toArray());
 		this.out.println(this.indent + "((MODULE " + frame.getName() + "))");
-		this.out.println(this.indent + "	∀" + join(",", frame.getIntroducedForVariables().toArray()));
+		
+		if (!frame.getIntroducedBindings().isEmpty()) {
+			this.out.println(this.indent + "	∀" + join(",", frame.getIntroducedBindings().stream().map(Equality::getLeft).toArray()));
+		}
 	}
 	
 	@Override
@@ -66,8 +69,12 @@ public final class ConsoleOutput implements Output {
 	
 	@Override
 	public final void processGoal(final Expression<?> goal) {
-		this.out.println("((GOAL))");
-		this.out.println("	" + goal);
+		if (goal != null) {
+			this.out.println(this.indent + "((GOAL))");
+			this.out.println(this.indent + "	" + goal);
+		} else {
+			this.out.println(this.indent + "(())");
+		}
 	}
 	
 	@Override

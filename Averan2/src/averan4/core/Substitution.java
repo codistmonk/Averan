@@ -19,10 +19,17 @@ public final class Substitution implements Expression.Visitor<Expression<?>>, Ex
 	
 	private final Symbol<MutableInteger> currentIndex;
 	
+	private final boolean copyProofData;
+	
 	public Substitution() {
+		this(false);
+	}
+	
+	public Substitution(final boolean copyProofData) {
 		this.bindings = new Composite<>();
 		this.indices = new Composite<>();
 		this.currentIndex = symbol(new MutableInteger());
+		this.copyProofData = copyProofData;
 	}
 	
 	public final Substitution bind(final Equality equality) {
@@ -85,13 +92,19 @@ public final class Substitution implements Expression.Visitor<Expression<?>>, Ex
 		Expression<?> candidate = this.tryToReplace(module);
 		
 		if (candidate == module) {
-			candidate = new Module();
+			candidate = new Module(this.copyProofData ? module.getContext() : null);
 			
 			if (!listAccept(module.getConditions(), this,
 					((Module) candidate).getConditions().getElements())
 					& !listAccept(module.getFacts(), this,
 							((Module) candidate).getFacts().getElements())) {
 				return module;
+			}
+			
+			if (this.copyProofData) {
+				((Module) candidate).getConditionIds().putAll(module.getConditionIds());
+				((Module) candidate).getFactIds().putAll(module.getFactIds());
+				((Module) candidate).getProofs().addAll(module.getProofs());
 			}
 		}
 		

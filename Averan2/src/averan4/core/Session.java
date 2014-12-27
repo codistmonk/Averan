@@ -1,5 +1,6 @@
 package averan4.core;
 
+import static averan4.core.Equality.equality;
 import averan4.core.Expression.Visitor;
 
 import java.io.Serializable;
@@ -7,6 +8,8 @@ import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+
+import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2014-12-20)
@@ -39,13 +42,22 @@ public final class Session implements Serializable {
 		throw new RuntimeException();
 	}
 	
-	public final Session accept(final String... factNames) {
+	public final Session accept() {
 		final Frame frame = this.getCurrentFrame();
 		
 		if (frame.getGoal() == null) {
 			// TODO
 		} else {
-			// TODO
+			final int factCount = frame.getModule().getFacts().size();
+			
+			if (0 < factCount && frame.getModule().getFacts().get(factCount - 1).equals(frame.getGoal())) {
+				this.getFrames().remove(this.getFrames().size() - 1);
+				final Substitution substitution = new Substitution(true);
+				for (final Equality binding : frame.getIntroducedBindings()) {
+					substitution.bind(binding);
+				}
+				this.getCurrentModule().new ProofByDeduce(frame.getName(), (Module) frame.getModule().accept(substitution.reset())).apply();
+			}
 		}
 		
 		return this;
@@ -63,7 +75,7 @@ public final class Session implements Serializable {
 			
 			variable.reset().equals(introducedForVariable);
 			
-			frame.introducedForVariables.add(introducedForVariable);
+			frame.getIntroducedBindings().add(equality(introducedForVariable, variable));
 			frame.goal = goal.accept(Variable.BIND);
 		} else {
 			this.getCurrentModule().addCondition(frame.newPropositionName(), condition);
@@ -121,19 +133,19 @@ public final class Session implements Serializable {
 		
 		private final Module module;
 		
-		private final List<Symbol<String>> introducedForVariables;
+		private final List<Equality> introducedBindings;
 		
 		private Expression<?> goal;
 		
 		public Frame(final String name, final Expression<?> goal) {
 			this.name = name;
 			this.module = new Module(getCurrentModule());
-			this.introducedForVariables = new ArrayList<>();
+			this.introducedBindings = new ArrayList<>();
 			this.goal = goal;
 		}
 		
-		public final List<Symbol<String>> getIntroducedForVariables() {
-			return this.introducedForVariables;
+		public final List<Equality> getIntroducedBindings() {
+			return this.introducedBindings;
 		}
 		
 		public final String newPropositionName() {
@@ -148,6 +160,7 @@ public final class Session implements Serializable {
 			return this.module;
 		}
 		
+		@SuppressWarnings("unchecked")
 		public final <E extends Expression<?>> E getGoal() {
 			return (E) this.goal;
 		}
