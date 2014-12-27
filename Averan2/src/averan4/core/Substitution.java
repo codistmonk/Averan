@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * @author codistmonk (creation 2014-12-20)
  */
-public final class Substitution implements Expression<Expression<?>>, Expression.Visitor<Expression<?>> {
+public final class Substitution extends Expression.Visitor.ExpressionRewriter implements Expression<Expression<?>> {
 	
 	private final Composite<Equality> bindings;
 	
@@ -32,7 +32,10 @@ public final class Substitution implements Expression<Expression<?>>, Expression
 		return this.indices;
 	}
 	
+	@Override
 	public final Substitution reset() {
+		super.reset();
+		
 		this.currentIndex.getObject().set(0);
 		
 		return this;
@@ -50,15 +53,71 @@ public final class Substitution implements Expression<Expression<?>>, Expression
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public final Expression<?> visit(final Composite<?> composite) {
+	public final Expression<?> visit(final Composite<Expression<?>> composite) {
 		Expression<?> candidate = this.tryToReplace(composite);
 		
 		if (candidate == composite) {
 			candidate = new Composite<>();
 			
-			if (!listAccept((Composite<Expression<?>>) composite, this,
-					(Collection<Expression<?>>) ((Composite<?>) candidate).getElements())) {
+			if (!listAccept(composite, this,
+					((Composite<Expression<?>>) candidate).getElements())) {
 				return composite;
+			}
+		}
+		
+		return candidate;
+	}
+	
+	@Override
+	public final Expression<?> visit(final Module module) {
+		Expression<?> candidate = this.tryToReplace(module);
+		
+		if (candidate == module) {
+			candidate = this.push(new Module(this.peek()));
+			
+			try {
+				if (!listAccept(module.getConditions(), this,
+						((Module) candidate).getConditions().getElements())
+						& !listAccept(module.getFacts(), this,
+								((Module) candidate).getFacts().getElements())) {
+					return module;
+				}
+			} finally {
+				this.pop();
+			}
+		}
+		
+		return candidate;
+	}
+	
+	@Override
+	public final Expression<?> visit(final Substitution substitution) {
+		Expression<?> candidate = this.tryToReplace(substitution);
+		
+		if (candidate == substitution) {
+			candidate = new Substitution();
+			
+			if (!listAccept((Composite) substitution.getBindings(), this,
+					(Collection) ((Substitution) candidate).getBindings().getElements())
+					& !listAccept((Composite) substitution.getIndices(), this,
+							(Collection) ((Substitution) candidate).getIndices().getElements())) {
+				return substitution;
+			}
+		}
+		
+		return candidate;
+	}
+	
+	@Override
+	public final Expression<?> visit(final Equality equality) {
+		final Expression<?> candidate = this.tryToReplace(equality);
+		
+		if (candidate == equality) {
+			final Expression<?> newLeft = equality.getLeft().accept(this);
+			final Expression<?> newRight = equality.getRight().accept(this);
+			
+			if (newLeft != equality.getLeft() || newRight != equality.getRight()) {
+				return new Equality(newLeft, newRight);
 			}
 		}
 		
