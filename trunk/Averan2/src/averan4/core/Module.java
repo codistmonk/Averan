@@ -277,7 +277,8 @@ public final class Module implements Expression<Composite<?>> {
 		
 		@Override
 		public final ProofBySubstitute apply() {
-			return this.addFactToContext(equality(composite(this.getExpression(), this.getSubstitution()), this.getExpression().accept(this.getSubstitution().reset())));
+			return this.addFactToContext(equality(composite(this.getExpression(),
+					this.getSubstitution()), this.getExpression().accept(this.getSubstitution().reset())));
 		}
 		
 		private static final long serialVersionUID = -2849009520329956261L;
@@ -395,7 +396,6 @@ public final class Module implements Expression<Composite<?>> {
 	}
 	
 	public static final Expression<?> apply(final Module module, final Expression<?> condition) {
-		Tools.debugPrint(condition);
 		if (!module.getConditions().get(0).accept(Variable.RESET).equals(condition)) {
 			throw new IllegalArgumentException();
 		}
