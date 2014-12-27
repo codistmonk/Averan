@@ -123,7 +123,7 @@ public final class Module implements Expression<Composite<?>> {
 	}
 	
 	public final Proof getProof(final String factName) {
-		return this.proofs.get(this.getFactIds().get(factName));
+		return this.getProofs().get(this.getFactIds().get(factName));
 	}
 	
 	@Override
@@ -152,6 +152,10 @@ public final class Module implements Expression<Composite<?>> {
 	
 	final Module addFact(final String name, final Expression<?> proposition, final Proof proof) {
 		return this.addProposition(name, proposition, this.getFacts(), this.getFactIds()).addProof(proof);
+	}
+	
+	final List<Proof> getProofs() {
+		return this.proofs;
 	}
 	
 	private final Module addProposition(final String name, final Expression<?> proposition,
