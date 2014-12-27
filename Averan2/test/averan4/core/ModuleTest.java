@@ -87,13 +87,26 @@ public final class ModuleTest {
 	public final void testProofBySubstitute1() {
 		final Module context = new Module();
 		final Composite<Expression<?>> expression = composite(A, B, B);
-		final Substitution substitution = new Substitution().bind(B, C).at(1);
+		final Substitution substitution = new Substitution().bind(equality(B, C)).at(1);
 		
 		context.new ProofBySubstitute("p1", expression, substitution).apply();
 		
 		assertEquals(0L, context.getConditions().size());
 		assertEquals(1L, context.getFacts().size());
 		assertEquals(equality(composite(expression, substitution), composite(A, B, C)), context.getFacts().get(0));
+	}
+	
+	@Test
+	public final void testProofByRewrite1() {
+		final Module context = new Module();
+		
+		context.addCondition("p1", equality(A, B));
+		context.addCondition("p2", A);
+		context.new ProofByRewrite("p3", "p2").using("p1").apply();
+		
+		assertEquals(2L, context.getConditions().size());
+		assertEquals(1L, context.getFacts().size());
+		assertEquals(B, context.getFacts().get(0));
 	}
 	
 	public static final Symbol<String> A = symbol("A");

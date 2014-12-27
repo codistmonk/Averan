@@ -25,8 +25,8 @@ public final class Substitution implements Expression.Visitor<Expression<?>>, Ex
 		this.currentIndex = symbol(new MutableInteger());
 	}
 	
-	public final Substitution bind(final Expression<?> pattern, final Expression<?> replacement) {
-		this.getBindings().getElements().add(equality(pattern, replacement));
+	public final Substitution bind(final Equality equality) {
+		this.getBindings().getElements().add(equality);
 		
 		return this;
 	}
@@ -98,6 +98,7 @@ public final class Substitution implements Expression.Visitor<Expression<?>>, Ex
 		return candidate;
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public final Expression<?> visit(final Substitution substitution) {
 		Expression<?> candidate = this.tryToReplace(substitution);
@@ -105,9 +106,9 @@ public final class Substitution implements Expression.Visitor<Expression<?>>, Ex
 		if (candidate == substitution) {
 			candidate = new Substitution();
 			
-			if (!listAccept((Composite) substitution.getBindings(), this,
+			if (!listAccept((Iterable) substitution.getBindings(), this,
 					(Collection) ((Substitution) candidate).getBindings().getElements())
-					& !listAccept((Composite) substitution.getIndices(), this,
+					& !listAccept((Iterable) substitution.getIndices(), this,
 							(Collection) ((Substitution) candidate).getIndices().getElements())) {
 				return substitution;
 			}
@@ -193,6 +194,8 @@ public final class Substitution implements Expression.Visitor<Expression<?>>, Ex
 	}
 	
 	private static final long serialVersionUID = -1572047035151529843L;
+	
+	public static final int[] ANY_INDEX = {};
 	
 	public static final <E extends Expression<?>> int indexOf(final E needle, final Composite<E> haystack) {
 		final int n = haystack.size();
