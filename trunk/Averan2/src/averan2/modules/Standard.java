@@ -107,7 +107,11 @@ public final class Standard {
 	}
 	
 	public static final void bind(final String propositionName, final Expression<?> value) {
-		deduce();
+		bind(null, propositionName, value);
+	}
+	
+	public static final void bind(final String factName, final String propositionName, final Expression<?> value) {
+		deduce(factName);
 		{
 			final Expression<?> proposition = proposition(propositionName);
 			final Variable parameter = proposition.
@@ -124,7 +128,12 @@ public final class Standard {
 	
 	public static final void rewriteRight(final String propositionName,
 			final String equalityName, final int... indices) {
-		deduce();
+		rewriteRight(null, propositionName, equalityName, indices);
+	}
+	
+	public static final void rewriteRight(final String factName, final String propositionName,
+			final String equalityName, final int... indices) {
+		deduce(factName);
 		{
 			apply("symmetry_of_identity", equalityName);
 			rewrite(propositionName, name(-1), indices);
