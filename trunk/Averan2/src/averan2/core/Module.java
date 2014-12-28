@@ -130,6 +130,28 @@ public final class Module implements Expression<Composite<?>> {
 		return this.getContext() != null ? this.getContext().getPropositionName(i) : null;
 	}
 	
+	public final <E extends Expression<?>> E getProposition(final int index) {
+		if (0 <= index) {
+			throw new IllegalArgumentException("Expected negative value but got: " + index);
+		}
+		
+		int i = index;
+		
+		for (int j = this.getFacts().size() - 1; 0 <= j; --j, ++i) {
+			if (i == -1) {
+				return this.getFacts().get(j);
+			}
+		}
+		
+		for (int j = this.getConditions().size() - 1; 0 <= j; --j, ++i) {
+			if (i == -1) {
+				return this.getConditions().get(j);
+			}
+		}
+		
+		return this.getContext() != null ? this.getContext().getProposition(i) : null;
+	}
+	
 	public final Composite<Expression<?>> getConditions() {
 		return this.conditions;
 	}
@@ -445,7 +467,7 @@ public final class Module implements Expression<Composite<?>> {
 	
 	public static final Expression<?> apply(final Module module, final Expression<?> condition) {
 		if (!module.getConditions().get(0).accept(Variable.RESET).equals(condition)) {
-			Tools.debugPrint((Variable) module.getConditions().get(0), condition);
+			Tools.debugError(module.getConditions().get(0), condition);
 			throw new IllegalArgumentException();
 		}
 		
@@ -456,7 +478,7 @@ public final class Module implements Expression<Composite<?>> {
 		{
 			final Module fact = new Module();
 			
-			fact.getConditions().getElements().addAll(module.getConditions().getElements().subList(1, module.getConditions().size() - 1));
+			fact.getConditions().getElements().addAll(module.getConditions().getElements().subList(1, module.getConditions().size()));
 			fact.getFacts().getElements().addAll(module.getFacts().getElements());
 			
 			return fact.accept(Variable.BIND);
