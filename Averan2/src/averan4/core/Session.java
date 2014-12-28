@@ -9,8 +9,6 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
-import net.sourceforge.aprog.tools.Tools;
-
 /**
  * @author codistmonk (creation 2014-12-20)
  */
@@ -27,7 +25,7 @@ public final class Session implements Serializable {
 	}
 	
 	public final Session deduce(final String factName, final Expression<?> goal) {
-		this.getFrames().add(this.new Frame(factName, goal));
+		this.getFrames().add(this.new Frame(this.propositionName(factName), goal));
 		
 		return this;
 	}
@@ -42,22 +40,32 @@ public final class Session implements Serializable {
 		throw new RuntimeException();
 	}
 	
+	public final Session acceptModule() {
+		if (this.getFrames().size() <= 1 || this.getCurrentFrame().getGoal() != null) {
+			throw new IllegalStateException();
+		}
+		
+		final Frame frame = this.getFrames().remove(this.getFrames().size() - 1);
+		
+		this.getCurrentModule().new ProofByDeduce(frame.getName(), frame.getModule()).apply();
+		
+		return this.accept();
+	}
+	
 	public final Session accept() {
 		final Frame frame = this.getCurrentFrame();
+		final int factCount = frame.getModule().getFacts().size();
 		
-		if (frame.getGoal() == null) {
-			// TODO
-		} else {
-			final int factCount = frame.getModule().getFacts().size();
+		if (0 < factCount && frame.getModule().getFacts().get(factCount - 1).equals(frame.getGoal())) {
+			this.getFrames().remove(this.getFrames().size() - 1);
 			
-			if (0 < factCount && frame.getModule().getFacts().get(factCount - 1).equals(frame.getGoal())) {
-				this.getFrames().remove(this.getFrames().size() - 1);
-				final Substitution substitution = new Substitution(true);
-				for (final Equality binding : frame.getIntroducedBindings()) {
-					substitution.bind(binding);
-				}
-				this.getCurrentModule().new ProofByDeduce(frame.getName(), (Module) frame.getModule().accept(substitution.reset())).apply();
+			final Substitution substitution = new Substitution(true);
+			
+			for (final Equality binding : frame.getIntroducedBindings()) {
+				binding.getRight().accept(Variable.RESET);
+				substitution.bind(binding);
 			}
+			this.getCurrentModule().new ProofByDeduce(frame.getName(), (Module) frame.getModule().accept(substitution.reset())).apply();
 		}
 		
 		return this;
@@ -90,13 +98,15 @@ public final class Session implements Serializable {
 		}
 	}
 	
-	public final Session suppose(final String conditionName, final Expression<?> conditionProposition) {
-		// TODO
+	public final Session suppose(final String conditionName, final Expression<?> condition) {
+		this.getCurrentModule().addCondition(this.propositionName(conditionName), condition);
+		
 		return this.accept();
 	}
 	
 	public final Session apply(final String factName, final String moduleName, final String conditionName) {
-		// TODO
+		this.getCurrentModule().new ProofByApply(this.propositionName(factName), moduleName, conditionName).apply();
+		
 		return this.accept();
 	}
 	
@@ -107,14 +117,14 @@ public final class Session implements Serializable {
 			substitution.bind(equality);
 		}
 		
-		this.getCurrentModule().new ProofBySubstitute(factName, expression, substitution).apply();
+		this.getCurrentModule().new ProofBySubstitute(this.propositionName(factName), expression, substitution).apply();
 		
 		return this.accept();
 	}
 	
 	public final Session rewrite(final String factName, final String propositionName, final String equalityName,
 			final int... indices) {
-		this.getCurrentModule().new ProofByRewrite(factName, propositionName).using(equalityName).at(indices).apply();
+		this.getCurrentModule().new ProofByRewrite(this.propositionName(factName), propositionName).using(equalityName).at(indices).apply();
 		
 		return this.accept();
 	}
@@ -127,6 +137,10 @@ public final class Session implements Serializable {
 	
 	public final Frame getCurrentFrame() {
 		return this.getFrames().isEmpty() ? null : this.getFrames().get(this.getFrames().size() - 1);
+	}
+	
+	private final String propositionName(final String propositionName) {
+		return propositionName != null ? propositionName : this.getCurrentFrame().newPropositionName();
 	}
 	
 	/**
