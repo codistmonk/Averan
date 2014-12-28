@@ -77,7 +77,7 @@ public final class Variable implements Expression<Variable> {
 	
 	@Override
 	public final String toString() {
-		return this.getName() + "?";
+		return '$' + this.getName();
 	}
 	
 	private static final long serialVersionUID = 3015338717755848327L;
