@@ -3,6 +3,15 @@ package averan2.core;
 import static averan2.core.Composite.composite;
 import static averan2.core.Equality.equality;
 import static averan2.core.Expression.CollectParameters.collectParameters;
+import static averan2.core.Session.Stack.apply;
+import static averan2.core.Session.Stack.cancel;
+import static averan2.core.Session.Stack.deduce;
+import static averan2.core.Session.Stack.goal;
+import static averan2.core.Session.Stack.intros;
+import static averan2.core.Session.Stack.justificationsFor;
+import static averan2.core.Session.Stack.module;
+import static averan2.core.Session.Stack.name;
+import static averan2.core.Session.Stack.stop;
 import static averan2.core.Symbol.symbol;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.ignore;
@@ -469,6 +478,58 @@ public final class Session implements Serializable {
 			// TODO
 			
 			return false;
+		}
+		
+		public static final void check(final boolean ok) {
+			if (!ok) {
+				throw new RuntimeException();
+			}
+		}
+		
+		public static final boolean autoDeduce() {
+			return autoDeduce(goal());
+		}
+		
+		public static final boolean autoDeduce(final Expression<?> expression) {
+			deduce(expression);
+			{
+				final Module unfinishedProof = module();
+				
+				intros();
+				
+				deduction:
+				{
+					final List<Pair<String, Expression<?>>> justifications = justificationsFor(goal());
+					
+					for (final Pair<String, Expression<?>> justification : justifications) {
+						if (justification.getSecond().equals(goal())) {
+							apply("recall", justification.getFirst());
+							
+							break deduction;
+						}
+					}
+					
+					for (final Pair<String, Expression<?>> justification : justifications) {
+						final Module module = cast(Module.class, justification.getSecond());
+						
+						if (module != null && autoDeduce(module.getConditions().get(0))) {
+							apply(justification.getFirst(), name(-1));
+							
+							break deduction;
+						}
+						
+						stop();
+					}
+				}
+				
+				if (module() == unfinishedProof) {
+					cancel();
+					
+					return false;
+				}
+			}
+			
+			return true;
 		}
 		
 	}
