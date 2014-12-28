@@ -86,6 +86,10 @@ public final class Variable implements Expression<Variable> {
 	
 	public static final Bind BIND = Bind.INSTANCE;
 	
+	public static final Variable variable(final String name) {
+		return new Variable(name);
+	}
+	
 	/**
 	 * @author codistmonk (creation 2014-12-20)
 	 */

@@ -1,12 +1,15 @@
 package averan2.core;
 
+import static averan2.core.Composite.composite;
 import static averan2.core.Equality.equality;
 import static averan2.core.Expression.CollectParameters.collectParameters;
+import static averan2.core.Symbol.symbol;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.ignore;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -229,6 +232,29 @@ public final class Session implements Serializable {
 	}
 	
 	private static final long serialVersionUID = 181621455530572267L;
+	
+	@SuppressWarnings("unchecked")
+	public static final <E extends Expression<?>> E $(final Object... objects) {
+		switch (objects.length) {
+		case 0:
+			return (E) composite();
+		case 1:
+			if (objects[0] instanceof Expression<?>) {
+				return (E) objects[0];
+			}
+			
+			return (E) symbol(objects[0]);
+		case 3:
+			switch (objects[1].toString()) {
+			case "->":
+				return (E) new Module().suppose($(objects[0])).conclude($(objects[2]));
+			case "=":
+				return (E) equality($(objects[0]), $(objects[2]));
+			}
+		}
+		
+		return (E) composite(Arrays.stream(objects).map(Session::$).toArray(Expression[]::new));
+	}
 	
 	/**
 	 * @author codistmonk (creation 2014-12-28)
