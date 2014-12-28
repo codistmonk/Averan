@@ -3,6 +3,11 @@ package averan2.core;
 import static averan2.core.Session.Stack.*;
 import static averan2.core.Symbol.symbol;
 
+import java.util.List;
+
+import net.sourceforge.aprog.tools.Pair;
+import net.sourceforge.aprog.tools.Tools;
+
 import org.junit.Test;
 
 import averan2.core.Expression;
@@ -26,7 +31,7 @@ public final class SessionTest {
 			{
 				final Variable $X = new Variable("X");
 				
-				deduce("tautologyA", new Module().suppose($X).conclude($X));
+				deduce("recall", new Module().suppose($X).conclude($X));
 				{
 					final Expression<?> x = introduce();
 					
@@ -40,11 +45,80 @@ public final class SessionTest {
 				deduce();
 				{
 					suppose(symbol("Y"));
-					apply("tautologyA", name(-1));
+					apply("recall", name(-1));
 					conclude();
 				}
 			}
 		} finally {
+			SessionExporter.export(popSession(), new ConsoleOutput());
+		}
+	}
+	
+	@Test
+	public final void test2() {
+		pushSession(new Session());
+		
+		try {
+			include(STANDARD);
+			
+			deduce("test");
+			{
+				suppose(new Module().suppose(symbol("A")).conclude(symbol("B")));
+				suppose(new Module().suppose(symbol("B")).conclude(symbol("C")));
+				
+				deduce(new Module().suppose(symbol("A")).conclude(symbol("C")));
+				{
+					introduce();
+					
+					final List<Pair<String, Expression<?>>> justification1 = justificationsFor(goal());
+					final Module justification1Module = (Module) justification1.get(0).getSecond();
+					
+					deduce((Expression<?>) justification1Module.getConditions().get(0));
+					{
+						final List<Pair<String, Expression<?>>> justification2 = justificationsFor(goal());
+						final Module justification2Module = (Module) justification2.get(0).getSecond();
+						
+						deduce((Expression<?>) justification2Module.getConditions().get(0));
+						{
+							final List<Pair<String, Expression<?>>> justification3 = justificationsFor(goal());
+							
+							apply("recall", justification3.get(0).getFirst());
+						}
+						
+						apply(justification2.get(0).getFirst(), name(-1));
+					}
+					
+					apply(justification1.get(0).getFirst(), name(-1));
+				}
+			}
+		} finally {
+			SessionExporter.export(popSession(), new ConsoleOutput());
+		}
+	}
+	
+	public static final Module STANDARD;
+	
+	static {
+		pushSession(new Session());
+		
+		try {
+			deduce("averan.modules.Standard");
+			{
+				final Variable $X = new Variable("X");
+				
+				deduce("recall", new Module().suppose($X).conclude($X));
+				{
+					final Expression<?> x = introduce();
+					
+					introduce();
+					
+					substitute(x);
+					rewrite(name(-1), name(-1));
+					rewrite(name(-3), name(-1));
+				}
+			}
+		} finally {
+			STANDARD = module();
 			SessionExporter.export(popSession(), new ConsoleOutput());
 		}
 	}
