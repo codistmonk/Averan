@@ -1,6 +1,8 @@
 package averan2.core;
 
 import static averan2.core.Equality.equality;
+import static net.sourceforge.aprog.tools.Tools.cast;
+
 import averan2.core.Expression.Visitor;
 
 import java.io.Serializable;
@@ -10,16 +12,24 @@ import java.util.List;
 import java.util.Map;
 
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
+import net.sourceforge.aprog.tools.Pair;
 
 /**
  * @author codistmonk (creation 2014-12-20)
  */
 public final class Session implements Serializable {
 	
+	private final Module root;
+	
 	private final List<Frame> frames;
 	
 	public Session() {
+		this.root = new Module();
 		this.frames = new ArrayList<>();
+	}
+	
+	public final Module getRoot() {
+		return this.root;
 	}
 	
 	public final List<Frame> getFrames() {
@@ -122,6 +132,12 @@ public final class Session implements Serializable {
 		return this.getFrames().isEmpty() ? null : this.getFrames().get(this.getFrames().size() - 1);
 	}
 	
+	final Module getContextForNewModule() {
+		final Module currentModule = this.getCurrentModule();
+		
+		return currentModule != null ? currentModule : this.getRoot();
+	}
+	
 	private final Session reduce() {
 		final Frame frame = this.getCurrentFrame();
 		final int factCount = frame.getModule().getFacts().size();
@@ -163,7 +179,7 @@ public final class Session implements Serializable {
 		
 		public Frame(final String name, final Expression<?> goal) {
 			this.name = name;
-			this.module = new Module(getCurrentModule());
+			this.module = new Module(getContextForNewModule());
 			this.introducedBindings = new ArrayList<>();
 			this.goal = goal;
 		}
@@ -226,16 +242,34 @@ public final class Session implements Serializable {
 			return stack.remove(stack.size() - 1);
 		}
 		
+		public static final Session include(final Module module) {
+			final Session session = session();
+			
+			for (final Map.Entry<String, Integer> id : module.getConditionIds().entrySet()) {
+				session.getRoot().addCondition(id.getKey(), module.getConditions().get(id.getValue()));
+			}
+			
+			for (final Map.Entry<String, Integer> id : module.getFactIds().entrySet()) {
+				session.getRoot().addFact(id.getKey(), module.getFacts().get(id.getValue()), module.getProof(id.getKey()));
+			}
+			
+			return session;
+		}
+		
 		public static final <E extends Expression<?>> E introduce() {
 			return session().introduce();
 		}
 		
 		public static final Session deduce() {
-			return deduce(null);
+			return deduce(null, null);
 		}
 		
 		public static final Session deduce(final String factName) {
 			return deduce(factName, null);
+		}
+		
+		public static final Session deduce(final Expression<?> goal) {
+			return deduce(null, goal);
 		}
 		
 		public static final Session deduce(final String factName, final Expression<?> goal) {
@@ -299,6 +333,61 @@ public final class Session implements Serializable {
 		public static final Session rewrite(final String factName, final String propositionName,
 				final String equalityName, final int... indices) {
 			return session().rewrite(factName, propositionName, equalityName, indices);
+		}
+		
+		public static final List<Pair<String, Expression<?>>> matchesFor(final Expression<?> pattern) {
+			return null; // TODO
+		}
+		
+		public static final List<Pair<String, Expression<?>>> justificationsFor(final Expression<?> goal) {
+			final List<Pair<String, Expression<?>>> result = new ArrayList<>();
+			Module module = module();
+			
+			while (module != null) {
+				for (int i = module.getFacts().size() - 1; 0 <= i; --i) {
+					final Expression<?> proposition = module.getFacts().get(i);
+					
+					if (canDeduce(proposition, goal)) {
+						result.add(new Pair<>(module.getFactIds().get(i), proposition.accept(Variable.BIND)));
+					}
+				}
+				
+				for (int i = module.getConditions().size() - 1; 0 <= i; --i) {
+					final Expression<?> proposition = module.getConditions().get(i);
+					
+					if (canDeduce(proposition, goal)) {
+						result.add(new Pair<>(module.getConditionIds().get(i), proposition.accept(Variable.BIND)));
+					}
+				}
+				
+				module = module.getContext();
+			}
+			
+			return result;
+		}
+		
+		public static final boolean canDeduce(final Expression<?> expression, final Expression<?> suffix) {
+			if (expression.accept(Variable.RESET).equals(suffix)) {
+				return true;
+			}
+			
+			final Module module = cast(Module.class, expression);
+			
+			if (module == null) {
+				return false;
+			}
+			
+			for (final Expression<?> fact : module.canonicalize().getFacts()) {
+				if (fact.accept(Variable.RESET).equals(suffix)) {
+					return true;
+				}
+			}
+			
+			final Module suffixAsModule = cast(Module.class, suffix);
+			
+			// TODO
+			
+			return false;
 		}
 		
 	}
