@@ -3,6 +3,7 @@ package averan2.io;
 import java.io.Serializable;
 import java.util.Map;
 
+import averan2.core.Composite;
 import averan2.core.Expression;
 import averan2.core.Module;
 import averan2.core.Session;
@@ -34,7 +35,7 @@ public final class SessionExporter implements Serializable {
 		{
 			final Module module = frame.getModule();
 			
-			output.beginConditions();
+			output.beginConditions(module.getConditions());
 			
 			for (final Map.Entry<String, Integer> entry : module.getConditionIds().entrySet()) {
 				final Expression<?> condition = module.getConditions().get(entry.getValue());
@@ -43,7 +44,7 @@ public final class SessionExporter implements Serializable {
 			
 			output.endConditions();
 			
-			output.beginFacts();
+			output.beginFacts(module.getFacts());
 			
 			for (final Map.Entry<String, Integer> entry : module.getFactIds().entrySet()) {
 				final Expression<?> fact = module.getFacts().get(entry.getValue());
@@ -87,7 +88,7 @@ public final class SessionExporter implements Serializable {
 			// NOP
 		}
 		
-		public default void beginConditions() {
+		public default void beginConditions(final Composite<Expression<?>> conditions) {
 			// NOP
 		}
 		
@@ -99,7 +100,7 @@ public final class SessionExporter implements Serializable {
 			// NOP
 		}
 		
-		public default void beginFacts() {
+		public default void beginFacts(final Composite<Expression<?>> facts) {
 			// NOP
 		}
 		
