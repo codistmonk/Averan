@@ -40,10 +40,8 @@ public final class Standard {
 			final Variable $X = variable("X");
 			final Variable $Y = variable("Y");
 			
-			deduce("bind", new Module().
-					suppose($E).
-					suppose($($($E, new Substitution().using($($X, "=", $Y))), "=", $F)).
-					conclude($F));
+			deduce("bind",
+					$($E, "->", $($($E, new Substitution().using($($X, "=", $Y))), "=", $F), "->", $F));
 			{
 				final Symbol<String> e = introduce();
 				

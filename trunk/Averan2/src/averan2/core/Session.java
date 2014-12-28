@@ -3,15 +3,6 @@ package averan2.core;
 import static averan2.core.Composite.composite;
 import static averan2.core.Equality.equality;
 import static averan2.core.Expression.CollectParameters.collectParameters;
-import static averan2.core.Session.Stack.apply;
-import static averan2.core.Session.Stack.cancel;
-import static averan2.core.Session.Stack.deduce;
-import static averan2.core.Session.Stack.goal;
-import static averan2.core.Session.Stack.intros;
-import static averan2.core.Session.Stack.justificationsFor;
-import static averan2.core.Session.Stack.module;
-import static averan2.core.Session.Stack.name;
-import static averan2.core.Session.Stack.stop;
 import static averan2.core.Symbol.symbol;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.ignore;
@@ -26,7 +17,6 @@ import java.util.Map;
 import jgencode.primitivelists.IntList;
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 import net.sourceforge.aprog.tools.Pair;
-import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2014-12-20)
@@ -245,7 +235,9 @@ public final class Session implements Serializable {
 	
 	@SuppressWarnings("unchecked")
 	public static final <E extends Expression<?>> E $(final Object... objects) {
-		switch (objects.length) {
+		final int n = objects.length;
+		
+		switch (n) {
 		case 0:
 			return (E) composite();
 		case 1:
@@ -261,6 +253,23 @@ public final class Session implements Serializable {
 			case "=":
 				return (E) equality($(objects[0]), $(objects[2]));
 			}
+		}
+		
+		parse_module:
+		if ((n & 1) != 0) {
+			for (int i = 1; i < n; i +=2) {
+				if (!"->".equals(objects[i])) {
+					break parse_module;
+				}
+			}
+			
+			final Module result = new Module();
+			
+			for (int i = 0; i < n - 1; i += 2) {
+				result.suppose($(objects[i]));
+			}
+			
+			return (E) result.conclude($(objects[n - 1]));
 		}
 		
 		return (E) composite(Arrays.stream(objects).map(Session::$).toArray(Expression[]::new));
