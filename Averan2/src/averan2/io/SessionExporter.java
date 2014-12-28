@@ -1,13 +1,13 @@
-package averan4.io;
+package averan2.io;
 
 import java.io.Serializable;
 import java.util.Map;
 
-import averan4.core.Expression;
-import averan4.core.Module;
-import averan4.core.Session;
-import averan4.core.Module.Proof;
-import averan4.core.Session.Frame;
+import averan2.core.Expression;
+import averan2.core.Module;
+import averan2.core.Session;
+import averan2.core.Module.Proof;
+import averan2.core.Session.Frame;
 
 /**
  * @author codistmonk (creation 2014-12-21)

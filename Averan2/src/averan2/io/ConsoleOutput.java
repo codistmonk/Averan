@@ -1,12 +1,12 @@
-package averan4.io;
+package averan2.io;
 
 import static java.util.Collections.nCopies;
 import static net.sourceforge.aprog.tools.Tools.join;
-import averan4.core.Composite;
-import averan4.core.Equality;
-import averan4.core.Expression;
-import averan4.core.Session.Frame;
-import averan4.io.SessionExporter.Output;
+import averan2.core.Composite;
+import averan2.core.Equality;
+import averan2.core.Expression;
+import averan2.core.Session.Frame;
+import averan2.io.SessionExporter.Output;
 
 import java.io.PrintStream;
 import java.util.Collections;
