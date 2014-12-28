@@ -1,9 +1,10 @@
 package averan2.modules;
 
-import static averan2.core.Composite.composite;
 import static averan2.core.Equality.equality;
 import static averan2.core.Expression.CollectParameters.collectParameters;
+import static averan2.core.Session.*;
 import static averan2.core.Session.Stack.*;
+import static averan2.core.Variable.variable;
 
 import averan2.core.*;
 import averan2.io.ConsoleOutput;
@@ -24,7 +25,7 @@ public final class Standard {
 		{
 			final Variable $X = new Variable("X");
 			
-			deduce("identity", new Module().conclude(equality($X, $X)));
+			deduce("identity", $($X, "=", $X));
 			{
 				final Expression<?> x = introduce();
 				
@@ -34,14 +35,14 @@ public final class Standard {
 		}
 		
 		{
-			final Variable $E = new Variable("E");
-			final Variable $F = new Variable("F");
-			final Variable $X = new Variable("X");
-			final Variable $Y = new Variable("Y");
+			final Variable $E = variable("E");
+			final Variable $F = variable("F");
+			final Variable $X = variable("X");
+			final Variable $Y = variable("Y");
 			
 			deduce("bind", new Module().
 					suppose($E).
-					suppose(equality(composite($E, new Substitution().using(equality($X, $Y))), $F)).
+					suppose($($($E, new Substitution().using($($X, "=", $Y))), "=", $F)).
 					conclude($F));
 			{
 				final Symbol<String> e = introduce();
@@ -64,9 +65,7 @@ public final class Standard {
 			final Variable $X = new Variable("X");
 			final Variable $Y = new Variable("Y");
 			
-			deduce("symmetry_of_identity", new Module().
-					suppose(equality($X, $Y)).
-					conclude(equality($Y, $X)));
+			deduce("symmetry_of_identity", $($($X, "=", $Y), "->", $($Y, "=", $X)));
 			{
 				final Symbol<String> x = introduce();
 				
@@ -81,7 +80,7 @@ public final class Standard {
 		{
 			final Variable $X = new Variable("X");
 			
-			deduce("recall", new Module().suppose($X).conclude($X));
+			deduce("recall", $($X, "->", $X));
 			{
 				intros();
 				
@@ -113,12 +112,25 @@ public final class Standard {
 		deduce();
 		{
 			final Expression<?> proposition = proposition(propositionName);
-			final Variable parameter = proposition.accept(Variable.RESET).accept(collectParameters()).get(0);
+			final Variable parameter = proposition.
+					accept(Variable.RESET).accept(collectParameters()).get(0);
 			
 			parameter.equals(value);
 			substitute(proposition.accept(Variable.BIND), equality(value, value));
 			apply("bind", propositionName);
 			apply(name(-1), name(-2));
+			
+			conclude();
+		}
+	}
+	
+	public static final void rewriteRight(final String propositionName,
+			final String equalityName, final int... indices) {
+		deduce();
+		{
+			apply("symmetry_of_identity", equalityName);
+			rewrite(propositionName, name(-1), indices);
+			
 			conclude();
 		}
 	}
