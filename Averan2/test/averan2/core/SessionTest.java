@@ -3,7 +3,6 @@ package averan2.core;
 import static averan2.core.Session.*;
 import static averan2.core.Session.Stack.*;
 import static averan2.core.Symbol.symbol;
-
 import averan2.core.Expression;
 import averan2.core.Module;
 import averan2.core.Session;
@@ -81,9 +80,7 @@ public final class SessionTest {
 						
 						deduce((Expression<?>) justification2Module.getConditions().get(0));
 						{
-							final List<Pair<String, Expression<?>>> justification3 = justificationsFor(goal());
-							
-							apply("recall", justification3.get(0).getFirst());
+							check(autoDeduce());
 						}
 						
 						apply(justification2.get(0).getFirst(), name(-1));
@@ -95,6 +92,40 @@ public final class SessionTest {
 		} finally {
 			SessionExporter.export(popSession(), new ConsoleOutput());
 		}
+	}
+	
+	public static final void check(final boolean ok) {
+		if (!ok) {
+			throw new RuntimeException();
+		}
+	}
+	
+	public static final boolean autoDeduce() {
+		return autoDeduce(goal());
+	}
+	
+	public static final boolean autoDeduce(final Expression<?> expression) {
+		deduce(expression);
+		{
+			final Module unfinishedProof = module();
+			
+			intros();
+			
+			for (final Pair<String, Expression<?>> justification : justificationsFor(goal())) {
+				if (justification.getSecond().equals(goal())) {
+					apply("recall", justification.getFirst());
+					break;
+				}
+			}
+			
+			if (module() == unfinishedProof) {
+				cancel();
+				
+				return false;
+			}
+		}
+		
+		return true;
 	}
 	
 }
