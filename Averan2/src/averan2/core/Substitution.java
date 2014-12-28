@@ -184,8 +184,7 @@ public final class Substitution implements Expression.Visitor<Expression<?>>, Ex
 	
 	@Override
 	public final String toString() {
-		return "{" + join(",", this.getBindings().getElements().toArray())
-				+ "}[" + join(",", this.getIndices().getElements().toArray()) + "]";
+		return "{" + join(",", this.getBindings()) + "}[" + join(",", this.getIndices()) + "]";
 	}
 	
 	@SuppressWarnings("unchecked")

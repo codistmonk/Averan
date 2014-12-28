@@ -7,9 +7,11 @@ import static net.sourceforge.aprog.tools.Tools.ignore;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import jgencode.primitivelists.IntList;
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 import net.sourceforge.aprog.tools.Pair;
 
@@ -104,12 +106,14 @@ public final class Session implements Serializable {
 		return this.reduce();
 	}
 	
-	public final Session substitute(final String factName, final Expression<?> expression, final Equality... equalities) {
+	public final Session substitute(final String factName, final Expression<?> expression, final Iterable<Equality> equalities, final int... indices) {
 		final Substitution substitution = new Substitution();
 		
 		for (final Equality equality : equalities) {
 			substitution.bind(equality);
 		}
+		
+		substitution.at(indices);
 		
 		this.getCurrentModule().new ProofBySubstitute(this.propositionName(factName), expression, substitution).apply();
 		
@@ -317,6 +321,14 @@ public final class Session implements Serializable {
 			return module().getPropositionName(index);
 		}
 		
+		public static final <E extends Expression<?>> E proposition(final String name) {
+			return module().findProposition(name);
+		}
+		
+		public static final <E extends Expression<?>> E proposition(final int index) {
+			return module().getProposition(index);
+		}
+		
 		public static final Session conclude() {
 			return session().conclude();
 		}
@@ -337,13 +349,26 @@ public final class Session implements Serializable {
 			return session().apply(factName, moduleName, conditionName);
 		}
 		
-		public static final Session substitute(final Expression<?> expression, final Equality... equalities) {
-			return substitute(null, expression, equalities);
+		public static final Session substitute(final Expression<?> expression, final Object... equalitiesAndIndices) {
+			return substitute(null, expression, equalitiesAndIndices);
 		}
 		
 		public static final Session substitute(final String factName,
-				final Expression<?> expression, final Equality... equalities) {
-			return session().substitute(factName, expression, equalities);
+				final Expression<?> expression, final Object... equalitiesAndIndices) {
+			final Collection<Equality> equalities = new ArrayList<>();
+			final IntList indices = new IntList();
+			
+			for (final Object equalityOrIndex : equalitiesAndIndices) {
+				if (equalityOrIndex instanceof Equality) {
+					equalities.add((Equality) equalityOrIndex);
+				} else if (equalityOrIndex instanceof Integer) {
+					indices.add((Integer) equalityOrIndex);
+				} else {
+					throw new IllegalArgumentException("Not Equality or Integer: " + equalityOrIndex);
+				}
+			}
+			
+			return session().substitute(factName, expression, equalities, indices.toArray());
 		}
 		
 		public static final Session rewrite(final String propositionName,
