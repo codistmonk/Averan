@@ -500,7 +500,11 @@ public final class Session implements Serializable {
 		}
 		
 		public static final boolean autoDeduce(final Expression<?> expression) {
-			deduce(expression);
+			return autoDeduce(null, expression);
+		}
+		
+		public static final boolean autoDeduce(final String factName, final Expression<?> expression) {
+			deduce(factName, expression);
 			{
 				final Module unfinishedProof = module();
 				
