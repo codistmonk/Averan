@@ -3,19 +3,18 @@ package averan2.core;
 import static averan2.core.Session.Stack.*;
 import static averan2.core.Symbol.symbol;
 
-import java.util.List;
-
-import net.sourceforge.aprog.tools.Pair;
-import net.sourceforge.aprog.tools.Tools;
-
-import org.junit.Test;
-
 import averan2.core.Expression;
 import averan2.core.Module;
 import averan2.core.Session;
 import averan2.core.Variable;
 import averan2.io.ConsoleOutput;
 import averan2.io.SessionExporter;
+
+import java.util.List;
+
+import net.sourceforge.aprog.tools.Pair;
+
+import org.junit.Test;
 
 /**
  * @author codistmonk (creation 2014-12-27)
