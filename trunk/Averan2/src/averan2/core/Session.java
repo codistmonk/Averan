@@ -281,18 +281,26 @@ public final class Session implements Serializable {
 			return stack.remove(stack.size() - 1);
 		}
 		
+		public static final Session cancel() {
+			return session().cancelFrame();
+		}
+		
+		public static final void stop() {
+			session().cancelSession();
+		}
+		
 		public static final Session include(final Module module) {
-			final Session session = session();
+			final Session result = session();
 			
 			for (final Map.Entry<String, Integer> id : module.getConditionIds().entrySet()) {
-				session.getRoot().addCondition(id.getKey(), module.getConditions().get(id.getValue()));
+				result.getRoot().addCondition(id.getKey(), module.getConditions().get(id.getValue()));
 			}
 			
 			for (final Map.Entry<String, Integer> id : module.getFactIds().entrySet()) {
-				session.getRoot().addFact(id.getKey(), module.getFacts().get(id.getValue()), module.getProof(id.getKey()));
+				result.getRoot().addFact(id.getKey(), module.getFacts().get(id.getValue()), module.getProof(id.getKey()));
 			}
 			
-			return session;
+			return result;
 		}
 		
 		public static final <E extends Expression<?>> E introduce() {
