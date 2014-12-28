@@ -63,7 +63,8 @@ public final class Session implements Serializable {
 		return this;
 	}
 	
-	public final Session introduce() {
+	@SuppressWarnings("unchecked")
+	public final <E extends Expression<?>> E introduce() {
 		final Frame frame = this.getCurrentFrame();
 		final Module goal = frame.getGoal();
 		final Expression<?> condition = goal.getConditions().get(0);
@@ -76,13 +77,17 @@ public final class Session implements Serializable {
 			variable.reset().equals(introducedForVariable);
 			
 			frame.getIntroducedBindings().add(equality(introducedForVariable, variable));
-			frame.goal = goal.accept(Variable.BIND);
-		} else {
-			this.getCurrentModule().addCondition(frame.newPropositionName(), condition);
-			frame.goal = Module.apply(goal, condition);
+			frame.setGoal(goal.accept(Variable.BIND));
+			
+			return (E) introducedForVariable;
 		}
 		
-		return this.accept();
+		{
+			this.getCurrentModule().addCondition(frame.newPropositionName(), condition);
+			frame.setGoal(Module.apply(goal, condition));
+			
+			return this.accept().getCurrentFrame() == frame ? (E) condition : null;
+		}
 	}
 	
 	public final Session suppose(final String conditionName, final Expression<?> conditionProposition) {
@@ -163,6 +168,12 @@ public final class Session implements Serializable {
 		@SuppressWarnings("unchecked")
 		public final <E extends Expression<?>> E getGoal() {
 			return (E) this.goal;
+		}
+		
+		final Frame setGoal(final Expression<?> goal) {
+			this.goal = goal;
+			
+			return this;
 		}
 		
 		private static final long serialVersionUID = -5943416769824876039L;
