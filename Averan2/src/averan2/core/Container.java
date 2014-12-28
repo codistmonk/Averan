@@ -1,6 +1,9 @@
 package averan2.core;
 
+import static net.sourceforge.aprog.tools.Tools.list;
+
 import java.io.Serializable;
+import java.util.stream.Stream;
 
 /**
  * @author codistmonk (creation 2014-12-20)
@@ -10,6 +13,14 @@ public abstract interface Container<E> extends Serializable, Iterable<E> {
 	public abstract int size();
 	
 	public abstract <F extends E> F get(int index);
+	
+	public default Stream<E> stream() {
+		return list(this).stream();
+	}
+	
+	public default Object[] toArray() {
+		return list(this).toArray();
+	}
 	
 	@Override
 	public default java.util.Iterator<E> iterator() {

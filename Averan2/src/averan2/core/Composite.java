@@ -1,10 +1,12 @@
 package averan2.core;
 
 import static net.sourceforge.aprog.tools.Tools.cast;
+import static net.sourceforge.aprog.tools.Tools.list;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * @author codistmonk (creation 2014-12-20)
@@ -32,6 +34,11 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 	@Override
 	public final <V> V accept(final Expression.Visitor<V> visitor) {
 		return visitor.visit((Composite<Expression<?>>) this);
+	}
+	
+	@Override
+	public final Stream<E> stream() {
+		return this.getElements().stream();
 	}
 	
 	@Override
