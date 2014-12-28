@@ -42,7 +42,7 @@ public final class Session implements Serializable {
 		throw new RuntimeException();
 	}
 	
-	public final Session acceptModule() {
+	public final Session conclude() {
 		if (this.getFrames().size() <= 1 || this.getCurrentFrame().getGoal() != null) {
 			throw new IllegalStateException();
 		}
@@ -51,26 +51,7 @@ public final class Session implements Serializable {
 		
 		this.getCurrentModule().new ProofByDeduce(frame.getName(), frame.getModule()).apply();
 		
-		return this.accept();
-	}
-	
-	public final Session accept() {
-		final Frame frame = this.getCurrentFrame();
-		final int factCount = frame.getModule().getFacts().size();
-		
-		if (0 < factCount && frame.getModule().getFacts().get(factCount - 1).equals(frame.getGoal())) {
-			this.getFrames().remove(this.getFrames().size() - 1);
-			
-			final Substitution substitution = new Substitution(true);
-			
-			for (final Equality binding : frame.getIntroducedBindings()) {
-				binding.getRight().accept(Variable.RESET);
-				substitution.bind(binding);
-			}
-			this.getCurrentModule().new ProofByDeduce(frame.getName(), (Module) frame.getModule().accept(substitution.reset())).apply();
-		}
-		
-		return this;
+		return this.reduce();
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -96,20 +77,20 @@ public final class Session implements Serializable {
 			this.getCurrentModule().addCondition(frame.newPropositionName(), condition);
 			frame.setGoal(Module.apply(goal, condition));
 			
-			return this.accept().getCurrentFrame() == frame ? (E) condition : null;
+			return this.reduce().getCurrentFrame() == frame ? (E) condition : null;
 		}
 	}
 	
 	public final Session suppose(final String conditionName, final Expression<?> condition) {
 		this.getCurrentModule().addCondition(this.propositionName(conditionName), condition);
 		
-		return this.accept();
+		return this.reduce();
 	}
 	
 	public final Session apply(final String factName, final String moduleName, final String conditionName) {
 		this.getCurrentModule().new ProofByApply(this.propositionName(factName), moduleName, conditionName).apply();
 		
-		return this.accept();
+		return this.reduce();
 	}
 	
 	public final Session substitute(final String factName, final Expression<?> expression, final Equality... equalities) {
@@ -121,14 +102,14 @@ public final class Session implements Serializable {
 		
 		this.getCurrentModule().new ProofBySubstitute(this.propositionName(factName), expression, substitution).apply();
 		
-		return this.accept();
+		return this.reduce();
 	}
 	
 	public final Session rewrite(final String factName, final String propositionName, final String equalityName,
 			final int... indices) {
 		this.getCurrentModule().new ProofByRewrite(this.propositionName(factName), propositionName).using(equalityName).at(indices).apply();
 		
-		return this.accept();
+		return this.reduce();
 	}
 	
 	public final Module getCurrentModule() {
@@ -139,6 +120,28 @@ public final class Session implements Serializable {
 	
 	public final Frame getCurrentFrame() {
 		return this.getFrames().isEmpty() ? null : this.getFrames().get(this.getFrames().size() - 1);
+	}
+	
+	private final Session reduce() {
+		final Frame frame = this.getCurrentFrame();
+		final int factCount = frame.getModule().getFacts().size();
+		
+		if (0 < factCount && frame.getModule().getFacts().get(factCount - 1).equals(frame.getGoal())) {
+			this.getFrames().remove(this.getFrames().size() - 1);
+			
+			final Substitution substitution = new Substitution(true);
+			
+			for (final Equality binding : frame.getIntroducedBindings()) {
+				binding.getRight().accept(Variable.RESET);
+				substitution.bind(binding);
+			}
+			
+			this.getCurrentModule().new ProofByDeduce(frame.getName(), (Module) frame.getModule().accept(substitution.reset())).apply();
+			
+			return this.reduce();
+		}
+		
+		return this;
 	}
 	
 	private final String propositionName(final String propositionName) {
@@ -227,6 +230,10 @@ public final class Session implements Serializable {
 			return session().introduce();
 		}
 		
+		public static final Session deduce() {
+			return deduce(null);
+		}
+		
 		public static final Session deduce(final String factName) {
 			return deduce(factName, null);
 		}
@@ -255,8 +262,8 @@ public final class Session implements Serializable {
 			return module().getPropositionName(index);
 		}
 		
-		public static final Session acceptModule() {
-			return session().acceptModule();
+		public static final Session conclude() {
+			return session().conclude();
 		}
 		
 		public static final Session suppose(final Expression<?> condition) {

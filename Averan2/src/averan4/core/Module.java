@@ -170,7 +170,15 @@ public final class Module implements Expression<Composite<?>> {
 		return formatPropositions("->", this.getConditions()) + "->" + formatPropositions("/\\", this.getFacts());
 	}
 	
-	public final Module addCondition(final String name, final Expression<?> proposition) {
+	public final Module suppose(final Expression<?> condition) {
+		return this.addCondition(null, condition);
+	}
+	
+	public final Module conclude(final Expression<?> fact) {
+		return this.addFact(null, fact, null);
+	}
+	
+	final Module addCondition(final String name, final Expression<?> proposition) {
 		return this.addProposition(name, proposition, this.getConditions(), this.getConditionIds());
 	}
 	
@@ -381,8 +389,22 @@ public final class Module implements Expression<Composite<?>> {
 		public ProofByDeduce(final String factName, final Module deduction) {
 			super(factName);
 			
-			if (Module.this != deduction.getContext()) {
+			if (Module.this != deduction.getContext()
+					|| deduction.getConditionIds().size() != deduction.getConditions().size()
+					|| deduction.getFactIds().size() != deduction.getFacts().size()) {
 				throw new IllegalArgumentException();
+			}
+			
+			for (final String name : deduction.getConditionIds().keySet()) {
+				if (name == null) {
+					throw new IllegalArgumentException();
+				}
+			}
+			
+			for (final String name : deduction.getFactIds().keySet()) {
+				if (name == null) {
+					throw new IllegalArgumentException();
+				}
 			}
 			
 			this.deduction = deduction.canonicalize();
