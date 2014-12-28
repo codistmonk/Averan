@@ -4,6 +4,7 @@ import static averan2.core.Expression.CollectParameters.collectParameters;
 import static averan2.io.ConsoleOutput.AsString.asString;
 import static java.util.Collections.nCopies;
 import static net.sourceforge.aprog.tools.Tools.join;
+
 import averan2.core.Composite;
 import averan2.core.Equality;
 import averan2.core.Expression;
@@ -20,8 +21,6 @@ import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2014-12-21)
@@ -65,7 +64,7 @@ public final class ConsoleOutput implements Output {
 	@Override
 	public final void processCondition(final String name, final Expression<?> condition) {
 		this.out.println(this.indent + "	(" + name + ")");
-		this.out.println(this.indent + "	" + condition.accept(asString()));
+		this.out.println(this.indent + "	" + asString(condition));
 	}
 
 	@Override
@@ -78,14 +77,14 @@ public final class ConsoleOutput implements Output {
 	@Override
 	public final void beginFact(final String name, final Expression<?> fact) {
 		this.out.println(this.indent + "	(" + name + ")");
-		this.out.println(this.indent + "	" + fact.accept(asString()));
+		this.out.println(this.indent + "	" + asString(fact));
 	}
 	
 	@Override
 	public final void processGoal(final Expression<?> goal) {
 		if (goal != null) {
 			this.out.println(this.indent + "((GOAL))");
-			this.out.println(this.indent + "	" + goal.accept(asString()));
+			this.out.println(this.indent + "	" + asString(goal));
 		} else {
 			this.out.println(this.indent + "(())");
 		}
@@ -105,31 +104,51 @@ public final class ConsoleOutput implements Output {
 		
 		private final Map<Variable, Variable> done = new IdentityHashMap<>();
 		
-		public final AsString reset() {
-			this.done.clear();
-			
-			return this;
-		}
+		private int level;
 		
 		@Override
 		public final String visit(final Symbol<?> symbol) {
-			return symbol.toString();
+			try {
+				if (++this.level == 1) {
+					return this.visitProposition(symbol);
+				}
+				
+				return symbol.toString();
+			} finally {
+				--this.level;
+			}
 		}
 		
 		@Override
 		public final String visit(final Variable variable) {
-			return variable.getName();
+			try {
+				if (++this.level == 1) {
+					return this.visitProposition(variable);
+				}
+				
+				return variable.getName();
+			} finally {
+				--this.level;
+			}
 		}
 		
 		@Override
 		public final String visit(final Composite<Expression<?>> composite) {
-			final StringBuilder resultBuilder = new StringBuilder();
-			
-			for (final Expression<?> element : composite) {
-				resultBuilder.append(element.accept(this));
+			try {
+				if (++this.level == 1) {
+					return this.visitProposition(composite);
+				}
+				
+				final StringBuilder resultBuilder = new StringBuilder();
+				
+				for (final Expression<?> element : composite) {
+					resultBuilder.append(element.accept(this));
+				}
+				
+				return resultBuilder.toString();
+			} finally {
+				--this.level;
 			}
-			
-			return resultBuilder.toString();
 		}
 		
 		@Override
@@ -138,7 +157,7 @@ public final class ConsoleOutput implements Output {
 			
 			if (0 < module.getConditions().size()) {
 				resultBuilder
-					.append(join(" → ", module.getConditions().stream().map(this::visitCondition).toArray()))
+					.append(join(" → ", module.getConditions().stream().map(this::visitProposition).toArray()))
 					.append(" → ");
 			}
 			
@@ -157,24 +176,40 @@ public final class ConsoleOutput implements Output {
 		
 		@Override
 		public final String visit(final Substitution substitution) {
-			final StringBuilder resultBuilder = new StringBuilder();
-			
-			resultBuilder.append('{').append(join(",",
-					substitution.getBindings().stream().map(e -> e.accept(this)).toArray())).append('}');
-			resultBuilder.append('[').append(join(",",
-					substitution.getIndices().stream().map(e -> e.accept(this)).toArray())).append(']');
-			
-			return resultBuilder.toString();
+			try {
+				if (++this.level == 1) {
+					return this.visitProposition(substitution);
+				}
+				
+				final StringBuilder resultBuilder = new StringBuilder();
+				
+				resultBuilder.append('{').append(join(",",
+						substitution.getBindings().stream().map(e -> e.accept(this)).toArray())).append('}');
+				resultBuilder.append('[').append(join(",",
+						substitution.getIndices().stream().map(e -> e.accept(this)).toArray())).append(']');
+				
+				return resultBuilder.toString();
+			} finally {
+				--this.level;
+			}
 		}
 		
 		@Override
 		public final String visit(final Equality equality) {
-			return equality.getLeft().accept(this) + " = " + equality.getRight().accept(this);
+			try {
+				if (++this.level == 1) {
+					return this.visitProposition(equality);
+				}
+				
+				return equality.getLeft().accept(this) + " = " + equality.getRight().accept(this);
+			} finally {
+				--this.level;
+			}
 		}
 		
-		private final String visitCondition(final Expression<?> condition) {
+		private final String visitProposition(final Expression<?> proposition) {
 			final StringBuilder resultBuilder = new StringBuilder();
-			final List<Variable> parameters = condition.accept(collectParameters());
+			final List<Variable> parameters = proposition.accept(collectParameters());
 			
 			for (final Iterator<Variable> i = parameters.iterator(); i.hasNext();) {
 				final Variable parameter = i.next();
@@ -191,7 +226,7 @@ public final class ConsoleOutput implements Output {
 						join(",", parameters.stream().map(Variable::getName).toArray())).append(' ');
 			}
 			
-			resultBuilder.append(condition.accept(this));
+			resultBuilder.append(proposition.accept(this));
 			
 			return resultBuilder.toString();
 		}
@@ -224,6 +259,10 @@ public final class ConsoleOutput implements Output {
 		
 		public static final AsString asString() {
 			return new AsString();
+		}
+		
+		public static final String asString(final Expression<?> expression) {
+			return expression.accept(Variable.RESET).accept(asString());
 		}
 		
 	}
