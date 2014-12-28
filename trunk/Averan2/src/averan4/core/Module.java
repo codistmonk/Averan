@@ -106,6 +106,28 @@ public final class Module implements Expression<Composite<?>> {
 		return visitor.visit(this);
 	}
 	
+	public final String getPropositionName(final int index) {
+		if (0 <= index) {
+			throw new IllegalArgumentException("Expected negative value but got: " + index);
+		}
+		
+		int i = index;
+		
+		for (int j = this.getFactIds().size() - 1; 0 <= j; --j, ++i) {
+			if (i == -1) {
+				return this.getFactIds().get(j);
+			}
+		}
+		
+		for (int j = this.getConditionIds().size() - 1; 0 <= j; --j, ++i) {
+			if (i == -1) {
+				return this.getConditionIds().get(j);
+			}
+		}
+		
+		return this.getContext() != null ? this.getContext().getPropositionName(i) : null;
+	}
+	
 	public final Composite<Expression<?>> getConditions() {
 		return this.conditions;
 	}
