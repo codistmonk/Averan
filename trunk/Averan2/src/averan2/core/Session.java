@@ -1,9 +1,11 @@
 package averan2.core;
 
 import static averan2.core.Equality.equality;
+import static averan2.core.SessionTest.CollectParameters.collectParameters;
 import static net.sourceforge.aprog.tools.Tools.cast;
-
+import static net.sourceforge.aprog.tools.Tools.ignore;
 import averan2.core.Expression.Visitor;
+import averan2.core.SessionTest.CollectParameters;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -13,6 +15,7 @@ import java.util.Map;
 
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 import net.sourceforge.aprog.tools.Pair;
+import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2014-12-20)
@@ -67,25 +70,27 @@ public final class Session implements Serializable {
 	@SuppressWarnings("unchecked")
 	public final <E extends Expression<?>> E introduce() {
 		final Frame frame = this.getCurrentFrame();
-		final Module goal = frame.getGoal();
-		final Expression<?> condition = goal.getConditions().get(0);
-		final List<Variable> variables = getVariables(condition);
+		final Expression<?> goal = frame.getGoal();
+		final List<Variable> parameters = goal.accept(collectParameters());
 		
-		if (!variables.isEmpty()) {
-			final Variable variable = variables.get(0);
-			final Symbol<String> introducedForVariable = new Symbol<>(variable.getName());
+		if (!parameters.isEmpty()) {
+			final Variable parameter = parameters.get(0);
+			final Symbol<String> introducedForParameter = new Symbol<>(parameter.getName());
 			
-			variable.reset().equals(introducedForVariable);
+			parameter.reset().equals(introducedForParameter);
 			
-			frame.getIntroducedBindings().add(equality(introducedForVariable, variable));
+			frame.getIntroducedBindings().add(equality(introducedForParameter, parameter));
 			frame.setGoal(goal.accept(Variable.BIND));
 			
-			return (E) introducedForVariable;
+			return (E) introducedForParameter;
 		}
 		
 		{
+			final Module module = (Module) goal;
+			final Expression<?> condition = module.getConditions().get(0);
+			
 			this.getCurrentModule().addCondition(frame.newPropositionName(), condition);
-			frame.setGoal(Module.apply(goal, condition));
+			frame.setGoal(Module.apply(module, condition));
 			
 			return this.reduce().getCurrentFrame() == frame ? (E) condition : null;
 		}
@@ -206,7 +211,15 @@ public final class Session implements Serializable {
 		}
 		
 		final Frame setGoal(final Expression<?> goal) {
-			this.goal = goal;
+			final Module goalAsModule = cast(Module.class, goal);
+			
+			if (goalAsModule != null
+					&& goalAsModule.canonicalize().getConditions().size() <= 0
+					&& goalAsModule.getFacts().size() == 1) {
+				this.goal = goalAsModule.getFacts().get(0);
+			} else {
+				this.goal = goal;
+			}
 			
 			return this;
 		}
@@ -258,6 +271,18 @@ public final class Session implements Serializable {
 		
 		public static final <E extends Expression<?>> E introduce() {
 			return session().introduce();
+		}
+		
+		public static final Session intros() {
+			try {
+				while (true) {
+					introduce();
+				}
+			} catch (final Exception exception) {
+				ignore(exception);
+			}
+			
+			return session();
 		}
 		
 		public static final Session deduce() {
@@ -392,58 +417,58 @@ public final class Session implements Serializable {
 		
 	}
 	
-	public static final List<Variable> getVariables(final Expression<?> expression) {
-		return expression.accept(new Visitor<List<Variable>>() {
-			
-			private final Map<Variable, Variable> done = new IdentityHashMap<>();
-			
-			private final List<Variable> result = new ArrayList<>();
-			
-			@Override
-			public final List<Variable> visit(final Symbol<?> symbol) {
-				return this.result;
-			}
-			
-			@Override
-			public final List<Variable> visit(final Variable variable) {
-				if (this.done.putIfAbsent(variable, variable) == null) {
-					this.result.add(variable);
-				}
-				
-				return this.result;
-			}
-			
-			@Override
-			public final List<Variable> visit(final Composite<Expression<?>> composite) {
-				Expression.Visitor.visitElementsOf(composite, this);
-				
-				return this.result;
-			}
-			
-			@Override
-			public final List<Variable> visit(final Module module) {
-				Expression.Visitor.visitElementsOf(module, this);
-				
-				return this.result;
-			}
-			
-			@Override
-			public final List<Variable> visit(final Substitution substitution) {
-				Expression.Visitor.visitElementsOf(substitution, this);
-				
-				return this.result;
-			}
-			
-			@Override
-			public final List<Variable> visit(final Equality equality) {
-				Expression.Visitor.visitElementsOf(equality, this);
-				
-				return this.result;
-			}
-			
-			private static final long serialVersionUID = 7741098542636452396L;
-			
-		});
-	}
+//	public static final List<Variable> getVariables(final Expression<?> expression) {
+//		return expression.accept(new Visitor<List<Variable>>() {
+//			
+//			private final Map<Variable, Variable> done = new IdentityHashMap<>();
+//			
+//			private final List<Variable> result = new ArrayList<>();
+//			
+//			@Override
+//			public final List<Variable> visit(final Symbol<?> symbol) {
+//				return this.result;
+//			}
+//			
+//			@Override
+//			public final List<Variable> visit(final Variable variable) {
+//				if (this.done.putIfAbsent(variable, variable) == null) {
+//					this.result.add(variable);
+//				}
+//				
+//				return this.result;
+//			}
+//			
+//			@Override
+//			public final List<Variable> visit(final Composite<Expression<?>> composite) {
+//				Expression.Visitor.visitElementsOf(composite, this);
+//				
+//				return this.result;
+//			}
+//			
+//			@Override
+//			public final List<Variable> visit(final Module module) {
+//				Expression.Visitor.visitElementsOf(module, this);
+//				
+//				return this.result;
+//			}
+//			
+//			@Override
+//			public final List<Variable> visit(final Substitution substitution) {
+//				Expression.Visitor.visitElementsOf(substitution, this);
+//				
+//				return this.result;
+//			}
+//			
+//			@Override
+//			public final List<Variable> visit(final Equality equality) {
+//				Expression.Visitor.visitElementsOf(equality, this);
+//				
+//				return this.result;
+//			}
+//			
+//			private static final long serialVersionUID = 7741098542636452396L;
+//			
+//		});
+//	}
 	
 }

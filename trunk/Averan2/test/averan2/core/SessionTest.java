@@ -1,5 +1,6 @@
 package averan2.core;
 
+import static averan2.core.Equality.equality;
 import static averan2.core.Session.Stack.*;
 import static averan2.core.Symbol.symbol;
 
@@ -7,10 +8,14 @@ import averan2.core.Expression;
 import averan2.core.Module;
 import averan2.core.Session;
 import averan2.core.Variable;
+import averan2.core.Expression.Visitor;
 import averan2.io.ConsoleOutput;
 import averan2.io.SessionExporter;
 
+import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 
 import net.sourceforge.aprog.tools.Pair;
 
@@ -98,15 +103,19 @@ public final class SessionTest {
 	public static final Module STANDARD = build("averan.modules.Standard", () -> {
 		final Variable $X = new Variable("X");
 		
-		deduce("recall", new Module().suppose($X).conclude($X));
+		deduce("identity", new Module().conclude(equality($X, $X)));
 		{
 			final Expression<?> x = introduce();
 			
-			introduce();
-			
 			substitute(x);
 			rewrite(name(-1), name(-1));
-			rewrite(name(-3), name(-1));
+		}
+		
+		deduce("recall", new Module().suppose($X).conclude($X));
+		{
+			intros();
+			
+			rewrite(name(-1), "identity");
 		}
 	});
 	
@@ -127,6 +136,67 @@ public final class SessionTest {
 		}
 		
 		return result;
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-12-28)
+	 */
+	public static final class CollectParameters implements Visitor<List<Variable>> {
+		
+		private final Map<Variable, Variable> done = new IdentityHashMap<>();
+		
+		private final List<Variable> result = new ArrayList<>();
+		
+		@Override
+		public final List<Variable> visit(final Symbol<?> symbol) {
+			return this.result;
+		}
+		
+		@Override
+		public final List<Variable> visit(final Variable variable) {
+			if (this.done.putIfAbsent(variable, variable) == null) {
+				this.result.add(variable);
+			}
+			
+			return this.result;
+		}
+		
+		@Override
+		public final List<Variable> visit(final Composite<Expression<?>> composite) {
+			Visitor.visitElementsOf(composite, this);
+			
+			return this.result;
+		}
+		
+		@Override
+		public final List<Variable> visit(final Module module) {
+			if (0 < module.getConditions().size()) {
+				return module.getConditions().get(0).accept(this);
+			}
+			
+			return module.getFacts().accept(this);
+		}
+		
+		@Override
+		public final List<Variable> visit(final Substitution substitution) {
+			Visitor.visitElementsOf(substitution, this);
+			
+			return this.result;
+		}
+		
+		@Override
+		public final List<Variable> visit(final Equality equality) {
+			Visitor.visitElementsOf(equality, this);
+			
+			return this.result;
+		}
+		
+		private static final long serialVersionUID = -936926873552336509L;
+		
+		public static final CollectParameters collectParameters() {
+			return new CollectParameters();
+		}
+		
 	}
 	
 }
