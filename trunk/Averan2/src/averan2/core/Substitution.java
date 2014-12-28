@@ -32,7 +32,7 @@ public final class Substitution implements Expression.Visitor<Expression<?>>, Ex
 		this.copyProofData = copyProofData;
 	}
 	
-	public final Substitution bind(final Equality equality) {
+	public final Substitution using(final Equality equality) {
 		this.getBindings().getElements().add(equality);
 		
 		return this;
