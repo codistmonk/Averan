@@ -110,7 +110,7 @@ public final class Session implements Serializable {
 		final Substitution substitution = new Substitution();
 		
 		for (final Equality equality : equalities) {
-			substitution.bind(equality);
+			substitution.using(equality);
 		}
 		
 		substitution.at(indices);
@@ -154,7 +154,7 @@ public final class Session implements Serializable {
 			
 			for (final Equality binding : frame.getIntroducedBindings()) {
 				binding.getRight().accept(Variable.RESET);
-				substitution.bind(binding);
+				substitution.using(binding);
 			}
 			
 			this.getCurrentModule().new ProofByDeduce(frame.getName(), (Module) frame.getModule().accept(substitution.reset())).apply();

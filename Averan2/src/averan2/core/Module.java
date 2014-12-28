@@ -391,7 +391,7 @@ public final class Module implements Expression<Composite<?>> {
 			final Substitution substitution = new Substitution().at(this.getIndices() == null ? ANY_INDEX : this.getIndices());
 			
 			for (final String equalityName : this.getEqualityNames()) {
-				substitution.bind(Module.this.findProposition(equalityName));
+				substitution.using(Module.this.findProposition(equalityName));
 			}
 			
 			return this.addFactToContext(Module.this.findProposition(this.getPropositionName()).accept(substitution.reset()));

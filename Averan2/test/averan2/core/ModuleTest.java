@@ -92,7 +92,7 @@ public final class ModuleTest {
 	public final void testProofBySubstitute1() {
 		final Module context = new Module();
 		final Composite<Expression<?>> expression = composite(A, B, B);
-		final Substitution substitution = new Substitution().bind(equality(B, C)).at(1);
+		final Substitution substitution = new Substitution().using(equality(B, C)).at(1);
 		
 		context.new ProofBySubstitute("p1", expression, substitution).apply();
 		
