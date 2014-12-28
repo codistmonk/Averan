@@ -22,7 +22,7 @@ public final class SessionTest {
 			{
 				final Variable $X = new Variable("X");
 				
-				deduce("tautologyA", new Module().addCondition(null, $X).addFact(null, $X, null));
+				deduce("tautologyA", new Module().suppose($X).conclude($X));
 				{
 					final Expression<?> x = introduce();
 					
@@ -33,11 +33,11 @@ public final class SessionTest {
 					rewrite(name(-3), name(-1));
 				}
 				
-				deduce(null);
+				deduce();
 				{
 					suppose(symbol("Y"));
 					apply("tautologyA", name(-1));
-					acceptModule();
+					conclude();
 				}
 			}
 		} finally {
