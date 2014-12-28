@@ -20,9 +20,9 @@ public final class SessionTest {
 		try {
 			deduce("test");
 			{
-				final Variable varX = new Variable("X");
+				final Variable $X = new Variable("X");
 				
-				deduce("tautologyA", new Module().addCondition(null, varX).addFact(null, varX, null));
+				deduce("tautologyA", new Module().addCondition(null, $X).addFact(null, $X, null));
 				{
 					final Expression<?> x = introduce();
 					
