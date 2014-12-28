@@ -115,6 +115,11 @@ public final class IndexedMap<K, V> implements Map<K, V>, Container<K>, Serializ
 		return this.map.entrySet();
 	}
 	
+	@Override
+	public final String toString() {
+		return this.map().toString();
+	}
+	
 	private static final long serialVersionUID = 85013155965917473L;
 	
 }

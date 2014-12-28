@@ -3,6 +3,7 @@ package averan2.core;
 import static averan2.core.Session.*;
 import static averan2.core.Session.Stack.*;
 import static averan2.core.Symbol.symbol;
+import static net.sourceforge.aprog.tools.Tools.cast;
 import averan2.core.Expression;
 import averan2.core.Module;
 import averan2.core.Session;
@@ -14,6 +15,7 @@ import averan2.modules.Standard;
 import java.util.List;
 
 import net.sourceforge.aprog.tools.Pair;
+import net.sourceforge.aprog.tools.Tools;
 
 import org.junit.Test;
 
@@ -66,28 +68,7 @@ public final class SessionTest {
 				suppose($("A", "->", "B"));
 				suppose($("B", "->", "C"));
 				
-				deduce((Expression<?>) $("A", "->", "C"));
-				{
-					introduce();
-					
-					final List<Pair<String, Expression<?>>> justification1 = justificationsFor(goal());
-					final Module justification1Module = (Module) justification1.get(0).getSecond();
-					
-					deduce((Expression<?>) justification1Module.getConditions().get(0));
-					{
-						final List<Pair<String, Expression<?>>> justification2 = justificationsFor(goal());
-						final Module justification2Module = (Module) justification2.get(0).getSecond();
-						
-						deduce((Expression<?>) justification2Module.getConditions().get(0));
-						{
-							check(autoDeduce());
-						}
-						
-						apply(justification2.get(0).getFirst(), name(-1));
-					}
-					
-					apply(justification1.get(0).getFirst(), name(-1));
-				}
+				check(autoDeduce($("A", "->", "C")));
 			}
 		} finally {
 			SessionExporter.export(popSession(), new ConsoleOutput());
@@ -111,10 +92,28 @@ public final class SessionTest {
 			
 			intros();
 			
-			for (final Pair<String, Expression<?>> justification : justificationsFor(goal())) {
-				if (justification.getSecond().equals(goal())) {
-					apply("recall", justification.getFirst());
-					break;
+			deduction:
+			{
+				final List<Pair<String, Expression<?>>> justifications = justificationsFor(goal());
+				
+				for (final Pair<String, Expression<?>> justification : justifications) {
+					if (justification.getSecond().equals(goal())) {
+						apply("recall", justification.getFirst());
+						
+						break deduction;
+					}
+				}
+				
+				for (final Pair<String, Expression<?>> justification : justifications) {
+					final Module module = cast(Module.class, justification.getSecond());
+					
+					if (module != null && autoDeduce(module.getConditions().get(0))) {
+						apply(justification.getFirst(), name(-1));
+						
+						break deduction;
+					}
+					
+					stop();
 				}
 			}
 			

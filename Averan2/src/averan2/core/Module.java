@@ -48,6 +48,7 @@ public final class Module implements Expression<Composite<?>> {
 	public final Module canonicalize() {
 		while (this.getFacts().size() == 1 && this.getFacts().get(0) instanceof Module) {
 			final Module fact = (Module) this.getFacts().getElements().remove(0);
+			this.getFactIds().remove(this.getFactIds().get(0));
 			
 			for (final Map.Entry<String, Integer> id : fact.getConditionIds().entrySet()) {
 				this.addCondition(id.getKey(), fact.getConditions().get(id.getValue()));
@@ -438,17 +439,21 @@ public final class Module implements Expression<Composite<?>> {
 		
 		@Override
 		public final ProofByDeduce apply() {
-			final Composite<Expression<?>> deducedFacts = this.getDeduction().getFacts();
+			final Module deduction = this.getDeduction();
+			final Composite<Expression<?>> deducedFacts = deduction.getFacts();
 			final Expression<?> lastDeducedFact = deducedFacts.get(deducedFacts.size() - 1);
 			final Expression<?> fact;
 			
-			if (this.getDeduction().getConditions().size() == 0) {
+			if (deduction.getConditions().size() == 0) {
 				fact = lastDeducedFact;
 			} else {
 				fact = new Module();
 				
-				((Module) fact).getConditions().getElements().addAll(this.getDeduction().getConditions().getElements());
+				((Module) fact).getConditions().getElements().addAll(deduction.getConditions().getElements());
+				((Module) fact).getConditionIds().putAll(deduction.getConditionIds());
 				((Module) fact).getFacts().getElements().add(lastDeducedFact);
+				((Module) fact).getFactIds().put(deduction.getFactIds().get(deduction.getFactIds().size() - 1), 0);
+				((Module) fact).getProofs().add(this);
 				((Module) fact).canonicalize();
 			}
 			
