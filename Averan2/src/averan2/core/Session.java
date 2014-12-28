@@ -1,21 +1,17 @@
 package averan2.core;
 
 import static averan2.core.Equality.equality;
-import static averan2.core.SessionTest.CollectParameters.collectParameters;
+import static averan2.core.Expression.CollectParameters.collectParameters;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.ignore;
-import averan2.core.Expression.Visitor;
-import averan2.core.SessionTest.CollectParameters;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 import net.sourceforge.aprog.tools.Pair;
-import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2014-12-20)
@@ -416,59 +412,5 @@ public final class Session implements Serializable {
 		}
 		
 	}
-	
-//	public static final List<Variable> getVariables(final Expression<?> expression) {
-//		return expression.accept(new Visitor<List<Variable>>() {
-//			
-//			private final Map<Variable, Variable> done = new IdentityHashMap<>();
-//			
-//			private final List<Variable> result = new ArrayList<>();
-//			
-//			@Override
-//			public final List<Variable> visit(final Symbol<?> symbol) {
-//				return this.result;
-//			}
-//			
-//			@Override
-//			public final List<Variable> visit(final Variable variable) {
-//				if (this.done.putIfAbsent(variable, variable) == null) {
-//					this.result.add(variable);
-//				}
-//				
-//				return this.result;
-//			}
-//			
-//			@Override
-//			public final List<Variable> visit(final Composite<Expression<?>> composite) {
-//				Expression.Visitor.visitElementsOf(composite, this);
-//				
-//				return this.result;
-//			}
-//			
-//			@Override
-//			public final List<Variable> visit(final Module module) {
-//				Expression.Visitor.visitElementsOf(module, this);
-//				
-//				return this.result;
-//			}
-//			
-//			@Override
-//			public final List<Variable> visit(final Substitution substitution) {
-//				Expression.Visitor.visitElementsOf(substitution, this);
-//				
-//				return this.result;
-//			}
-//			
-//			@Override
-//			public final List<Variable> visit(final Equality equality) {
-//				Expression.Visitor.visitElementsOf(equality, this);
-//				
-//				return this.result;
-//			}
-//			
-//			private static final long serialVersionUID = 7741098542636452396L;
-//			
-//		});
-//	}
 	
 }

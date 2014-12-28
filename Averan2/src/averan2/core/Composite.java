@@ -1,7 +1,6 @@
 package averan2.core;
 
 import static net.sourceforge.aprog.tools.Tools.cast;
-import static net.sourceforge.aprog.tools.Tools.list;
 
 import java.util.ArrayList;
 import java.util.Collection;
