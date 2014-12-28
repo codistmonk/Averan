@@ -9,6 +9,8 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.sourceforge.aprog.tools.IllegalInstantiationException;
+
 /**
  * @author codistmonk (creation 2014-12-20)
  */
@@ -195,6 +197,104 @@ public final class Session implements Serializable {
 	}
 	
 	private static final long serialVersionUID = 181621455530572267L;
+	
+	/**
+	 * @author codistmonk (creation 2014-12-28)
+	 */
+	public static final class Stack {
+		
+		private Stack() {
+			throw new IllegalInstantiationException();
+		}
+		
+		private static final List<Session> stack = new ArrayList<>();
+		
+		public static final Session pushSession(final Session session) {
+			stack.add(session);
+			
+			return session;
+		}
+		
+		public static final Session session() {
+			return stack.get(stack.size() - 1);
+		}
+		
+		public static final Session popSession() {
+			return stack.remove(stack.size() - 1);
+		}
+		
+		public static final <E extends Expression<?>> E introduce() {
+			return session().introduce();
+		}
+		
+		public static final Session deduce(final String factName) {
+			return deduce(factName, null);
+		}
+		
+		public static final Session deduce(final String factName, final Expression<?> goal) {
+			return session().deduce(factName, goal);
+		}
+		
+		public static final <E extends Expression<?>> E goal() {
+			return frame().getGoal();
+		}
+		
+		public static final Frame frame() {
+			return session().getCurrentFrame();
+		}
+		
+		public static final Module module() {
+			return session().getCurrentModule();
+		}
+		
+		public static final String newName() {
+			return frame().newPropositionName();
+		}
+		
+		public static final String name(final int index) {
+			return module().getPropositionName(index);
+		}
+		
+		public static final Session acceptModule() {
+			return session().acceptModule();
+		}
+		
+		public static final Session suppose(final Expression<?> condition) {
+			return suppose(null, condition);
+		}
+		
+		public static final Session suppose(final String conditionName, final Expression<?> condition) {
+			return session().suppose(conditionName, condition);
+		}
+		
+		public static final Session apply(final String moduleName, final String conditionName) {
+			return apply(null, moduleName, conditionName);
+		}
+		
+		public static final Session apply(final String factName, final String moduleName, final String conditionName) {
+			return session().apply(factName, moduleName, conditionName);
+		}
+		
+		public static final Session substitute(final Expression<?> expression, final Equality... equalities) {
+			return substitute(null, expression, equalities);
+		}
+		
+		public static final Session substitute(final String factName,
+				final Expression<?> expression, final Equality... equalities) {
+			return session().substitute(factName, expression, equalities);
+		}
+		
+		public static final Session rewrite(final String propositionName,
+				final String equalityName, final int... indices) {
+			return rewrite(null, propositionName, equalityName, indices);
+		}
+		
+		public static final Session rewrite(final String factName, final String propositionName,
+				final String equalityName, final int... indices) {
+			return session().rewrite(factName, propositionName, equalityName, indices);
+		}
+		
+	}
 	
 	public static final List<Variable> getVariables(final Expression<?> expression) {
 		return expression.accept(new Visitor<List<Variable>>() {
