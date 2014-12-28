@@ -1,8 +1,8 @@
-package averan4.core;
+package averan2.core;
 
-import static averan4.core.Composite.composite;
-import static averan4.core.Equality.equality;
-import static averan4.core.Substitution.ANY_INDEX;
+import static averan2.core.Composite.composite;
+import static averan2.core.Equality.equality;
+import static averan2.core.Substitution.ANY_INDEX;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.join;
 

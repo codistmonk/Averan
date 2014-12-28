@@ -1,12 +1,16 @@
-package averan4.core;
+package averan2.core;
 
-import static averan4.core.Session.Stack.*;
-import static averan4.core.Symbol.symbol;
+import static averan2.core.Session.Stack.*;
+import static averan2.core.Symbol.symbol;
 
 import org.junit.Test;
 
-import averan4.io.ConsoleOutput;
-import averan4.io.SessionExporter;
+import averan2.core.Expression;
+import averan2.core.Module;
+import averan2.core.Session;
+import averan2.core.Variable;
+import averan2.io.ConsoleOutput;
+import averan2.io.SessionExporter;
 
 /**
  * @author codistmonk (creation 2014-12-27)

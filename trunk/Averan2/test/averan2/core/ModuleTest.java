@@ -1,9 +1,15 @@
-package averan4.core;
+package averan2.core;
 
-import static averan4.core.Composite.composite;
-import static averan4.core.Equality.equality;
-import static averan4.core.Symbol.symbol;
+import static averan2.core.Composite.composite;
+import static averan2.core.Equality.equality;
+import static averan2.core.Symbol.symbol;
 import static org.junit.Assert.*;
+import averan2.core.Composite;
+import averan2.core.Expression;
+import averan2.core.Module;
+import averan2.core.Substitution;
+import averan2.core.Symbol;
+import averan2.core.Variable;
 
 import org.junit.Test;
 

@@ -1,4 +1,4 @@
-package averan4.core;
+package averan2.core;
 
 import java.io.Serializable;
 import java.util.ArrayList;
