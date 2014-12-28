@@ -1,26 +1,20 @@
 package averan2.core;
 
-import static averan2.core.Composite.composite;
-import static averan2.core.Equality.equality;
+import static averan2.core.Session.*;
 import static averan2.core.Session.Stack.*;
 import static averan2.core.Symbol.symbol;
+
 import averan2.core.Expression;
-import averan2.core.Expression.CollectParameters;
 import averan2.core.Module;
 import averan2.core.Session;
 import averan2.core.Variable;
-import averan2.core.Expression.Visitor;
 import averan2.io.ConsoleOutput;
 import averan2.io.SessionExporter;
 import averan2.modules.Standard;
 
-import java.util.ArrayList;
-import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.Map;
 
 import net.sourceforge.aprog.tools.Pair;
-import net.sourceforge.aprog.tools.Tools;
 
 import org.junit.Test;
 
@@ -70,10 +64,10 @@ public final class SessionTest {
 			
 			deduce("test");
 			{
-				suppose(new Module().suppose(symbol("A")).conclude(symbol("B")));
-				suppose(new Module().suppose(symbol("B")).conclude(symbol("C")));
+				suppose($("A", "->", "B"));
+				suppose($("B", "->", "C"));
 				
-				deduce(new Module().suppose(symbol("A")).conclude(symbol("C")));
+				deduce((Expression<?>) $("A", "->", "C"));
 				{
 					introduce();
 					
