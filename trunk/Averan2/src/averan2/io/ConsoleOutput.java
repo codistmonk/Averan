@@ -1,6 +1,6 @@
 package averan2.io;
 
-import static averan2.core.SessionTest.CollectParameters.collectParameters;
+import static averan2.core.Expression.CollectParameters.collectParameters;
 import static averan2.io.ConsoleOutput.AsString.asString;
 import static java.util.Collections.nCopies;
 import static net.sourceforge.aprog.tools.Tools.join;
