@@ -60,8 +60,8 @@ public final class Standard {
 		}
 		
 		{
-			final Variable $X = new Variable("X");
-			final Variable $Y = new Variable("Y");
+			final Variable $X = variable("X");
+			final Variable $Y = variable("Y");
 			
 			deduce("symmetry_of_identity", $($($X, "=", $Y), "->", $($Y, "=", $X)));
 			{
@@ -76,7 +76,7 @@ public final class Standard {
 		}
 		
 		{
-			final Variable $X = new Variable("X");
+			final Variable $X = variable("X");
 			
 			deduce("recall", $($X, "->", $X));
 			{
