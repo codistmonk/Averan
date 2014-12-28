@@ -95,31 +95,38 @@ public final class SessionTest {
 		}
 	}
 	
-	public static final Module STANDARD;
+	public static final Module STANDARD = build("averan.modules.Standard", () -> {
+		final Variable $X = new Variable("X");
+		
+		deduce("recall", new Module().suppose($X).conclude($X));
+		{
+			final Expression<?> x = introduce();
+			
+			introduce();
+			
+			substitute(x);
+			rewrite(name(-1), name(-1));
+			rewrite(name(-3), name(-1));
+		}
+	});
 	
-	static {
+	public static final Module build(final String moduleName, final Runnable moduleDefinition) {
 		pushSession(new Session());
+		
+		final Module result;
 		
 		try {
 			deduce("averan.modules.Standard");
 			{
-				final Variable $X = new Variable("X");
+				result = module();
 				
-				deduce("recall", new Module().suppose($X).conclude($X));
-				{
-					final Expression<?> x = introduce();
-					
-					introduce();
-					
-					substitute(x);
-					rewrite(name(-1), name(-1));
-					rewrite(name(-3), name(-1));
-				}
+				moduleDefinition.run();
 			}
 		} finally {
-			STANDARD = module();
 			SessionExporter.export(popSession(), new ConsoleOutput());
 		}
+		
+		return result;
 	}
 	
 }
