@@ -17,14 +17,21 @@ public final class SessionTest {
 		final Session session = new Session().deduce("test", null);
 		final Variable varX = new Variable("X");
 		
-		session.deduce("tautology", new Module().addCondition(null, varX).addFact(null, varX, null));
+		session.deduce("tautologyA", new Module().addCondition(null, varX).addFact(null, varX, null));
 		{
 			final Expression<?> x = session.introduce();
 			session.introduce();
 			
-			session.substitute(session.getCurrentFrame().newPropositionName(), x);
-			session.rewrite(session.getCurrentFrame().newPropositionName(), session.getCurrentModule().getPropositionName(-1), session.getCurrentModule().getPropositionName(-1));
-			session.rewrite(session.getCurrentFrame().newPropositionName(), session.getCurrentModule().getPropositionName(-3), session.getCurrentModule().getPropositionName(-1));
+			session.substitute(null, x);
+			session.rewrite(null, session.getCurrentModule().getPropositionName(-1), session.getCurrentModule().getPropositionName(-1));
+			session.rewrite(null, session.getCurrentModule().getPropositionName(-3), session.getCurrentModule().getPropositionName(-1));
+		}
+		
+		session.deduce(null, null);
+		{
+			session.suppose(null, new Symbol<>("Y"));
+			session.apply(null, "tautologyA", session.getCurrentModule().getPropositionName(-1));
+			session.acceptModule();
 		}
 		
 		SessionExporter.export(session, new ConsoleOutput());

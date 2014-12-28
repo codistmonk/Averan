@@ -13,6 +13,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
+import net.sourceforge.aprog.tools.Tools;
+
 /**
  * @author codistmonk (creation 2014-12-26)
  */
@@ -421,6 +423,7 @@ public final class Module implements Expression<Composite<?>> {
 	
 	public static final Expression<?> apply(final Module module, final Expression<?> condition) {
 		if (!module.getConditions().get(0).accept(Variable.RESET).equals(condition)) {
+			Tools.debugPrint((Variable) module.getConditions().get(0), condition);
 			throw new IllegalArgumentException();
 		}
 		
