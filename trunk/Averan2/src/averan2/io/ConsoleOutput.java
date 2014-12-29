@@ -1,15 +1,15 @@
 package averan2.io;
 
 import static averan2.core.Expression.CollectParameters.collectParameters;
-import static averan2.io.ConsoleOutput.AsString.asString;
 import static java.util.Collections.nCopies;
 import static net.sourceforge.aprog.tools.Tools.join;
-
 import averan2.core.Composite;
 import averan2.core.Equality;
 import averan2.core.Expression;
+import averan2.core.Expression.GatherParameters;
 import averan2.core.Expression.Visitor;
 import averan2.core.Module;
+import averan2.core.Session;
 import averan2.core.Session.Frame;
 import averan2.core.Substitution;
 import averan2.core.Symbol;
@@ -22,6 +22,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import net.sourceforge.aprog.tools.Tools;
+
 /**
  * @author codistmonk (creation 2014-12-21)
  */
@@ -29,9 +31,13 @@ public final class ConsoleOutput implements Output {
 	
 	private final PrintStream out;
 	
+	private Frame frame;
+	
 	private int frameLevel;
 	
 	private String indent;
+	
+	private GatherParameters parameters;
 	
 	public ConsoleOutput() {
 		this(System.out);
@@ -44,7 +50,13 @@ public final class ConsoleOutput implements Output {
 	}
 	
 	@Override
+	public final void beginSession(final Session session) {
+		this.parameters = session.getParameters();
+	}
+	
+	@Override
 	public final void beginFrame(final Frame frame) {
+		this.frame = frame;
 		++this.frameLevel;
 		this.indent = join("", nCopies(this.frameLevel, '	').toArray());
 		this.out.println(this.indent + "((MODULE " + frame.getName() + "))");
@@ -64,7 +76,7 @@ public final class ConsoleOutput implements Output {
 	@Override
 	public final void processCondition(final String name, final Expression<?> condition) {
 		this.out.println(this.indent + "	(" + name + ")");
-		this.out.println(this.indent + "	" + asString(condition));
+		this.out.println(this.indent + "	" + this.asString(condition));
 	}
 
 	@Override
@@ -77,14 +89,22 @@ public final class ConsoleOutput implements Output {
 	@Override
 	public final void beginFact(final String name, final Expression<?> fact) {
 		this.out.println(this.indent + "	(" + name + ")");
-		this.out.println(this.indent + "	" + asString(fact));
+		this.out.println(this.indent + "	" + this.asString(fact));
 	}
 	
 	@Override
 	public final void processGoal(final Expression<?> goal) {
 		if (goal != null) {
 			this.out.println(this.indent + "((GOAL))");
-			this.out.println(this.indent + "	" + asString(goal));
+			final GatherParameters goalParameters = new GatherParameters();
+			goalParameters.getModuleContexts().putAll(this.parameters.getModuleContexts());
+			goalParameters.getVariableContexts().putAll(this.parameters.getVariableContexts());
+			if (goal instanceof Module) {
+				goalParameters.getModuleContexts().put((Module) goal, this.frame.getModule());
+			}
+			goal.accept(goalParameters);
+			
+			this.out.println(this.indent + "	" + goal.accept(new AsString(goalParameters)));
 		} else {
 			this.out.println(this.indent + "(())");
 		}
@@ -95,6 +115,10 @@ public final class ConsoleOutput implements Output {
 		--this.frameLevel;
 	}
 	
+	public final String asString(final Expression<?> expression) {
+		return expression.accept(Variable.RESET).accept(new AsString(this.parameters));
+	}
+	
 	private static final long serialVersionUID = 3659783931873586881L;
 	
 	/**
@@ -102,15 +126,21 @@ public final class ConsoleOutput implements Output {
 	 */
 	public static final class AsString implements Visitor<String> {
 		
+		private final GatherParameters parameters;
+		
 		private final Map<Variable, Variable> done = new IdentityHashMap<>();
 		
 		private int level;
+		
+		public AsString(final GatherParameters parameters) {
+			this.parameters = parameters;
+		}
 		
 		@Override
 		public final String visit(final Symbol<?> symbol) {
 			try {
 				if (++this.level == 1) {
-					return this.visitProposition(symbol);
+//					return this.visitProposition(symbol);
 				}
 				
 				return symbol.toString();
@@ -123,7 +153,7 @@ public final class ConsoleOutput implements Output {
 		public final String visit(final Variable variable) {
 			try {
 				if (++this.level == 1) {
-					return this.visitProposition(variable);
+//					return this.visitProposition(variable);
 				}
 				
 				return variable.getName();
@@ -136,7 +166,7 @@ public final class ConsoleOutput implements Output {
 		public final String visit(final Composite<Expression<?>> composite) {
 			try {
 				if (++this.level == 1) {
-					return this.visitProposition(composite);
+//					return this.visitProposition(composite);
 				}
 				
 				final StringBuilder resultBuilder = new StringBuilder();
@@ -155,17 +185,38 @@ public final class ConsoleOutput implements Output {
 		public final String visit(final Module module) {
 			final StringBuilder resultBuilder = new StringBuilder();
 			
+			{
+				Tools.debugPrint(this.parameters.getVariableContexts().size(), module);
+				boolean first = true;
+				
+				for (final Map.Entry<Variable, Module> entry : this.parameters.getVariableContexts().entrySet()) {
+					Tools.debugPrint(entry);
+					if (module == entry.getValue()) {
+						Tools.debugPrint(entry.getKey());
+						resultBuilder.append(first ? '∀' : ',').append(entry.getKey().getName());
+						first = false;
+					}
+				}
+				
+				if (!first) {
+					resultBuilder.append(' ');
+				}
+			}
+			
 			if (0 < module.getConditions().size()) {
-				resultBuilder
-					.append(join(" → ", module.getConditions().stream().map(this::visitProposition).toArray()))
-					.append(" → ");
+				resultBuilder.
+//					append(join(" → ", module.getConditions().stream().map(this::visitProposition).toArray())).
+					append(join(" → ", module.getConditions().stream().map(e -> e.accept(this)).toArray())).
+					append(" → ");
 			}
 			
 			if (module.getFacts().size() != 1) {
 				resultBuilder.append('(');
 			}
 			
-			resultBuilder.append(this.visitFacts(module.getFacts()));
+//			resultBuilder.append(this.visitFacts(module.getFacts()));
+			resultBuilder.
+				append(join(" → ", module.getFacts().stream().map(e -> e.accept(this)).toArray()));
 			
 			if (module.getFacts().size() != 1) {
 				resultBuilder.append(')');
@@ -178,7 +229,7 @@ public final class ConsoleOutput implements Output {
 		public final String visit(final Substitution substitution) {
 			try {
 				if (++this.level == 1) {
-					return this.visitProposition(substitution);
+//					return this.visitProposition(substitution);
 				}
 				
 				final StringBuilder resultBuilder = new StringBuilder();
@@ -198,7 +249,7 @@ public final class ConsoleOutput implements Output {
 		public final String visit(final Equality equality) {
 			try {
 				if (++this.level == 1) {
-					return this.visitProposition(equality);
+//					return this.visitProposition(equality);
 				}
 				
 				return equality.getLeft().accept(this) + " = " + equality.getRight().accept(this);
@@ -256,14 +307,6 @@ public final class ConsoleOutput implements Output {
 		}
 		
 		private static final long serialVersionUID = 3130405603855469068L;
-		
-		public static final AsString asString() {
-			return new AsString();
-		}
-		
-		public static final String asString(final Expression<?> expression) {
-			return expression.accept(Variable.RESET).accept(asString());
-		}
 		
 	}
 	
