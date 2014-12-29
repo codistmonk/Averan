@@ -5,12 +5,11 @@ import static averan2.core.Expression.CollectParameters.collectParameters;
 import static averan2.core.Session.*;
 import static averan2.core.Session.Stack.*;
 import static averan2.core.Variable.variable;
-
 import averan2.core.*;
 import averan2.io.ConsoleOutput;
 import averan2.io.SessionExporter;
-
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
+import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2014-12-28)
@@ -25,13 +24,12 @@ public final class Standard {
 		{
 			final Variable $X = new Variable("X");
 			
-			deduce("identity", new Module().conclude($($X, "=", $X)));
+			deduce("identity", $($X, "=", $X));
 			{
 				final Expression<?> x = introduce();
 				
 				substitute(x);
 				rewrite(name(-1), name(-1));
-				stop();
 			}
 		}
 		
@@ -46,17 +44,20 @@ public final class Standard {
 			{
 				final Symbol<String> e = introduce();
 				
+				final Symbol<String> x = introduce();
+				final Symbol<String> y = introduce();
+				final Symbol<String> f = introduce();
+				
 				introduce();
 				
 				final String truthnessOfE = name(-1);
-				final Symbol<String> x = introduce();
-				final Symbol<String> y = introduce();
 				
 				intros();
 				
 				substitute(e, equality(x, y));
 				rewrite(name(-2), name(-1));
 				rewrite(truthnessOfE, name(-1));
+				stop();
 			}
 		}
 		
