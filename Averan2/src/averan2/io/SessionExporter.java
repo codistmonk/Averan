@@ -35,14 +35,14 @@ public final class SessionExporter implements Serializable {
 		{
 			final Module module = frame.getModule();
 			
-			output.beginConditions(module.getConditions());
-			
-			for (final Map.Entry<String, Integer> entry : module.getConditionIds().entrySet()) {
-				final Expression<?> condition = module.getConditions().get(entry.getValue());
-				output.processCondition(entry.getKey(), condition);
-			}
-			
-			output.endConditions();
+//			output.beginConditions(module.getConditions());
+//			
+//			for (final Map.Entry<String, Integer> entry : module.getConditionIds().entrySet()) {
+//				final Expression<?> condition = module.getConditions().get(entry.getValue());
+//				output.processCondition(entry.getKey(), condition);
+//			}
+//			
+//			output.endConditions();
 			
 			output.beginFacts(module.getFacts());
 			

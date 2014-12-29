@@ -203,12 +203,12 @@ public final class ConsoleOutput implements Output {
 				}
 			}
 			
-			if (0 < module.getConditions().size()) {
-				resultBuilder.
-//					append(join(" → ", module.getConditions().stream().map(this::visitProposition).toArray())).
-					append(join(" → ", module.getConditions().stream().map(e -> e.accept(this)).toArray())).
-					append(" → ");
-			}
+//			if (0 < module.getConditions().size()) {
+//				resultBuilder.
+////					append(join(" → ", module.getConditions().stream().map(this::visitProposition).toArray())).
+//					append(join(" → ", module.getConditions().stream().map(e -> e.accept(this)).toArray())).
+//					append(" → ");
+//			}
 			
 			if (module.getFacts().size() != 1) {
 				resultBuilder.append('(');

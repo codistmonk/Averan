@@ -101,7 +101,11 @@ public final class Session implements Serializable {
 		
 		{
 			final Module module = (Module) goal;
-			final Expression<?> condition = module.getConditions().get(0);
+//			final Expression<?> condition = module.getConditions().get(0);
+			if (module.getFacts().size() <= 1) {
+				throw new IllegalStateException();
+			}
+			final Expression<?> condition = module.getFacts().get(0);
 			
 			this.getCurrentModule().addCondition(frame.newPropositionName(), condition);
 			frame.setGoal(Module.apply(module, condition));
@@ -214,7 +218,8 @@ public final class Session implements Serializable {
 		}
 		
 		public final String newPropositionName() {
-			return this.getName() + "." + (this.getModule().getConditions().size() + this.getModule().getFacts().size() + 1);
+//			return this.getName() + "." + (this.getModule().getConditions().size() + this.getModule().getFacts().size() + 1);
+			return this.getName() + "." + (this.getModule().getFacts().size() + 1);
 		}
 		
 		public final String getName() {
@@ -234,8 +239,9 @@ public final class Session implements Serializable {
 			final Module goalAsModule = cast(Module.class, goal);
 			
 			if (goalAsModule != null
-					&& goalAsModule.canonicalize().getConditions().size() <= 0
-					&& goalAsModule.getFacts().size() == 1) {
+//					&& goalAsModule.canonicalize().getConditions().size() <= 0
+//					&& goalAsModule.getFacts().size() == 1) {
+					&& goalAsModule.canonicalize().getFacts().size() == 1) {
 				this.goal = goalAsModule.getFacts().get(0);
 			} else {
 				this.goal = goal;
@@ -328,10 +334,11 @@ public final class Session implements Serializable {
 		public static final Session include(final Module module) {
 			final Session result = session();
 			
-			for (final Map.Entry<String, Integer> id : module.getConditionIds().entrySet()) {
-				result.getRoot().addCondition(id.getKey(), module.getConditions().get(id.getValue()));
-			}
+//			for (final Map.Entry<String, Integer> id : module.getConditionIds().entrySet()) {
+//				result.getRoot().addCondition(id.getKey(), module.getConditions().get(id.getValue()));
+//			}
 			
+			// TODO put conditions before facts?
 			for (final Map.Entry<String, Integer> id : module.getFactIds().entrySet()) {
 				result.getRoot().addFact(id.getKey(), module.getFacts().get(id.getValue()), module.getProof(id.getKey()));
 			}
@@ -468,13 +475,13 @@ public final class Session implements Serializable {
 					}
 				}
 				
-				for (int i = module.getConditions().size() - 1; 0 <= i; --i) {
-					final Expression<?> proposition = module.getConditions().get(i);
-					
-					if (canDeduce(proposition, goal)) {
-						result.add(new Pair<>(module.getConditionIds().get(i), proposition.accept(Variable.BIND)));
-					}
-				}
+//				for (int i = module.getConditions().size() - 1; 0 <= i; --i) {
+//					final Expression<?> proposition = module.getConditions().get(i);
+//					
+//					if (canDeduce(proposition, goal)) {
+//						result.add(new Pair<>(module.getConditionIds().get(i), proposition.accept(Variable.BIND)));
+//					}
+//				}
 				
 				module = module.getContext();
 			}
@@ -542,7 +549,8 @@ public final class Session implements Serializable {
 					for (final Pair<String, Expression<?>> justification : justifications) {
 						final Module module = cast(Module.class, justification.getSecond());
 						
-						if (module != null && autoDeduce(module.getConditions().get(0))) {
+//						if (module != null && autoDeduce(module.getConditions().get(0))) {
+						if (module != null && autoDeduce(module.getFacts().get(0))) {
 							apply(justification.getFirst(), name(-1));
 							
 							break deduction;
