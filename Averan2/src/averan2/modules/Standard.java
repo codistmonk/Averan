@@ -25,12 +25,13 @@ public final class Standard {
 		{
 			final Variable $X = new Variable("X");
 			
-			deduce("identity", $($X, "=", $X));
+			deduce("identity", new Module().conclude($($X, "=", $X)));
 			{
 				final Expression<?> x = introduce();
 				
 				substitute(x);
 				rewrite(name(-1), name(-1));
+				stop();
 			}
 		}
 		

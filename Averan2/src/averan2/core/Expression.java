@@ -6,6 +6,8 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.sourceforge.aprog.tools.Tools;
+
 /**
  * @author codistmonk (creation 2014-12-20)
  */
@@ -188,8 +190,8 @@ public abstract interface Expression<E extends Expression<?>> extends Container<
 		}
 		
 		private final Module getCommonAncestor(final Module module1, final Module module2) {
-			if (module1 == module2) {
-				return module1;
+			if (nullOrEqual(module1, module2)) {
+				return select(module1, module2);
 			}
 			
 			Module m1 = module1;
@@ -211,12 +213,14 @@ public abstract interface Expression<E extends Expression<?>> extends Container<
 				throw new IllegalStateException();
 			}
 			
-			while (m1 != null && m2 != null && m1 != m2) {
+			while (!nullOrEqual(m1, m2)) {
 				m1 = this.getModuleContexts().get(m1);
 				m2 = this.getModuleContexts().get(m2);
 			}
 			
 			if (m1 != m2) {
+				Tools.debugError(module1, module2);
+				Tools.debugError(m1, m2);
 				throw new IllegalStateException();
 			}
 			

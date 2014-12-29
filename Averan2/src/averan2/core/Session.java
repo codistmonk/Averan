@@ -14,10 +14,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import averan2.core.Expression.GatherParameters;
 import jgencode.primitivelists.IntList;
-
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 import net.sourceforge.aprog.tools.Pair;
+import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2014-12-20)
@@ -26,15 +27,22 @@ public final class Session implements Serializable {
 	
 	private final Module root;
 	
+	private final GatherParameters parameters;
+	
 	private final List<Frame> frames;
 	
 	public Session() {
 		this.root = new Module();
+		this.parameters = new GatherParameters();
 		this.frames = new ArrayList<>();
 	}
 	
 	public final Module getRoot() {
 		return this.root;
+	}
+	
+	public final GatherParameters getParameters() {
+		return this.parameters;
 	}
 	
 	public final List<Frame> getFrames() {
@@ -64,7 +72,11 @@ public final class Session implements Serializable {
 		
 		final Frame frame = this.getFrames().remove(this.getFrames().size() - 1);
 		
+		frame.getModule().accept(this.parameters);
+		
 		this.getCurrentModule().new ProofByDeduce(frame.getName(), frame.getModule()).apply();
+		
+		Tools.debugPrint(this.getCurrentModule().getProposition(-1));
 		
 		return this.reduce();
 	}
@@ -151,6 +163,8 @@ public final class Session implements Serializable {
 		final Frame frame = this.getCurrentFrame();
 		final int factCount = frame.getModule().getFacts().size();
 		
+		frame.getModule().accept(this.parameters);
+		
 		if (0 < factCount && frame.getModule().getFacts().get(factCount - 1).equals(frame.getGoal())) {
 			this.getFrames().remove(this.getFrames().size() - 1);
 			
@@ -162,6 +176,8 @@ public final class Session implements Serializable {
 			}
 			
 			this.getCurrentModule().new ProofByDeduce(frame.getName(), (Module) frame.getModule().accept(substitution.reset())).apply();
+			
+			Tools.debugPrint(this.getCurrentModule().getProposition(-1));
 			
 			return this.reduce();
 		}
