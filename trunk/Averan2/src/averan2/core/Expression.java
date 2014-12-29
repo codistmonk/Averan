@@ -74,9 +74,9 @@ public abstract interface Expression<E extends Expression<?>> extends Container<
 		
 		@Override
 		public final List<Variable> visit(final Module module) {
-			if (0 < module.getConditions().size()) {
-				return module.getConditions().get(0).accept(this);
-			}
+//			if (0 < module.getConditions().size()) {
+//				return module.getConditions().get(0).accept(this);
+//			}
 			
 			return module.getFacts().accept(this);
 		}
