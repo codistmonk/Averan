@@ -100,7 +100,7 @@ public final class Module implements Expression<Composite<?>> {
 	
 	@Override
 	public final int size() {
-		return 2;
+		return 1;
 	}
 	
 	@SuppressWarnings("unchecked")
