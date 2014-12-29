@@ -47,7 +47,7 @@ public final class IndexedMap<K, V> implements Map<K, V>, Container<K>, Serializ
 	@SuppressWarnings("unchecked")
 	@Override
 	public final <F extends K> F get(final int index) {
-		return (F) this.keys().get(index);
+		return 0 <= index && index < this.size() ? (F) this.keys().get(index) : null;
 	}
 	
 	@Override

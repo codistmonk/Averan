@@ -50,12 +50,20 @@ public final class Module implements Expression<Composite<?>> {
 			final Module fact = (Module) this.getFacts().getElements().remove(0);
 			this.getFactIds().remove(this.getFactIds().get(0));
 			
-			for (final Map.Entry<String, Integer> id : fact.getConditionIds().entrySet()) {
-				this.addCondition(id.getKey(), fact.getConditions().get(id.getValue()));
+			if (fact.getConditionIds().size() != fact.getConditions().size()) {
+				this.getConditions().getElements().addAll(fact.getConditions().getElements());
+			} else {
+				for (final Map.Entry<String, Integer> id : fact.getConditionIds().entrySet()) {
+					this.addCondition(id.getKey(), fact.getConditions().get(id.getValue()));
+				}
 			}
 			
-			for (final Map.Entry<String, Integer> id : fact.getFactIds().entrySet()) {
-				this.addFact(id.getKey(), fact.getFacts().get(id.getValue()), fact.getProof(id.getKey()));
+			if (fact.getFactIds().size() != fact.getFacts().size()) {
+				this.getFacts().getElements().addAll(fact.getFacts().getElements());
+			} else {
+				for (final Map.Entry<String, Integer> id : fact.getFactIds().entrySet()) {
+					this.addFact(id.getKey(), fact.getFacts().get(id.getValue()), fact.getProof(id.getKey()));
+				}
 			}
 		}
 		
