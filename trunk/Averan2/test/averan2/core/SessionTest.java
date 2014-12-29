@@ -3,7 +3,7 @@ package averan2.core;
 import static averan2.core.Session.*;
 import static averan2.core.Session.Stack.*;
 import static averan2.core.Symbol.symbol;
-
+import static averan2.core.Variable.variable;
 import averan2.core.Expression;
 import averan2.core.Module;
 import averan2.core.Session;
@@ -11,6 +11,7 @@ import averan2.core.Variable;
 import averan2.io.ConsoleOutput;
 import averan2.io.SessionExporter;
 import averan2.modules.Standard;
+import net.sourceforge.aprog.tools.Tools;
 
 import org.junit.Test;
 
@@ -26,7 +27,7 @@ public final class SessionTest {
 		try {
 			deduce("test");
 			{
-				final Variable $X = new Variable("X");
+				final Variable $X = variable("X");
 				
 				deduce("recall", new Module().suppose($X).conclude($X));
 				{
@@ -57,6 +58,27 @@ public final class SessionTest {
 		
 		try {
 			include(Standard.MODULE);
+			
+			{
+				final Variable $X = variable("X");
+				final Variable $Y = variable("Y");
+				final Variable $Z = variable("Z");
+				
+				deduce("transitivity_of_implication",
+						$($($X, "->", $Y), "->", $($Y, "->", $Z), "->", $($X, "->", $Z)));
+				{
+					Tools.debugPrint(goal());
+					final Expression<?> x = introduce();
+					stop();
+					introduce();
+					final Expression<?> y = introduce();
+//					introduce();
+//					final Expression<?> x = introduce();
+					
+					
+//				check(autoDeduce($($X, "->", $Z)));
+				}
+			}
 			
 			deduce("test");
 			{
