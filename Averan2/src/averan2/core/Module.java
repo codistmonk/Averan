@@ -126,6 +126,8 @@ public final class Module implements Expression<Composite<?>> {
 			throw new IllegalArgumentException("Expected negative value but got: " + index);
 		}
 		
+		Tools.debugPrint(this);
+		
 		int i = index;
 		
 		for (int j = this.getFactIds().size() - 1; 0 <= j; --j, ++i) {

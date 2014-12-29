@@ -7,6 +7,7 @@ import averan2.core.Composite;
 import averan2.core.Equality;
 import averan2.core.Expression;
 import averan2.core.Expression.GatherParameters;
+import averan2.core.Expression.GatherParameters.Key;
 import averan2.core.Expression.Visitor;
 import averan2.core.Module;
 import averan2.core.Session;
@@ -189,11 +190,11 @@ public final class ConsoleOutput implements Output {
 				Tools.debugPrint(this.parameters.getVariableContexts().size(), module);
 				boolean first = true;
 				
-				for (final Map.Entry<Variable, Module> entry : this.parameters.getVariableContexts().entrySet()) {
+				for (final Map.Entry<Key<Variable>, Module> entry : this.parameters.getVariableContexts().entrySet()) {
 					Tools.debugPrint(entry);
 					if (module == entry.getValue()) {
 						Tools.debugPrint(entry.getKey());
-						resultBuilder.append(first ? '∀' : ',').append(entry.getKey().getName());
+						resultBuilder.append(first ? '∀' : ',').append(entry.getKey().getObject().getName());
 						first = false;
 					}
 				}
