@@ -14,7 +14,7 @@ import java.util.Set;
  * @param <K>
  * @param <V>
  */
-public final class IndexedMap<K, V> implements Map<K, V>, Container<K>, Serializable {
+public final class IndexedMap<K, V> implements Map<K, V>, Container<K> {
 	
 	private final Map<K, V> map;
 	
