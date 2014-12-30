@@ -9,6 +9,7 @@ import static net.sourceforge.aprog.tools.Tools.lastIndex;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -289,6 +290,11 @@ public final class Module implements Expression<Composite<?>> {
 			return this.addFactToContext(Module.apply(module, context.findProposition(this.getConditionName())));
 		}
 		
+		@Override
+		public final String toString() {
+			return "Apply (" + this.getModuleName() + ") on (" + this.getConditionName() + ")";
+		}
+		
 		private static final long serialVersionUID = 1974410943023589433L;
 		
 	}
@@ -321,6 +327,11 @@ public final class Module implements Expression<Composite<?>> {
 		public final ProofBySubstitute apply() {
 			return this.addFactToContext(equality(composite(this.getExpression(),
 					this.getSubstitution()), this.getExpression().accept(this.getSubstitution().reset())));
+		}
+		
+		@Override
+		public final String toString() {
+			return "Substitute in " + this.getExpression() + " using {" + join(",", this.getSubstitution().getBindings()) + "}" + (this.getSubstitution().getIndices().isEmpty() ? "" : " at " + this.getSubstitution().getIndices());
 		}
 		
 		private static final long serialVersionUID = -2849009520329956261L;
@@ -383,6 +394,11 @@ public final class Module implements Expression<Composite<?>> {
 			return this.addFactToContext(Module.this.findProposition(this.getPropositionName()).accept(substitution.reset()));
 		}
 		
+		@Override
+		public final String toString() {
+			return "Rewrite (" + this.getPropositionName() + ") using (" + join(",", this.getEqualityNames()) + ")" + (this.getIndices().length == 0 ? "" : " at " + Arrays.toString(this.getIndices()));
+		}
+		
 		private static final long serialVersionUID = 5020773952478671657L;
 		
 	}
@@ -421,6 +437,11 @@ public final class Module implements Expression<Composite<?>> {
 			}
 			
 			return this.addFactToContext(module.accept(Variable.BIND));
+		}
+		
+		@Override
+		public final String toString() {
+			return "Bind (" + this.getModuleName() + ") using (" + join(",", (Object[]) this.getValues()) + ")";
 		}
 		
 		private static final long serialVersionUID = 2309957562673783419L;
@@ -481,7 +502,17 @@ public final class Module implements Expression<Composite<?>> {
 		
 		@Override
 		public final String toString() {
-			return "Deduced in " + this.getDeduction().getPropositions().size() + " steps";
+			Proof proof = this;
+			
+			if (1 != this.getDeduction().getPropositions().size()) {
+				return "Deduce in " + this.getDeduction().getPropositions().size() + " steps";
+			}
+			
+			while (proof instanceof ProofByDeduce && ((ProofByDeduce) proof).getDeduction().getPropositions().size() == 1) {
+				proof = ((ProofByDeduce) proof).getDeduction().getProof(((ProofByDeduce) proof).getDeduction().getPropositionIds().last());
+			}
+			
+			return proof == null ? "Deduce immediately" : proof.toString();
 		}
 		
 		private static final long serialVersionUID = 8959982180068107269L;
