@@ -59,33 +59,22 @@ public final class SessionTest {
 		try {
 			include(Standard.MODULE);
 			
+			deduce(Tools.getThisMethodName());
 			{
 				final Variable $X = variable("X");
 				final Variable $Y = variable("Y");
 				final Variable $Z = variable("Z");
 				
 				deduce("transitivity_of_implication",
-						$($($X, "->", $Y), "->", $($Y, "->", $Z), "->", $($X, "->", $Z)));
+						$(forAll($X, $Y, $Z), $($($X, "->", $Y), "->", $($Y, "->", $Z), "->", $($X, "->", $Z))));
 				{
 					Tools.debugPrint(goal());
-					final Expression<?> x = introduce();
-					stop();
-					introduce();
-					final Expression<?> y = introduce();
-//					introduce();
-//					final Expression<?> x = introduce();
-					
-					
-//				check(autoDeduce($($X, "->", $Z)));
+					intros();
+					apply(name(-3), name(-1));
+					apply(name(-3), name(-1));
+//					stop();
+//					check(autoDeduce($($X, "->", $Z)));
 				}
-			}
-			
-			deduce("test");
-			{
-				suppose($("A", "->", "B"));
-				suppose($("B", "->", "C"));
-				
-				check(autoDeduce($("A", "->", "C")));
 			}
 		} finally {
 			SessionExporter.export(popSession(), new ConsoleOutput());

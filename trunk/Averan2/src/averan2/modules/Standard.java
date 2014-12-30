@@ -1,16 +1,14 @@
 package averan2.modules;
 
-import static averan2.core.Equality.equality;
-//import static averan2.core.Expression.CollectParameters.collectParameters;
 import static averan2.core.Session.*;
 import static averan2.core.Session.Stack.*;
-import static averan2.core.Symbol.symbol;
 import static averan2.core.Variable.variable;
+
 import averan2.core.*;
 import averan2.io.ConsoleOutput;
 import averan2.io.SessionExporter;
+
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
-import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2014-12-28)
@@ -23,9 +21,20 @@ public final class Standard {
 	
 	public static final Module MODULE = build(Standard.class.getName(), () -> {
 		{
+			final Variable $X = variable("X");
+			
+			deduce("recall",
+					$(forAll($X), $($X, "->", $X)));
+			{
+				intros();
+			}
+		}
+		
+		{
 			final Variable $X = new Variable("X");
 			
-			deduce("identity", $(forAll($X), $($X, "=", $X)));
+			deduce("identity",
+					$(forAll($X), $($X, "=", $X)));
 			{
 				final Expression<?> x = introduce();
 				
@@ -36,18 +45,10 @@ public final class Standard {
 		
 		{
 			final Variable $X = variable("X");
-			
-			deduce("recall", $(forAll($X), $($X, "->", $X)));
-			{
-				intros();
-			}
-		}
-		
-		{
-			final Variable $X = variable("X");
 			final Variable $Y = variable("Y");
 			
-			deduce("symmetry_of_identity", $(forAll($X, $Y), $($($X, "=", $Y), "->", $($Y, "=", $X))));
+			deduce("symmetry_of_identity",
+					$(forAll($X, $Y), $($($X, "=", $Y), "->", $($Y, "=", $X))));
 			{
 				final Symbol<String> x = introduce();
 				
