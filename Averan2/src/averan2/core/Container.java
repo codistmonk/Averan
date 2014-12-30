@@ -22,6 +22,14 @@ public abstract interface Container<E> extends Serializable, Iterable<E> {
 		return list(this).toArray();
 	}
 	
+	public default boolean isEmpty() {
+		return this.size() == 0;
+	}
+	
+	public default <F extends E> F last() {
+		return this.get(this.size() - 1);
+	}
+	
 	@Override
 	public default java.util.Iterator<E> iterator() {
 		return new Iterator<>(this);
