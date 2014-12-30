@@ -57,7 +57,6 @@ public final class Standard {
 				substitute(e, equality(x, y));
 				rewrite(name(-2), name(-1));
 				rewrite(truthnessOfE, name(-1));
-				stop();
 			}
 		}
 		
@@ -71,9 +70,12 @@ public final class Standard {
 				
 				intros();
 				
-				bind("identity", x);
+//				bind("identity", x);
+//				rewrite(name(-1), name(-2), 0);
+				substitute(x);
+				rewrite(name(-1), name(-1));
 				
-				rewrite(name(-1), name(-2), 0);
+				rewrite(name(-1), name(-3), 0);
 			}
 		}
 		
@@ -83,6 +85,8 @@ public final class Standard {
 			deduce("recall", $($X, "->", $X));
 			{
 				intros();
+				
+				Tools.debugPrint(proposition("identity").getClass());
 				
 				rewrite(name(-1), "identity");
 			}

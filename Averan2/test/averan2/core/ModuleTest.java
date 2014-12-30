@@ -61,15 +61,15 @@ public final class ModuleTest {
 		
 //		assertEquals(2L, context.getConditions().size());
 //		assertEquals(0L, context.getFacts().size());
-		assertEquals(2L, context.getFacts().size());
+		assertEquals(2L, context.getPropositions().size());
 		
 		context.new ProofByApply("p5", "p2", "p1").apply();
 		
 //		assertEquals(2L, context.getConditions().size());
 //		assertEquals(1L, context.getFacts().size());
-		assertEquals(3L, context.getFacts().size());
+		assertEquals(3L, context.getPropositions().size());
 //		assertEquals(B, context.getFacts().get(0));
-		assertEquals(B, context.getFacts().get(context.getFacts().size() - 1));
+		assertEquals(B, context.getPropositions().get(context.getPropositions().size() - 1));
 	}
 	
 	@Test
@@ -82,18 +82,18 @@ public final class ModuleTest {
 		
 //		assertEquals(3L, context.getConditions().size());
 //		assertEquals(0L, context.getFacts().size());
-		assertEquals(3L, context.getFacts().size());
+		assertEquals(3L, context.getPropositions().size());
 		
 		context.new ProofByApply("p5", "p2", "p1_1").apply();
 		context.new ProofByApply("p6", "p2", "p1_2").apply();
 		
 //		assertEquals(3L, context.getConditions().size());
 //		assertEquals(2L, context.getFacts().size());
-		assertEquals(5L, context.getFacts().size());
+		assertEquals(5L, context.getPropositions().size());
 //		assertEquals(B, context.getFacts().get(0));
 //		assertEquals(B, context.getFacts().get(1));
-		assertEquals(B, context.getFacts().get(3));
-		assertEquals(B, context.getFacts().get(4));
+		assertEquals(B, context.getPropositions().get(3));
+		assertEquals(B, context.getPropositions().get(4));
 	}
 	
 	@Test
@@ -106,8 +106,8 @@ public final class ModuleTest {
 		
 //		assertEquals(0L, context.getConditions().size());
 //		assertEquals(1L, context.getFacts().size());
-		assertEquals(1L, context.getFacts().size());
-		assertEquals(equality(composite(expression, substitution), composite(A, B, C)), context.getFacts().get(0));
+		assertEquals(1L, context.getPropositions().size());
+		assertEquals(equality(composite(expression, substitution), composite(A, B, C)), context.getPropositions().get(0));
 	}
 	
 	@Test
@@ -120,9 +120,9 @@ public final class ModuleTest {
 		
 //		assertEquals(2L, context.getConditions().size());
 //		assertEquals(1L, context.getFacts().size());
-		assertEquals(3L, context.getFacts().size());
+		assertEquals(3L, context.getPropositions().size());
 //		assertEquals(B, context.getFacts().get(0));
-		assertEquals(B, context.getFacts().get(context.getFacts().size() - 1));
+		assertEquals(B, context.getPropositions().get(context.getPropositions().size() - 1));
 	}
 	
 	@Test
@@ -144,10 +144,10 @@ public final class ModuleTest {
 		
 //		assertEquals(2L, context.getConditions().size());
 //		assertEquals(1L, context.getFacts().size());
-		assertEquals(3L, context.getFacts().size());
+		assertEquals(3L, context.getPropositions().size());
 //		assertEquals(implication(A, C), context.getFacts().get(0));
 		Tools.debugPrint(context);
-		assertEquals(implication(A, C), context.getFacts().get(2));
+		assertEquals(implication(A, C), context.getPropositions().get(2));
 	}
 	
 	public static final Symbol<String> A = symbol("A");

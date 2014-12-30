@@ -25,9 +25,9 @@ public final class Module implements Expression<Composite<?>> {
 	
 	private final Composite<Variable> parameters;
 	
-	private final Composite<Expression<?>> facts;
+	private final Composite<Expression<?>> propositions;
 	
-	private final IndexedMap<String, Integer> factIds;
+	private final IndexedMap<String, Integer> propositionIds;
 	
 	private final List<Proof> proofs;
 	
@@ -38,8 +38,8 @@ public final class Module implements Expression<Composite<?>> {
 	public Module(final Module context) {
 		this.context = context;
 		this.parameters = new Composite<>();
-		this.facts = new Composite<>();
-		this.factIds = new IndexedMap<>();
+		this.propositions = new Composite<>();
+		this.propositionIds = new IndexedMap<>();
 		this.proofs = new ArrayList<>();
 	}
 	
@@ -54,22 +54,22 @@ public final class Module implements Expression<Composite<?>> {
 	}
 	
 	public final Module canonicalize() {
-		Module last = this.getFacts().isEmpty() ? null : cast(Module.class, this.getFacts().last());
+		Module last = this.getPropositions().isEmpty() ? null : cast(Module.class, this.getPropositions().last());
 		
 		while (last != null && last.getParameters().isEmpty()) {
-			final Module fact = removeLast(this.getFacts().getElements());
+			final Module fact = removeLast(this.getPropositions().getElements());
 			
-			this.getFactIds().remove(this.getFactIds().last());
+			this.getPropositionIds().remove(this.getPropositionIds().last());
 			
-			if (fact.getFactIds().size() != fact.getFacts().size()) {
-				this.getFacts().getElements().addAll(fact.getFacts().getElements());
+			if (fact.getPropositionIds().size() != fact.getPropositions().size()) {
+				this.getPropositions().getElements().addAll(fact.getPropositions().getElements());
 			} else {
-				for (final Map.Entry<String, Integer> id : fact.getFactIds().entrySet()) {
-					this.addFact(id.getKey(), fact.getFacts().get(id.getValue()), fact.getProof(id.getKey()));
+				for (final Map.Entry<String, Integer> id : fact.getPropositionIds().entrySet()) {
+					this.addFact(id.getKey(), fact.getPropositions().get(id.getValue()), fact.getProof(id.getKey()));
 				}
 			}
 			
-			last = this.getFacts().isEmpty() ? null : cast(Module.class, this.getFacts().last());
+			last = this.getPropositions().isEmpty() ? null : cast(Module.class, this.getPropositions().last());
 		}
 		
 		return this;
@@ -80,10 +80,10 @@ public final class Module implements Expression<Composite<?>> {
 			return null;
 		}
 		
-		Integer index = this.getFactIds().get(name);
+		Integer index = this.getPropositionIds().get(name);
 		
 		if (index != null) {
-			return this.getFacts().get(index);
+			return this.getPropositions().get(index);
 		}
 		
 		return this.getContext() != null ? this.getContext().findProposition(name) : null;
@@ -105,7 +105,7 @@ public final class Module implements Expression<Composite<?>> {
 		case 0:
 			return this.getParameters();
 		case 1:
-			return this.getFacts();
+			return this.getPropositions();
 		}
 		
 		return null;
@@ -123,9 +123,9 @@ public final class Module implements Expression<Composite<?>> {
 		
 		int i = index;
 		
-		for (int j = this.getFactIds().size() - 1; 0 <= j; --j, ++i) {
+		for (int j = this.getPropositionIds().size() - 1; 0 <= j; --j, ++i) {
 			if (i == -1) {
-				return this.getFactIds().get(j);
+				return this.getPropositionIds().get(j);
 			}
 		}
 		
@@ -139,44 +139,44 @@ public final class Module implements Expression<Composite<?>> {
 		
 		int i = index;
 		
-		for (int j = this.getFacts().size() - 1; 0 <= j; --j, ++i) {
+		for (int j = this.getPropositions().size() - 1; 0 <= j; --j, ++i) {
 			if (i == -1) {
-				return this.getFacts().get(j);
+				return this.getPropositions().get(j);
 			}
 		}
 		
 		return this.getContext() != null ? this.getContext().getProposition(i) : null;
 	}
 	
-	public final Composite<Expression<?>> getFacts() {
-		return this.facts;
+	public final Composite<Expression<?>> getPropositions() {
+		return this.propositions;
 	}
 	
-	public final IndexedMap<String, Integer> getFactIds() {
-		return this.factIds;
+	public final IndexedMap<String, Integer> getPropositionIds() {
+		return this.propositionIds;
 	}
 	
 	public final Proof getProof(final String factName) {
-		return this.getProofs().get(this.getFactIds().get(factName));
+		return this.getProofs().get(this.getPropositionIds().get(factName));
 	}
 	
 	@Override
 	public final int hashCode() {
 		this.canonicalize();
 		
-		return this.getFacts().hashCode();
+		return this.getPropositions().hashCode();
 	}
 	
 	@Override
 	public final boolean equals(final Object object) {
 		final Module that = cast(this.getClass(), object);
 		
-		return that != null && this.canonicalize().getFacts().equals(that.canonicalize().getFacts());
+		return that != null && this.canonicalize().getPropositions().equals(that.canonicalize().getPropositions());
 	}
 	
 	@Override
 	public final String toString() {
-		return formatPropositions("->", this.getFacts());
+		return formatPropositions("->", this.getPropositions());
 	}
 	
 	public final Module suppose(final Expression<?> condition) {
@@ -188,25 +188,24 @@ public final class Module implements Expression<Composite<?>> {
 	}
 	
 	final Module addCondition(final String name, final Expression<?> proposition) {
-		return this.addProposition(name, proposition, this.getFacts(), this.getFactIds()).addProof(null);
+		return this.addProposition(name, proposition).addProof(null);
 	}
 	
 	final Module addFact(final String name, final Expression<?> proposition, final Proof proof) {
-		return this.addProposition(name, proposition, this.getFacts(), this.getFactIds()).addProof(proof);
+		return this.addProposition(name, proposition).addProof(proof);
 	}
 	
 	final List<Proof> getProofs() {
 		return this.proofs;
 	}
 	
-	private final Module addProposition(final String name, final Expression<?> proposition,
-			final Composite<Expression<?>> propositions, final IndexedMap<String, Integer> propositionIds) {
+	private final Module addProposition(final String name, final Expression<?> proposition) {
 		if (this.findProposition(name) != null) {
 			throw new IllegalArgumentException("Duplicate proposition name: " + name);
 		}
 		
-		propositionIds.put(name, propositions.size());
-		propositions.getElements().add(proposition);
+		this.getPropositionIds().put(name, this.getPropositions().size());
+		this.getPropositions().getElements().add(proposition);
 		
 		return this;
 	}
@@ -273,15 +272,15 @@ public final class Module implements Expression<Composite<?>> {
 			final Module context = Module.this;
 			final Module module = context.<Module>findProposition(this.getModuleName()).canonicalize();
 			
-			if (module.getFacts().size() == 1) {
+			if (module.getPropositions().size() == 1) {
 				if (this.getConditionName() != null) {
 					throw new IllegalArgumentException();
 				}
 				
 				int i = 0;
 				
-				for (final Map.Entry<String, Integer> id : module.getFactIds().entrySet()) {
-					context.addFact(this.getFactName() + "." + (++i), module.getFacts().get(id.getValue()), this);
+				for (final Map.Entry<String, Integer> id : module.getPropositionIds().entrySet()) {
+					context.addFact(this.getFactName() + "." + (++i), module.getPropositions().get(id.getValue()), this);
 				}
 				
 				return this;
@@ -399,11 +398,11 @@ public final class Module implements Expression<Composite<?>> {
 			super(factName);
 			
 			if (Module.this != deduction.getContext()
-					|| deduction.getFactIds().size() != deduction.getFacts().size()) {
+					|| deduction.getPropositionIds().size() != deduction.getPropositions().size()) {
 				throw new IllegalArgumentException();
 			}
 			
-			for (final String name : deduction.getFactIds().keySet()) {
+			for (final String name : deduction.getPropositionIds().keySet()) {
 				if (name == null) {
 					throw new IllegalArgumentException();
 				}
@@ -419,19 +418,19 @@ public final class Module implements Expression<Composite<?>> {
 		@Override
 		public final ProofByDeduce apply() {
 			final Module deduction = this.getDeduction();
-			final Composite<Expression<?>> deducedFacts = deduction.getFacts();
+			final Composite<Expression<?>> deducedFacts = deduction.getPropositions();
 			final Expression<?> lastDeducedFact = deducedFacts.get(deducedFacts.size() - 1);
 			final Expression<?> fact;
 			
 			fact = new Module();
 			
-			for (final Map.Entry<String, Integer> id : deduction.getFactIds().entrySet()) {
+			for (final Map.Entry<String, Integer> id : deduction.getPropositionIds().entrySet()) {
 				if (deduction.getProof(id.getKey()) == null) {
-					((Module) fact).addCondition(id.getKey(), deduction.getFacts().get(id.getValue()));
+					((Module) fact).addCondition(id.getKey(), deduction.getPropositions().get(id.getValue()));
 				}
 			}
-			((Module) fact).getFacts().getElements().add(lastDeducedFact);
-			((Module) fact).getFactIds().put(deduction.getFactIds().get(deduction.getFactIds().size() - 1), 0);
+			((Module) fact).getPropositions().getElements().add(lastDeducedFact);
+			((Module) fact).getPropositionIds().put(deduction.getPropositionIds().get(deduction.getPropositionIds().size() - 1), 0);
 			((Module) fact).getProofs().add(this);
 			((Module) fact).canonicalize();
 			
@@ -449,19 +448,19 @@ public final class Module implements Expression<Composite<?>> {
 	}
 	
 	public static final Expression<?> apply(final Module module, final Expression<?> condition) {
-		if (!module.getFacts().get(0).accept(Variable.RESET).equals(condition)) {
-			Tools.debugError(module.getFacts().get(0), condition);
+		if (!module.getPropositions().get(0).accept(Variable.RESET).equals(condition)) {
+			Tools.debugError(module.getPropositions().get(0), condition);
 			throw new IllegalArgumentException();
 		}
 		
-		if (module.getFacts().size() == 2) {
-			return module.getFacts().get(1).accept(Variable.BIND);
+		if (module.getPropositions().size() == 2) {
+			return module.getPropositions().get(1).accept(Variable.BIND);
 		}
 		
 		{
 			final Module fact = new Module();
 			
-			fact.getFacts().getElements().addAll(module.getFacts().getElements().subList(1, module.getFacts().size()));
+			fact.getPropositions().getElements().addAll(module.getPropositions().getElements().subList(1, module.getPropositions().size()));
 			
 			return fact.accept(Variable.BIND);
 		}

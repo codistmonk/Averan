@@ -1,7 +1,5 @@
 package averan2.core;
 
-import static net.sourceforge.aprog.tools.Tools.cast;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,6 +7,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
+import averan2.core.Expression.GatherParameters;
 import net.sourceforge.aprog.tools.Tools;
 
 /**
@@ -81,7 +80,7 @@ public abstract interface Expression<E extends Expression<?>> extends Container<
 //				return module.getConditions().get(0).accept(this);
 //			}
 			
-			return module.getFacts().accept(this);
+			return module.getPropositions().accept(this);
 		}
 		
 		@Override
@@ -114,7 +113,7 @@ public abstract interface Expression<E extends Expression<?>> extends Container<
 		private final Map<Module, Module> moduleContexts = new IdentityHashMap<>();
 		
 //		private final Map<Variable, Module> variableContexts = new IdentityHashMap<>();
-		private final Map<Key<Variable>, Module> variableContexts = new HashMap<>();
+		private final Map<IdentityKey<Variable>, Module> variableContexts = new HashMap<>();
 		
 		private final List<Module> stack = new ArrayList<>();
 		
@@ -123,7 +122,7 @@ public abstract interface Expression<E extends Expression<?>> extends Container<
 		}
 		
 //		public final Map<Variable, Module> getVariableContexts() {
-		public final Map<Key<Variable>, Module> getVariableContexts() {
+		public final Map<IdentityKey<Variable>, Module> getVariableContexts() {
 			return this.variableContexts;
 		}
 		
@@ -134,8 +133,8 @@ public abstract interface Expression<E extends Expression<?>> extends Container<
 		
 		@Override
 		public final Void visit(final Variable variable) {
-			this.getVariableContexts().put(new Key<>(variable),
-					this.getCommonAncestor(this.peek(), this.getVariableContexts().get(new Key<>(variable))));
+			this.getVariableContexts().put(new IdentityKey<>(variable),
+					this.getCommonAncestor(this.peek(), this.getVariableContexts().get(new IdentityKey<>(variable))));
 			
 			return null;
 		}
@@ -252,43 +251,6 @@ public abstract interface Expression<E extends Expression<?>> extends Container<
 			}
 			
 			throw new IllegalStateException();
-		}
-		/**
-		 * @author codistmonk (creation 2014-12-29)
-		 *
-		 * @param <T>
-		 */
-		public static final class Key<T> implements Serializable {
-			
-			private final T object;
-			
-			public Key(final T object) {
-				this.object = object;
-			}
-			
-			public final T getObject() {
-				return this.object;
-			}
-			
-			@Override
-			public final int hashCode() {
-				return this.getObject().hashCode();
-			}
-			
-			@Override
-			public final boolean equals(final Object object) {
-				final Key<?> that = cast(this.getClass(), object);
-				
-				return that != null && this.getObject() == that.getObject();
-			}
-			
-			@Override
-			public final String toString() {
-				return this.getObject().toString();
-			}
-			
-			private static final long serialVersionUID = 1282044383571704275L;
-			
 		}
 		
 	}

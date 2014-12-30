@@ -102,10 +102,10 @@ public final class Session implements Serializable {
 		{
 			final Module module = (Module) goal;
 //			final Expression<?> condition = module.getConditions().get(0);
-			if (module.getFacts().size() <= 1) {
+			if (module.getPropositions().size() <= 1) {
 				throw new IllegalStateException();
 			}
-			final Expression<?> condition = module.getFacts().get(0);
+			final Expression<?> condition = module.getPropositions().get(0);
 			
 			this.getCurrentModule().addCondition(frame.newPropositionName(), condition);
 			frame.setGoal(Module.apply(module, condition));
@@ -165,11 +165,11 @@ public final class Session implements Serializable {
 	
 	private final Session reduce() {
 		final Frame frame = this.getCurrentFrame();
-		final int factCount = frame.getModule().getFacts().size();
+		final int factCount = frame.getModule().getPropositions().size();
 		
 		frame.getModule().accept(this.parameters);
 		
-		if (0 < factCount && frame.getModule().getFacts().get(factCount - 1).equals(frame.getGoal())) {
+		if (0 < factCount && frame.getModule().getPropositions().get(factCount - 1).equals(frame.getGoal())) {
 			this.getFrames().remove(this.getFrames().size() - 1);
 			
 			final Substitution substitution = new Substitution(true);
@@ -219,7 +219,7 @@ public final class Session implements Serializable {
 		
 		public final String newPropositionName() {
 //			return this.getName() + "." + (this.getModule().getConditions().size() + this.getModule().getFacts().size() + 1);
-			return this.getName() + "." + (this.getModule().getFacts().size() + 1);
+			return this.getName() + "." + (this.getModule().getPropositions().size() + 1);
 		}
 		
 		public final String getName() {
@@ -241,8 +241,8 @@ public final class Session implements Serializable {
 			if (goalAsModule != null
 //					&& goalAsModule.canonicalize().getConditions().size() <= 0
 //					&& goalAsModule.getFacts().size() == 1) {
-					&& goalAsModule.canonicalize().getFacts().size() == 1) {
-				this.goal = goalAsModule.getFacts().get(0);
+					&& goalAsModule.canonicalize().getPropositions().size() == 1) {
+				this.goal = goalAsModule.getPropositions().get(0);
 			} else {
 				this.goal = goal;
 			}
@@ -339,8 +339,8 @@ public final class Session implements Serializable {
 //			}
 			
 			// TODO put conditions before facts?
-			for (final Map.Entry<String, Integer> id : module.getFactIds().entrySet()) {
-				result.getRoot().addFact(id.getKey(), module.getFacts().get(id.getValue()), module.getProof(id.getKey()));
+			for (final Map.Entry<String, Integer> id : module.getPropositionIds().entrySet()) {
+				result.getRoot().addFact(id.getKey(), module.getPropositions().get(id.getValue()), module.getProof(id.getKey()));
 			}
 			
 			return result;
@@ -467,11 +467,11 @@ public final class Session implements Serializable {
 			Module module = module();
 			
 			while (module != null) {
-				for (int i = module.getFacts().size() - 1; 0 <= i; --i) {
-					final Expression<?> proposition = module.getFacts().get(i);
+				for (int i = module.getPropositions().size() - 1; 0 <= i; --i) {
+					final Expression<?> proposition = module.getPropositions().get(i);
 					
 					if (canDeduce(proposition, goal)) {
-						result.add(new Pair<>(module.getFactIds().get(i), proposition.accept(Variable.BIND)));
+						result.add(new Pair<>(module.getPropositionIds().get(i), proposition.accept(Variable.BIND)));
 					}
 				}
 				
@@ -500,7 +500,7 @@ public final class Session implements Serializable {
 				return false;
 			}
 			
-			for (final Expression<?> fact : module.canonicalize().getFacts()) {
+			for (final Expression<?> fact : module.canonicalize().getPropositions()) {
 				if (fact.accept(Variable.RESET).equals(suffix)) {
 					return true;
 				}
@@ -550,7 +550,7 @@ public final class Session implements Serializable {
 						final Module module = cast(Module.class, justification.getSecond());
 						
 //						if (module != null && autoDeduce(module.getConditions().get(0))) {
-						if (module != null && autoDeduce(module.getFacts().get(0))) {
+						if (module != null && autoDeduce(module.getPropositions().get(0))) {
 							apply(justification.getFirst(), name(-1));
 							
 							break deduction;
