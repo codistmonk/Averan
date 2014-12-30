@@ -4,13 +4,14 @@ import static averan2.core.Session.*;
 import static averan2.core.Session.Stack.*;
 import static averan2.core.Symbol.symbol;
 import static averan2.core.Variable.variable;
-import averan2.core.Expression;
+
 import averan2.core.Module;
 import averan2.core.Session;
 import averan2.core.Variable;
 import averan2.io.ConsoleOutput;
 import averan2.io.SessionExporter;
 import averan2.modules.Standard;
+
 import net.sourceforge.aprog.tools.Tools;
 
 import org.junit.Test;
@@ -31,13 +32,7 @@ public final class SessionTest {
 				
 				deduce("recall", new Module().parametrize($X).suppose($X).conclude($X));
 				{
-					final Expression<?> x = introduce();
-					
-					introduce();
-					
-					substitute(x);
-					rewrite(name(-1), name(-1));
-					rewrite(name(-3), name(-1));
+					intros();
 				}
 				
 				deduce();
