@@ -165,7 +165,8 @@ public final class Variable implements Expression<Variable> {
 		public final Expression<?> visit(final Module module) {
 			final Module newModule = new Module();
 			
-			if (Composite.listAccept(module.getPropositions(), this, newModule.getPropositions().getElements())) {
+			if (Composite.listAccept(module.getPropositions(), this, newModule.getPropositions().getElements())
+					|| (module.getParameters().isEmpty() && module.getPropositions().size() == 1)) {
 				for (final Variable parameter : module.getParameters()) {
 					if (parameter.getMatch() == null) {
 						newModule.parametrize(parameter);

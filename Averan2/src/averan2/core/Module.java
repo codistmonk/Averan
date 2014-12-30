@@ -476,7 +476,12 @@ public final class Module implements Expression<Composite<?>> {
 			((Module) fact).getProofs().add(this);
 			((Module) fact).canonicalize();
 			
-			return this.addFactToContext(fact);
+			return this.addFactToContext(fact.accept(Variable.BIND));
+		}
+		
+		@Override
+		public final String toString() {
+			return "Deduced in " + this.getDeduction().getPropositions().size() + " steps";
 		}
 		
 		private static final long serialVersionUID = 8959982180068107269L;
@@ -496,6 +501,7 @@ public final class Module implements Expression<Composite<?>> {
 	public static final Expression<?> apply(final Module module, final Expression<?> condition) {
 		if (!module.getPropositions().get(0).accept(Variable.RESET).equals(condition)) {
 			Tools.debugError(module.getPropositions().get(0), " VS ", condition);
+			Tools.debugError(module.getPropositions().get(0).getClass(), " VS ", condition.getClass());
 			throw new IllegalArgumentException();
 		}
 		
