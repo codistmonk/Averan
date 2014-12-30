@@ -68,12 +68,8 @@ public final class SessionTest {
 				deduce("transitivity_of_implication",
 						$(forAll($X, $Y, $Z), $($($X, "->", $Y), "->", $($Y, "->", $Z), "->", $($X, "->", $Z))));
 				{
-					Tools.debugPrint(goal());
 					intros();
-					apply(name(-3), name(-1));
-					apply(name(-3), name(-1));
-//					stop();
-//					check(autoDeduce($($X, "->", $Z)));
+					check(autoDeduce());
 				}
 			}
 		} finally {

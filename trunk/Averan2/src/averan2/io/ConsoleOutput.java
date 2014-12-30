@@ -2,12 +2,12 @@ package averan2.io;
 
 import static java.util.Collections.nCopies;
 import static net.sourceforge.aprog.tools.Tools.join;
-
 import averan2.core.Composite;
 import averan2.core.Equality;
 import averan2.core.Expression;
 import averan2.core.Expression.Visitor;
 import averan2.core.Module;
+import averan2.core.Module.Proof;
 import averan2.core.Session.Frame;
 import averan2.core.Substitution;
 import averan2.core.Symbol;
@@ -72,6 +72,13 @@ public final class ConsoleOutput implements Output {
 	public final void beginFact(final String name, final Expression<?> fact) {
 		this.out.println(this.indent + "	(" + name + ")");
 		this.out.println(this.indent + "	" + this.asString(fact));
+	}
+	
+	@Override
+	public final void beginProof(final Proof factProof) {
+		if (factProof != null) {
+			this.out.println(this.indent + "		(" + factProof + ")");
+		}
 	}
 	
 	@Override

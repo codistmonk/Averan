@@ -14,9 +14,9 @@ import java.util.List;
 import java.util.Map;
 
 import jgencode.primitivelists.IntList;
+
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 import net.sourceforge.aprog.tools.Pair;
-import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2014-12-20)
@@ -168,8 +168,6 @@ public final class Session implements Serializable {
 				binding.getRight().accept(Variable.RESET);
 				substitution.using(binding);
 			}
-			
-			Tools.debugPrint(this.getCurrentModule(), frame.getGoal());
 			
 			this.getCurrentModule().new ProofByDeduce(frame.getName(), (Module) frame.getModule().accept(substitution.reset())).apply();
 			
@@ -502,10 +500,8 @@ public final class Session implements Serializable {
 				return false;
 			}
 			
-			for (final Expression<?> fact : module.canonicalize().getPropositions()) {
-				if (fact.accept(Variable.RESET).equals(suffix)) {
-					return true;
-				}
+			if (module.canonicalize().getPropositions().last().accept(Variable.RESET).equals(suffix)) {
+				return true;
 			}
 			
 			final Module suffixAsModule = cast(Module.class, suffix);
@@ -526,10 +522,14 @@ public final class Session implements Serializable {
 		}
 		
 		public static final boolean autoDeduce(final Expression<?> expression) {
-			return autoDeduce(null, expression);
+			return autoDeduce(null, expression, 4);
 		}
 		
-		public static final boolean autoDeduce(final String factName, final Expression<?> expression) {
+		public static final boolean autoDeduce(final String factName, final Expression<?> expression, final int depth) {
+			if (depth <= 0) {
+				return false;
+			}
+			
 			deduce(factName, expression);
 			{
 				final Module unfinishedProof = module();
@@ -538,10 +538,10 @@ public final class Session implements Serializable {
 				
 				deduction:
 				{
-					final List<Pair<String, Expression<?>>> justifications = justificationsFor(goal());
+					final List<Pair<String, Expression<?>>> justifications = justificationsFor(expression);
 					
 					for (final Pair<String, Expression<?>> justification : justifications) {
-						if (justification.getSecond().equals(goal())) {
+						if (justification.getSecond().equals(expression)) {
 							apply("recall", justification.getFirst());
 							
 							break deduction;
@@ -551,13 +551,11 @@ public final class Session implements Serializable {
 					for (final Pair<String, Expression<?>> justification : justifications) {
 						final Module module = cast(Module.class, justification.getSecond());
 						
-						if (module != null && autoDeduce(module.getPropositions().get(0))) {
+						if (module != null && autoDeduce(null, module.getPropositions().get(0), depth - 1)) {
 							apply(justification.getFirst(), name(-1));
 							
 							break deduction;
 						}
-						
-						stop();
 					}
 				}
 				
