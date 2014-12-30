@@ -1,14 +1,14 @@
 package averan2.io;
 
-import java.io.Serializable;
-import java.util.Map;
-
-import averan2.core.Composite;
 import averan2.core.Expression;
 import averan2.core.Module;
 import averan2.core.Session;
 import averan2.core.Module.Proof;
 import averan2.core.Session.Frame;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author codistmonk (creation 2014-12-21)
@@ -25,6 +25,30 @@ public final class SessionExporter implements Serializable {
 		output.endSession();
 	}
 	
+	public static final List<String> getConditionNames(final Module module) {
+		final List<String> result = new ArrayList<>();
+		
+		for (final String name : module.getPropositionIds().keySet()) {
+			if (module.getProof(name) == null) {
+				result.add(name);
+			}
+		}
+		
+		return result;
+	}
+	
+	public static final List<String> getFactNames(final Module module) {
+		final List<String> result = new ArrayList<>();
+		
+		for (final String name : module.getPropositionIds().keySet()) {
+			if (module.getProof(name) != null) {
+				result.add(name);
+			}
+		}
+		
+		return result;
+	}
+	
 	public static final void exportFrame(final Session session, final int index, final SessionExporter.Output output) {
 		final Frame frame = session.getFrames().get(index);
 		
@@ -35,18 +59,35 @@ public final class SessionExporter implements Serializable {
 		{
 			final Module module = frame.getModule();
 			
-			output.beginFacts(module.getPropositions());
-			
-			for (final Map.Entry<String, Integer> entry : module.getPropositionIds().entrySet()) {
-				final Expression<?> fact = module.getPropositions().get(entry.getValue());
-				output.beginFact(entry.getKey(), fact);
+			{
+				final List<String> conditionNames = getConditionNames(module);
 				
-				output.beginProof(module.getProof(entry.getKey()));
-				// TODO
-				output.endProof();
+				output.beginConditions(conditionNames);
+				
+				for (final String name : conditionNames) {
+					output.processCondition(name, module.findProposition(name));
+				}
+				
+				output.endConditions();
 			}
 			
-			output.endFacts();
+			{
+				final List<String> factNames = getFactNames(module);
+				
+				output.beginFacts(factNames);
+				
+				for (final String name : factNames) {
+					output.beginFact(name, module.findProposition(name));
+					
+					output.beginProof(module.getProof(name));
+					// TODO
+					output.endProof();
+					
+					output.endFact();
+				}
+				
+				output.endFacts();
+			}
 		}
 		
 		if (index + 1 < session.getFrames().size()) {
@@ -79,7 +120,7 @@ public final class SessionExporter implements Serializable {
 			// NOP
 		}
 		
-		public default void beginConditions(final Composite<Expression<?>> conditions) {
+		public default void beginConditions(final List<String> conditionNames) {
 			// NOP
 		}
 		
@@ -91,7 +132,7 @@ public final class SessionExporter implements Serializable {
 			// NOP
 		}
 		
-		public default void beginFacts(final Composite<Expression<?>> facts) {
+		public default void beginFacts(final List<String> factNames) {
 			// NOP
 		}
 		

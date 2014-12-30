@@ -4,13 +4,13 @@ import static averan2.core.Composite.composite;
 import static averan2.core.Equality.equality;
 import static averan2.core.Symbol.symbol;
 import static org.junit.Assert.*;
+
 import averan2.core.Composite;
 import averan2.core.Expression;
 import averan2.core.Module;
 import averan2.core.Substitution;
 import averan2.core.Symbol;
 import averan2.core.Variable;
-import net.sourceforge.aprog.tools.Tools;
 
 import org.junit.Test;
 
@@ -59,16 +59,11 @@ public final class ModuleTest {
 		context.addCondition("p1", A);
 		context.addCondition("p2", new Module(context).addCondition("p3", A).addFact("p4", B, null));
 		
-//		assertEquals(2L, context.getConditions().size());
-//		assertEquals(0L, context.getFacts().size());
 		assertEquals(2L, context.getPropositions().size());
 		
 		context.new ProofByApply("p5", "p2", "p1").apply();
 		
-//		assertEquals(2L, context.getConditions().size());
-//		assertEquals(1L, context.getFacts().size());
 		assertEquals(3L, context.getPropositions().size());
-//		assertEquals(B, context.getFacts().get(0));
 		assertEquals(B, context.getPropositions().get(context.getPropositions().size() - 1));
 	}
 	
@@ -80,18 +75,12 @@ public final class ModuleTest {
 		context.addCondition("p1_2", symbol("A2"));
 		context.addCondition("p2", new Module(context).addCondition("p3", new Variable("X")).addFact("p4", B, null));
 		
-//		assertEquals(3L, context.getConditions().size());
-//		assertEquals(0L, context.getFacts().size());
 		assertEquals(3L, context.getPropositions().size());
 		
 		context.new ProofByApply("p5", "p2", "p1_1").apply();
 		context.new ProofByApply("p6", "p2", "p1_2").apply();
 		
-//		assertEquals(3L, context.getConditions().size());
-//		assertEquals(2L, context.getFacts().size());
 		assertEquals(5L, context.getPropositions().size());
-//		assertEquals(B, context.getFacts().get(0));
-//		assertEquals(B, context.getFacts().get(1));
 		assertEquals(B, context.getPropositions().get(3));
 		assertEquals(B, context.getPropositions().get(4));
 	}
@@ -104,8 +93,6 @@ public final class ModuleTest {
 		
 		context.new ProofBySubstitute("p1", expression, substitution).apply();
 		
-//		assertEquals(0L, context.getConditions().size());
-//		assertEquals(1L, context.getFacts().size());
 		assertEquals(1L, context.getPropositions().size());
 		assertEquals(equality(composite(expression, substitution), composite(A, B, C)), context.getPropositions().get(0));
 	}
@@ -118,10 +105,7 @@ public final class ModuleTest {
 		context.addCondition("p2", A);
 		context.new ProofByRewrite("p3", "p2").using("p1").apply();
 		
-//		assertEquals(2L, context.getConditions().size());
-//		assertEquals(1L, context.getFacts().size());
 		assertEquals(3L, context.getPropositions().size());
-//		assertEquals(B, context.getFacts().get(0));
 		assertEquals(B, context.getPropositions().get(context.getPropositions().size() - 1));
 	}
 	
@@ -142,11 +126,7 @@ public final class ModuleTest {
 		
 		context.new ProofByDeduce("p3", subcontext).apply();
 		
-//		assertEquals(2L, context.getConditions().size());
-//		assertEquals(1L, context.getFacts().size());
 		assertEquals(3L, context.getPropositions().size());
-//		assertEquals(implication(A, C), context.getFacts().get(0));
-		Tools.debugPrint(context);
 		assertEquals(implication(A, C), context.getPropositions().get(2));
 	}
 	

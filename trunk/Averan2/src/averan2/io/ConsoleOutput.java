@@ -2,6 +2,7 @@ package averan2.io;
 
 import static java.util.Collections.nCopies;
 import static net.sourceforge.aprog.tools.Tools.join;
+
 import averan2.core.Composite;
 import averan2.core.Equality;
 import averan2.core.Expression;
@@ -15,6 +16,7 @@ import averan2.core.Variable;
 import averan2.io.SessionExporter.Output;
 
 import java.io.PrintStream;
+import java.util.List;
 
 /**
  * @author codistmonk (creation 2014-12-21)
@@ -49,8 +51,8 @@ public final class ConsoleOutput implements Output {
 	}
 	
 	@Override
-	public final void beginConditions(final Composite<Expression<?>> conditions) {
-		if (0 < conditions.size()) {
+	public final void beginConditions(final List<String> conditionNames) {
+		if (0 < conditionNames.size()) {
 			this.out.println(this.indent + "((CONDITIONS))");
 		}
 	}
@@ -62,8 +64,8 @@ public final class ConsoleOutput implements Output {
 	}
 
 	@Override
-	public final void beginFacts(final Composite<Expression<?>> facts) {
-		if (0 < facts.size()) {
+	public final void beginFacts(final List<String> factNames) {
+		if (0 < factNames.size()) {
 			this.out.println(this.indent + "((FACTS))");
 		}
 	}
@@ -76,9 +78,7 @@ public final class ConsoleOutput implements Output {
 	
 	@Override
 	public final void beginProof(final Proof factProof) {
-		if (factProof != null) {
-			this.out.println(this.indent + "		(" + factProof + ")");
-		}
+		this.out.println(this.indent + "		(" + factProof + ")");
 	}
 	
 	@Override
@@ -145,14 +145,35 @@ public final class ConsoleOutput implements Output {
 				}
 			}
 			
-			if (module.getPropositions().size() != 1) {
+			if (!module.getParameters().isEmpty()) {
 				resultBuilder.append('(');
 			}
 			
-			resultBuilder.
-				append(join(" → ", module.getPropositions().stream().map(e -> e.accept(this)).toArray()));
+			{
+				boolean first = true;
+				
+				for (final Expression<?> proposition : module.getPropositions()) {
+					if (!first) {
+						resultBuilder.append(" → ");
+					} else {
+						first = false;
+					}
+					
+					if (1 < module.getPropositions().size() && (proposition instanceof Module
+							|| proposition instanceof Composite<?> || proposition instanceof Equality)) {
+						resultBuilder.append('(');
+					}
+					
+					resultBuilder.append(proposition.accept(this));
+					
+					if (1 < module.getPropositions().size() && (proposition instanceof Module ||
+							proposition instanceof Composite<?> || proposition instanceof Equality)) {
+						resultBuilder.append(')');
+					}
+				}
+			}
 			
-			if (module.getPropositions().size() != 1) {
+			if (!module.getParameters().isEmpty()) {
 				resultBuilder.append(')');
 			}
 			
