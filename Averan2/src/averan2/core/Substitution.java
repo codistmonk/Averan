@@ -7,6 +7,9 @@ import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.join;
 
 import java.util.Collection;
+import java.util.List;
+
+import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2014-12-20)
@@ -67,7 +70,10 @@ public final class Substitution implements Expression.Visitor<Expression<?>>, Ex
 	
 	@Override
 	public final Expression<?> visit(final Variable variable) {
-		return this.tryToReplace(variable);
+		// XXX simplify this method if forced binding during substitution (see visit(Module)) turns out to be unnecessary
+		variable.reset().equals(this.tryToReplace(variable));
+		
+		return variable.getMatch() == null ? variable : variable.getMatch();
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -93,18 +99,31 @@ public final class Substitution implements Expression.Visitor<Expression<?>>, Ex
 		
 		if (candidate == module) {
 			candidate = new Module(this.copyProofData ? module.getContext() : null);
+			final List<Expression<?>> newFacts = ((Module) candidate).getFacts().getElements();
 			
-//			if (!listAccept(module.getConditions(), this,
-//					((Module) candidate).getConditions().getElements())
-//					& !listAccept(module.getFacts(), this,
-//							((Module) candidate).getFacts().getElements())) {
-			if (!listAccept(module.getFacts(), this,
-					((Module) candidate).getFacts().getElements())) {
+			if (!listAccept(module.getFacts(), this, newFacts)) {
 				return module;
 			}
 			
+			// forced binding
+			if (false) {
+				Tools.debugPrint(this.getBindings());
+				Tools.debugPrint(candidate);
+				final int n = newFacts.size();
+				
+				for (int i = 0; i < n; ++i) {
+					newFacts.set(i, newFacts.get(i).accept(Variable.BIND));
+				}
+				
+				for (final java.util.Iterator<Variable> i = ((Module) candidate).getParameters().getElements().iterator(); i.hasNext();) {
+					if (!(i.next().getMatch() instanceof Variable)) {
+						i.remove();
+					}
+				}
+				Tools.debugPrint(candidate);
+			}
+			
 			if (this.copyProofData) {
-//				((Module) candidate).getConditionIds().putAll(module.getConditionIds());
 				((Module) candidate).getFactIds().putAll(module.getFactIds());
 				((Module) candidate).getProofs().addAll(module.getProofs());
 			}

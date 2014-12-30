@@ -165,9 +165,13 @@ public final class Variable implements Expression<Variable> {
 		public final Expression<?> visit(final Module module) {
 			final Module newModule = new Module();
 			
-//			if (Composite.listAccept(module.getConditions(), this, newModule.getConditions().getElements())
-//					| Composite.listAccept(module.getFacts(), this, newModule.getFacts().getElements())) {
 			if (Composite.listAccept(module.getFacts(), this, newModule.getFacts().getElements())) {
+				for (final java.util.Iterator<Variable> i = newModule.getParameters().iterator(); i.hasNext();) {
+					if (i.next().getMatch() != null) {
+						i.remove();
+					}
+				}
+				
 				return newModule;
 			}
 			
