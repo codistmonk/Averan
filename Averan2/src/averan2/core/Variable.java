@@ -12,7 +12,7 @@ public final class Variable implements Expression<Variable> {
 	
 	private final String name;
 	
-	private Expression<?> match;
+	public Expression<?> match;
 	
 	public Variable(final String name) {
 		this.name = name;
@@ -166,13 +166,13 @@ public final class Variable implements Expression<Variable> {
 			final Module newModule = new Module();
 			
 			if (Composite.listAccept(module.getPropositions(), this, newModule.getPropositions().getElements())) {
-				for (final java.util.Iterator<Variable> i = newModule.getParameters().iterator(); i.hasNext();) {
-					if (i.next().getMatch() != null) {
-						i.remove();
+				for (final Variable parameter : module.getParameters()) {
+					if (parameter.getMatch() == null) {
+						newModule.parametrize(parameter);
 					}
 				}
 				
-				return newModule;
+				return newModule.getParameters().isEmpty() && newModule.getPropositions().size() == 1 ? newModule.getPropositions().get(0) : newModule;
 			}
 			
 			return module;

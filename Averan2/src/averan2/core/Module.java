@@ -176,7 +176,7 @@ public final class Module implements Expression<Composite<?>> {
 	
 	@Override
 	public final String toString() {
-		return formatPropositions("->", this.getPropositions());
+		return formatParameters(this.getParameters()) + formatPropositions("->", this.getPropositions());
 	}
 	
 	public final Module suppose(final Expression<?> condition) {
@@ -272,7 +272,7 @@ public final class Module implements Expression<Composite<?>> {
 			final Module context = Module.this;
 			final Module module = context.<Module>findProposition(this.getModuleName()).canonicalize();
 			
-			if (module.getPropositions().size() == 1) {
+			if (module.getParameters().isEmpty() && module.getPropositions().size() == 1) {
 				if (this.getConditionName() != null) {
 					throw new IllegalArgumentException();
 				}
@@ -380,10 +380,52 @@ public final class Module implements Expression<Composite<?>> {
 				substitution.using(Module.this.findProposition(equalityName));
 			}
 			
+			Tools.debugPrint(substitution.getBindings());
+			
 			return this.addFactToContext(Module.this.findProposition(this.getPropositionName()).accept(substitution.reset()));
 		}
 		
 		private static final long serialVersionUID = 5020773952478671657L;
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2014-12-30)
+	 */
+	public final class ProofByBind extends Proof {
+		
+		private final String moduleName;
+		
+		private final Expression<?>[] values;
+		
+		public ProofByBind(final String factName, String moduleName,
+				final Expression<?>[] values) {
+			super(factName);
+			this.moduleName = moduleName;
+			this.values = values;
+		}
+		
+		public final String getModuleName() {
+			return this.moduleName;
+		}
+		
+		public final Expression<?>[] getValues() {
+			return this.values;
+		}
+		
+		@Override
+		public final Proof apply() {
+			final Module module = Module.this.findProposition(this.getModuleName());
+			final int n = this.getValues().length;
+			
+			for (int i = 0; i < n; ++i) {
+				module.getParameters().get(i).equals(this.getValues()[i]);
+			}
+			
+			return this.addFactToContext(module.accept(Variable.BIND));
+		}
+		
+		private static final long serialVersionUID = 2309957562673783419L;
 		
 	}
 	
@@ -424,6 +466,8 @@ public final class Module implements Expression<Composite<?>> {
 			
 			fact = new Module();
 			
+			deduction.getParameters().forEach(((Module) fact)::parametrize);
+			
 			for (final Map.Entry<String, Integer> id : deduction.getPropositionIds().entrySet()) {
 				if (deduction.getProof(id.getKey()) == null) {
 					((Module) fact).addCondition(id.getKey(), deduction.getPropositions().get(id.getValue()));
@@ -443,23 +487,28 @@ public final class Module implements Expression<Composite<?>> {
 	
 	private static final long serialVersionUID = 9140955565054672814L;
 	
+	public static final String formatParameters(final Composite<Variable> parameters) {
+		return parameters.isEmpty() ? "" : ("∀" + join(",", parameters.toArray()) + " ");
+	}
+	
 	public static final String formatPropositions(final String separator, final Composite<Expression<?>> propositions) {
-		return propositions.size() == 0 ? "()" : join(separator, propositions.getElements().toArray());
+		return propositions.isEmpty() ? "()" : join(separator, propositions.toArray());
 	}
 	
 	public static final Expression<?> apply(final Module module, final Expression<?> condition) {
 		if (!module.getPropositions().get(0).accept(Variable.RESET).equals(condition)) {
-			Tools.debugError(module.getPropositions().get(0), condition);
+			Tools.debugError(module.getPropositions().get(0), " VS ", condition);
 			throw new IllegalArgumentException();
 		}
 		
-		if (module.getPropositions().size() == 2) {
+		if (module.getParameters().isEmpty() && module.getPropositions().size() == 2) {
 			return module.getPropositions().get(1).accept(Variable.BIND);
 		}
 		
 		{
 			final Module fact = new Module();
 			
+			fact.getParameters().getElements().addAll(module.getParameters().getElements());
 			fact.getPropositions().getElements().addAll(module.getPropositions().getElements().subList(1, module.getPropositions().size()));
 			
 			return fact.accept(Variable.BIND);

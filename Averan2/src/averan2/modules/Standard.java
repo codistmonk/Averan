@@ -1,9 +1,10 @@
 package averan2.modules;
 
 import static averan2.core.Equality.equality;
-import static averan2.core.Expression.CollectParameters.collectParameters;
+//import static averan2.core.Expression.CollectParameters.collectParameters;
 import static averan2.core.Session.*;
 import static averan2.core.Session.Stack.*;
+import static averan2.core.Symbol.symbol;
 import static averan2.core.Variable.variable;
 import averan2.core.*;
 import averan2.io.ConsoleOutput;
@@ -24,7 +25,7 @@ public final class Standard {
 		{
 			final Variable $X = new Variable("X");
 			
-			deduce("identity", $($X, "=", $X));
+			deduce("identity", $(forAll($X), $($X, "=", $X)));
 			{
 				final Expression<?> x = introduce();
 				
@@ -34,29 +35,11 @@ public final class Standard {
 		}
 		
 		{
-			final Variable $E = variable("E");
-			final Variable $F = variable("F");
 			final Variable $X = variable("X");
-			final Variable $Y = variable("Y");
 			
-			deduce("bind",
-					$($E, "->", $($($E, new Substitution().using($($X, "=", $Y))), "=", $F), "->", $F));
+			deduce("recall", $(forAll($X), $($X, "->", $X)));
 			{
-				final Symbol<String> e = introduce();
-				
-				final Symbol<String> x = introduce();
-				final Symbol<String> y = introduce();
-				final Symbol<String> f = introduce();
-				
-				introduce();
-				
-				final String truthnessOfE = name(-1);
-				
 				intros();
-				
-				substitute(e, equality(x, y));
-				rewrite(name(-2), name(-1));
-				rewrite(truthnessOfE, name(-1));
 			}
 		}
 		
@@ -64,33 +47,17 @@ public final class Standard {
 			final Variable $X = variable("X");
 			final Variable $Y = variable("Y");
 			
-			deduce("symmetry_of_identity", $($($X, "=", $Y), "->", $($Y, "=", $X)));
+			deduce("symmetry_of_identity", $(forAll($X, $Y), $($($X, "=", $Y), "->", $($Y, "=", $X))));
 			{
 				final Symbol<String> x = introduce();
 				
 				intros();
 				
-//				bind("identity", x);
-//				rewrite(name(-1), name(-2), 0);
-				substitute(x);
-				rewrite(name(-1), name(-1));
-				
-				rewrite(name(-1), name(-3), 0);
+				bind("identity", x);
+				rewrite(name(-1), name(-2), 0);
 			}
 		}
 		
-		{
-			final Variable $X = variable("X");
-			
-			deduce("recall", $($X, "->", $X));
-			{
-				intros();
-				
-				Tools.debugPrint(proposition("identity").getClass());
-				
-				rewrite(name(-1), "identity");
-			}
-		}
 	});
 	
 	public static final Module build(final String moduleName, final Runnable moduleDefinition) {
@@ -110,26 +77,6 @@ public final class Standard {
 		}
 		
 		return result;
-	}
-	
-	public static final void bind(final String propositionName, final Expression<?> value) {
-		bind(null, propositionName, value);
-	}
-	
-	public static final void bind(final String factName, final String propositionName, final Expression<?> value) {
-		deduce(factName);
-		{
-			final Expression<?> proposition = proposition(propositionName);
-			final Variable parameter = proposition.
-					accept(Variable.RESET).accept(collectParameters()).get(0);
-			
-			parameter.equals(value);
-			substitute(proposition.accept(Variable.BIND), equality(value, value));
-			apply("bind", propositionName);
-			apply(name(-1), name(-2));
-			
-			conclude();
-		}
 	}
 	
 	public static final void rewriteRight(final String propositionName,

@@ -2,7 +2,7 @@ package averan2.core;
 
 import static averan2.core.Composite.composite;
 import static averan2.core.Equality.equality;
-import static averan2.core.Expression.CollectParameters.collectParameters;
+//import static averan2.core.Expression.CollectParameters.collectParameters;
 import static averan2.core.Symbol.symbol;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.ignore;
@@ -14,7 +14,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import averan2.core.Expression.GatherParameters;
+//import averan2.core.Expression.GatherParameters;
 import jgencode.primitivelists.IntList;
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 import net.sourceforge.aprog.tools.Pair;
@@ -27,13 +27,13 @@ public final class Session implements Serializable {
 	
 	private final Module root;
 	
-	private final GatherParameters parameters;
+//	private final GatherParameters parameters;
 	
 	private final List<Frame> frames;
 	
 	public Session() {
 		this.root = new Module();
-		this.parameters = new GatherParameters();
+//		this.parameters = new GatherParameters();
 		this.frames = new ArrayList<>();
 	}
 	
@@ -41,9 +41,9 @@ public final class Session implements Serializable {
 		return this.root;
 	}
 	
-	public final GatherParameters getParameters() {
-		return this.parameters;
-	}
+//	public final GatherParameters getParameters() {
+//		return this.parameters;
+//	}
 	
 	public final List<Frame> getFrames() {
 		return this.frames;
@@ -72,7 +72,7 @@ public final class Session implements Serializable {
 		
 		final Frame frame = this.getFrames().remove(this.getFrames().size() - 1);
 		
-		frame.getModule().accept(this.parameters);
+//		frame.getModule().accept(this.parameters);
 		
 		this.getCurrentModule().new ProofByDeduce(frame.getName(), frame.getModule()).apply();
 		
@@ -84,23 +84,24 @@ public final class Session implements Serializable {
 	@SuppressWarnings("unchecked")
 	public final <E extends Expression<?>> E introduce() {
 		final Frame frame = this.getCurrentFrame();
-		final Expression<?> goal = frame.getGoal();
-		final List<Variable> parameters = goal.accept(collectParameters());
+		final Module module = (Module) frame.getGoal();
+//		final List<Variable> parameters = goal.accept(collectParameters());
+		final Composite<Variable> parameters = module.getParameters();
 		
 		if (!parameters.isEmpty()) {
 			final Variable parameter = parameters.get(0);
 			final Symbol<String> introducedForParameter = new Symbol<>(parameter.getName());
 			
+			frame.getModule().parametrize(parameter);
 			parameter.reset().equals(introducedForParameter);
 			
 			frame.getIntroducedBindings().add(equality(introducedForParameter, parameter));
-			frame.setGoal(goal.accept(Variable.BIND));
+			frame.setGoal(module.accept(Variable.BIND));
 			
 			return (E) introducedForParameter;
 		}
 		
 		{
-			final Module module = (Module) goal;
 //			final Expression<?> condition = module.getConditions().get(0);
 			if (module.getPropositions().size() <= 1) {
 				throw new IllegalStateException();
@@ -122,6 +123,12 @@ public final class Session implements Serializable {
 	
 	public final Session apply(final String factName, final String moduleName, final String conditionName) {
 		this.getCurrentModule().new ProofByApply(this.propositionName(factName), moduleName, conditionName).apply();
+		
+		return this.reduce();
+	}
+	
+	public final Session bind(final String factName, final String moduleName, final Expression<?>... values) {
+		this.getCurrentModule().new ProofByBind(this.propositionName(factName), moduleName, values).apply();
 		
 		return this.reduce();
 	}
@@ -167,9 +174,8 @@ public final class Session implements Serializable {
 		final Frame frame = this.getCurrentFrame();
 		final int factCount = frame.getModule().getPropositions().size();
 		
-		frame.getModule().accept(this.parameters);
-		
-		if (0 < factCount && frame.getModule().getPropositions().get(factCount - 1).equals(frame.getGoal())) {
+		if (0 < factCount && frame.getModule().getPropositions().last().equals(frame.getGoal())) {
+			Tools.debugPrint(frame.getModule());
 			this.getFrames().remove(this.getFrames().size() - 1);
 			
 			final Substitution substitution = new Substitution(true);
@@ -178,6 +184,8 @@ public final class Session implements Serializable {
 				binding.getRight().accept(Variable.RESET);
 				substitution.using(binding);
 			}
+			
+			Tools.debugPrint(frame.getModule().accept(substitution.reset()));
 			
 			this.getCurrentModule().new ProofByDeduce(frame.getName(), (Module) frame.getModule().accept(substitution.reset())).apply();
 			
@@ -239,8 +247,6 @@ public final class Session implements Serializable {
 			final Module goalAsModule = cast(Module.class, goal);
 			
 			if (goalAsModule != null
-//					&& goalAsModule.canonicalize().getConditions().size() <= 0
-//					&& goalAsModule.getFacts().size() == 1) {
 					&& goalAsModule.canonicalize().getPropositions().size() == 1) {
 				this.goal = goalAsModule.getPropositions().get(0);
 			} else {
@@ -269,6 +275,20 @@ public final class Session implements Serializable {
 			}
 			
 			return (E) symbol(objects[0]);
+		case 2:
+			if (objects[0] instanceof Variable[]) {
+				final Module result = new Module();
+				
+				for (final Variable variable : (Variable[]) objects[0]) {
+					result.parametrize(variable);
+				}
+				
+				result.conclude($(objects[1]));
+				
+				return (E) result.canonicalize();
+			}
+			
+			break;
 		case 3:
 			switch (objects[1].toString()) {
 			case "->":
@@ -296,6 +316,10 @@ public final class Session implements Serializable {
 		}
 		
 		return (E) composite(Arrays.stream(objects).map(Session::$).toArray(Expression[]::new));
+	}
+	
+	public static final Variable[] forAll(final Variable... variables) {
+		return variables;
 	}
 	
 	/**
@@ -333,10 +357,6 @@ public final class Session implements Serializable {
 		
 		public static final Session include(final Module module) {
 			final Session result = session();
-			
-//			for (final Map.Entry<String, Integer> id : module.getConditionIds().entrySet()) {
-//				result.getRoot().addCondition(id.getKey(), module.getConditions().get(id.getValue()));
-//			}
 			
 			// TODO put conditions before facts?
 			for (final Map.Entry<String, Integer> id : module.getPropositionIds().entrySet()) {
@@ -424,6 +444,14 @@ public final class Session implements Serializable {
 		
 		public static final Session apply(final String factName, final String moduleName, final String conditionName) {
 			return session().apply(factName, moduleName, conditionName);
+		}
+		
+		public static final Session bind(final String moduleName, final Expression<?>... values) {
+			return bind(null, moduleName, values);
+		}
+		
+		public static final Session bind(final String factName, final String moduleName, final Expression<?>... values) {
+			return session().bind(factName, moduleName, values);
 		}
 		
 		public static final Session substitute(final Expression<?> expression, final Object... equalitiesAndIndices) {
