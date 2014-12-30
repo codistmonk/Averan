@@ -99,9 +99,9 @@ public final class Substitution implements Expression.Visitor<Expression<?>>, Ex
 		
 		if (candidate == module) {
 			candidate = new Module(this.copyProofData ? module.getContext() : null);
-			final List<Expression<?>> newFacts = ((Module) candidate).getFacts().getElements();
+			final List<Expression<?>> newFacts = ((Module) candidate).getPropositions().getElements();
 			
-			if (!listAccept(module.getFacts(), this, newFacts)) {
+			if (!listAccept(module.getPropositions(), this, newFacts)) {
 				return module;
 			}
 			
@@ -124,7 +124,7 @@ public final class Substitution implements Expression.Visitor<Expression<?>>, Ex
 			}
 			
 			if (this.copyProofData) {
-				((Module) candidate).getFactIds().putAll(module.getFactIds());
+				((Module) candidate).getPropositionIds().putAll(module.getPropositionIds());
 				((Module) candidate).getProofs().addAll(module.getProofs());
 			}
 		}

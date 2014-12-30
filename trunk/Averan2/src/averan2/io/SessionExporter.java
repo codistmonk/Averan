@@ -44,10 +44,10 @@ public final class SessionExporter implements Serializable {
 //			
 //			output.endConditions();
 			
-			output.beginFacts(module.getFacts());
+			output.beginFacts(module.getPropositions());
 			
-			for (final Map.Entry<String, Integer> entry : module.getFactIds().entrySet()) {
-				final Expression<?> fact = module.getFacts().get(entry.getValue());
+			for (final Map.Entry<String, Integer> entry : module.getPropositionIds().entrySet()) {
+				final Expression<?> fact = module.getPropositions().get(entry.getValue());
 				output.beginFact(entry.getKey(), fact);
 				
 				output.beginProof(module.getProof(entry.getKey()));

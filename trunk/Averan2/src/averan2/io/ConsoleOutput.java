@@ -7,8 +7,8 @@ import averan2.core.Composite;
 import averan2.core.Equality;
 import averan2.core.Expression;
 import averan2.core.Expression.GatherParameters;
-import averan2.core.Expression.GatherParameters.Key;
 import averan2.core.Expression.Visitor;
+import averan2.core.IdentityKey;
 import averan2.core.Module;
 import averan2.core.Session;
 import averan2.core.Session.Frame;
@@ -190,7 +190,7 @@ public final class ConsoleOutput implements Output {
 				Tools.debugPrint(this.parameters.getVariableContexts().size(), module);
 				boolean first = true;
 				
-				for (final Map.Entry<Key<Variable>, Module> entry : this.parameters.getVariableContexts().entrySet()) {
+				for (final Map.Entry<IdentityKey<Variable>, Module> entry : this.parameters.getVariableContexts().entrySet()) {
 					Tools.debugPrint(entry);
 					if (module == entry.getValue()) {
 						Tools.debugPrint(entry.getKey());
@@ -211,15 +211,15 @@ public final class ConsoleOutput implements Output {
 //					append(" → ");
 //			}
 			
-			if (module.getFacts().size() != 1) {
+			if (module.getPropositions().size() != 1) {
 				resultBuilder.append('(');
 			}
 			
 //			resultBuilder.append(this.visitFacts(module.getFacts()));
 			resultBuilder.
-				append(join(" → ", module.getFacts().stream().map(e -> e.accept(this)).toArray()));
+				append(join(" → ", module.getPropositions().stream().map(e -> e.accept(this)).toArray()));
 			
-			if (module.getFacts().size() != 1) {
+			if (module.getPropositions().size() != 1) {
 				resultBuilder.append(')');
 			}
 			
