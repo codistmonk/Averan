@@ -81,6 +81,9 @@ public final class Substitution implements Expression.Visitor<Expression<?>>, Ex
 	public final Expression<?> visit(final Composite<Expression<?>> composite) {
 		Expression<?> candidate = this.tryToReplace(composite);
 		
+		Tools.debugPrint(composite);
+		Tools.debugPrint(candidate);
+		
 		if (candidate == composite) {
 			candidate = new Composite<>();
 			
@@ -104,6 +107,8 @@ public final class Substitution implements Expression.Visitor<Expression<?>>, Ex
 			if (!listAccept(module.getPropositions(), this, newFacts)) {
 				return module;
 			}
+			
+			module.getParameters().forEach(((Module) candidate)::parametrize);
 			
 			// forced binding
 			if (false) {

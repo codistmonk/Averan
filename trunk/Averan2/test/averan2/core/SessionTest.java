@@ -29,7 +29,7 @@ public final class SessionTest {
 			{
 				final Variable $X = variable("X");
 				
-				deduce("recall", new Module().suppose($X).conclude($X));
+				deduce("recall", new Module().parametrize($X).suppose($X).conclude($X));
 				{
 					final Expression<?> x = introduce();
 					

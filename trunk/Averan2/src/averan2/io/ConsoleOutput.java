@@ -1,12 +1,12 @@
 package averan2.io;
 
-import static averan2.core.Expression.CollectParameters.collectParameters;
+//import static averan2.core.Expression.CollectParameters.collectParameters;
 import static java.util.Collections.nCopies;
 import static net.sourceforge.aprog.tools.Tools.join;
 import averan2.core.Composite;
 import averan2.core.Equality;
 import averan2.core.Expression;
-import averan2.core.Expression.GatherParameters;
+//import averan2.core.Expression.GatherParameters;
 import averan2.core.Expression.Visitor;
 import averan2.core.IdentityKey;
 import averan2.core.Module;
@@ -38,7 +38,7 @@ public final class ConsoleOutput implements Output {
 	
 	private String indent;
 	
-	private GatherParameters parameters;
+//	private GatherParameters parameters;
 	
 	public ConsoleOutput() {
 		this(System.out);
@@ -50,10 +50,10 @@ public final class ConsoleOutput implements Output {
 		this.indent = "";
 	}
 	
-	@Override
-	public final void beginSession(final Session session) {
-		this.parameters = session.getParameters();
-	}
+//	@Override
+//	public final void beginSession(final Session session) {
+//		this.parameters = session.getParameters();
+//	}
 	
 	@Override
 	public final void beginFrame(final Frame frame) {
@@ -97,15 +97,16 @@ public final class ConsoleOutput implements Output {
 	public final void processGoal(final Expression<?> goal) {
 		if (goal != null) {
 			this.out.println(this.indent + "((GOAL))");
-			final GatherParameters goalParameters = new GatherParameters();
-			goalParameters.getModuleContexts().putAll(this.parameters.getModuleContexts());
-			goalParameters.getVariableContexts().putAll(this.parameters.getVariableContexts());
-			if (goal instanceof Module) {
-				goalParameters.getModuleContexts().put((Module) goal, this.frame.getModule());
-			}
-			goal.accept(goalParameters);
+//			final GatherParameters goalParameters = new GatherParameters();
+//			goalParameters.getModuleContexts().putAll(this.parameters.getModuleContexts());
+//			goalParameters.getVariableContexts().putAll(this.parameters.getVariableContexts());
+//			if (goal instanceof Module) {
+//				goalParameters.getModuleContexts().put((Module) goal, this.frame.getModule());
+//			}
+//			goal.accept(goalParameters);
 			
-			this.out.println(this.indent + "	" + goal.accept(new AsString(goalParameters)));
+//			this.out.println(this.indent + "	" + goal.accept(new AsString(goalParameters)));
+			this.out.println(this.indent + "	" + goal.accept(new AsString()));
 		} else {
 			this.out.println(this.indent + "(())");
 		}
@@ -117,7 +118,8 @@ public final class ConsoleOutput implements Output {
 	}
 	
 	public final String asString(final Expression<?> expression) {
-		return expression.accept(Variable.RESET).accept(new AsString(this.parameters));
+//		return expression.accept(Variable.RESET).accept(new AsString(this.parameters));
+		return expression.accept(Variable.RESET).accept(new AsString());
 	}
 	
 	private static final long serialVersionUID = 3659783931873586881L;
@@ -127,15 +129,15 @@ public final class ConsoleOutput implements Output {
 	 */
 	public static final class AsString implements Visitor<String> {
 		
-		private final GatherParameters parameters;
+//		private final GatherParameters parameters;
 		
 		private final Map<Variable, Variable> done = new IdentityHashMap<>();
 		
 		private int level;
 		
-		public AsString(final GatherParameters parameters) {
-			this.parameters = parameters;
-		}
+//		public AsString(final GatherParameters parameters) {
+//			this.parameters = parameters;
+//		}
 		
 		@Override
 		public final String visit(final Symbol<?> symbol) {
@@ -187,16 +189,18 @@ public final class ConsoleOutput implements Output {
 			final StringBuilder resultBuilder = new StringBuilder();
 			
 			{
-				Tools.debugPrint(this.parameters.getVariableContexts().size(), module);
+//				Tools.debugPrint(this.parameters.getVariableContexts().size(), module);
 				boolean first = true;
 				
-				for (final Map.Entry<IdentityKey<Variable>, Module> entry : this.parameters.getVariableContexts().entrySet()) {
-					Tools.debugPrint(entry);
-					if (module == entry.getValue()) {
-						Tools.debugPrint(entry.getKey());
-						resultBuilder.append(first ? '∀' : ',').append(entry.getKey().getObject().getName());
+//				for (final Map.Entry<IdentityKey<Variable>, Module> entry : this.parameters.getVariableContexts().entrySet()) {
+				for (final Variable parameter : module.getParameters()) {
+//					Tools.debugPrint(entry);
+//					if (module == entry.getValue()) {
+//						Tools.debugPrint(entry.getKey());
+//						resultBuilder.append(first ? '∀' : ',').append(entry.getKey().getObject().getName());
+						resultBuilder.append(first ? '∀' : ',').append(parameter.getName());
 						first = false;
-					}
+//					}
 				}
 				
 				if (!first) {
@@ -259,53 +263,53 @@ public final class ConsoleOutput implements Output {
 			}
 		}
 		
-		private final String visitProposition(final Expression<?> proposition) {
-			final StringBuilder resultBuilder = new StringBuilder();
-			final List<Variable> parameters = proposition.accept(collectParameters());
-			
-			for (final Iterator<Variable> i = parameters.iterator(); i.hasNext();) {
-				final Variable parameter = i.next();
-				
-				if (this.done.containsKey(parameter)) {
-					i.remove();
-				} else {
-					this.done.put(parameter, parameter);
-				}
-			}
-			
-			if (!parameters.isEmpty()) {
-				resultBuilder.append('∀').append(
-						join(",", parameters.stream().map(Variable::getName).toArray())).append(' ');
-			}
-			
-			resultBuilder.append(proposition.accept(this));
-			
-			return resultBuilder.toString();
-		}
+//		private final String visitProposition(final Expression<?> proposition) {
+//			final StringBuilder resultBuilder = new StringBuilder();
+//			final List<Variable> parameters = proposition.accept(collectParameters());
+//			
+//			for (final Iterator<Variable> i = parameters.iterator(); i.hasNext();) {
+//				final Variable parameter = i.next();
+//				
+//				if (this.done.containsKey(parameter)) {
+//					i.remove();
+//				} else {
+//					this.done.put(parameter, parameter);
+//				}
+//			}
+//			
+//			if (!parameters.isEmpty()) {
+//				resultBuilder.append('∀').append(
+//						join(",", parameters.stream().map(Variable::getName).toArray())).append(' ');
+//			}
+//			
+//			resultBuilder.append(proposition.accept(this));
+//			
+//			return resultBuilder.toString();
+//		}
 		
-		private final String visitFacts(final Composite<Expression<?>> facts) {
-			final StringBuilder resultBuilder = new StringBuilder();
-			final List<Variable> parameters = facts.accept(collectParameters());
-			
-			for (final Iterator<Variable> i = parameters.iterator(); i.hasNext();) {
-				final Variable parameter = i.next();
-				
-				if (this.done.containsKey(parameter)) {
-					i.remove();
-				} else {
-					this.done.put(parameter, parameter);
-				}
-			}
-			
-			if (!parameters.isEmpty()) {
-				resultBuilder.append('∀').append(
-						join(",", parameters.stream().map(Variable::getName).toArray())).append(' ');
-			}
-			
-			resultBuilder.append(join(" ∧ ", facts.stream().map(e -> e.accept(this)).toArray()));
-			
-			return resultBuilder.toString();
-		}
+//		private final String visitFacts(final Composite<Expression<?>> facts) {
+//			final StringBuilder resultBuilder = new StringBuilder();
+//			final List<Variable> parameters = facts.accept(collectParameters());
+//			
+//			for (final Iterator<Variable> i = parameters.iterator(); i.hasNext();) {
+//				final Variable parameter = i.next();
+//				
+//				if (this.done.containsKey(parameter)) {
+//					i.remove();
+//				} else {
+//					this.done.put(parameter, parameter);
+//				}
+//			}
+//			
+//			if (!parameters.isEmpty()) {
+//				resultBuilder.append('∀').append(
+//						join(",", parameters.stream().map(Variable::getName).toArray())).append(' ');
+//			}
+//			
+//			resultBuilder.append(join(" ∧ ", facts.stream().map(e -> e.accept(this)).toArray()));
+//			
+//			return resultBuilder.toString();
+//		}
 		
 		private static final long serialVersionUID = 3130405603855469068L;
 		
