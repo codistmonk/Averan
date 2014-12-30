@@ -1,6 +1,5 @@
 package averan2.core;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
