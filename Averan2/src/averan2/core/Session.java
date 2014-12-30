@@ -2,7 +2,6 @@ package averan2.core;
 
 import static averan2.core.Composite.composite;
 import static averan2.core.Equality.equality;
-//import static averan2.core.Expression.CollectParameters.collectParameters;
 import static averan2.core.Symbol.symbol;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.ignore;
@@ -14,7 +13,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-//import averan2.core.Expression.GatherParameters;
 import jgencode.primitivelists.IntList;
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 import net.sourceforge.aprog.tools.Pair;
@@ -27,23 +25,16 @@ public final class Session implements Serializable {
 	
 	private final Module root;
 	
-//	private final GatherParameters parameters;
-	
 	private final List<Frame> frames;
 	
 	public Session() {
 		this.root = new Module();
-//		this.parameters = new GatherParameters();
 		this.frames = new ArrayList<>();
 	}
 	
 	public final Module getRoot() {
 		return this.root;
 	}
-	
-//	public final GatherParameters getParameters() {
-//		return this.parameters;
-//	}
 	
 	public final List<Frame> getFrames() {
 		return this.frames;
@@ -72,11 +63,7 @@ public final class Session implements Serializable {
 		
 		final Frame frame = this.getFrames().remove(this.getFrames().size() - 1);
 		
-//		frame.getModule().accept(this.parameters);
-		
 		this.getCurrentModule().new ProofByDeduce(frame.getName(), frame.getModule()).apply();
-		
-		Tools.debugPrint(this.getCurrentModule().getProposition(-1));
 		
 		return this.reduce();
 	}
@@ -85,7 +72,6 @@ public final class Session implements Serializable {
 	public final <E extends Expression<?>> E introduce() {
 		final Frame frame = this.getCurrentFrame();
 		final Module module = (Module) frame.getGoal();
-//		final List<Variable> parameters = goal.accept(collectParameters());
 		final Composite<Variable> parameters = module.getParameters();
 		
 		if (!parameters.isEmpty()) {
@@ -102,7 +88,6 @@ public final class Session implements Serializable {
 		}
 		
 		{
-//			final Expression<?> condition = module.getConditions().get(0);
 			if (module.getPropositions().size() <= 1) {
 				throw new IllegalStateException();
 			}
@@ -175,7 +160,6 @@ public final class Session implements Serializable {
 		final int factCount = frame.getModule().getPropositions().size();
 		
 		if (0 < factCount && frame.getModule().getPropositions().last().equals(frame.getGoal())) {
-			Tools.debugPrint(frame.getModule());
 			this.getFrames().remove(this.getFrames().size() - 1);
 			
 			final Substitution substitution = new Substitution(true);
@@ -185,11 +169,9 @@ public final class Session implements Serializable {
 				substitution.using(binding);
 			}
 			
-			Tools.debugPrint(frame.getModule().accept(substitution.reset()));
+			Tools.debugPrint(this.getCurrentModule(), frame.getGoal());
 			
 			this.getCurrentModule().new ProofByDeduce(frame.getName(), (Module) frame.getModule().accept(substitution.reset())).apply();
-			
-			Tools.debugPrint(this.getCurrentModule().getProposition(-1));
 			
 			return this.reduce();
 		}
@@ -503,14 +485,6 @@ public final class Session implements Serializable {
 					}
 				}
 				
-//				for (int i = module.getConditions().size() - 1; 0 <= i; --i) {
-//					final Expression<?> proposition = module.getConditions().get(i);
-//					
-//					if (canDeduce(proposition, goal)) {
-//						result.add(new Pair<>(module.getConditionIds().get(i), proposition.accept(Variable.BIND)));
-//					}
-//				}
-				
 				module = module.getContext();
 			}
 			
@@ -577,7 +551,6 @@ public final class Session implements Serializable {
 					for (final Pair<String, Expression<?>> justification : justifications) {
 						final Module module = cast(Module.class, justification.getSecond());
 						
-//						if (module != null && autoDeduce(module.getConditions().get(0))) {
 						if (module != null && autoDeduce(module.getPropositions().get(0))) {
 							apply(justification.getFirst(), name(-1));
 							

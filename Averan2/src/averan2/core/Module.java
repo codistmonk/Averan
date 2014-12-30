@@ -380,8 +380,6 @@ public final class Module implements Expression<Composite<?>> {
 				substitution.using(Module.this.findProposition(equalityName));
 			}
 			
-			Tools.debugPrint(substitution.getBindings());
-			
 			return this.addFactToContext(Module.this.findProposition(this.getPropositionName()).accept(substitution.reset()));
 		}
 		
@@ -515,6 +513,7 @@ public final class Module implements Expression<Composite<?>> {
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	public static final <E, F extends E> F removeLast(final List<E> list) {
 		return (F) list.remove(lastIndex(list));
 	}
