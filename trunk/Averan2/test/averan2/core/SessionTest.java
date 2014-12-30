@@ -65,12 +65,8 @@ public final class SessionTest {
 				final Variable $Y = variable("Y");
 				final Variable $Z = variable("Z");
 				
-				deduce("transitivity_of_implication",
-						$(forAll($X, $Y, $Z), $($($X, "->", $Y), "->", $($Y, "->", $Z), "->", $($X, "->", $Z))));
-				{
-					intros();
-					check(autoDeduce());
-				}
+				check(autoDeduce("transitivity_of_implication",
+						$(forAll($X, $Y, $Z), $($($X, "->", $Y), "->", $($Y, "->", $Z), "->", $($X, "->", $Z))), 4));
 			}
 		} finally {
 			SessionExporter.export(popSession(), new ConsoleOutput());

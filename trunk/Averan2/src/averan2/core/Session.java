@@ -538,10 +538,10 @@ public final class Session implements Serializable {
 				
 				deduction:
 				{
-					final List<Pair<String, Expression<?>>> justifications = justificationsFor(expression);
+					final List<Pair<String, Expression<?>>> justifications = justificationsFor(goal());
 					
 					for (final Pair<String, Expression<?>> justification : justifications) {
-						if (justification.getSecond().equals(expression)) {
+						if (justification.getSecond().equals(goal())) {
 							apply("recall", justification.getFirst());
 							
 							break deduction;
