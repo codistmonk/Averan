@@ -54,7 +54,7 @@ public final class Module implements Expression<Composite<?>> {
 	}
 	
 	public final Module canonicalize() {
-		Module last = this.getFacts().isEmpty() ?null : cast(Module.class, this.getFacts().last());
+		Module last = this.getFacts().isEmpty() ? null : cast(Module.class, this.getFacts().last());
 		
 		while (last != null && last.getParameters().isEmpty()) {
 			final Module fact = removeLast(this.getFacts().getElements());
@@ -69,7 +69,7 @@ public final class Module implements Expression<Composite<?>> {
 				}
 			}
 			
-			last = this.getFacts().isEmpty() ?null : cast(Module.class, this.getFacts().last());
+			last = this.getFacts().isEmpty() ? null : cast(Module.class, this.getFacts().last());
 		}
 		
 		return this;
