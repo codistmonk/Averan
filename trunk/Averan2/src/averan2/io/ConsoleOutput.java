@@ -6,6 +6,7 @@ import static net.sourceforge.aprog.tools.Tools.join;
 import averan2.core.Composite;
 import averan2.core.Equality;
 import averan2.core.Expression;
+import averan2.core.Expression.Metadata;
 import averan2.core.Expression.Visitor;
 import averan2.core.Module;
 import averan2.core.Module.Proof;
@@ -102,6 +103,12 @@ public final class ConsoleOutput implements Output {
 	
 	private static final long serialVersionUID = 3659783931873586881L;
 	
+	public static final <E extends Expression<?>> E group(final E expression) {
+		Metadata.put(expression, "forcedGrouping", true);
+		
+		return expression;
+	}
+	
 	/**
 	 * @author codistmonk (creation 2014-12-28)
 	 */
@@ -109,12 +116,12 @@ public final class ConsoleOutput implements Output {
 		
 		@Override
 		public final String visit(final Symbol<?> symbol) {
-			return symbol.toString();
+			return maybeGroup(symbol, symbol.toString());
 		}
 		
 		@Override
 		public final String visit(final Variable variable) {
-			return variable.getName();
+			return maybeGroup(variable, variable.getName());
 		}
 		
 		@Override
@@ -125,7 +132,7 @@ public final class ConsoleOutput implements Output {
 				resultBuilder.append(element.accept(this));
 			}
 			
-			return resultBuilder.toString();
+			return maybeGroup(composite, resultBuilder.toString());
 		}
 		
 		@Override
@@ -177,7 +184,7 @@ public final class ConsoleOutput implements Output {
 				resultBuilder.append(')');
 			}
 			
-			return resultBuilder.toString();
+			return maybeGroup(module, resultBuilder.toString());
 		}
 		
 		@Override
@@ -189,15 +196,19 @@ public final class ConsoleOutput implements Output {
 			resultBuilder.append('[').append(join(",",
 					substitution.getIndices().stream().map(e -> e.accept(this)).toArray())).append(']');
 			
-			return resultBuilder.toString();
+			return maybeGroup(substitution, resultBuilder.toString());
 		}
 		
 		@Override
 		public final String visit(final Equality equality) {
-			return equality.getLeft().accept(this) + " = " + equality.getRight().accept(this);
+			return maybeGroup(equality, equality.getLeft().accept(this) + " = " + equality.getRight().accept(this));
 		}
 		
 		private static final long serialVersionUID = 3130405603855469068L;
+		
+		public static final String maybeGroup(final Expression<?> expression, final String ungrouped) {
+			return Boolean.TRUE.equals(Metadata.get(expression, "forcedGrouping")) ? '(' + ungrouped + ')' : ungrouped;
+		}
 		
 	}
 	

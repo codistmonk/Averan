@@ -9,6 +9,8 @@ import static net.sourceforge.aprog.tools.Tools.join;
 import java.util.Collection;
 import java.util.List;
 
+import averan2.core.Expression.Metadata;
+
 /**
  * @author codistmonk (creation 2014-12-20)
  */
@@ -85,7 +87,7 @@ public final class Substitution implements Expression.Visitor<Expression<?>>, Ex
 			}
 		}
 		
-		return candidate;
+		return Metadata.copy(composite, candidate);
 	}
 	
 	@Override
@@ -108,7 +110,7 @@ public final class Substitution implements Expression.Visitor<Expression<?>>, Ex
 			}
 		}
 		
-		return candidate;
+		return Metadata.copy(module, candidate);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -127,7 +129,7 @@ public final class Substitution implements Expression.Visitor<Expression<?>>, Ex
 			}
 		}
 		
-		return candidate;
+		return Metadata.copy(substitution, candidate);
 	}
 	
 	@Override
@@ -143,7 +145,7 @@ public final class Substitution implements Expression.Visitor<Expression<?>>, Ex
 			}
 		}
 		
-		return candidate;
+		return Metadata.copy(equality, candidate);
 	}
 	
 	@Override
