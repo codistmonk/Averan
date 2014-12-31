@@ -145,7 +145,7 @@ public final class Variable implements Expression<Variable> {
 		public final Expression<?> visit(final Variable variable) {
 			final Expression<?> match  = variable.getMatch();
 			
-			return match != null ? match : variable;
+			return match != null ? Metadata.copy(variable, match) : variable;
 		}
 		
 		@SuppressWarnings("unchecked")
@@ -155,7 +155,7 @@ public final class Variable implements Expression<Variable> {
 			
 			if (Composite.listAccept(composite, this,
 					(Collection<Expression<?>>) candidate.getElements())) {
-				return candidate;
+				return Metadata.copy(composite, candidate);
 			}
 			
 			return composite;
@@ -173,6 +173,8 @@ public final class Variable implements Expression<Variable> {
 					}
 				}
 				
+				Metadata.copy(module, newModule);
+				
 				return newModule.getParameters().isEmpty() && newModule.getPropositions().size() == 1 ? newModule.getPropositions().get(0) : newModule;
 			}
 			
@@ -188,7 +190,7 @@ public final class Variable implements Expression<Variable> {
 					(Collection) candidate.getBindings().getElements())
 					| Composite.listAccept((Iterable) substitution.getIndices(), this,
 							(Collection) candidate.getBindings().getElements())) {
-				return candidate;
+				return Metadata.copy(substitution, candidate);
 			}
 			
 			return substitution;
@@ -200,7 +202,7 @@ public final class Variable implements Expression<Variable> {
 			final Expression<?> newRight = equality.getRight().accept(this);
 			
 			if (newLeft != equality.getLeft() || newRight != equality.getRight()) {
-				return equality(newLeft, newRight);
+				return Metadata.copy(equality, equality(newLeft, newRight));
 			}
 			
 			return equality;

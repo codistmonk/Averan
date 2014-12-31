@@ -8,13 +8,19 @@ import static averan2.core.Session.Stack.include;
 import static averan2.core.Session.Stack.suppose;
 import static averan2.core.Symbol.symbol;
 import static averan2.core.Variable.variable;
+import static averan2.io.ConsoleOutput.group;
 import static averan2.modules.Standard.build;
 
+import java.util.Collection;
+import java.util.HashSet;
+
 import averan2.core.Composite;
+import averan2.core.Expression;
+import averan2.core.IdentityKey;
 import averan2.core.Module;
 import averan2.core.Symbol;
 import averan2.core.Variable;
-
+import averan2.io.ConsoleOutput;
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 
 /**
@@ -79,6 +85,11 @@ public final class Reals {
 			}
 			
 			{
+				suppose("nonzero_naturalness_of_1",
+						nonzeroNatural(ONE));
+			}
+			
+			{
 				final Variable $x = variable("x");
 				final Variable $y = variable("y");
 				
@@ -100,7 +111,7 @@ public final class Reals {
 				final Variable $z = variable("z");
 				
 				suppose("associativity_of_real_addition",
-						$(forAll($x, $y, $z), $(real($x), "->", real($y), "->", real($z), "->", equality(addition($x, addition($y, $z)), addition(addition($x, $y), $z)))));
+						$(forAll($x, $y, $z), $(real($x), "->", real($y), "->", real($z), "->", equality(addition($x, group(addition($y, $z))), addition(group(addition($x, $y)), $z)))));
 			}
 			
 			{
@@ -117,7 +128,7 @@ public final class Reals {
 				final Variable $z = variable("z");
 				
 				suppose("associativity_of_real_multiplication",
-						$(forAll($x, $y, $z), $(real($x), "->", real($y), "->", real($z), "->", equality(multiplication($x, multiplication($y, $z)), multiplication(multiplication($x, $y), $z)))));
+						$(forAll($x, $y, $z), $(real($x), "->", real($y), "->", real($z), "->", equality(multiplication($x, group(multiplication($y, $z))), multiplication(group(multiplication($x, $y)), $z)))));
 			}
 			
 			{
