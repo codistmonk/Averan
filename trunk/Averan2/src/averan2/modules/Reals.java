@@ -27,13 +27,23 @@ public final class Reals {
 		throw new IllegalInstantiationException();
 	}
 	
+	public static final Symbol<String> ZERO = symbol("0");
+	
+	public static final Symbol<String> ONE = symbol("1");
+	
+	public static final Composite<?> BOOLEANS = $("{", ZERO, ",", ONE, "}");
+	
 	public static final Symbol<String> NATURALS = symbol("ℕ");
 	
 	public static final Symbol<String> REALS = symbol("ℝ");
 	
-	public static final Symbol<String> ZERO = symbol("0");
+	public static final Symbol<String> ADDITION_OPERATOR = symbol("+");
 	
-	public static final Symbol<String> ONE = symbol("1");
+	public static final Symbol<String> SUBTRACTION_OPERATOR = symbol("-");
+	
+	public static final Symbol<String> MULTIPLICATION_OPERATOR = symbol(" ");
+	
+	public static final Symbol<String> DIVISION_OPERATOR = symbol("/");
 	
 	public static final Module MODULE = build(Reals.class.getName(), new Runnable() {
 		
