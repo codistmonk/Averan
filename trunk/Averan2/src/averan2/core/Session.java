@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import jgencode.primitivelists.IntList;
 
@@ -313,6 +314,8 @@ public final class Session implements Serializable {
 		
 		private static final List<Session> stack = new ArrayList<>();
 		
+		public static final AtomicInteger autoDeduceDepth = new AtomicInteger(4);
+		
 		public static final Session pushSession(final Session session) {
 			stack.add(session);
 			
@@ -522,7 +525,11 @@ public final class Session implements Serializable {
 		}
 		
 		public static final boolean autoDeduce(final Expression<?> expression) {
-			return autoDeduce(null, expression, 4);
+			return autoDeduce(null, expression, autoDeduceDepth.get());
+		}
+		
+		public static final boolean autoDeduce(final String factName, final Expression<?> expression) {
+			return autoDeduce(factName, expression, autoDeduceDepth.get());
 		}
 		
 		public static final boolean autoDeduce(final String factName, final Expression<?> expression, final int depth) {
@@ -536,9 +543,10 @@ public final class Session implements Serializable {
 				
 				intros();
 				
+				final List<Pair<String, Expression<?>>> justifications = justificationsFor(goal());
+				
 				deduction:
-				{
-					final List<Pair<String, Expression<?>>> justifications = justificationsFor(goal());
+				while (module() == unfinishedProof) {
 					
 					for (final Pair<String, Expression<?>> justification : justifications) {
 						if (justification.getSecond().equals(goal())) {
@@ -553,6 +561,11 @@ public final class Session implements Serializable {
 						
 						if (module != null && autoDeduce(null, module.getPropositions().get(0), depth - 1)) {
 							apply(justification.getFirst(), name(-1));
+							
+							if (canDeduce(proposition(-1), goal())) {
+								justifications.add(0, new Pair<>(name(-1), proposition(-1).accept(Variable.BIND)));
+								continue deduction;
+							}
 							
 							break deduction;
 						}
