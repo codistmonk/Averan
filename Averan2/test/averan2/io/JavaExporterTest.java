@@ -50,7 +50,7 @@ public final class JavaExporterTest {
 					final Variable $x = variable("x");
 					
 					suppose("definition_of_f",
-							$(forAll($x), $(real($x), "->", equality($("f", "_", $x), $x))));
+							$(forAll($x), $(real($x), "->", equality($("f", "_", $x), addition($x, $x)))));
 				}
 			}
 			
@@ -148,7 +148,7 @@ public final class JavaExporterTest {
 		@Override
 		public final String visit(final Composite<Expression<?>> composite) {
 			if (composite.size() == 3) {
-				return composite.get(0).accept(this) + " " + composite.get(1) + " " + composite.get(2).accept(this);
+				return group(composite.get(0).accept(this) + " " + composite.get(1) + " " + composite.get(2).accept(this));
 			}
 			
 			return null;
@@ -166,10 +166,14 @@ public final class JavaExporterTest {
 		
 		@Override
 		public final String visit(final Equality equality) {
-			return equality.getLeft().accept(this) + " == " + equality.getRight().accept(this);
+			return group(equality.getLeft().accept(this) + " == " + equality.getRight().accept(this));
 		}
 		
 		private static final long serialVersionUID = -169952762455825101L;
+		
+		public static final String group(final String string) {
+			return "(" + string + ")";
+		}
 		
 	}
 	
@@ -214,7 +218,7 @@ public final class JavaExporterTest {
 		public final Class<?> visit(final Composite<Expression<?>> composite) {
 			if (composite.size() == 3) {
 				final Class<?> leftType = composite.get(0).accept(this);
-				final Class<?> rightType = composite.get(1).accept(this);
+				final Class<?> rightType = composite.get(2).accept(this);
 				
 				return binaryOperationTypes
 						.getOrDefault(composite.get(1), emptyMap())
