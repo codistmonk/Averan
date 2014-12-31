@@ -10,17 +10,12 @@ import static averan2.core.Symbol.symbol;
 import static averan2.core.Variable.variable;
 import static averan2.io.ConsoleOutput.group;
 import static averan2.modules.Standard.build;
-
-import java.util.Collection;
-import java.util.HashSet;
-
 import averan2.core.Composite;
 import averan2.core.Expression;
-import averan2.core.IdentityKey;
 import averan2.core.Module;
+import averan2.core.Substitution;
 import averan2.core.Symbol;
 import averan2.core.Variable;
-import averan2.io.ConsoleOutput;
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 
 /**
@@ -140,6 +135,23 @@ public final class Reals {
 			}
 			
 			{
+				final Variable $X = variable("X");
+				final Variable $i = variable("i");
+				
+				suppose("definition_of_sum_0",
+						$(forAll($X, $i), equality(sum($i, ZERO, $X), $($X, new Substitution().using(equality($i, ZERO))))));
+			}
+			
+			{
+				final Variable $X = variable("X");
+				final Variable $n = variable("n");
+				final Variable $i = variable("i");
+				
+				suppose("definition_of_sum_n",
+						$(forAll($X, $n, $i), equality(sum($i, $n, $X), addition(sum($i, subtraction($n, ONE), $X), $($X, new Substitution().using(equality($i, $n)))))));
+			}
+			
+			{
 				autoDeduce("realness_of_0",
 						real(ZERO));
 				autoDeduce("realness_of_1",
@@ -181,8 +193,23 @@ public final class Reals {
 		return $(left, "+", right);
 	}
 	
+	public static final Composite<?> subtraction(final Object left, final Object right) {
+		return $(left, "-", right);
+	}
+	
 	public static final Composite<?> multiplication(final Object left, final Object right) {
 		return $(left, " ", right);
+	}
+	
+	public static final Composite<?> inverse(final Object expression) {
+		return $("1", "/", expression);
+	}
+	
+	public static final Composite<?> sum(final Object i, final Object n, final Object x) {
+		final Expression<?> nAsExpression = $(n);
+		final boolean nIsSingle = nAsExpression instanceof Symbol<?> || nAsExpression instanceof Variable;
+		
+		return $($($("Σ", "_", group($(i, "=", ZERO))), "^", nIsSingle ? nAsExpression : group(nAsExpression)), " ", x);
 	}
 	
 }
