@@ -207,7 +207,6 @@ public final class Session implements Serializable {
 		}
 		
 		public final String newPropositionName() {
-//			return this.getName() + "." + (this.getModule().getConditions().size() + this.getModule().getFacts().size() + 1);
 			return this.getName() + "." + (this.getModule().getPropositions().size() + 1);
 		}
 		
@@ -544,9 +543,11 @@ public final class Session implements Serializable {
 				intros();
 				
 				final List<Pair<String, Expression<?>>> justifications = justificationsFor(goal());
+				int d = depth;
 				
 				deduction:
-				while (module() == unfinishedProof) {
+				while (module() == unfinishedProof && 0 < d) {
+					--d;
 					
 					for (final Pair<String, Expression<?>> justification : justifications) {
 						if (justification.getSecond().equals(goal())) {
@@ -559,7 +560,7 @@ public final class Session implements Serializable {
 					for (final Pair<String, Expression<?>> justification : justifications) {
 						final Module module = cast(Module.class, justification.getSecond());
 						
-						if (module != null && autoDeduce(null, module.getPropositions().get(0), depth - 1)) {
+						if (module != null && autoDeduce(null, module.getPropositions().get(0), d)) {
 							apply(justification.getFirst(), name(-1));
 							
 							if (canDeduce(proposition(-1), goal())) {
