@@ -27,9 +27,9 @@ public final class Reals {
 		throw new IllegalInstantiationException();
 	}
 	
-	public static final String NATURALS = "ℕ";
+	public static final Symbol<String> NATURALS = symbol("ℕ");
 	
-	public static final String REALS = "ℝ";
+	public static final Symbol<String> REALS = symbol("ℝ");
 	
 	public static final Symbol<String> ZERO = symbol("0");
 	
