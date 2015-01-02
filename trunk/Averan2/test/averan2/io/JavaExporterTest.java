@@ -53,7 +53,7 @@ public final class JavaExporterTest {
 				}
 				
 				{
-					final Variable $x = variable("x");
+					final Variable $x = ((Module) proposition("definition_of_f")).getParameters().get(0);
 					
 					exportFunction(module(), (Expression<?>) $("f", "_", $x), "f", System.out);
 					exportProceduralInduction(module(), (Expression<?>) $("f", "_", $x), $x, "f", System.out);
@@ -88,10 +88,29 @@ public final class JavaExporterTest {
 			final String generatedName, final PrintStream javaOutput) {
 		final Variable rightSide = new Variable("computableExpression");
 		inductionParameter.reset().equals(ZERO);
-		final String initialisationName = justificationsFor(equality(leftSideOfEquality.accept(Variable.BIND), rightSide.reset())).get(0).getFirst();
+		final String initializationName = justificationsFor(equality(leftSideOfEquality.accept(Variable.BIND), rightSide.reset())).get(0).getFirst();
 		final String inductionName = justificationsFor(equality(leftSideOfEquality, rightSide.reset())).get(0).getFirst();
 		
-		Tools.debugPrint(initialisationName, inductionName);
+		Tools.debugPrint(initializationName, inductionName);
+		
+		final Expression<?> initialization = module.findProposition(initializationName);
+		final Module initializationAsModule = cast(Module.class, initialization);
+		final Equality initializationEquality = initializationAsModule.getPropositions().last();
+		
+		final Expression<?> induction = module.findProposition(inductionName);
+		final Module inductionAsModule = cast(Module.class, induction);
+		final Map<Variable, Class<?>> parameterTypes = getParameterTypes(inductionAsModule);
+		final Equality inductionEquality = inductionAsModule.getPropositions().last();
+		final Class<?> returnType = inductionEquality.getRight().accept(new GetJavaType(parameterTypes));
+//		final String javaCode = equality.getRight().accept(new GetJavaCode());
+		
+		inductionParameter.reset().equals(ZERO);
+		javaOutput.println("	private static " + returnType.getName() + " " + generatedName + "_variable = " + initializationEquality.getRight().accept(Variable.BIND).accept(new GetJavaCode()) + ";");
+		javaOutput.print("	public static final " + returnType.getSimpleName() + " " + generatedName + "(");
+		javaOutput.print(join(", ", parameterTypes.entrySet().stream().map(entry -> "final " + entry.getValue().getSimpleName() + " " + entry.getKey().getName()).toArray()));
+		javaOutput.println(") {");
+		javaOutput.println("		return " + generatedName + "_variable = " + inductionEquality.getRight().accept(new GetJavaCode()) + ";");
+		javaOutput.println("	}");
 	}
 	
 	public static final void exportFunction(final Module module, final Expression<?> leftSideOfEquality,
@@ -111,30 +130,13 @@ public final class JavaExporterTest {
 		final Module propositionAsModule = cast(Module.class, proposition);
 		
 		if (propositionAsModule != null) {
-			final Map<Variable, Class<?>> types = new LinkedHashMap<>();
-			
-			for (final Variable parameter : propositionAsModule.getParameters()) {
-				for (final Expression<?> p : propositionAsModule.getPropositions()) {
-					final Composite<?> c = cast(Composite.class, p);
-					
-					if (c != null && c.size() == 3 && c.get(0) == parameter && symbol("∈").equals(c.get(1))) {
-						final Expression<?> type = c.get(2);
-						
-						if (!knownTypes.containsKey(type) || types.containsKey(parameter)) {
-							throw new IllegalArgumentException();
-						}
-						
-						types.put(parameter, knownTypes.get(type));
-					}
-				}
-			}
-			
+			final Map<Variable, Class<?>> parameterTypes = getParameterTypes(propositionAsModule);
 			final Equality equality = propositionAsModule.getPropositions().last();
-			final Class<?> returnType = equality.getRight().accept(new GetJavaType(types));
+			final Class<?> returnType = equality.getRight().accept(new GetJavaType(parameterTypes));
 			final String javaCode = equality.getRight().accept(new GetJavaCode());
 			
 			javaOutput.print("	public static final " + returnType.getSimpleName() + " " + generatedName + "(");
-			javaOutput.print(join(", ", types.entrySet().stream().map(entry -> "final " + entry.getValue().getSimpleName() + " " + entry.getKey().getName()).toArray()));
+			javaOutput.print(join(", ", parameterTypes.entrySet().stream().map(entry -> "final " + entry.getValue().getSimpleName() + " " + entry.getKey().getName()).toArray()));
 			javaOutput.println(") {");
 			javaOutput.println("		return " + javaCode + ";");
 			javaOutput.println("	}");
@@ -145,11 +147,34 @@ public final class JavaExporterTest {
 		final Equality propositionAsEquality = cast(Equality.class, proposition);
 		
 		if (propositionAsEquality != null) {
+			// TODO
 			
 			return;
 		}
 		
 		throw new IllegalArgumentException();
+	}
+	
+	public static final Map<Variable, Class<?>> getParameterTypes(final Module module) {
+		final Map<Variable, Class<?>> result = new LinkedHashMap<>();
+		
+		for (final Variable parameter : module.getParameters()) {
+			for (final Expression<?> p : module.getPropositions()) {
+				final Composite<?> c = cast(Composite.class, p);
+				
+				if (c != null && c.size() == 3 && c.get(0) == parameter && symbol("∈").equals(c.get(1))) {
+					final Expression<?> type = c.get(2);
+					
+					if (!knownTypes.containsKey(type) || result.containsKey(parameter)) {
+						throw new IllegalArgumentException();
+					}
+					
+					result.put(parameter, knownTypes.get(type));
+				}
+			}
+		}
+		
+		return result;
 	}
 	
 	/**
