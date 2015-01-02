@@ -149,24 +149,32 @@ public final class JavaExporterTest {
 		final Expression<?> lhs = getLeftSideOfTerminalEquality(inductionEquality);
 		
 		inductionParameter.reset().equals(subtraction(inductionParameter, ONE));
-		
 		allTypes.put(lhs.accept(Variable.BIND), int.class);
 		
 		final Class<?> returnType = inductionEquality.getRight().accept(new GetJavaType(allTypes));
 		
-		inductionParameter.reset().equals(ZERO);
-		javaOutput.println("	private static " + returnType.getName() + " " + generatedName + "_variable = " + initializationEquality.getRight().accept(Variable.BIND).accept(new GetJavaCode()) + ";");
+		{
+			inductionParameter.reset().equals(ZERO);
+			javaOutput.println("	private static " + returnType.getName() + " " + generatedName + "_variable = " + initializationEquality.getRight().accept(Variable.BIND).accept(new GetJavaCode()) + ";");
+		}
 		
 		final Map<Expression<?>, Function<Expression<?>, String>> specialCodes = new LinkedHashMap<>();
 		final Symbol<String> inductionParameterAsSymbol = symbol(inductionParameter.getName());
-		inductionParameter.reset().equals(subtraction(inductionParameterAsSymbol, ONE));
-		specialCodes.put(lhs.accept(Variable.BIND), e -> generatedName + "_variable");
-		javaOutput.print("	public static final " + returnType.getSimpleName() + " " + generatedName + "(");
-		javaOutput.print(join(", ", parameterTypes.entrySet().stream().map(entry -> "final " + entry.getValue().getSimpleName() + " " + entry.getKey().getName()).toArray()));
-		javaOutput.println(") {");
-		inductionParameter.reset().equals(inductionParameterAsSymbol);
-		javaOutput.println("		return " + generatedName + "_variable = " + inductionEquality.getRight().accept(new GetJavaCode(specialCodes)) + ";");
-		javaOutput.println("	}");
+		
+		{
+			inductionParameter.reset().equals(subtraction(inductionParameterAsSymbol, ONE));
+			specialCodes.put(lhs.accept(Variable.BIND), e -> generatedName + "_variable");
+			
+			javaOutput.print("	public static final " + returnType.getSimpleName() + " " + generatedName + "_update(");
+			javaOutput.print(join(", ", parameterTypes.entrySet().stream().map(entry -> "final " + entry.getValue().getSimpleName() + " " + entry.getKey().getName()).toArray()));
+			javaOutput.println(") {");
+			
+			inductionParameter.reset().equals(inductionParameterAsSymbol);
+			javaOutput.println("		return " + generatedName + "_variable = " + inductionEquality.getRight().accept(new GetJavaCode(specialCodes)) + ";");
+			
+			javaOutput.println("	}");
+		}
+		
 	}
 	
 	public static final void exportFunction(final Module module, final Expression<?> leftSideOfEquality,
