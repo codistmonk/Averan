@@ -50,6 +50,11 @@ public final class Variable implements Expression<Variable> {
 	}
 	
 	@Override
+	public final boolean implies(final Expression<?> expression) {
+		return this.equals(expression);
+	}
+	
+	@Override
 	public final int hashCode() {
 		return this.getName().hashCode();
 	}

@@ -13,6 +13,8 @@ import net.sourceforge.aprog.tools.IllegalInstantiationException;
  */
 public abstract interface Expression<E extends Expression<?>> extends Container<E> {
 	
+	public abstract boolean implies(Expression<?> expression);
+	
 	public abstract <V> V accept(Visitor<V> visitor);
 	
 	/**

@@ -9,8 +9,6 @@ import static net.sourceforge.aprog.tools.Tools.join;
 import java.util.Collection;
 import java.util.List;
 
-import averan2.core.Expression.Metadata;
-
 /**
  * @author codistmonk (creation 2014-12-20)
  */
@@ -172,13 +170,27 @@ public final class Substitution implements Expression.Visitor<Expression<?>>, Ex
 	}
 	
 	@Override
+	public final boolean implies(final Expression<?> expression) {
+		if (this == expression) {
+			return true;
+		}
+		
+		final Substitution that = cast(this.getClass(), expression);
+		
+		return that != null && this.getBindings().implies(that.getBindings())
+				&& this.getIndices().implies(that.getIndices());
+	}
+	
+	@Override
 	public final int hashCode() {
 		return this.getBindings().hashCode() + this.getIndices().hashCode();
 	}
 	
 	@Override
 	public final boolean equals(final Object object) {
-		final Substitution that = cast(this.getClass(), object);
+		if (this == object) {
+			return true;
+		}
 		
 		final Variable variable = cast(Variable.class, object);
 		
@@ -186,10 +198,12 @@ public final class Substitution implements Expression.Visitor<Expression<?>>, Ex
 			return variable.equals(this);
 		}
 		
+		final Substitution that = cast(this.getClass(), object);
+		
 		return that != null && this.getBindings().equals(that.getBindings())
 				&& this.getIndices().equals(that.getIndices());
 	}
-	
+
 	@Override
 	public final String toString() {
 		return "{" + join(",", this.getBindings()) + "}[" + join(",", this.getIndices()) + "]";

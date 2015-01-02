@@ -15,9 +15,9 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import jgencode.primitivelists.IntList;
-
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 import net.sourceforge.aprog.tools.Pair;
+import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2014-12-20)
@@ -480,7 +480,7 @@ public final class Session implements Serializable {
 				for (int i = module.getPropositions().size() - 1; 0 <= i; --i) {
 					final Expression<?> proposition = module.getPropositions().get(i);
 					
-					if (canDeduce(proposition, goal)) {
+					if (canDeduce(proposition, goal.accept(Variable.RESET))) {
 						result.add(new Pair<>(module.getPropositionIds().get(i), proposition.accept(Variable.BIND)));
 					}
 				}

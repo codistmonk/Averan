@@ -27,9 +27,11 @@ import java.io.PrintStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+import net.sourceforge.aprog.tools.Pair;
 import net.sourceforge.aprog.tools.Tools;
 
 import org.junit.Test;
@@ -101,11 +103,40 @@ public final class JavaExporterTest {
 		}
 	}
 	
+	public static final Pair<String, Expression<?>> findMostSpecificDefinition(final List<Pair<String, Expression<?>>> justifications) {
+		Pair<String, Expression<?>> result = null;
+		Expression<?> resultLHS = null;
+		
+		for (final Pair<String, Expression<?>> justification : justifications) {
+			final Expression<?> leftSide = getLeftSideOfTerminalEquality(proposition(justification.getFirst()));
+			
+			if (result == null) {
+				result = justification;
+				resultLHS = leftSide;
+			} else if (resultLHS.implies(leftSide)) {
+				result = justification;
+				resultLHS = leftSide;
+			}
+		}
+		
+		return result;
+	}
+	
+	public static final Expression<?> getLeftSideOfTerminalEquality(final Expression<?> expression) {
+		final Module module = cast(Module.class, expression);
+		
+		if (module != null) {
+			return getLeftSideOfTerminalEquality(module.getPropositions().last());
+		}
+		
+		return ((Equality) expression).getLeft();
+	}
+	
 	public static final void exportProceduralInduction(final Module module, final Expression<?> leftSideOfEquality, final Variable inductionParameter,
 			final String generatedName, final PrintStream javaOutput) {
 		final Variable rightSide = new Variable("computableExpression");
 		inductionParameter.reset().equals(ZERO);
-		final String initializationName = justificationsFor(equality(leftSideOfEquality.accept(Variable.BIND), rightSide.reset())).get(0).getFirst();
+		final String initializationName = findMostSpecificDefinition(justificationsFor(equality(leftSideOfEquality.accept(Variable.BIND), rightSide.reset()))).getFirst();
 		final String inductionName = justificationsFor(equality(leftSideOfEquality, rightSide.reset())).get(0).getFirst();
 		
 		Tools.debugPrint(initializationName, inductionName);

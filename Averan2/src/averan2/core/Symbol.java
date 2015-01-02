@@ -34,6 +34,17 @@ public final class Symbol<T> implements Expression<Symbol<T>> {
 	}
 	
 	@Override
+	public final boolean implies(final Expression<?> expression) {
+		if (this == expression) {
+			return true;
+		}
+		
+		final Symbol<?> that = cast(this.getClass(), expression);
+		
+		return that != null && this.getObject().equals(that.getObject());
+	}
+	
+	@Override
 	public final int hashCode() {
 		return this.toString().hashCode();
 	}
