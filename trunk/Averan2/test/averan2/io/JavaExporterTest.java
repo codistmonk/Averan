@@ -24,9 +24,11 @@ import averan2.core.Variable;
 import averan2.modules.Reals;
 
 import java.io.PrintStream;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 import net.sourceforge.aprog.tools.Tools;
 
@@ -53,10 +55,25 @@ public final class JavaExporterTest {
 				}
 				
 				{
+					final Variable $n = variable("n");
+					
+					suppose("definition_of_u_0",
+							equality($("u", "_", ZERO), ZERO));
+					
+					suppose("definition_of_u_n",
+							$(forAll($n), $(natural($n), "->", equality($("u", "_", $n), addition($("u", "_", subtraction($n, ONE)), $n)))));
+				}
+				
+				{
 					final Variable $x = ((Module) proposition("definition_of_f")).getParameters().get(0);
 					
 					exportFunction(module(), (Expression<?>) $("f", "_", $x), "f", System.out);
-					exportProceduralInduction(module(), (Expression<?>) $("f", "_", $x), $x, "f", System.out);
+				}
+				
+				{
+					final Variable $n = ((Module) proposition("definition_of_u_n")).getParameters().get(0);
+					
+					exportProceduralInduction(module(), (Expression<?>) $("u", "_", $n), $n, "u", System.out);
 				}
 			}
 			
@@ -95,13 +112,16 @@ public final class JavaExporterTest {
 		
 		final Expression<?> initialization = module.findProposition(initializationName);
 		final Module initializationAsModule = cast(Module.class, initialization);
-		final Equality initializationEquality = initializationAsModule.getPropositions().last();
-		
+		final Equality initializationEquality = initializationAsModule == null ? (Equality) initialization : initializationAsModule.getPropositions().last();
 		final Expression<?> induction = module.findProposition(inductionName);
 		final Module inductionAsModule = cast(Module.class, induction);
 		final Map<Variable, Class<?>> parameterTypes = getParameterTypes(inductionAsModule);
+		final Map<Expression<?>, Class<?>> allTypes = new LinkedHashMap<>(parameterTypes);
 		final Equality inductionEquality = inductionAsModule.getPropositions().last();
-		final Class<?> returnType = inductionEquality.getRight().accept(new GetJavaType(parameterTypes));
+		allTypes.put($("u", "_", subtraction(inductionParameter, ONE)), int.class);
+		final Class<?> returnType = inductionEquality.getRight().accept(new GetJavaType(allTypes));
+		final Map<Expression<?>, Function<Expression<?>, String>> specialCodes = new LinkedHashMap<>();
+		specialCodes.put($("u", "_", subtraction(inductionParameter, ONE)), e -> "u(n-1)");
 //		final String javaCode = equality.getRight().accept(new GetJavaCode());
 		
 		inductionParameter.reset().equals(ZERO);
@@ -109,7 +129,7 @@ public final class JavaExporterTest {
 		javaOutput.print("	public static final " + returnType.getSimpleName() + " " + generatedName + "(");
 		javaOutput.print(join(", ", parameterTypes.entrySet().stream().map(entry -> "final " + entry.getValue().getSimpleName() + " " + entry.getKey().getName()).toArray()));
 		javaOutput.println(") {");
-		javaOutput.println("		return " + generatedName + "_variable = " + inductionEquality.getRight().accept(new GetJavaCode()) + ";");
+		javaOutput.println("		return " + generatedName + "_variable = " + inductionEquality.getRight().accept(new GetJavaCode(specialCodes)) + ";");
 		javaOutput.println("	}");
 	}
 	
@@ -177,23 +197,61 @@ public final class JavaExporterTest {
 		return result;
 	}
 	
+	public static final <V> V find(final Map<? extends Expression<?>, V> haystack, final Expression<?> needle) {
+		for (final Map.Entry<? extends Expression<?>, V> entry : haystack.entrySet()) {
+			if (entry.getKey().accept(Variable.RESET).equals(needle)) {
+				return entry.getValue();
+			}
+		}
+		
+		return null;
+	}
+	
 	/**
 	 * @author codistmonk (creation 2014-12-31)
 	 */
 	public static final class GetJavaCode implements Visitor<String> {
 		
+		private final Map<? extends Expression<?>, Function<Expression<?>, String>> specialCodes;
+		
+		public GetJavaCode() {
+			this(Collections.emptyMap());
+		}
+		
+		public GetJavaCode(Map<? extends Expression<?>, Function<Expression<?>, String>> specialCodes) {
+			this.specialCodes = specialCodes;
+		}
+		
 		@Override
 		public final String visit(final Symbol<?> symbol) {
+			final Function<Expression<?>, String> protoresult = find(this.specialCodes, symbol);
+			
+			if (protoresult != null) {
+				return protoresult.apply(symbol);
+			}
+			
 			return symbol.toString();
 		}
 		
 		@Override
 		public final String visit(final Variable variable) {
+			final Function<Expression<?>, String> protoresult = find(this.specialCodes, variable);
+			
+			if (protoresult != null) {
+				return protoresult.apply(variable);
+			}
+			
 			return variable.getName();
 		}
 		
 		@Override
 		public final String visit(final Composite<Expression<?>> composite) {
+			final Function<Expression<?>, String> protoresult = find(this.specialCodes, composite);
+			
+			if (protoresult != null) {
+				return protoresult.apply(composite);
+			}
+			
 			if (composite.size() == 3) {
 				return group(composite.get(0).accept(this) + " " + composite.get(1) + " " + composite.get(2).accept(this));
 			}
@@ -203,16 +261,34 @@ public final class JavaExporterTest {
 		
 		@Override
 		public final String visit(final Module module) {
+			final Function<Expression<?>, String> protoresult = find(this.specialCodes, module);
+			
+			if (protoresult != null) {
+				return protoresult.apply(module);
+			}
+			
 			return null;
 		}
 		
 		@Override
 		public final String visit(final Substitution substitution) {
+			final Function<Expression<?>, String> protoresult = find(this.specialCodes, substitution);
+			
+			if (protoresult != null) {
+				return protoresult.apply(substitution);
+			}
+			
 			return null;
 		}
 		
 		@Override
 		public final String visit(final Equality equality) {
+			final Function<Expression<?>, String> protoresult = find(this.specialCodes, equality);
+			
+			if (protoresult != null) {
+				return protoresult.apply(equality);
+			}
+			
 			return group(equality.getLeft().accept(this) + " == " + equality.getRight().accept(this));
 		}
 		
@@ -229,14 +305,20 @@ public final class JavaExporterTest {
 	 */
 	public static final class GetJavaType implements Visitor<Class<?>> {
 		
-		private final Map<Variable, Class<?>> parameterTypes;
+		private final Map<? extends Expression<?>, Class<?>> types;
 		
-		public GetJavaType(final Map<Variable, Class<?>> parameterTypes) {
-			this.parameterTypes = parameterTypes;
+		public GetJavaType(final Map<? extends Expression<?>, Class<?>> types) {
+			this.types = types;
 		}
 		
 		@Override
 		public final Class<?> visit(final Symbol<?> symbol) {
+			final Class<?> candidate = find(this.types, symbol);
+			
+			if (candidate != null) {
+				return candidate;
+			}
+			
 			try {
 				Integer.parseInt(symbol.toString());
 				
@@ -258,11 +340,17 @@ public final class JavaExporterTest {
 		
 		@Override
 		public final Class<?> visit(final Variable variable) {
-			return this.parameterTypes.get(variable);
+			return find(this.types, variable);
 		}
 		
 		@Override
 		public final Class<?> visit(final Composite<Expression<?>> composite) {
+			final Class<?> candidate = find(this.types, composite);
+			
+			if (candidate != null) {
+				return candidate;
+			}
+			
 			if (composite.size() == 3) {
 				final Class<?> leftType = composite.get(0).accept(this);
 				final Class<?> rightType = composite.get(2).accept(this);
@@ -278,16 +366,22 @@ public final class JavaExporterTest {
 		
 		@Override
 		public final Class<?> visit(final Module module) {
-			return null;
+			return find(this.types, module);
 		}
 		
 		@Override
 		public final Class<?> visit(final Substitution substitution) {
-			return null;
+			return find(this.types, substitution);
 		}
 		
 		@Override
 		public final Class<?> visit(final Equality equality) {
+			final Class<?> candidate = find(this.types, equality);
+			
+			if (candidate != null) {
+				return candidate;
+			}
+			
 			return null != equality.getLeft().accept(this) && null != equality.getRight().accept(this) ? boolean.class : null;
 		}
 		
