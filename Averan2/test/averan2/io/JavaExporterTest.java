@@ -5,6 +5,7 @@ import static averan2.core.Session.*;
 import static averan2.core.Session.Stack.*;
 import static averan2.core.Symbol.symbol;
 import static averan2.core.Variable.variable;
+import static averan2.io.ConsoleOutput.group;
 import static averan2.modules.Reals.*;
 import static averan2.modules.Standard.*;
 import static java.util.Collections.emptyMap;
@@ -13,6 +14,7 @@ import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.getThisMethodName;
 import static net.sourceforge.aprog.tools.Tools.ignore;
 import static net.sourceforge.aprog.tools.Tools.join;
+
 import averan2.core.Composite;
 import averan2.core.Equality;
 import averan2.core.Expression;
@@ -32,7 +34,6 @@ import java.util.Map;
 import java.util.function.Function;
 
 import net.sourceforge.aprog.tools.Pair;
-import net.sourceforge.aprog.tools.Tools;
 
 import org.junit.Test;
 
@@ -43,7 +44,7 @@ public final class JavaExporterTest {
 	
 	@Test
 	public final void test() {
-		final Module module = build(getThisMethodName(), new Runnable() {
+		build(getThisMethodName(), new Runnable() {
 			
 			@Override
 			public final void run() {
@@ -53,7 +54,15 @@ public final class JavaExporterTest {
 					final Variable $x = variable("x");
 					
 					suppose("definition_of_f",
-							$(forAll($x), $(real($x), "->", equality($("f", "_", $x), addition($x, $x)))));
+							$(forAll($x), $(real($x), "->", equality($("f", "_", $x), $x))));
+				}
+				
+				{
+					final Variable $x = variable("x");
+					final Variable $y = variable("y");
+					
+					suppose("definition_of_g",
+							$(forAll($x, $y), $(natural($x), "->", real($y), "->", equality($("g", "_", group($($x, ",", $y))), addition($x, $y)))));
 				}
 				
 				{
@@ -63,13 +72,17 @@ public final class JavaExporterTest {
 							equality($("u", "_", ZERO), ZERO));
 					
 					suppose("definition_of_u_n",
-							$(forAll($n), $(natural($n), "->", equality($("u", "_", $n), addition($("u", "_", subtraction($n, ONE)), $n)))));
+							$(forAll($n), $(nonzeroNatural($n), "->", equality($("u", "_", $n), addition($("u", "_", group(subtraction($n, ONE))), $n)))));
 				}
 				
 				{
 					final Variable $x = ((Module) proposition("definition_of_f")).getParameters().get(0);
 					
 					exportFunction(module(), (Expression<?>) $("f", "_", $x), "f", System.out);
+				}
+				
+				{
+					exportFunction(module(), getLeftSideOfTerminalEquality(proposition("definition_of_g")), "g", System.out);
 				}
 				
 				{
@@ -143,7 +156,7 @@ public final class JavaExporterTest {
 		final Equality initializationEquality = initializationAsModule == null ? (Equality) initialization : initializationAsModule.getPropositions().last();
 		final Expression<?> induction = module.findProposition(inductionName);
 		final Module inductionAsModule = cast(Module.class, induction);
-		final Map<Variable, Class<?>> parameterTypes = getParameterTypes(inductionAsModule);
+		final Map<Symbol<String>, Class<?>> parameterTypes = getParameterTypes(inductionAsModule);
 		final Map<Expression<?>, Class<?>> allTypes = new LinkedHashMap<>(parameterTypes);
 		final Equality inductionEquality = inductionAsModule.getPropositions().last();
 		final Expression<?> lhs = getLeftSideOfTerminalEquality(inductionEquality);
@@ -166,7 +179,7 @@ public final class JavaExporterTest {
 			specialCodes.put(lhs.accept(Variable.BIND), e -> generatedName + "_variable");
 			
 			javaOutput.print("	public static final " + returnType.getSimpleName() + " " + generatedName + "_update(");
-			javaOutput.print(join(", ", parameterTypes.entrySet().stream().map(entry -> "final " + entry.getValue().getSimpleName() + " " + entry.getKey().getName()).toArray()));
+			javaOutput.print(join(", ", parameterTypes.entrySet().stream().map(entry -> "final " + entry.getValue().getSimpleName() + " " + entry.getKey().toString()).toArray()));
 			javaOutput.println(") {");
 			
 			inductionParameter.reset().equals(inductionParameterAsSymbol);
@@ -191,13 +204,14 @@ public final class JavaExporterTest {
 		final Module propositionAsModule = cast(Module.class, proposition);
 		
 		if (propositionAsModule != null) {
-			final Map<Variable, Class<?>> parameterTypes = getParameterTypes(propositionAsModule);
+			final Map<Symbol<String>, Class<?>> parameterTypes = getParameterTypes(propositionAsModule);
 			final Equality equality = propositionAsModule.getPropositions().last();
-			final Class<?> returnType = equality.getRight().accept(new GetJavaType(parameterTypes));
+			propositionAsModule.getParameters().forEach(p -> p.reset().equals(symbol(p.getName())));
+			final Class<?> returnType = equality.getRight().accept(Variable.BIND).accept(new GetJavaType(parameterTypes));
 			final String javaCode = equality.getRight().accept(new GetJavaCode());
 			
 			javaOutput.print("	public static final " + returnType.getSimpleName() + " " + generatedName + "(");
-			javaOutput.print(join(", ", parameterTypes.entrySet().stream().map(entry -> "final " + entry.getValue().getSimpleName() + " " + entry.getKey().getName()).toArray()));
+			javaOutput.print(join(", ", parameterTypes.entrySet().stream().map(entry -> "final " + entry.getValue().getSimpleName() + " " + entry.getKey().toString()).toArray()));
 			javaOutput.println(") {");
 			javaOutput.println("		return " + javaCode + ";");
 			javaOutput.println("	}");
@@ -216,8 +230,8 @@ public final class JavaExporterTest {
 		throw new IllegalArgumentException();
 	}
 	
-	public static final Map<Variable, Class<?>> getParameterTypes(final Module module) {
-		final Map<Variable, Class<?>> result = new LinkedHashMap<>();
+	public static final Map<Symbol<String>, Class<?>> getParameterTypes(final Module module) {
+		final Map<Symbol<String>, Class<?>> result = new LinkedHashMap<>();
 		
 		for (final Variable parameter : module.getParameters()) {
 			for (final Expression<?> p : module.getPropositions()) {
@@ -230,7 +244,7 @@ public final class JavaExporterTest {
 						throw new IllegalArgumentException();
 					}
 					
-					result.put(parameter, knownTypes.get(type));
+					result.put(symbol(parameter.getName()), knownTypes.get(type));
 				}
 			}
 		}
