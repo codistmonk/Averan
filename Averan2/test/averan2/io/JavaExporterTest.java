@@ -138,9 +138,6 @@ public final class JavaExporterTest {
 		inductionParameter.reset().equals(ZERO);
 		final String initializationName = findMostSpecificDefinition(justificationsFor(equality(leftSideOfEquality.accept(Variable.BIND), rightSide.reset()))).getFirst();
 		final String inductionName = justificationsFor(equality(leftSideOfEquality, rightSide.reset())).get(0).getFirst();
-		
-		Tools.debugPrint(initializationName, inductionName);
-		
 		final Expression<?> initialization = module.findProposition(initializationName);
 		final Module initializationAsModule = cast(Module.class, initialization);
 		final Equality initializationEquality = initializationAsModule == null ? (Equality) initialization : initializationAsModule.getPropositions().last();
@@ -149,17 +146,25 @@ public final class JavaExporterTest {
 		final Map<Variable, Class<?>> parameterTypes = getParameterTypes(inductionAsModule);
 		final Map<Expression<?>, Class<?>> allTypes = new LinkedHashMap<>(parameterTypes);
 		final Equality inductionEquality = inductionAsModule.getPropositions().last();
-		allTypes.put($("u", "_", subtraction(inductionParameter, ONE)), int.class);
+		final Expression<?> lhs = getLeftSideOfTerminalEquality(inductionEquality);
+		
+		inductionParameter.reset().equals(subtraction(inductionParameter, ONE));
+		
+		allTypes.put(lhs.accept(Variable.BIND), int.class);
+		
 		final Class<?> returnType = inductionEquality.getRight().accept(new GetJavaType(allTypes));
-		final Map<Expression<?>, Function<Expression<?>, String>> specialCodes = new LinkedHashMap<>();
-		specialCodes.put($("u", "_", subtraction(inductionParameter, ONE)), e -> "u(n-1)");
-//		final String javaCode = equality.getRight().accept(new GetJavaCode());
 		
 		inductionParameter.reset().equals(ZERO);
 		javaOutput.println("	private static " + returnType.getName() + " " + generatedName + "_variable = " + initializationEquality.getRight().accept(Variable.BIND).accept(new GetJavaCode()) + ";");
+		
+		final Map<Expression<?>, Function<Expression<?>, String>> specialCodes = new LinkedHashMap<>();
+		final Symbol<String> inductionParameterAsSymbol = symbol(inductionParameter.getName());
+		inductionParameter.reset().equals(subtraction(inductionParameterAsSymbol, ONE));
+		specialCodes.put(lhs.accept(Variable.BIND), e -> generatedName + "_variable");
 		javaOutput.print("	public static final " + returnType.getSimpleName() + " " + generatedName + "(");
 		javaOutput.print(join(", ", parameterTypes.entrySet().stream().map(entry -> "final " + entry.getValue().getSimpleName() + " " + entry.getKey().getName()).toArray()));
 		javaOutput.println(") {");
+		inductionParameter.reset().equals(inductionParameterAsSymbol);
 		javaOutput.println("		return " + generatedName + "_variable = " + inductionEquality.getRight().accept(new GetJavaCode(specialCodes)) + ";");
 		javaOutput.println("	}");
 	}
@@ -175,9 +180,6 @@ public final class JavaExporterTest {
 	public static final void exportFunction(final Module module, final String propositionName,
 			final String generatedName, final PrintStream javaOutput) {
 		final Expression<?> proposition = module.findProposition(propositionName);
-		
-		Tools.debugPrint(proposition);
-		
 		final Module propositionAsModule = cast(Module.class, proposition);
 		
 		if (propositionAsModule != null) {
