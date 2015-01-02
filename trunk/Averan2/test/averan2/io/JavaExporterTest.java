@@ -13,7 +13,6 @@ import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.getThisMethodName;
 import static net.sourceforge.aprog.tools.Tools.ignore;
 import static net.sourceforge.aprog.tools.Tools.join;
-
 import averan2.core.Composite;
 import averan2.core.Equality;
 import averan2.core.Expression;
@@ -52,11 +51,11 @@ public final class JavaExporterTest {
 					suppose("definition_of_f",
 							$(forAll($x), $(real($x), "->", equality($("f", "_", $x), addition($x, $x)))));
 				}
+				
+				exportFunction(module(), (Expression<?>) $("f", "_", new Variable("x")), "f", System.out);
 			}
 			
 		});
-		
-		export(module, "definition_of_f", "f", System.out);
 	}
 	
 	static final Map<Expression<?>, Class<?>> knownTypes = new HashMap<>();
@@ -80,7 +79,15 @@ public final class JavaExporterTest {
 		}
 	}
 	
-	public static final void export(final Module module, final String propositionName,
+	public static final void exportFunction(final Module module, final Expression<?> leftSideOfEquality,
+			final String generatedName, final PrintStream javaOutput) {
+		final Variable rightSide = new Variable("computableExpression");
+		final String propositionName = justificationsFor(equality(leftSideOfEquality, rightSide)).get(0).getFirst();
+		
+		exportFunction(module, propositionName, generatedName, javaOutput);
+	}
+	
+	public static final void exportFunction(final Module module, final String propositionName,
 			final String generatedName, final PrintStream javaOutput) {
 		final Expression<?> proposition = module.findProposition(propositionName);
 		

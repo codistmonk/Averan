@@ -172,6 +172,12 @@ public final class Module implements Expression<Composite<?>> {
 	public final boolean equals(final Object object) {
 		final Module that = cast(this.getClass(), object);
 		
+		final Variable variable = cast(Variable.class, object);
+		
+		if (variable != null) {
+			return variable.equals(this);
+		}
+		
 		return that != null && this.canonicalize().getPropositions().equals(that.canonicalize().getPropositions());
 	}
 	

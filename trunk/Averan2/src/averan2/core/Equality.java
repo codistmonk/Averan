@@ -57,6 +57,12 @@ public final class Equality implements Expression<Expression<?>> {
 	public final boolean equals(final Object object) {
 		final Equality that = cast(this.getClass(), object);
 		
+		final Variable variable = cast(Variable.class, object);
+		
+		if (variable != null) {
+			return variable.equals(this);
+		}
+		
 		return that != null && this.getLeft().equals(that.getLeft()) && this.getRight().equals(that.getRight());
 	}
 	
