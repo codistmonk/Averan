@@ -162,6 +162,17 @@ public final class Module implements Expression<Composite<?>> {
 	}
 	
 	@Override
+	public final boolean implies(final Expression<?> expression) {
+		if (this == expression) {
+			return true;
+		}
+		
+		final Module that = cast(this.getClass(), expression);
+		
+		return that != null && this.canonicalize().getPropositions().implies(that.canonicalize().getPropositions());
+	}
+	
+	@Override
 	public final int hashCode() {
 		this.canonicalize();
 		
@@ -170,13 +181,13 @@ public final class Module implements Expression<Composite<?>> {
 	
 	@Override
 	public final boolean equals(final Object object) {
-		final Module that = cast(this.getClass(), object);
-		
 		final Variable variable = cast(Variable.class, object);
 		
 		if (variable != null) {
 			return variable.equals(this);
 		}
+		
+		final Module that = cast(this.getClass(), object);
 		
 		return that != null && this.canonicalize().getPropositions().equals(that.canonicalize().getPropositions());
 	}

@@ -49,19 +49,34 @@ public final class Equality implements Expression<Expression<?>> {
 	}
 	
 	@Override
+	public final boolean implies(final Expression<?> expression) {
+		if (this == expression) {
+			return true;
+		}
+		
+		final Equality that = cast(this.getClass(), expression);
+		
+		return that != null && this.getLeft().implies(that.getLeft()) && this.getRight().implies(that.getRight());
+	}
+	
+	@Override
 	public final int hashCode() {
 		return this.getLeft().hashCode() + this.getRight().hashCode();
 	}
 	
 	@Override
 	public final boolean equals(final Object object) {
-		final Equality that = cast(this.getClass(), object);
+		if (this == object) {
+			return true;
+		}
 		
 		final Variable variable = cast(Variable.class, object);
 		
 		if (variable != null) {
 			return variable.equals(this);
 		}
+		
+		final Equality that = cast(this.getClass(), object);
 		
 		return that != null && this.getLeft().equals(that.getLeft()) && this.getRight().equals(that.getRight());
 	}

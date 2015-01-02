@@ -41,6 +41,34 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 	}
 	
 	@Override
+	public final boolean implies(final Expression<?> expression) {
+		if (this == expression) {
+			return true;
+		}
+		
+		final Composite<?> that = cast(this.getClass(), expression);
+		
+		if (that == null) {
+			return false;
+		}
+		
+		final int thisSize = this.size();
+		final int thatSize = that.size();
+		
+		if (thisSize != thatSize) {
+			return false;
+		}
+		
+		for (int i = 0; i < thisSize; ++i) {
+			if (!this.get(i).implies(that.get(i))) {
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
+	@Override
 	public final int hashCode() {
 		return this.getElements().hashCode();
 	}
