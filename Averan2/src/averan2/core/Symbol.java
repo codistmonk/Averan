@@ -44,6 +44,12 @@ public final class Symbol<T> implements Expression<Symbol<T>> {
 			return true;
 		}
 		
+		final Variable variable = cast(Variable.class, object);
+		
+		if (variable != null) {
+			return variable.equals(this);
+		}
+		
 		final Symbol<?> that = cast(this.getClass(), object);
 		
 		return that != null && this.getObject().equals(that.getObject());

@@ -51,6 +51,12 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 			return true;
 		}
 		
+		final Variable variable = cast(Variable.class, object);
+		
+		if (variable != null) {
+			return variable.equals(this);
+		}
+		
 		final Composite<?> that = cast(this.getClass(), object);
 		
 		return that != null && this.getElements().equals(that.getElements());

@@ -180,6 +180,12 @@ public final class Substitution implements Expression.Visitor<Expression<?>>, Ex
 	public final boolean equals(final Object object) {
 		final Substitution that = cast(this.getClass(), object);
 		
+		final Variable variable = cast(Variable.class, object);
+		
+		if (variable != null) {
+			return variable.equals(this);
+		}
+		
 		return that != null && this.getBindings().equals(that.getBindings())
 				&& this.getIndices().equals(that.getIndices());
 	}
