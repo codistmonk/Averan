@@ -52,7 +52,12 @@ public final class JavaExporterTest {
 							$(forAll($x), $(real($x), "->", equality($("f", "_", $x), addition($x, $x)))));
 				}
 				
-				exportFunction(module(), (Expression<?>) $("f", "_", new Variable("x")), "f", System.out);
+				{
+					final Variable $x = variable("x");
+					
+					exportFunction(module(), (Expression<?>) $("f", "_", $x), "f", System.out);
+					exportProceduralInduction(module(), (Expression<?>) $("f", "_", $x), $x, "f", System.out);
+				}
 			}
 			
 		});
@@ -77,6 +82,16 @@ public final class JavaExporterTest {
 			operationTypes.computeIfAbsent(double.class, leftType -> new HashMap<>()).put(int.class, double.class);
 			operationTypes.computeIfAbsent(double.class, leftType -> new HashMap<>()).put(double.class, double.class);
 		}
+	}
+	
+	public static final void exportProceduralInduction(final Module module, final Expression<?> leftSideOfEquality, final Variable inductionParameter,
+			final String generatedName, final PrintStream javaOutput) {
+		final Variable rightSide = new Variable("computableExpression");
+		inductionParameter.reset().equals(ZERO);
+		final String initialisationName = justificationsFor(equality(leftSideOfEquality.accept(Variable.BIND), rightSide.reset())).get(0).getFirst();
+		final String inductionName = justificationsFor(equality(leftSideOfEquality, rightSide.reset())).get(0).getFirst();
+		
+		Tools.debugPrint(initialisationName, inductionName);
 	}
 	
 	public static final void exportFunction(final Module module, final Expression<?> leftSideOfEquality,
