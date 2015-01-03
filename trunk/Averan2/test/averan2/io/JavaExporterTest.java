@@ -26,7 +26,10 @@ import averan2.core.Symbol;
 import averan2.core.Variable;
 import averan2.modules.Reals;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.PrintStream;
+import java.io.UncheckedIOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -35,6 +38,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import net.sourceforge.aprog.tools.Pair;
+import net.sourceforge.aprog.tools.Tee;
 import net.sourceforge.aprog.tools.Tools;
 
 import org.junit.Test;
@@ -82,25 +86,57 @@ public final class JavaExporterTest {
 		
 		pushNewSessionToWorkWithModule(module);
 		
-		try {
+		try (final PrintStream javaOutput = new PrintStream(new Tee(System.out, beginClass("test", "averan2.generated.Demo")))) {
 			{
 				final Variable $x = ((Module) proposition("definition_of_f")).getParameters().get(0);
 				
-				exportFunction(module(), (Expression<?>) $("f", "_", $x), "f", System.out);
+				exportFunction(module(), (Expression<?>) $("f", "_", $x), "f", javaOutput);
 			}
 			
 			{
-				exportFunction(module(), getLeftSideOfTerminalEquality(proposition("definition_of_g")), "g", System.out);
+				exportFunction(module(), getLeftSideOfTerminalEquality(proposition("definition_of_g")), "g", javaOutput);
 			}
 			
 			{
 				final Variable $n = ((Module) proposition("definition_of_u_n")).getParameters().get(0);
 				
-				exportProceduralInduction(module(), getLeftSideOfTerminalEquality(proposition("definition_of_u_n")), $n, "u", System.out);
+				exportProceduralInduction(module(), getLeftSideOfTerminalEquality(proposition("definition_of_u_n")), $n, "u", javaOutput);
 			}
+			
+			endClass(javaOutput);
 		} finally {
 			popSession();
 		}
+	}
+	
+	public static final PrintStream beginClass(final String rootPath, final String fullyQualifiedName) {
+		final int lastDotIndex = fullyQualifiedName.lastIndexOf('.');
+		
+		if (lastDotIndex == 0) {
+			throw new IllegalArgumentException();
+		}
+		
+		final File file = new File(rootPath, fullyQualifiedName.replaceAll("\\.", "/") + ".java");
+		
+		file.getParentFile().mkdirs();
+		
+		try {
+			final PrintStream result = new PrintStream(file);
+			
+			if (0 < lastDotIndex) {
+				result.println("package " + fullyQualifiedName.substring(0, lastDotIndex) + ";");
+			}
+			
+			result.println("public final class " + fullyQualifiedName.substring(lastDotIndex + 1) + " {");
+			
+			return result;
+		} catch (final FileNotFoundException exception) {
+			throw new UncheckedIOException(exception);
+		}
+	}
+	
+	public static final void endClass(final PrintStream javaOutput) {
+		javaOutput.println("}");
 	}
 	
 	static final Map<Expression<?>, Class<?>> knownTypes = new HashMap<>();
