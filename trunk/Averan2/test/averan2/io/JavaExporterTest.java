@@ -15,6 +15,7 @@ import static net.sourceforge.aprog.tools.Tools.getThisMethodName;
 import static net.sourceforge.aprog.tools.Tools.ignore;
 import static net.sourceforge.aprog.tools.Tools.join;
 import static net.sourceforge.aprog.tools.Tools.unchecked;
+
 import averan2.core.Composite;
 import averan2.core.Equality;
 import averan2.core.Expression;
@@ -81,6 +82,50 @@ public final class JavaExporterTest {
 					
 					suppose("definition_of_u_n",
 							$(forAll($n), $(nonzeroNatural($n), "->", equality($("u", "_", $n), addition($("u", "_", group(subtraction($n, ONE))), $n)))));
+				}
+				
+				{
+					{
+						final Variable $i = variable("i");
+						final Variable $n = variable("n");
+						
+						suppose("definition_of_s",
+								$(forAll($i, $n), $(natural($n), "->", equality($("s", "_", $n), sum($i, $n, $i)))));
+					}
+					
+					deduce("definition_of_s_0");
+					{
+						final Variable $i = new Variable("i");
+						
+						bind("definition_of_s", $i, ZERO);
+						apply(name(-1), "type_of_0");
+						bind("definition_of_sum_0", $i, $i);
+						rewrite(name(-2), name(-1));
+						final Expression<?> unsubsituted = ((Equality) proposition(-1)).getRight();
+						substitute((Expression<?>) unsubsituted.get(0), ((Substitution) unsubsituted.get(1)).getBindings().toArray());
+						rewrite(name(-2), name(-1));
+						conclude();
+					}
+					
+					deduce("definition_of_s_n");
+					{
+						final Variable $i = new Variable("i");
+						final Symbol<String> i = parametrize($i);
+						final Variable $n = new Variable("n");
+						final Symbol<String> n = parametrize($n);
+						
+						suppose(nonzeroNatural(n));
+//						autoDeduce(natural(n));
+						apply("nonzero_naturals_are_naturals", name(-1));
+						bind("definition_of_s", i, n);
+						apply(name(-1), name(-2));
+						bind("definition_of_sum_n", i, n, i);
+						rewrite(name(-2), name(-1));
+						substitute(i, equality(i, n));
+						rewrite(name(-2), name(-1));
+						conclude();
+//						stop();
+					}
 				}
 			}
 			

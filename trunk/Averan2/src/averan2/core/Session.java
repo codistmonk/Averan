@@ -69,6 +69,16 @@ public final class Session implements Serializable {
 		return this.reduce();
 	}
 	
+	public final Symbol<String> parametrize(final Variable parameter) {
+		final Frame frame = this.getCurrentFrame();
+		final Symbol<String> result = new Symbol<>(parameter.getName());
+		
+		frame.getModule().parametrize(parameter);
+		frame.getIntroducedBindings().add(equality(result, parameter));
+		
+		return result;
+	}
+	
 	@SuppressWarnings("unchecked")
 	public final <E extends Expression<?>> E introduce() {
 		final Frame frame = this.getCurrentFrame();
@@ -77,12 +87,9 @@ public final class Session implements Serializable {
 		
 		if (!parameters.isEmpty()) {
 			final Variable parameter = parameters.get(0);
-			final Symbol<String> introducedForParameter = new Symbol<>(parameter.getName());
+			final Symbol<String> introducedForParameter = this.parametrize(parameter);
 			
-			frame.getModule().parametrize(parameter);
 			parameter.reset().equals(introducedForParameter);
-			
-			frame.getIntroducedBindings().add(equality(introducedForParameter, parameter));
 			frame.setGoal(module.accept(Variable.BIND));
 			
 			return (E) introducedForParameter;
@@ -346,6 +353,10 @@ public final class Session implements Serializable {
 			}
 			
 			return result;
+		}
+		
+		public static final Symbol<String> parametrize(final Variable variable) {
+			return session().parametrize(variable);
 		}
 		
 		public static final <E extends Expression<?>> E introduce() {
