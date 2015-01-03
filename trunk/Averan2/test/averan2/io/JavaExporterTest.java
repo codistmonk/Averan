@@ -90,19 +90,25 @@ public final class JavaExporterTest {
 		
 		try (final PrintStream javaOutput = beginClass("test", "averan2.generated.Demo", System.out)) {
 			{
-				final Variable $x = ((Module) proposition("definition_of_f")).getParameters().get(0);
+				final String definitionName = "definition_of_f";
+				final Module definition = proposition(definitionName);
 				
-				exportFunction(module(), (Expression<?>) $("f", "_", $x), "f", javaOutput);
+				exportFunction(module(), getLeftSideOfTerminalEquality(definition), "f", javaOutput);
 			}
 			
 			{
-				exportFunction(module(), getLeftSideOfTerminalEquality(proposition("definition_of_g")), "g", javaOutput);
+				final String definitionName = "definition_of_g";
+				final Module definition = proposition(definitionName);
+				
+				exportFunction(module(), getLeftSideOfTerminalEquality(definition), "g", javaOutput);
 			}
 			
 			{
-				final Variable $n = ((Module) proposition("definition_of_u_n")).getParameters().get(0);
+				final String definitionName = "definition_of_u_n";
+				final Module definition = proposition(definitionName);
+				final Variable $n = definition.getParameters().get(0);
 				
-				exportProceduralInduction(module(), getLeftSideOfTerminalEquality(proposition("definition_of_u_n")), $n, "u", javaOutput);
+				exportProceduralInduction(module(), getLeftSideOfTerminalEquality(definition), $n, "u", javaOutput);
 			}
 			
 			endClass(javaOutput);
