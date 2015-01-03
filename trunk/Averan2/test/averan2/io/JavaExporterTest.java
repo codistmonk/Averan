@@ -189,23 +189,48 @@ public final class JavaExporterTest {
 		final Class<?> returnType = inductionEquality.getRight().accept(new GetJavaType(allTypes));
 		
 		{
+			javaOutput.println("	public static final " + returnType.getName() + " " + generatedName + "_initialize() {");
 			inductionParameter.reset().equals(ZERO);
-			javaOutput.println("	private static " + returnType.getName() + " " + generatedName + "_variable = " + initializationEquality.getRight().accept(Variable.BIND).accept(new GetJavaCode()) + ";");
+			javaOutput.println("		return " + initializationEquality.getRight().accept(Variable.BIND).accept(new GetJavaCode()) + ";");
+			javaOutput.println("	}");
 		}
 		
 		final Map<Expression<?>, Function<Expression<?>, String>> specialCodes = new LinkedHashMap<>();
 		final Symbol<String> inductionParameterAsSymbol = symbol(inductionParameter.getName());
+		final Map<Symbol<String>, Class<?>> extendedParameterTypes = new LinkedHashMap<>(parameterTypes);
+		
+		extendedParameterTypes.put(symbol(generatedName + "_current"), returnType);
 		
 		{
 			inductionParameter.reset().equals(subtraction(inductionParameterAsSymbol, ONE));
-			specialCodes.put(lhs.accept(Variable.BIND), e -> generatedName + "_variable");
+			specialCodes.put(lhs.accept(Variable.BIND), e -> generatedName + "_current");
 			
-			javaOutput.print("	public static final " + returnType.getSimpleName() + " " + generatedName + "_update(");
-			javaOutput.print(join(", ", parameterTypes.entrySet().stream().map(entry -> "final " + entry.getValue().getSimpleName() + " " + entry.getKey().toString()).toArray()));
+			javaOutput.print("	public static final " + returnType.getSimpleName() + " " + generatedName + "_next(");
+			javaOutput.print(join(", ", extendedParameterTypes.entrySet().stream().map(entry -> "final " + entry.getValue().getSimpleName() + " " + entry.getKey().toString()).toArray()));
 			javaOutput.println(") {");
 			
 			inductionParameter.reset().equals(inductionParameterAsSymbol);
-			javaOutput.println("		return " + generatedName + "_variable = " + inductionEquality.getRight().accept(new GetJavaCode(specialCodes)) + ";");
+			javaOutput.println("		return " + inductionEquality.getRight().accept(new GetJavaCode(specialCodes)) + ";");
+			
+			javaOutput.println("	}");
+		}
+		
+		{
+			javaOutput.print("	public static final " + returnType.getSimpleName() + " " + generatedName + "(");
+			javaOutput.print(join(", ", parameterTypes.entrySet().stream().map(entry -> "final " + entry.getValue().getSimpleName() + " " + entry.getKey().toString()).toArray()));
+			javaOutput.println(") {");
+			
+			javaOutput.println("		" + returnType.getName() + " " + generatedName + "_current = " + generatedName + "_initialize();");
+			
+			// TODO handle possible name conflict if a parameter is named "i"
+			javaOutput.println("		for (int i = 0; i <= " + inductionParameterAsSymbol + "; ++i) {");
+			javaOutput.print("			" + generatedName + "_current = " + generatedName + "_next(");
+			javaOutput.print(join(", ", extendedParameterTypes.keySet().stream().map(k -> k.equals(inductionParameterAsSymbol) ? "i" : k.toString()).toArray()));
+			javaOutput.println(");");
+			
+			javaOutput.println("		}");
+			
+			javaOutput.println("		return " + generatedName + "_current;");
 			
 			javaOutput.println("	}");
 		}
