@@ -187,7 +187,6 @@ public final class JavaExporterTest {
 			
 			javaOutput.println("	}");
 		}
-		
 	}
 	
 	public static final void exportFunction(final Module module, final Expression<?> leftSideOfEquality,
