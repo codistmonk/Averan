@@ -88,7 +88,7 @@ public final class JavaExporterTest {
 				{
 					final Variable $n = ((Module) proposition("definition_of_u_n")).getParameters().get(0);
 					
-					exportProceduralInduction(module(), (Expression<?>) $("u", "_", $n), $n, "u", System.out);
+					exportProceduralInduction(module(), getLeftSideOfTerminalEquality(proposition("definition_of_u_n")), $n, "u", System.out);
 				}
 			}
 			
