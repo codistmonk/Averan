@@ -28,6 +28,8 @@ import averan2.modules.Reals;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.UncheckedIOException;
 import java.util.Collections;
@@ -86,7 +88,7 @@ public final class JavaExporterTest {
 		
 		pushNewSessionToWorkWithModule(module);
 		
-		try (final PrintStream javaOutput = new PrintStream(new Tee(System.out, beginClass("test", "averan2.generated.Demo")))) {
+		try (final PrintStream javaOutput = beginClass("test", "averan2.generated.Demo", System.out)) {
 			{
 				final Variable $x = ((Module) proposition("definition_of_f")).getParameters().get(0);
 				
@@ -110,6 +112,10 @@ public final class JavaExporterTest {
 	}
 	
 	public static final PrintStream beginClass(final String rootPath, final String fullyQualifiedName) {
+		return beginClass(rootPath, fullyQualifiedName, null);
+	}
+	
+	public static final PrintStream beginClass(final String rootPath, final String fullyQualifiedName, final OutputStream secondaryOutput) {
 		final int lastDotIndex = fullyQualifiedName.lastIndexOf('.');
 		
 		if (lastDotIndex == 0) {
@@ -121,7 +127,8 @@ public final class JavaExporterTest {
 		file.getParentFile().mkdirs();
 		
 		try {
-			final PrintStream result = new PrintStream(file);
+			final PrintStream result = secondaryOutput == null ? new PrintStream(file) :
+				new PrintStream(new Tee(new FileOutputStream(file), secondaryOutput));
 			
 			if (0 < lastDotIndex) {
 				result.println("package " + fullyQualifiedName.substring(0, lastDotIndex) + ";");
