@@ -330,27 +330,15 @@ public final class Session implements Serializable {
 		}
 		
 		public static final Session cancel() {
-			return cancel(session());
-		}
-		
-		public static final Session cancel(final Session session) {
-			return session.cancelFrame();
+			return session().cancelFrame();
 		}
 		
 		public static final void stop() {
-			stop(session());
-		}
-		
-		public static final void stop(final Session session) {
-			session.cancelSession();
+			session().cancelSession();
 		}
 		
 		public static final Session include(final Module module) {
-			return include(session(), module);
-		}
-		
-		public static final Session include(final Session session, final Module module) {
-			final Session result = session;
+			final Session result = session();
 			
 			// TODO put conditions before facts?
 			for (final Map.Entry<String, Integer> id : module.getPropositionIds().entrySet()) {
@@ -361,27 +349,19 @@ public final class Session implements Serializable {
 		}
 		
 		public static final <E extends Expression<?>> E introduce() {
-			return introduce(session());
-		}
-		
-		public static final <E extends Expression<?>> E introduce(final Session session) {
-			return session.introduce();
+			return session().introduce();
 		}
 		
 		public static final Session intros() {
-			return intros(session());
-		}
-		
-		public static final Session intros(final Session session) {
 			try {
 				while (true) {
-					introduce(session);
+					introduce();
 				}
 			} catch (final Exception exception) {
 				ignore(exception);
 			}
 			
-			return session;
+			return session();
 		}
 		
 		public static final Session deduce() {
@@ -397,75 +377,39 @@ public final class Session implements Serializable {
 		}
 		
 		public static final Session deduce(final String factName, final Expression<?> goal) {
-			return deduce(session(), factName, goal);
-		}
-		
-		public static final Session deduce(final Session session, final String factName, final Expression<?> goal) {
-			return session.deduce(factName, goal);
+			return session().deduce(factName, goal);
 		}
 		
 		public static final <E extends Expression<?>> E goal() {
-			return goal(session());
-		}
-		
-		public static final <E extends Expression<?>> E goal(final Session session) {
-			return frame(session).getGoal();
+			return frame().getGoal();
 		}
 		
 		public static final Frame frame() {
-			return frame(session());
-		}
-		
-		public static final Frame frame(final Session session) {
-			return session.getCurrentFrame();
+			return session().getCurrentFrame();
 		}
 		
 		public static final Module module() {
-			return module(session());
-		}
-		
-		public static final Module module(final Session session) {
-			return session.getCurrentModule();
+			return session().getCurrentModule();
 		}
 		
 		public static final String newName() {
-			return newName(session());
-		}
-		
-		public static final String newName(final Session session) {
-			return frame(session).newPropositionName();
+			return frame().newPropositionName();
 		}
 		
 		public static final String name(final int index) {
-			return name(session(), index);
-		}
-		
-		public static final String name(final Session session, final int index) {
-			return module(session).getPropositionName(index);
+			return module().getPropositionName(index);
 		}
 		
 		public static final <E extends Expression<?>> E proposition(final int index) {
-			return proposition(session(), index);
-		}
-		
-		public static final <E extends Expression<?>> E proposition(final Session session, final int index) {
-			return module(session).getProposition(index);
+			return module().getProposition(index);
 		}
 		
 		public static final <E extends Expression<?>> E proposition(final String name) {
-			return proposition(session(), name);
-		}
-		
-		public static final <E extends Expression<?>> E proposition(final Session session, final String name) {
-			return module(session).findProposition(name);
+			return module().findProposition(name);
 		}
 		
 		public static final Session conclude() {
-			return conclude(session());
-		}
-		
-		public static final Session conclude(final Session session) {
-			return session.conclude();
+			return session().conclude();
 		}
 		
 		public static final Session suppose(final Expression<?> condition) {
@@ -473,11 +417,7 @@ public final class Session implements Serializable {
 		}
 		
 		public static final Session suppose(final String conditionName, final Expression<?> condition) {
-			return suppose(session(), conditionName, condition);
-		}
-		
-		public static final Session suppose(final Session session, final String conditionName, final Expression<?> condition) {
-			return session.suppose(conditionName, condition);
+			return session().suppose(conditionName, condition);
 		}
 		
 		public static final Session apply(final String moduleName, final String conditionName) {
@@ -485,11 +425,7 @@ public final class Session implements Serializable {
 		}
 		
 		public static final Session apply(final String factName, final String moduleName, final String conditionName) {
-			return apply(session(), factName, moduleName, conditionName);
-		}
-		
-		public static final Session apply(final Session session, final String factName, final String moduleName, final String conditionName) {
-			return session.apply(factName, moduleName, conditionName);
+			return session().apply(factName, moduleName, conditionName);
 		}
 		
 		public static final Session bind(final String moduleName, final Expression<?>... values) {
@@ -497,11 +433,7 @@ public final class Session implements Serializable {
 		}
 		
 		public static final Session bind(final String factName, final String moduleName, final Expression<?>... values) {
-			return bind(session(), factName, moduleName, values);
-		}
-		
-		public static final Session bind(final Session session, final String factName, final String moduleName, final Expression<?>... values) {
-			return session.bind(factName, moduleName, values);
+			return session().bind(factName, moduleName, values);
 		}
 		
 		public static final Session substitute(final Expression<?> expression, final Object... equalitiesAndIndices) {
@@ -509,11 +441,6 @@ public final class Session implements Serializable {
 		}
 		
 		public static final Session substitute(final String factName,
-				final Expression<?> expression, final Object... equalitiesAndIndices) {
-			return substitute(session(), factName, expression, equalitiesAndIndices);
-		}
-		
-		public static final Session substitute(final Session session, final String factName,
 				final Expression<?> expression, final Object... equalitiesAndIndices) {
 			final Collection<Equality> equalities = new ArrayList<>();
 			final IntList indices = new IntList();
@@ -528,7 +455,7 @@ public final class Session implements Serializable {
 				}
 			}
 			
-			return session.substitute(factName, expression, equalities, indices.toArray());
+			return session().substitute(factName, expression, equalities, indices.toArray());
 		}
 		
 		public static final Session rewrite(final String propositionName,
@@ -538,12 +465,7 @@ public final class Session implements Serializable {
 		
 		public static final Session rewrite(final String factName, final String propositionName,
 				final String equalityName, final int... indices) {
-			return rewrite(session(), factName, propositionName, equalityName, indices);
-		}
-		
-		public static final Session rewrite(final Session session, final String factName, final String propositionName,
-				final String equalityName, final int... indices) {
-			return session.rewrite(factName, propositionName, equalityName, indices);
+			return session().rewrite(factName, propositionName, equalityName, indices);
 		}
 		
 		public static final List<Pair<String, Expression<?>>> matchesFor(final Expression<?> pattern) {
@@ -551,12 +473,8 @@ public final class Session implements Serializable {
 		}
 		
 		public static final List<Pair<String, Expression<?>>> justificationsFor(final Expression<?> goal) {
-			return justificationsFor(session(), goal);
-		}
-		
-		public static final List<Pair<String, Expression<?>>> justificationsFor(final Session session, final Expression<?> goal) {
 			final List<Pair<String, Expression<?>>> result = new ArrayList<>();
-			Module module = module(session);
+			Module module = module();
 			
 			while (module != null) {
 				for (int i = module.getPropositions().size() - 1; 0 <= i; --i) {
@@ -614,30 +532,26 @@ public final class Session implements Serializable {
 		}
 		
 		public static final boolean autoDeduce(final String factName, final Expression<?> expression, final int depth) {
-			return autoDeduce(session(), factName, expression, depth);
-		}
-		
-		public static final boolean autoDeduce(final Session session, final String factName, final Expression<?> expression, final int depth) {
 			if (depth <= 0) {
 				return false;
 			}
 			
-			deduce(session, factName, expression);
+			deduce(factName, expression);
 			{
-				final Module unfinishedProof = module(session);
+				final Module unfinishedProof = module();
 				
-				intros(session);
+				intros();
 				
-				final List<Pair<String, Expression<?>>> justifications = justificationsFor(session, goal(session));
+				final List<Pair<String, Expression<?>>> justifications = justificationsFor(goal());
 				int d = depth;
 				
 				deduction:
-				while (module(session) == unfinishedProof && 0 < d) {
+				while (module() == unfinishedProof && 0 < d) {
 					--d;
 					
 					for (final Pair<String, Expression<?>> justification : justifications) {
-						if (justification.getSecond().equals(goal(session))) {
-							apply(session, null, "recall", justification.getFirst());
+						if (justification.getSecond().equals(goal())) {
+							apply("recall", justification.getFirst());
 							
 							break deduction;
 						}
@@ -646,11 +560,11 @@ public final class Session implements Serializable {
 					for (final Pair<String, Expression<?>> justification : justifications) {
 						final Module module = cast(Module.class, justification.getSecond());
 						
-						if (module != null && autoDeduce(session, null, module.getPropositions().get(0), d)) {
-							apply(session, null, justification.getFirst(), name(session, -1));
+						if (module != null && autoDeduce(null, module.getPropositions().get(0), d)) {
+							apply(justification.getFirst(), name(-1));
 							
-							if (canDeduce(proposition(session, -1), goal(session))) {
-								justifications.add(0, new Pair<>(name(session, -1), proposition(session, -1).accept(Variable.BIND)));
+							if (canDeduce(proposition(-1), goal())) {
+								justifications.add(0, new Pair<>(name(-1), proposition(-1).accept(Variable.BIND)));
 								continue deduction;
 							}
 							
@@ -659,8 +573,8 @@ public final class Session implements Serializable {
 					}
 				}
 				
-				if (module(session) == unfinishedProof) {
-					cancel(session);
+				if (module() == unfinishedProof) {
+					cancel();
 					
 					return false;
 				}
