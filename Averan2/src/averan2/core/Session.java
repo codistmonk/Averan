@@ -485,7 +485,11 @@ public final class Session implements Serializable {
 		}
 		
 		public static final Session apply(final String factName, final String moduleName, final String conditionName) {
-			return session().apply(factName, moduleName, conditionName);
+			return apply(session(), factName, moduleName, conditionName);
+		}
+		
+		public static final Session apply(final Session session, final String factName, final String moduleName, final String conditionName) {
+			return session.apply(factName, moduleName, conditionName);
 		}
 		
 		public static final Session bind(final String moduleName, final Expression<?>... values) {
@@ -493,7 +497,11 @@ public final class Session implements Serializable {
 		}
 		
 		public static final Session bind(final String factName, final String moduleName, final Expression<?>... values) {
-			return session().bind(factName, moduleName, values);
+			return bind(session(), factName, moduleName, values);
+		}
+		
+		public static final Session bind(final Session session, final String factName, final String moduleName, final Expression<?>... values) {
+			return session.bind(factName, moduleName, values);
 		}
 		
 		public static final Session substitute(final Expression<?> expression, final Object... equalitiesAndIndices) {
@@ -501,6 +509,11 @@ public final class Session implements Serializable {
 		}
 		
 		public static final Session substitute(final String factName,
+				final Expression<?> expression, final Object... equalitiesAndIndices) {
+			return substitute(session(), factName, expression, equalitiesAndIndices);
+		}
+		
+		public static final Session substitute(final Session session, final String factName,
 				final Expression<?> expression, final Object... equalitiesAndIndices) {
 			final Collection<Equality> equalities = new ArrayList<>();
 			final IntList indices = new IntList();
@@ -515,7 +528,7 @@ public final class Session implements Serializable {
 				}
 			}
 			
-			return session().substitute(factName, expression, equalities, indices.toArray());
+			return session.substitute(factName, expression, equalities, indices.toArray());
 		}
 		
 		public static final Session rewrite(final String propositionName,
@@ -525,7 +538,12 @@ public final class Session implements Serializable {
 		
 		public static final Session rewrite(final String factName, final String propositionName,
 				final String equalityName, final int... indices) {
-			return session().rewrite(factName, propositionName, equalityName, indices);
+			return rewrite(session(), factName, propositionName, equalityName, indices);
+		}
+		
+		public static final Session rewrite(final Session session, final String factName, final String propositionName,
+				final String equalityName, final int... indices) {
+			return session.rewrite(factName, propositionName, equalityName, indices);
 		}
 		
 		public static final List<Pair<String, Expression<?>>> matchesFor(final Expression<?> pattern) {
@@ -533,8 +551,12 @@ public final class Session implements Serializable {
 		}
 		
 		public static final List<Pair<String, Expression<?>>> justificationsFor(final Expression<?> goal) {
+			return justificationsFor(session(), goal);
+		}
+		
+		public static final List<Pair<String, Expression<?>>> justificationsFor(final Session session, final Expression<?> goal) {
 			final List<Pair<String, Expression<?>>> result = new ArrayList<>();
-			Module module = module();
+			Module module = module(session);
 			
 			while (module != null) {
 				for (int i = module.getPropositions().size() - 1; 0 <= i; --i) {
@@ -592,26 +614,30 @@ public final class Session implements Serializable {
 		}
 		
 		public static final boolean autoDeduce(final String factName, final Expression<?> expression, final int depth) {
+			return autoDeduce(session(), factName, expression, depth);
+		}
+		
+		public static final boolean autoDeduce(final Session session, final String factName, final Expression<?> expression, final int depth) {
 			if (depth <= 0) {
 				return false;
 			}
 			
-			deduce(factName, expression);
+			deduce(session, factName, expression);
 			{
-				final Module unfinishedProof = module();
+				final Module unfinishedProof = module(session);
 				
-				intros();
+				intros(session);
 				
-				final List<Pair<String, Expression<?>>> justifications = justificationsFor(goal());
+				final List<Pair<String, Expression<?>>> justifications = justificationsFor(session, goal(session));
 				int d = depth;
 				
 				deduction:
-				while (module() == unfinishedProof && 0 < d) {
+				while (module(session) == unfinishedProof && 0 < d) {
 					--d;
 					
 					for (final Pair<String, Expression<?>> justification : justifications) {
-						if (justification.getSecond().equals(goal())) {
-							apply("recall", justification.getFirst());
+						if (justification.getSecond().equals(goal(session))) {
+							apply(session, null, "recall", justification.getFirst());
 							
 							break deduction;
 						}
@@ -620,11 +646,11 @@ public final class Session implements Serializable {
 					for (final Pair<String, Expression<?>> justification : justifications) {
 						final Module module = cast(Module.class, justification.getSecond());
 						
-						if (module != null && autoDeduce(null, module.getPropositions().get(0), d)) {
-							apply(justification.getFirst(), name(-1));
+						if (module != null && autoDeduce(session, null, module.getPropositions().get(0), d)) {
+							apply(session, null, justification.getFirst(), name(session, -1));
 							
-							if (canDeduce(proposition(-1), goal())) {
-								justifications.add(0, new Pair<>(name(-1), proposition(-1).accept(Variable.BIND)));
+							if (canDeduce(proposition(session, -1), goal(session))) {
+								justifications.add(0, new Pair<>(name(session, -1), proposition(session, -1).accept(Variable.BIND)));
 								continue deduction;
 							}
 							
@@ -633,8 +659,8 @@ public final class Session implements Serializable {
 					}
 				}
 				
-				if (module() == unfinishedProof) {
-					cancel();
+				if (module(session) == unfinishedProof) {
+					cancel(session);
 					
 					return false;
 				}
