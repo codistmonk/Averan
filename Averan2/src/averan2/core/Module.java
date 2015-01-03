@@ -453,7 +453,11 @@ public final class Module implements Expression<Composite<?>> {
 				module.getParameters().get(i).equals(this.getValues()[i]);
 			}
 			
-			return this.addFactToContext(module.accept(Variable.BIND));
+			try {
+				return this.addFactToContext(module.accept(Variable.BIND));
+			} finally {
+				module.accept(Variable.RESET);
+			}
 		}
 		
 		@Override
