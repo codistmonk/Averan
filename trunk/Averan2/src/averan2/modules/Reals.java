@@ -3,19 +3,20 @@ package averan2.modules;
 import static averan2.core.Equality.equality;
 import static averan2.core.Session.$;
 import static averan2.core.Session.forAll;
-import static averan2.core.Session.Stack.autoDeduce;
-import static averan2.core.Session.Stack.include;
-import static averan2.core.Session.Stack.suppose;
+import static averan2.core.Session.Stack.*;
 import static averan2.core.Symbol.symbol;
 import static averan2.core.Variable.variable;
 import static averan2.io.ConsoleOutput.group;
 import static averan2.modules.Standard.build;
+import static java.util.Arrays.copyOfRange;
+
 import averan2.core.Composite;
 import averan2.core.Expression;
 import averan2.core.Module;
 import averan2.core.Substitution;
 import averan2.core.Symbol;
 import averan2.core.Variable;
+
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 
 /**
@@ -50,6 +51,101 @@ public final class Reals {
 		@Override
 		public final void run() {
 			include(Standard.MODULE);
+			
+			// TODO move logic rules to new module
+			{
+				final Variable $X = variable("X");
+				final Variable $Y = variable("Y");
+				
+				suppose("left_introduction_of_conjunction",
+						$(forAll($X, $Y), $($X, "->", conjunction($X, $Y))));
+			}
+			
+			{
+				final Variable $X = variable("X");
+				final Variable $Y = variable("Y");
+				
+				suppose("right_introduction_of_conjunction",
+						$(forAll($X, $Y), $($Y, "->", conjunction($X, $Y))));
+			}
+			
+			{
+				final Variable $X = variable("X");
+				final Variable $Y = variable("Y");
+				
+				suppose("left_elimination_of_conjunction",
+						$(forAll($X, $Y), $(conjunction($X, $Y), "->", $X)));
+			}
+			
+			{
+				final Variable $X = variable("X");
+				final Variable $Y = variable("Y");
+				
+				suppose("right_elimination_of_conjunction",
+						$(forAll($X, $Y), $(conjunction($X, $Y), "->", $Y)));
+			}
+			
+			{
+				final Variable $X = variable("X");
+				final Variable $Y = variable("Y");
+				
+				deduce("commutativity_of_conjunction",
+						$(forAll($X, $Y), $(conjunction($X, $Y), "->", conjunction($Y, $X))));
+				{
+					final Symbol<String> x = introduce();
+					final Symbol<String> y = introduce();
+					
+					intros();
+					
+					apply("left_elimination_of_conjunction", name(-1));
+					bind("right_introduction_of_conjunction", y, x);
+					apply(name(-1), name(-2));
+				}
+			}
+			
+			{
+				final Variable $X = variable("X");
+				final Variable $Y = variable("Y");
+				
+				suppose("left_introduction_of_disjunction",
+						$(forAll($X, $Y), $($X, "->", disjunction($X, $Y))));
+			}
+			
+			{
+				final Variable $X = variable("X");
+				final Variable $Y = variable("Y");
+				
+				suppose("right_introduction_of_disjunction",
+						$(forAll($X, $Y), $($Y, "->", disjunction($X, $Y))));
+			}
+			
+			{
+				final Variable $X = variable("X");
+				final Variable $Y = variable("Y");
+				final Variable $Z = variable("Z");
+				
+				suppose("elimination_of_disjunction",
+						$(forAll($X, $Y, $Z), $($($X, "->", $Z), "->", $($Y, "->", $Z), "->", $(disjunction($X, $Y), "->", $Z))));
+			}
+			
+			{
+				final Variable $X = variable("X");
+				final Variable $Y = variable("Y");
+				
+				deduce("commutativity_of_disjunction",
+						$(forAll($X, $Y), $(disjunction($X, $Y), "->", disjunction($Y, $X))));
+				{
+					final Symbol<String> x = introduce();
+					final Symbol<String> y = introduce();
+					
+					intros();
+					
+					bind("elimination_of_disjunction", x, y, disjunction(y, x));
+					apply(name(-1), "right_introduction_of_disjunction");
+					apply(name(-1), "left_introduction_of_disjunction");
+					autoDeduce();
+				}
+			}
 			
 			{
 				final Variable $x = variable("x");
@@ -92,6 +188,14 @@ public final class Reals {
 			{
 				suppose("nonzero_naturalness_of_1",
 						nonzeroNatural(ONE));
+			}
+			
+			{
+				final Variable $x = variable("x");
+				final Variable $n = variable("n");
+				
+				suppose("definition_of_natural_range",
+						$(forAll($x, $n), $(natural($x, $n), "->", conjunction(natural($x), $($x, "<", $n)))));
 			}
 			
 			{
@@ -162,6 +266,21 @@ public final class Reals {
 			}
 			
 			{
+				final Variable $X = variable("X");
+				final Variable $m = variable("m");
+				final Variable $n = variable("n");
+				final Variable $i = variable("i");
+				final Variable $j = variable("j");
+				
+				suppose("definition_of_matrices",
+						$(forAll($X, $m, $n), equality(realMatrix($X, $m, $n), conjunction(
+								nonzeroNatural($m),
+								nonzeroNatural($n),
+								$(forAll($i, $j), $(natural($i, $m), "->", natural($j, $n), "->",
+										real($("X", "_", $($i, ",", $j)))))))));
+			}
+			
+			{
 				autoDeduce("realness_of_0",
 						real(ZERO));
 				autoDeduce("realness_of_1",
@@ -175,12 +294,42 @@ public final class Reals {
 		
 	});
 	
+	public static final Composite<?> conjunction(final Object... expressions) {
+		return binaryOperation("/\\", expressions);
+	}
+	
+	public static final Composite<?> disjunction(final Object... expressions) {
+		return binaryOperation("\\/", expressions);
+	}
+	
+	public static final Composite<?> binaryOperation(final String operator, final Object... expressions) {
+		final int n = expressions.length;
+		
+		if (n < 2) {
+			throw new IllegalArgumentException();
+		}
+		
+		if (n == 2) {
+			return $(expressions[0], operator, expressions[1]);
+		}
+		
+		return $(expressions[0], operator, binaryOperation(operator, copyOfRange(expressions, 1, n)));
+	}
+	
+	public static final Composite<?> realMatrix(final Object matrix, final Object rows, final Object columns) {
+		return membership(matrix, $("ℳ", "_", $(rows, ",", columns)));
+	}
+	
 	public static final Composite<?> membership(final Object element, final Object set) {
 		return $(element, "∈", set);
 	}
 	
 	public static final Composite<?> natural(final Object expression) {
 		return membership(expression, NATURALS);
+	}
+	
+	public static final Composite<?> natural(final Object expression, final Object end) {
+		return membership(expression, $(NATURALS, "_", end));
 	}
 	
 	public static final Composite<?> real(final Object expression) {
