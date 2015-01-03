@@ -14,12 +14,13 @@ import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.getThisMethodName;
 import static net.sourceforge.aprog.tools.Tools.ignore;
 import static net.sourceforge.aprog.tools.Tools.join;
-
+import static net.sourceforge.aprog.tools.Tools.unchecked;
 import averan2.core.Composite;
 import averan2.core.Equality;
 import averan2.core.Expression;
 import averan2.core.Expression.Visitor;
 import averan2.core.Module;
+import averan2.core.Session;
 import averan2.core.Substitution;
 import averan2.core.Symbol;
 import averan2.core.Variable;
@@ -34,6 +35,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import net.sourceforge.aprog.tools.Pair;
+import net.sourceforge.aprog.tools.Tools;
 
 import org.junit.Test;
 
@@ -44,7 +46,7 @@ public final class JavaExporterTest {
 	
 	@Test
 	public final void test() {
-		build(getThisMethodName(), new Runnable() {
+		final Module module = build(getThisMethodName(), new Runnable() {
 			
 			@Override
 			public final void run() {
@@ -74,25 +76,31 @@ public final class JavaExporterTest {
 					suppose("definition_of_u_n",
 							$(forAll($n), $(nonzeroNatural($n), "->", equality($("u", "_", $n), addition($("u", "_", group(subtraction($n, ONE))), $n)))));
 				}
-				
-				{
-					final Variable $x = ((Module) proposition("definition_of_f")).getParameters().get(0);
-					
-					exportFunction(module(), (Expression<?>) $("f", "_", $x), "f", System.out);
-				}
-				
-				{
-					exportFunction(module(), getLeftSideOfTerminalEquality(proposition("definition_of_g")), "g", System.out);
-				}
-				
-				{
-					final Variable $n = ((Module) proposition("definition_of_u_n")).getParameters().get(0);
-					
-					exportProceduralInduction(module(), getLeftSideOfTerminalEquality(proposition("definition_of_u_n")), $n, "u", System.out);
-				}
 			}
 			
 		});
+		
+		pushNewSessionToWorkWithModule(module);
+		
+		try {
+			{
+				final Variable $x = ((Module) proposition("definition_of_f")).getParameters().get(0);
+				
+				exportFunction(module(), (Expression<?>) $("f", "_", $x), "f", System.out);
+			}
+			
+			{
+				exportFunction(module(), getLeftSideOfTerminalEquality(proposition("definition_of_g")), "g", System.out);
+			}
+			
+			{
+				final Variable $n = ((Module) proposition("definition_of_u_n")).getParameters().get(0);
+				
+				exportProceduralInduction(module(), getLeftSideOfTerminalEquality(proposition("definition_of_u_n")), $n, "u", System.out);
+			}
+		} finally {
+			popSession();
+		}
 	}
 	
 	static final Map<Expression<?>, Class<?>> knownTypes = new HashMap<>();
@@ -113,6 +121,20 @@ public final class JavaExporterTest {
 			operationTypes.computeIfAbsent(int.class, leftType -> new HashMap<>()).put(double.class, double.class);
 			operationTypes.computeIfAbsent(double.class, leftType -> new HashMap<>()).put(int.class, double.class);
 			operationTypes.computeIfAbsent(double.class, leftType -> new HashMap<>()).put(double.class, double.class);
+		}
+	}
+	
+	public static final void pushNewSessionToWorkWithModule(final Module module) {
+		pushSession(new Session());
+		
+		try {
+			include(module);
+			
+			deduce("");
+		} catch (final Exception exception) {
+			popSession();
+			
+			throw unchecked(exception);
 		}
 	}
 	
