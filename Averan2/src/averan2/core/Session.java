@@ -15,9 +15,9 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import jgencode.primitivelists.IntList;
+
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 import net.sourceforge.aprog.tools.Pair;
-import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2014-12-20)
@@ -330,15 +330,27 @@ public final class Session implements Serializable {
 		}
 		
 		public static final Session cancel() {
-			return session().cancelFrame();
+			return cancel(session());
+		}
+		
+		public static final Session cancel(final Session session) {
+			return session.cancelFrame();
 		}
 		
 		public static final void stop() {
-			session().cancelSession();
+			stop(session());
+		}
+		
+		public static final void stop(final Session session) {
+			session.cancelSession();
 		}
 		
 		public static final Session include(final Module module) {
-			final Session result = session();
+			return include(session(), module);
+		}
+		
+		public static final Session include(final Session session, final Module module) {
+			final Session result = session;
 			
 			// TODO put conditions before facts?
 			for (final Map.Entry<String, Integer> id : module.getPropositionIds().entrySet()) {
@@ -349,19 +361,27 @@ public final class Session implements Serializable {
 		}
 		
 		public static final <E extends Expression<?>> E introduce() {
-			return session().introduce();
+			return introduce(session());
+		}
+		
+		public static final <E extends Expression<?>> E introduce(final Session session) {
+			return session.introduce();
 		}
 		
 		public static final Session intros() {
+			return intros(session());
+		}
+		
+		public static final Session intros(final Session session) {
 			try {
 				while (true) {
-					introduce();
+					introduce(session);
 				}
 			} catch (final Exception exception) {
 				ignore(exception);
 			}
 			
-			return session();
+			return session;
 		}
 		
 		public static final Session deduce() {
@@ -377,39 +397,75 @@ public final class Session implements Serializable {
 		}
 		
 		public static final Session deduce(final String factName, final Expression<?> goal) {
-			return session().deduce(factName, goal);
+			return deduce(session(), factName, goal);
+		}
+		
+		public static final Session deduce(final Session session, final String factName, final Expression<?> goal) {
+			return session.deduce(factName, goal);
 		}
 		
 		public static final <E extends Expression<?>> E goal() {
-			return frame().getGoal();
+			return goal(session());
+		}
+		
+		public static final <E extends Expression<?>> E goal(final Session session) {
+			return frame(session).getGoal();
 		}
 		
 		public static final Frame frame() {
-			return session().getCurrentFrame();
+			return frame(session());
+		}
+		
+		public static final Frame frame(final Session session) {
+			return session.getCurrentFrame();
 		}
 		
 		public static final Module module() {
-			return session().getCurrentModule();
+			return module(session());
+		}
+		
+		public static final Module module(final Session session) {
+			return session.getCurrentModule();
 		}
 		
 		public static final String newName() {
-			return frame().newPropositionName();
+			return newName(session());
+		}
+		
+		public static final String newName(final Session session) {
+			return frame(session).newPropositionName();
 		}
 		
 		public static final String name(final int index) {
-			return module().getPropositionName(index);
+			return name(session(), index);
 		}
 		
-		public static final <E extends Expression<?>> E proposition(final String name) {
-			return module().findProposition(name);
+		public static final String name(final Session session, final int index) {
+			return module(session).getPropositionName(index);
 		}
 		
 		public static final <E extends Expression<?>> E proposition(final int index) {
-			return module().getProposition(index);
+			return proposition(session(), index);
+		}
+		
+		public static final <E extends Expression<?>> E proposition(final Session session, final int index) {
+			return module(session).getProposition(index);
+		}
+		
+		public static final <E extends Expression<?>> E proposition(final String name) {
+			return proposition(session(), name);
+		}
+		
+		public static final <E extends Expression<?>> E proposition(final Session session, final String name) {
+			return module(session).findProposition(name);
 		}
 		
 		public static final Session conclude() {
-			return session().conclude();
+			return conclude(session());
+		}
+		
+		public static final Session conclude(final Session session) {
+			return session.conclude();
 		}
 		
 		public static final Session suppose(final Expression<?> condition) {
@@ -417,7 +473,11 @@ public final class Session implements Serializable {
 		}
 		
 		public static final Session suppose(final String conditionName, final Expression<?> condition) {
-			return session().suppose(conditionName, condition);
+			return suppose(session(), conditionName, condition);
+		}
+		
+		public static final Session suppose(final Session session, final String conditionName, final Expression<?> condition) {
+			return session.suppose(conditionName, condition);
 		}
 		
 		public static final Session apply(final String moduleName, final String conditionName) {
