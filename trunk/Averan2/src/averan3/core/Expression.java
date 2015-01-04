@@ -1,13 +1,10 @@
 package averan3.core;
 
 import averan.common.Container;
-import averan.common.IdentityKey;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +18,8 @@ import net.sourceforge.aprog.tools.Pair;
 public abstract interface Expression<E extends Expression<?>> extends Container<E> {
 	
 	public abstract <T> T accept(Visitor<T> visitor);
+	
+	public abstract boolean implies(Expression<?> expression);
 	
 	/**
 	 * @author codistmonk (creation 2015-01-04)
@@ -84,6 +83,7 @@ public abstract interface Expression<E extends Expression<?>> extends Container<
 			return this.tryToReplace(variable);
 		}
 		
+		@SuppressWarnings("unchecked")
 		@Override
 		public final Expression<?> visit(final Composite<?> composite) {
 			final Expression<?> candidate = this.tryToReplace(composite);
@@ -92,7 +92,7 @@ public abstract interface Expression<E extends Expression<?>> extends Container<
 				return candidate;
 			}
 			
-			final Composite<Expression<?>> newComposite = new Composite<>(composite.getParent());
+			final Composite<Expression<?>> newComposite = new Composite<>();
 			boolean returnNewComposite = false;
 			final Composite<Expression<?>> parameters = composite.getParameters();
 			
