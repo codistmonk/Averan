@@ -64,8 +64,8 @@ public final class ExpressionTest {
 		public final Expression<?> introduce(final String parameterName) {
 			final Composite<?> goal = cast(Composite.class, this.getGoal());
 			
-			if (goal != null && !goal.getParameters().isEmpty()) {
-				final Variable parameter = goal.getParameters().get(0);
+			if (goal != null && goal.getParameters() != null) {
+				final Variable parameter = (Variable) goal.getParameters().get(1);
 				final Symbol<String> result = new Symbol<String>(parameterName != null ? parameterName : parameter.getName());
 				
 				if (!this.protoparameters.add(result)) {

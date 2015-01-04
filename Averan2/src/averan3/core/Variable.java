@@ -152,19 +152,28 @@ final class Variable implements Expression<Variable> {
 		public final Composite<?> visit(final Composite<?> composite) {
 			final Composite<Expression<?>> newComposite = new Composite<>(composite.getParent());
 			boolean returnNewComposite = false;
+			final Composite<Expression<?>> parameters = composite.getParameters();
 			
-			for (final Variable parameter : composite.getParameters()) {
-				if (parameter.getMatch() == null) {
-					newComposite.getParameters().add(parameter);
-				} else if (!returnNewComposite) {
-					returnNewComposite = true;
+			if (parameters != null) {
+				newComposite.setupAsBlock();
+				final int n = parameters.size();
+				
+//				for (final Variable parameter : parameters) {
+				for (int i = 1; i < n; ++i) {
+					final Variable parameter = (Variable) parameters.get(i);
+					
+					if (parameter.getMatch() == null) {
+						newComposite.getParameters().add(parameter);
+					} else if (!returnNewComposite) {
+						returnNewComposite = true;
+					}
 				}
 			}
 			
 			for (final Expression<?> element : composite) {
 				final Expression<?> newElement = element.accept(this);
 				
-				newComposite.add(newElement);
+				((Composite<Expression<?>>) newComposite.getContents()).add(newElement);
 				
 				if (!returnNewComposite && newElement != element) {
 					returnNewComposite = true;
