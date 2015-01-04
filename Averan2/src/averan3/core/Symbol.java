@@ -1,7 +1,7 @@
 package averan3.core;
 
 import static net.sourceforge.aprog.tools.Tools.cast;
-import averan3.core.Expression.Visitor;
+
 import net.sourceforge.aprog.tools.Tools;
 
 /**
@@ -33,6 +33,13 @@ final class Symbol<T> implements Expression<Symbol<T>> {
 	@Override
 	public final <V> V accept(final Visitor<V> visitor) {
 		return visitor.visit(this);
+	}
+	
+	@Override
+	public final boolean implies(final Expression<?> expression) {
+		final Symbol<?> that = cast(this.getClass(), expression);
+		
+		return that != null && Tools.equals(this.getObject(), that.getObject());
 	}
 	
 	@Override

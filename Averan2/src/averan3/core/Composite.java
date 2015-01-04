@@ -2,10 +2,10 @@ package averan3.core;
 
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.join;
+
 import averan.common.Container;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -13,28 +13,15 @@ import java.util.List;
  */
 final class Composite<E extends Expression<?>> implements Expression<E> {
 	
-	private final Composite<?> parent;
-	
-//	private final Composite<Variable> parameters;
-	
 	private final List<E> elements;
 	
-	public Composite(final Composite<?> parent) {
-		this.parent = parent;
-//		this.parameters = new Composite<>(this);
+	public Composite() {
 		this.elements = new ArrayList<>();
 	}
 	
-	public final Composite<?> getParent() {
-		return this.parent;
-	}
-	
-//	public final Composite<Variable> getParameters() {
-//		return this.parameters;
-//	}
-	
 	public final Composite<Expression<?>> getParameters() {
 		if (this.size() == 2) {
+			@SuppressWarnings("unchecked")
 			final Composite<Expression<?>> candidate = cast(Composite.class, this.get(0));
 			
 			if (candidate != null && (candidate.isEmpty()
@@ -46,35 +33,25 @@ final class Composite<E extends Expression<?>> implements Expression<E> {
 		return null;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public final <F extends Expression<?>> F getContents() {
 		return (F) (this.getParameters() != null ? this.get(1) : this);
 	}
 	
+	@SuppressWarnings("unchecked")
 	public final Composite<E> setupAsBlock() {
 		if (!this.isEmpty()) {
 			throw new IllegalStateException();
 		}
 		
-		this.add((E) new Composite<>(this)); // parameters
-		this.add((E) new Composite<>(this)); // parametrizedContent
+		this.add((E) new Composite<>()); // parameters
+		this.add((E) new Composite<>()); // parametrizedContent
 		
 		return this;
 	}
 	
-	@SuppressWarnings("unchecked")
 	public final Composite<E> add(final E element) {
-		final Composite<?> composite = cast(Composite.class, element);
-		
-		if (composite == null || composite.getParent() == this) {
-			this.elements.add((E) element);
-		} else {
-			final Composite<Expression<?>> newComposite = new Composite<>(this);
-			
-//			composite.getParameters().forEach(newComposite.getParameters()::add);
-			composite.forEach(newComposite::add);
-			
-			this.elements.add((E) newComposite);
-		}
+		this.elements.add(element);
 		
 		return this;
 	}
@@ -96,6 +73,33 @@ final class Composite<E extends Expression<?>> implements Expression<E> {
 	@Override
 	public final <V> V accept(final Visitor<V> visitor) {
 		return visitor.visit(this);
+	}
+	
+	@Override
+	public final boolean implies(final Expression<?> expression) {
+		final Composite<?> that = cast(this.getClass(), expression);
+		
+		if (that == null) {
+			return false;
+		}
+		
+		final int thisSize = this.size();
+		final int thatSize = that.size();
+		
+		full_implication:
+		if (thisSize == thatSize) {
+			for (int i = 0; i < thisSize; ++i) {
+				if (!this.get(i).implies(that.get(i))) {
+					break full_implication;
+				}
+			}
+		}
+		
+		if (this.getParameters() != null) {
+			return this.getContents().implies(expression);
+		}
+		
+		return false;
 	}
 	
 	@Override

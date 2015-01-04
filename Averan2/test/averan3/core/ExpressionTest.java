@@ -22,6 +22,9 @@ public final class ExpressionTest {
 		fail("Not yet implemented");
 	}
 	
+	/**
+	 * @author codistmonk (creation 2015-01-04)
+	 */
 	public static abstract interface Proof extends Serializable {
 		
 		public abstract Deduction getParent();
@@ -125,7 +128,7 @@ public final class ExpressionTest {
 						}
 					}
 					
-					currentConclusion.add(new Composite<>(currentConclusion)
+					currentConclusion.add(new Composite<>()
 							.add(currentConclusion.removeLast()).add(IMPLIES).add(proposition));
 					
 					break;
