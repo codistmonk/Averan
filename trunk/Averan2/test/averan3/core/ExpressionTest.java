@@ -10,8 +10,6 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 
-import net.sourceforge.aprog.tools.Tools;
-
 import org.junit.Test;
 
 /**
@@ -48,6 +46,8 @@ public final class ExpressionTest {
 		private final Collection<Symbol<String>> protoparameters;
 		
 		private Expression<?> goal;
+		
+		private int depth;
 		
 		public Deduction(final Deduction parent, final String name, final Composite<Expression<?>> module, final Expression<?> goal) {
 			this.parent = parent;
@@ -102,7 +102,42 @@ public final class ExpressionTest {
 			return this.goal;
 		}
 		
-		private static final long serialVersionUID = -4622604986554143041L;
+		@SuppressWarnings("unchecked")
+		final void add(final Expression<?> proposition, final Proof proof) {
+			final Composite<Expression<?>> module = this.getModule();
+			
+			switch (module.size()) {
+			case 0:
+				module.add(proposition);
+				break;
+			case 1:
+				module.add(IMPLIES).add(proposition);
+				break;
+			case 3:
+				if (IMPLIES.equals(module.get(1))) {
+					Composite<Expression<?>> currentConclusion = module;
+					
+					for (int i = 2; i < this.depth; ++i) {
+						currentConclusion = (Composite<Expression<?>>) currentConclusion.get(2);
+						
+						if (currentConclusion.size() != 3 || !IMPLIES.equals(currentConclusion.get(1))) {
+							throw new IllegalStateException();
+						}
+					}
+					
+					currentConclusion.add(new Composite<>(currentConclusion)
+							.add(currentConclusion.removeLast()).add(IMPLIES).add(proposition));
+					
+					break;
+				}
+			default:
+				throw new IllegalStateException();
+			}
+			
+			++this.depth;
+			
+			this.proofs.add(proof);
+		}
 		
 		/**
 		 * @author codistmonk (creation 2015-01-04)
@@ -133,31 +168,14 @@ public final class ExpressionTest {
 			
 			@Override
 			public final void apply() {
-				final Composite<Expression<?>> module = this.getParent().getModule();
-				
-				switch (module.size()) {
-				case 0:
-					module.add(this.getProposition());
-					break;
-				case 1:
-					module.add(IMPLIES).add(this.getProposition());
-					break;
-				case 3:
-					if (IMPLIES.equals(module.get(1))) {
-						// XXX what now?
-						throw new RuntimeException("TODO");
-//						break;
-					}
-				default:
-					throw new IllegalStateException();
-				}
-				
-				this.getParent().proofs.add(this);
+				this.getParent().add(this.getProposition(), this);
 			}
 			
 			private static final long serialVersionUID = -2449310594857640213L;
 			
 		}
+		
+		private static final long serialVersionUID = -4622604986554143041L;
 		
 	}
 	
