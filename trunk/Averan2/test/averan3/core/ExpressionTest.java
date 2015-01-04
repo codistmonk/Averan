@@ -64,23 +64,32 @@ public final class ExpressionTest {
 			// standard tactics: recall, bind, rewrite, rewriteRight, autoDeduce
 		}
 		
-		public final Expression<?> introduce(final String parameterName) {
+		public final Expression<?> introduce(final String parameterOrPropositionName) {
 			final Composite<?> goal = cast(Composite.class, this.getGoal());
 			
-			if (goal != null && goal.getParameters() != null) {
-				final Variable parameter = (Variable) goal.getParameters().get(1);
-				final Symbol<String> result = new Symbol<String>(parameterName != null ? parameterName : parameter.getName());
-				
-				if (!this.protoparameters.add(result)) {
-					throw new IllegalArgumentException();
+			if (goal != null) {
+				if (goal.getParameters() != null) {
+					final Variable parameter = (Variable) goal.getParameters().get(1);
+					final Symbol<String> result = new Symbol<String>(parameterOrPropositionName != null ? parameterOrPropositionName : parameter.getName());
+					
+					if (!this.protoparameters.add(result)) {
+						throw new IllegalArgumentException();
+					}
+					
+					this.goal = this.goal.accept(new Expression.Substitution().bind(new Variable(parameter.getName(), parameter), result));
+					
+					return result;
 				}
 				
-				this.goal = this.goal.accept(new Expression.Substitution().bind(new Variable(parameter.getName(), parameter), result));
-				
-				return result;
+				if (goal.getCondition() != null) {
+					this.new Supposition(parameterOrPropositionName, goal.getCondition()).apply();
+					this.goal = goal.getConclusion();
+					
+					return null;
+				}
 			}
 			
-			return null;
+			throw new IllegalStateException();
 		}
 		
 		@Override
