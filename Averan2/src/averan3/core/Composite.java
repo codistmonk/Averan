@@ -2,7 +2,6 @@ package averan3.core;
 
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.join;
-
 import averan.common.Container;
 
 import java.util.ArrayList;
@@ -17,6 +16,17 @@ final class Composite<E extends Expression<?>> implements Expression<E> {
 	
 	public Composite() {
 		this.elements = new ArrayList<>();
+	}
+	
+	@SuppressWarnings("unchecked")
+	public final <F extends E> F getCondition() {
+		return this.size() == 3 && IMPLIES.equals(this.get(1)) ? (F) this.get(0) : null;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public final <F extends E> F getConclusion() {
+		return this.size() == 1 ? (F) this.get(0) :
+			this.getCondition() != null ? (F) this.get(2) : null;
 	}
 	
 	public final Composite<Expression<?>> getParameters() {
