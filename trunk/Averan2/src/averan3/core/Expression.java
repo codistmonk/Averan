@@ -94,24 +94,35 @@ public abstract interface Expression<E extends Expression<?>> extends Container<
 			
 			final Composite<Expression<?>> newComposite = new Composite<>(composite.getParent());
 			boolean returnNewComposite = false;
+			final Composite<Expression<?>> parameters = composite.getParameters();
+			
+			if (parameters != null) {
+				newComposite.setupAsBlock();
+			}
 			
 			for (final Expression<?> element : composite) {
 				final Expression<?> newElement = element.accept(this);
 				
-				newComposite.add(newElement);
+				((Composite<Expression<?>>) newComposite.getContents()).add(newElement);
 				
 				if (!returnNewComposite && newElement != element) {
 					returnNewComposite = true;
 				}
 			}
 			
-			final Collection<Variable> variables = newComposite.accept(new CollectVariables()).getVariables().keySet();
-			
-			for (final Variable parameter : composite.getParameters()) {
-				if (!variables.contains(parameter)) {
-					newComposite.getParameters().add(parameter);
-				} else if (!returnNewComposite) {
-					returnNewComposite = true;
+			if (parameters != null) {
+				final int n = parameters.size();
+				final Collection<Variable> variables = newComposite.accept(new CollectVariables()).getVariables().keySet();
+				
+//				for (final Variable parameter : composite.getParameters()) {
+				for (int i = 1; i < n; ++i) {
+					final Variable parameter = (Variable) parameters.get(i);
+					
+					if (!variables.contains(parameter)) {
+						newComposite.getParameters().add(parameter);
+					} else if (!returnNewComposite) {
+						returnNewComposite = true;
+					}
 				}
 			}
 			

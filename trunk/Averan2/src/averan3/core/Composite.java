@@ -5,6 +5,7 @@ import static net.sourceforge.aprog.tools.Tools.join;
 import averan.common.Container;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -14,13 +15,13 @@ final class Composite<E extends Expression<?>> implements Expression<E> {
 	
 	private final Composite<?> parent;
 	
-	private final Composite<Variable> parameters;
+//	private final Composite<Variable> parameters;
 	
 	private final List<E> elements;
 	
 	public Composite(final Composite<?> parent) {
 		this.parent = parent;
-		this.parameters = new Composite<>(this);
+//		this.parameters = new Composite<>(this);
 		this.elements = new ArrayList<>();
 	}
 	
@@ -28,8 +29,36 @@ final class Composite<E extends Expression<?>> implements Expression<E> {
 		return this.parent;
 	}
 	
-	public final Composite<Variable> getParameters() {
-		return this.parameters;
+//	public final Composite<Variable> getParameters() {
+//		return this.parameters;
+//	}
+	
+	public final Composite<Expression<?>> getParameters() {
+		if (this.size() == 2) {
+			final Composite<Expression<?>> candidate = cast(Composite.class, this.get(0));
+			
+			if (candidate != null && (candidate.isEmpty()
+					|| 2 <= candidate.size() && FORALL.equals(candidate.get(0)))) {
+				return candidate;
+			}
+		}
+		
+		return null;
+	}
+	
+	public final <F extends Expression<?>> F getContents() {
+		return (F) (this.getParameters() != null ? this.get(1) : this);
+	}
+	
+	public final Composite<E> setupAsBlock() {
+		if (!this.isEmpty()) {
+			throw new IllegalStateException();
+		}
+		
+		this.add((E) new Composite<>(this)); // parameters
+		this.add((E) new Composite<>(this)); // parametrizedContent
+		
+		return this;
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -41,7 +70,7 @@ final class Composite<E extends Expression<?>> implements Expression<E> {
 		} else {
 			final Composite<Expression<?>> newComposite = new Composite<>(this);
 			
-			composite.getParameters().forEach(newComposite.getParameters()::add);
+//			composite.getParameters().forEach(newComposite.getParameters()::add);
 			composite.forEach(newComposite::add);
 			
 			this.elements.add((E) newComposite);
@@ -91,10 +120,13 @@ final class Composite<E extends Expression<?>> implements Expression<E> {
 	
 	@Override
 	public final String toString() {
-		return formatParameters(this.getParameters()) + this.elements.toString();
+//		return formatParameters(this.getParameters()) + this.elements.toString();
+		return this.elements.toString();
 	}
 	
 	private static final long serialVersionUID = -7248608001486237448L;
+	
+	public static final Symbol<String> FORALL = new Symbol<>("∀");
 	
 	public static final Symbol<String> IMPLIES = new Symbol<>("->");
 	
