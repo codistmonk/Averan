@@ -6,6 +6,7 @@ import static averan2.core.Substitution.ANY_INDEX;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.join;
 import static net.sourceforge.aprog.tools.Tools.lastIndex;
+import averan.common.IndexedMap;
 
 import java.io.Serializable;
 import java.util.ArrayList;

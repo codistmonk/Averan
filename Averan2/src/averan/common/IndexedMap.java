@@ -1,4 +1,4 @@
-package averan2.core;
+package averan.common;
 
 import java.util.ArrayList;
 import java.util.Collection;
