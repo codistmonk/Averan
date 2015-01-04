@@ -50,6 +50,10 @@ final class Composite<E extends Expression<?>> implements Expression<E> {
 		return this;
 	}
 	
+	public final E removeLast() {
+		return this.elements.remove(this.size() - 1);
+	}
+	
 	@Override
 	public final int size() {
 		return this.elements.size();
