@@ -67,8 +67,8 @@ public final class ProofTest {
 		
 		for (final Proof proof : deduction.getProofs()) {
 			out.println(indent + "(" + proof.getPropositionName() + ")");
-			out.println(indent1 + proof);
 			out.println(indent1 + proof.getProposition());
+			out.println(indent1 + proof);
 		}
 		
 		if (deduction.getGoal() != null) {
