@@ -76,11 +76,8 @@ public final class ExpressionTest {
 	public final void testSubstitute1() {
 		{
 			final Variable variable = new Variable("test");
-			
-			assertTrue(new Variable("test", variable).equals(variable));
-			
 			final Expression<?> expression = new Composite<>().add(new Composite<>().add(new Composite<>().add(FORALL).add(variable)).add(variable));
-			final Expression<?> actual = expression.accept(new Expression.Substitution().bind(new Variable("test", variable), new Symbol<>("test")));
+			final Expression<?> actual = expression.accept(new Expression.Substitution().bind(variable, new Symbol<>("test")));
 			
 			assertNotSame(expression, actual);
 			assertEquals(new Composite<>().add(new Symbol<>("test")), actual);

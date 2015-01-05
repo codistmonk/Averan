@@ -40,7 +40,7 @@ public final class ProofTest {
 		try {
 			final Symbol<String> x = new Symbol<>("X");
 			
-			deduction.new Supposition(null, new Composite<>().add(x).add(IMPLIES).add(x)).conclude();
+			deduction.new Supposition(null, c(x, IMPLIES, x)).conclude();
 			deduction.new Supposition(null, x).conclude();
 			deduction.new ModusPonens(null, deductionName + ".1", deductionName + ".2").conclude();
 			
@@ -55,6 +55,8 @@ public final class ProofTest {
 		final Deduction deduction = new Deduction(null, getThisMethodName(), null);
 		
 		try {
+			final Symbol<String> p = deduction.introduce("P");
+			
 			{
 				final Variable $E = new Variable("E");
 				final Variable $F = new Variable("F");
@@ -70,7 +72,7 @@ public final class ProofTest {
 										c(
 												c(
 														c(FORALL, $F, $Y),
-														c(c($E, c(c(new Variable("X", $X), "=", $Y)), c()), "=", $F)
+														c(c($E, c(c($X, "=", $Y)), c()), "=", $F)
 												),
 												"->",
 												$F
@@ -142,7 +144,7 @@ public final class ProofTest {
 		}
 		
 		@Override
-		public final String visit(final Composite<?> composite) {
+		public final String visit(final Composite<Expression<?>> composite) {
 			if (1 < composite.size() && FORALL.implies(composite.get(0))) {
 				final StringBuilder resultBuilder = new StringBuilder().append(FORALL);
 				final int n = composite.size();
