@@ -1,7 +1,7 @@
 package averan3.core;
 
 import static averan3.core.Composite.FORALL;
-
+import static net.sourceforge.aprog.tools.Tools.cast;
 import averan.common.Container;
 
 import java.io.Serializable;
@@ -32,7 +32,7 @@ public abstract interface Expression<E extends Expression<?>> extends Container<
 		
 		public abstract V visit(Variable variable);
 		
-		public abstract V visit(Composite<?> composite);
+		public abstract V visit(Composite<Expression<?>> composite);
 		
 	}
 	
@@ -86,7 +86,7 @@ public abstract interface Expression<E extends Expression<?>> extends Container<
 		}
 		
 		@Override
-		public final Expression<?> visit(final Composite<?> composite) {
+		public final Expression<?> visit(final Composite<Expression<?>> composite) {
 			final Expression<?> candidate = this.tryToReplace(composite);
 			
 			if (candidate != composite) {
@@ -144,7 +144,7 @@ public abstract interface Expression<E extends Expression<?>> extends Container<
 		
 		private final Expression<?> tryToReplace(final Expression<?> expression) {
 			for (final Pair<Expression<?>, Expression<?>> binding : this.getBindings()) {
-				if (binding.getFirst().accept(Variable.RESET).equals(expression.accept(Variable.RESET))
+				if (binding.getFirst().accept(new PatternEquals(expression))
 						&& (this.getIndices().isEmpty() || this.getIndices().contains(++this.index))) {
 					return binding.getSecond().accept(Variable.BIND);
 				}
@@ -154,6 +154,51 @@ public abstract interface Expression<E extends Expression<?>> extends Container<
 		}
 		
 		private static final long serialVersionUID = -8741979436763611725L;
+		
+		/**
+		 * @author codistmonk (creation 2015-01-05)
+		 */
+		public static final class PatternEquals implements Visitor<Boolean> {
+			
+			private Expression<?> target;
+			
+			public PatternEquals(final Expression<?> target) {
+				this.target = target;
+			}
+			
+			@Override
+			public final Boolean visit(final Symbol<?> symbol) {
+				return symbol.implies(this.target);
+			}
+			
+			@Override
+			public final Boolean visit(final Variable variable) {
+				return variable == this.target;
+			}
+			
+			@Override
+			public final Boolean visit(final Composite<Expression<?>> composite) {
+				final int n = composite.size();
+				final Composite<?> targetAsComposite = cast(Composite.class, this.target);
+				
+				if (targetAsComposite == null || n != targetAsComposite.size()) {
+					return false;
+				}
+				
+				for (int i = 0; i < n; ++i) {
+					this.target = targetAsComposite.get(i);
+					
+					if (!composite.get(i).accept(this)) {
+						return false;
+					}
+				}
+				
+				return true;
+			}
+			
+			private static final long serialVersionUID = -5840795213809431978L;
+			
+		}
 		
 	}
 	
@@ -181,7 +226,7 @@ public abstract interface Expression<E extends Expression<?>> extends Container<
 		}
 		
 		@Override
-		public final CollectVariables visit(final Composite<?> composite) {
+		public final CollectVariables visit(final Composite<Expression<?>> composite) {
 			composite.forEach(element -> element.accept(this));
 			
 			return this;

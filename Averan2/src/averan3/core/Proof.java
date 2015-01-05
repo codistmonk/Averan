@@ -14,6 +14,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 
 import net.sourceforge.aprog.tools.Pair;
+import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2015-01-04)
@@ -44,6 +45,8 @@ public abstract class Proof implements Serializable {
 	}
 	
 	protected final void setProposition(final Expression<?> proposition) {
+		Tools.debugPrint(proposition);
+		
 		if (this.getProposition() != null || proposition == null) {
 			throw new IllegalStateException();
 		}
@@ -121,7 +124,7 @@ public abstract class Proof implements Serializable {
 					final Variable parameter = (Variable) goal.getParameters().get(1);
 					final Symbol<String> result = this.newParameter(parameterOrPropositionName);
 					
-					this.goal = this.goal.accept(new Expression.Substitution().bind(new Variable(parameter.getName(), parameter), result));
+					this.goal = this.goal.accept(new Expression.Substitution().bind(parameter, result));
 					
 					return (E) result;
 				}

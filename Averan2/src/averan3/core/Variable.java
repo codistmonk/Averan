@@ -10,25 +10,14 @@ final class Variable implements Expression<Variable> {
 	
 	private final String name;
 	
-	private final Object filter;
-	
 	private Expression<?> match;
 	
 	public Variable(final String name) {
-		this(name, Expression.class);
-	}
-	
-	public Variable(final String name, final Object filter) {
 		this.name = name;
-		this.filter = filter;
 	}
 	
 	public final String getName() {
 		return this.name;
-	}
-	
-	public final Object getFilter() {
-		return this.filter;
 	}
 	
 	public final Expression<?> getMatch() {
@@ -73,18 +62,6 @@ final class Variable implements Expression<Variable> {
 			return true;
 		}
 		
-		final Class<?> type = cast(Class.class, this.getFilter());
-		
-		if (type != null) {
-			if (!type.isInstance(object)) {
-				return false;
-			}
-		} else if (object != this.getFilter()) {
-			return false;
-		} else {
-			this.match = null;
-		}
-		
 		if (this.match == null) {
 			this.match = (Expression<?>) object;
 			
@@ -97,8 +74,7 @@ final class Variable implements Expression<Variable> {
 	@Override
 	public final String toString() {
 //		return "$" + this.getName() + "(" + formatFilter(this.getFilter()) + ")<" + (this.getMatch() == null ? "" : this.getMatch()) + ">";
-		return "$" + this.getName() + "(" + formatFilter(this.getFilter()) + ")<"
-				+ (this.getMatch() == null ? "" : "...") + ">";
+		return "$" + this.getName() + "<" + (this.getMatch() == null ? "" : "...") + ">";
 	}
 	
 	public static final String formatFilter(final Object filter) {
@@ -133,7 +109,7 @@ final class Variable implements Expression<Variable> {
 		}
 		
 		@Override
-		public final Composite<?> visit(final Composite<?> composite) {
+		public final Composite<?> visit(final Composite<Expression<?>> composite) {
 			composite.forEach(element -> element.accept(this));
 			
 			return composite;
@@ -159,7 +135,7 @@ final class Variable implements Expression<Variable> {
 		}
 		
 		@Override
-		public final Expression<?> visit(final Composite<?> composite) {
+		public final Expression<?> visit(final Composite<Expression<?>> composite) {
 			final Composite<Expression<?>> parameters = composite.getParameters();
 			Composite<Expression<?>> candidate = null;
 			boolean returnCandidate = false;

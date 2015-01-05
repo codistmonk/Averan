@@ -2,7 +2,6 @@ package averan3.core;
 
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.join;
-
 import averan.common.Container;
 
 import java.util.ArrayList;
@@ -77,9 +76,10 @@ final class Composite<E extends Expression<?>> implements Expression<E> {
 		return 0 <= index && index < this.size() ? this.elements.get(index) : null;
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public final <V> V accept(final Visitor<V> visitor) {
-		return visitor.visit(this);
+		return visitor.visit((Composite<Expression<?>>) this);
 	}
 	
 	@Override
