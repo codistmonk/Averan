@@ -16,7 +16,7 @@ import org.junit.Test;
  */
 public final class ProofTest {
 	
-	@Test
+	@Test(expected=IllegalStateException.class)
 	public final void test1() {
 		final Deduction deduction = new Deduction(null, getThisMethodName(), null);
 		
