@@ -7,9 +7,11 @@ import static net.sourceforge.aprog.tools.Tools.cast;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 
+import net.sourceforge.aprog.tools.Pair;
 import averan3.core.Expression.Substitution;
 
 /**
@@ -45,7 +47,7 @@ public abstract class Proof implements Serializable {
 			throw new IllegalStateException();
 		}
 		
-		this.proposition = proposition;
+		this.proposition = proposition.accept(this.getParent().getProtoparameterSubstitution());
 		
 		this.getParent().add(this);
 	}
@@ -65,6 +67,8 @@ public abstract class Proof implements Serializable {
 		
 		private final List<Proof> proofs;
 		
+		private final Substitution protoparameterSubstitution;
+		
 		private final Collection<Symbol<String>> protoparameters;
 		
 		private Expression<?> goal;
@@ -72,11 +76,21 @@ public abstract class Proof implements Serializable {
 		public Deduction(final Deduction parent, final String name, final Expression<?> goal) {
 			super(parent, name);
 			this.proofs = new ArrayList<>();
+			this.protoparameterSubstitution = new Substitution();
 			this.protoparameters = new LinkedHashSet<>();
 			this.goal = goal;
+			
+			if (parent != null) {
+				this.protoparameterSubstitution.getBindings().addAll(
+						parent.getProtoparameterSubstitution().getBindings());
+			}
 			// primitive module operations: suppose, apply, substitute
 			// primitive deduction operations: introduce, deduce, conclude
 			// standard tactics: recall, bind, rewrite, rewriteRight, autoDeduce
+		}
+		
+		public final Substitution getProtoparameterSubstitution() {
+			return this.protoparameterSubstitution;
 		}
 		
 		public final Collection<Symbol<String>> getProtoparameters() {
@@ -101,11 +115,7 @@ public abstract class Proof implements Serializable {
 			if (goal != null) {
 				if (goal.getParameters() != null) {
 					final Variable parameter = (Variable) goal.getParameters().get(1);
-					final Symbol<String> result = new Symbol<String>(parameterOrPropositionName != null ? parameterOrPropositionName : parameter.getName());
-					
-					if (!this.getProtoparameters().add(result)) {
-						throw new IllegalArgumentException();
-					}
+					final Symbol<String> result = this.newParameter(parameterOrPropositionName);
 					
 					this.goal = this.goal.accept(new Expression.Substitution().bind(new Variable(parameter.getName(), parameter), result));
 					
@@ -120,15 +130,7 @@ public abstract class Proof implements Serializable {
 				}
 			}
 			
-			{
-				final Symbol<String> result = new Symbol<String>(parameterOrPropositionName);
-				
-				if (parameterOrPropositionName == null || !this.getProtoparameters().add(result)) {
-					throw new IllegalArgumentException();
-				}
-				
-				return (E) result;
-			}
+			return (E) this.newParameter(parameterOrPropositionName);
 		}
 		
 		@Override
@@ -201,6 +203,27 @@ public abstract class Proof implements Serializable {
 			}
 		}
 		
+		private final Symbol<String> newParameter(final String name) {
+			final Symbol<String> result = new Symbol<>(name);
+			
+			if (name == null || !this.getProtoparameters().add(result)) {
+				throw new IllegalArgumentException();
+			}
+			
+			{
+				for (final Iterator<Pair<Expression<?>, Expression<?>>> i =
+						this.getProtoparameterSubstitution().getBindings().iterator(); i.hasNext();) {
+					if (result.implies(i.next().getFirst())) {
+						i.remove();
+					}
+				}
+				
+				this.getProtoparameterSubstitution().bind(result, new Variable(name));
+			}
+			
+			return result;
+		}
+		
 		/**
 		 * @author codistmonk (creation 2015-01-04)
 		 */
@@ -220,7 +243,7 @@ public abstract class Proof implements Serializable {
 			
 			@Override
 			public final String toString() {
-				return "Suppose";
+				return "By supposition";
 			}
 			
 			private static final long serialVersionUID = -2449310594857640213L;
@@ -264,7 +287,7 @@ public abstract class Proof implements Serializable {
 			
 			@Override
 			public final String toString() {
-				return "Apply (" + this.ruleName + ") on (" + this.conditionName + ")";
+				return "By applying (" + this.ruleName + ") on (" + this.conditionName + ")";
 			}
 			
 			private static final long serialVersionUID = -2333420406462704258L;
