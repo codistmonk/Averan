@@ -3,6 +3,9 @@ package averan3.core;
 import static averan3.core.Composite.FORALL;
 import static averan3.core.Composite.IMPLIES;
 import static net.sourceforge.aprog.tools.Tools.cast;
+import static net.sourceforge.aprog.tools.Tools.last;
+
+import averan3.core.Expression.Substitution;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -12,7 +15,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 
 import net.sourceforge.aprog.tools.Pair;
-import averan3.core.Expression.Substitution;
 
 /**
  * @author codistmonk (creation 2015-01-04)
@@ -135,6 +137,10 @@ public abstract class Proof implements Serializable {
 		
 		@Override
 		public final void conclude() {
+			if (this.getProofs().isEmpty() || last(this.getProofs()) instanceof Supposition) {
+				throw new IllegalStateException();
+			}
+			
 			if (!this.getProtoparameters().isEmpty()) {
 				final Substitution substitution = new Substitution();
 				final Composite<Expression<?>> parameters = new Composite<>().add(FORALL);
