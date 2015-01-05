@@ -9,6 +9,8 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 
+import averan3.core.Expression.Substitution;
+
 /**
  * @author codistmonk (creation 2015-01-04)
  */
@@ -47,7 +49,9 @@ public abstract class Proof implements Serializable {
 		this.getParent().add(this);
 	}
 	
-	public abstract void apply();
+	public abstract void conclude();
+	
+	private static final long serialVersionUID = -5949193213742615021L;
 	
 	/**
 	 * @author codistmonk (creation 2015-01-04)
@@ -82,7 +86,8 @@ public abstract class Proof implements Serializable {
 			return this.proofs;
 		}
 		
-		public final Expression<?> introduce(final String parameterOrPropositionName) {
+		@SuppressWarnings("unchecked")
+		public final <E extends Expression<?>> E introduce(final String parameterOrPropositionName) {
 			final Composite<?> goal = cast(Composite.class, this.getGoal());
 			
 			if (goal != null) {
@@ -96,11 +101,11 @@ public abstract class Proof implements Serializable {
 					
 					this.goal = this.goal.accept(new Expression.Substitution().bind(new Variable(parameter.getName(), parameter), result));
 					
-					return result;
+					return (E) result;
 				}
 				
 				if (goal.getCondition() != null) {
-					this.new Supposition(parameterOrPropositionName, goal.getCondition()).apply();
+					this.new Supposition(parameterOrPropositionName, goal.getCondition()).conclude();
 					this.goal = goal.getConclusion();
 					
 					return null;
@@ -114,13 +119,27 @@ public abstract class Proof implements Serializable {
 					throw new IllegalArgumentException();
 				}
 				
-				return result;
+				return (E) result;
 			}
 		}
 		
 		@Override
-		public final void apply() {
-			// TODO Auto-generated method stub
+		public final void conclude() {
+			if (!this.getProtoparameters().isEmpty()) {
+				final Substitution substitution = new Substitution();
+				
+				for (final Symbol<String> protoparameter : this.getProtoparameters()) {
+					substitution.bind(protoparameter, new Variable(protoparameter.toString()));
+				}
+				
+				this.root = this.root.accept(substitution);
+				this.getProtoparameters().clear();
+			}
+			
+			if (this.getParent() != null) {
+				// TODO extract proposition from root
+				this.addToDeduction(this.root);
+			}
 		}
 		
 		public final Expression<?> getGoal() {
@@ -170,7 +189,7 @@ public abstract class Proof implements Serializable {
 			}
 			
 			@Override
-			public final void apply() {
+			public final void conclude() {
 				this.addToDeduction(this.proposition);
 			}
 			

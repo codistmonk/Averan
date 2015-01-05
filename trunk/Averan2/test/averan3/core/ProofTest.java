@@ -3,16 +3,12 @@ package averan3.core;
 import static java.util.Collections.nCopies;
 import static net.sourceforge.aprog.tools.Tools.getThisMethodName;
 import static net.sourceforge.aprog.tools.Tools.join;
-import static org.junit.Assert.*;
-
-import java.io.PrintStream;
-import java.util.Collections;
-
-import net.sourceforge.aprog.tools.Tools;
-
-import org.junit.Test;
 
 import averan3.core.Proof.Deduction;
+
+import java.io.PrintStream;
+
+import org.junit.Test;
 
 /**
  * @author codistmonk (creation 2015-01-04)
@@ -24,9 +20,9 @@ public final class ProofTest {
 		final Deduction deduction = new Deduction(null, getThisMethodName(), null);
 		
 		try {
-			final Symbol<String> x = (Symbol<String>) deduction.introduce("X");
+			final Symbol<String> x = deduction.introduce("X");
 			
-			deduction.new Supposition(null, x).apply();
+			deduction.new Supposition(null, x).conclude();
 		} finally {
 			export(deduction);
 		}
