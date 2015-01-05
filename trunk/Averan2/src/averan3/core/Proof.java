@@ -4,7 +4,6 @@ import static averan3.core.Composite.FORALL;
 import static averan3.core.Composite.IMPLIES;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.last;
-
 import averan3.core.Expression.Substitution;
 
 import java.io.Serializable;
@@ -132,6 +131,10 @@ public abstract class Proof implements Serializable {
 					
 					return null;
 				}
+			}
+			
+			if (this.root != null) {
+				throw new IllegalStateException();
 			}
 			
 			return (E) this.newParameter(parameterOrPropositionName);
