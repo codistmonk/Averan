@@ -5,6 +5,7 @@ import static averan3.core.Composite.IMPLIES;
 import static java.util.Collections.nCopies;
 import static net.sourceforge.aprog.tools.Tools.getThisMethodName;
 import static net.sourceforge.aprog.tools.Tools.join;
+
 import averan3.core.Proof.Deduction;
 
 import java.io.PrintStream;
@@ -137,12 +138,12 @@ public final class ProofTest {
 		
 		@Override
 		public final String visit(final Variable variable) {
-			return "$" + variable.getName();
+			return variable.getName();
 		}
 		
 		@Override
 		public final String visit(final Composite<?> composite) {
-			if (1 < composite.size() && FORALL.equals(composite.get(0))) {
+			if (1 < composite.size() && FORALL.implies(composite.get(0))) {
 				final StringBuilder resultBuilder = new StringBuilder().append(FORALL);
 				final int n = composite.size();
 				

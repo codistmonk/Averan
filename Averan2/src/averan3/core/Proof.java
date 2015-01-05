@@ -263,7 +263,7 @@ public abstract class Proof implements Serializable {
 			
 			@Override
 			public final void conclude() {
-				this.setProposition(this.proposition);
+				this.setProposition(this.proposition.accept(Variable.RESET));
 			}
 			
 			@Override

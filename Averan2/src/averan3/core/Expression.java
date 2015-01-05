@@ -85,7 +85,6 @@ public abstract interface Expression<E extends Expression<?>> extends Container<
 			return this.tryToReplace(variable);
 		}
 		
-		@SuppressWarnings("unchecked")
 		@Override
 		public final Expression<?> visit(final Composite<?> composite) {
 			final Expression<?> candidate = this.tryToReplace(composite);
@@ -145,7 +144,7 @@ public abstract interface Expression<E extends Expression<?>> extends Container<
 		
 		private final Expression<?> tryToReplace(final Expression<?> expression) {
 			for (final Pair<Expression<?>, Expression<?>> binding : this.getBindings()) {
-				if (binding.getFirst().accept(Variable.RESET).equals(expression)
+				if (binding.getFirst().accept(Variable.RESET).equals(expression.accept(Variable.RESET))
 						&& (this.getIndices().isEmpty() || this.getIndices().contains(++this.index))) {
 					return binding.getSecond().accept(Variable.BIND);
 				}
