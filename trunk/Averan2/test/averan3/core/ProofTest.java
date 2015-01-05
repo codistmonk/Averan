@@ -55,15 +55,13 @@ public final class ProofTest {
 		final Deduction deduction = new Deduction(null, getThisMethodName(), null);
 		
 		try {
-			final Symbol<String> p = deduction.introduce("P");
-			
 			{
 				final Variable $E = new Variable("E");
 				final Variable $F = new Variable("F");
 				final Variable $X = new Variable("X");
 				final Variable $Y = new Variable("Y");
 				
-				deduction.new Supposition(null,
+				deduction.new Supposition("bind",
 						c(
 								c(FORALL, $E),
 								c(
@@ -79,6 +77,22 @@ public final class ProofTest {
 										)
 								)
 						)).conclude();
+			}
+			
+			{
+				final Deduction subDeduction = new Deduction(deduction, "recall", null);
+				{
+					final Symbol<String> p = subDeduction.introduce("P");
+					
+					subDeduction.new Supposition(null, p).conclude();
+					final String suppositionName = subDeduction.findPropositionName(-1);
+					subDeduction.new Substitution(null, c(p, c(), c())).conclude();
+					final String identityName = subDeduction.findPropositionName(-1);
+					subDeduction.new Rewrite(null, identityName).using(identityName).conclude();
+					subDeduction.new Rewrite(null, suppositionName).using(identityName).conclude();
+					
+					subDeduction.conclude();
+				}
 			}
 			
 			deduction.conclude();
