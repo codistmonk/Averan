@@ -2,7 +2,6 @@ package averan3.core;
 
 import static averan3.core.Composite.FORALL;
 import static net.sourceforge.aprog.tools.Tools.cast;
-import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2015-01-04)
@@ -132,7 +131,7 @@ final class Variable implements Expression<Variable> {
 		}
 		
 		@Override
-		public final Expression<?> visit(final Composite<?> composite) {
+		public final Composite<?> visit(final Composite<?> composite) {
 			composite.forEach(element -> element.accept(this));
 			
 			return composite;
