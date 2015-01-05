@@ -44,14 +44,16 @@ public abstract class Proof implements Serializable {
 		return this.proposition;
 	}
 	
-	protected final void addToDeduction(final Expression<?> proposition) {
+	protected final void setProposition(final Expression<?> proposition) {
 		if (this.getProposition() != null || proposition == null) {
 			throw new IllegalStateException();
 		}
 		
-		this.proposition = proposition.accept(this.getParent().getProtoparameterSubstitution());
+		this.proposition = this.getParent() == null ? proposition : proposition.accept(this.getParent().getProtoparameterSubstitution());
 		
-		this.getParent().add(this);
+		if (this.getParent() != null) {
+			this.getParent().add(this);
+		}
 	}
 	
 	public abstract void conclude();
@@ -156,10 +158,8 @@ public abstract class Proof implements Serializable {
 				this.getProtoparameters().clear();
 			}
 			
-			if (this.getParent() != null) {
-				// TODO extract proposition from root
-				this.addToDeduction(this.root);
-			}
+			// TODO extract proposition from root
+			this.setProposition(this.root.accept(this.getProtoparameterSubstitution()));
 		}
 		
 		public final Expression<?> getGoal() {
@@ -244,7 +244,7 @@ public abstract class Proof implements Serializable {
 			
 			@Override
 			public final void conclude() {
-				this.addToDeduction(this.proposition);
+				this.setProposition(this.proposition);
 			}
 			
 			@Override
@@ -286,7 +286,7 @@ public abstract class Proof implements Serializable {
 					throw new IllegalArgumentException();
 				}
 				
-				this.addToDeduction(rule.getConclusion().accept(Variable.BIND));
+				this.setProposition(rule.getConclusion().accept(Variable.BIND));
 				
 				rule.accept(Variable.RESET);
 			}
