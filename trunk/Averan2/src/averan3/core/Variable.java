@@ -1,5 +1,6 @@
 package averan3.core;
 
+import static averan3.core.Composite.FORALL;
 import static net.sourceforge.aprog.tools.Tools.cast;
 
 /**
@@ -153,39 +154,57 @@ final class Variable implements Expression<Variable> {
 			return variable.getMatch() != null ? variable.getMatch() : variable;
 		}
 		
-		@SuppressWarnings("unchecked")
 		@Override
-		public final Composite<?> visit(final Composite<?> composite) {
-			final Composite<Expression<?>> newComposite = new Composite<>();
-			boolean returnNewComposite = false;
+		public final Expression<?> visit(final Composite<?> composite) {
 			final Composite<Expression<?>> parameters = composite.getParameters();
+			Composite<Expression<?>> candidate = null;
+			boolean returnCandidate = false;
 			
 			if (parameters != null) {
-				newComposite.setupAsBlock();
+				final Composite<Expression<?>> newParameters = new Composite<>().add(FORALL);
+				
 				final int n = parameters.size();
 				
 				for (int i = 1; i < n; ++i) {
 					final Variable parameter = (Variable) parameters.get(i);
 					
 					if (parameter.getMatch() == null) {
-						newComposite.getParameters().add(parameter);
-					} else if (!returnNewComposite) {
-						returnNewComposite = true;
+						newParameters.add(parameter);
+					} else if (!returnCandidate) {
+						returnCandidate = true;
 					}
 				}
-			}
-			
-			for (final Expression<?> element : composite) {
-				final Expression<?> newElement = element.accept(this);
 				
-				((Composite<Expression<?>>) newComposite.getContents()).add(newElement);
-				
-				if (!returnNewComposite && newElement != element) {
-					returnNewComposite = true;
+				if (1 < newParameters.size()) {
+					candidate = new Composite<>().add(newParameters);
 				}
 			}
 			
-			return returnNewComposite ? newComposite : composite;
+			if (parameters == null) {
+				candidate = new Composite<>();
+				
+				for (final Expression<?> element : composite) {
+					final Expression<?> newElement = element.accept(this);
+					
+					candidate.add(newElement);
+					
+					if (!returnCandidate && newElement != element) {
+						returnCandidate = true;
+					}
+				}
+				
+				return returnCandidate ? candidate : composite;
+			} else if (candidate == null) {
+				return composite.getContents().accept(this);
+			} else {
+				final Expression<?> newContents = composite.getContents().accept(this);
+				
+				if (!returnCandidate && newContents != composite.getContents()) {
+					returnCandidate = true;
+				}
+				
+				return returnCandidate ? candidate.add(newContents) : composite;
+			}
 		}
 		
 		private static final long serialVersionUID = 8086793860438225779L;

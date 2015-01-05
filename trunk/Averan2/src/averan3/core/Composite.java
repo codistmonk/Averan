@@ -25,17 +25,14 @@ final class Composite<E extends Expression<?>> implements Expression<E> {
 	
 	@SuppressWarnings("unchecked")
 	public final <F extends E> F getConclusion() {
-		return this.size() == 1 ? (F) this.get(0) :
-			this.getCondition() != null ? (F) this.get(2) : null;
+		return this.getCondition() != null ? (F) this.get(2) : null;
 	}
 	
 	public final Composite<Expression<?>> getParameters() {
 		if (this.size() == 2) {
-			@SuppressWarnings("unchecked")
 			final Composite<Expression<?>> candidate = cast(Composite.class, this.get(0));
 			
-			if (candidate != null && (candidate.isEmpty()
-					|| 2 <= candidate.size() && FORALL.equals(candidate.get(0)))) {
+			if (candidate != null && (2 <= candidate.size() && FORALL.equals(candidate.get(0)))) {
 				return candidate;
 			}
 		}
@@ -46,18 +43,6 @@ final class Composite<E extends Expression<?>> implements Expression<E> {
 	@SuppressWarnings("unchecked")
 	public final <F extends Expression<?>> F getContents() {
 		return (F) (this.getParameters() != null ? this.get(1) : this);
-	}
-	
-	@SuppressWarnings("unchecked")
-	public final Composite<E> setupAsBlock() {
-		if (!this.isEmpty()) {
-			throw new IllegalStateException();
-		}
-		
-		this.add((E) new Composite<>()); // parameters
-		this.add((E) new Composite<>()); // parametrizedContent
-		
-		return this;
 	}
 	
 	public final Composite<E> add(final E element) {
