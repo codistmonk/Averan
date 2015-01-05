@@ -104,7 +104,8 @@ public abstract class Proof implements Serializable {
 			@SuppressWarnings("unchecked")
 			final Composite<Expression<?>> composite = cast(Composite.class, this.root);
 			
-			return composite != null ? composite.getParameters() : null;
+			return composite != null && this.getProofs().get(0).getProposition() != this.root ?
+					composite.getParameters() : null;
 		}
 		
 		public final List<Proof> getProofs() {
