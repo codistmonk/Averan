@@ -30,6 +30,7 @@ final class Composite<E extends Expression<?>> implements Expression<E> {
 	
 	public final Composite<Expression<?>> getParameters() {
 		if (this.size() == 2) {
+			@SuppressWarnings("unchecked")
 			final Composite<Expression<?>> candidate = cast(Composite.class, this.get(0));
 			
 			if (candidate != null && (2 <= candidate.size() && FORALL.equals(candidate.get(0)))) {
