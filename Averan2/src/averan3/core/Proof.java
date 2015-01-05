@@ -12,9 +12,9 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.TreeSet;
 
 import net.sourceforge.aprog.tools.Pair;
-import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2015-01-04)
@@ -45,8 +45,6 @@ public abstract class Proof implements Serializable {
 	}
 	
 	protected final void setProposition(final Expression<?> proposition) {
-		Tools.debugPrint(proposition);
-		
 		if (this.getProposition() != null || proposition == null) {
 			throw new IllegalStateException();
 		}
@@ -378,13 +376,77 @@ public abstract class Proof implements Serializable {
 				final Expression<?> equalities = this.substitutionExpression.get(1);
 				final Expression<?> indices = this.substitutionExpression.get(2);
 				
-				return "By substituting in " + target
+				return "By substitution in " + target
 						+ " using " + equalities
 						+ (indices.isEmpty() ? "" : " at indices " + indices);
 				
 			}
 			
 			private static final long serialVersionUID = 5765484578210551523L;
+			
+		}
+		
+		/**
+		 * @author codistmonk (creation 2015-01-04)
+		 */
+		public final class Rewrite extends Proof {
+			
+			private final String targetName;
+			
+			private final Collection<String> equalityNames;
+			
+			private final Collection<Integer> indices;
+			
+			public Rewrite(final String propositionName, String targetName) {
+				super(Deduction.this, propositionName);
+				this.targetName = targetName;
+				this.equalityNames = new LinkedHashSet<>();
+				this.indices = new TreeSet<>();
+			}
+			
+			public final Rewrite using(final String... equalityNames) {
+				if (!this.indices.isEmpty()) {
+					throw new IllegalStateException();
+				}
+				
+				for (final String equalityName : equalityNames) {
+					this.equalityNames.add(equalityName);
+				}
+				
+				return this;
+			}
+			
+			public final Rewrite at(final int... indices) {
+				for (final int index : indices) {
+					this.indices.add(index);
+				}
+				
+				return this;
+			}
+			
+			@Override
+			public final void conclude() {
+				final Expression<?> target = this.getParent().findProposition(this.targetName);
+				final Expression.Substitution substitution = new Expression.Substitution();
+				
+				for (final String equalityName : this.equalityNames) {
+					final Composite<Expression<?>> equality = this.getParent().findProposition(equalityName);
+					
+					if (equality == null || equality.getKey() == null || equality.getValue() == null) {
+						throw new IllegalArgumentException();
+					}
+					
+					substitution.bind(equality.getKey(), equality.getValue());
+				}
+				
+				this.setProposition(target.accept(substitution.at(this.indices)));
+			}
+			
+			@Override
+			public final String toString() {
+				return "By rewriting (" + this.targetName + ") using " + this.equalityNames
+						+ (this.indices.isEmpty() ? "" : " at indices " + this.indices);
+			}
 			
 		}
 		

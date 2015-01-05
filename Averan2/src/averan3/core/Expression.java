@@ -67,6 +67,12 @@ public abstract interface Expression<E extends Expression<?>> extends Container<
 			return this;
 		}
 		
+		public final Substitution at(final Iterable<? extends Number> indices) {
+			indices.forEach(i -> this.getIndices().add(i.intValue()));
+			
+			return this;
+		}
+		
 		public final Substitution at(final int... indices) {
 			for (final int index : indices) {
 				this.getIndices().add(index);
