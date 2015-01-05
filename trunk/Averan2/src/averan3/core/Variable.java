@@ -2,6 +2,7 @@ package averan3.core;
 
 import static averan3.core.Composite.FORALL;
 import static net.sourceforge.aprog.tools.Tools.cast;
+import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2015-01-04)
@@ -79,8 +80,10 @@ final class Variable implements Expression<Variable> {
 			if (!type.isInstance(object)) {
 				return false;
 			}
-		} else if (object != type) {
+		} else if (object != this.getFilter()) {
 			return false;
+		} else {
+			this.match = null;
 		}
 		
 		if (this.match == null) {
@@ -94,7 +97,7 @@ final class Variable implements Expression<Variable> {
 	
 	@Override
 	public final String toString() {
-		return "$(" + formatFilter(this.getFilter()) + ")<" + (this.getMatch() == null ? "" : this.getMatch()) + ">";
+		return "$" + this.getName() + "(" + formatFilter(this.getFilter()) + ")<" + (this.getMatch() == null ? "" : this.getMatch()) + ">";
 	}
 	
 	public static final String formatFilter(final Object filter) {

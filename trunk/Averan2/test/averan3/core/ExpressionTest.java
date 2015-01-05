@@ -72,4 +72,26 @@ public final class ExpressionTest {
 		}
 	}
 	
+	@Test
+	public final void testSubstitute1() {
+		{
+			final Variable variable = new Variable("test");
+			
+			assertTrue(new Variable("test", variable).equals(variable));
+			
+			final Expression<?> expression = new Composite<>().add(new Composite<>().add(new Composite<>().add(FORALL).add(variable)).add(variable));
+			final Expression<?> actual = expression.accept(new Expression.Substitution().bind(new Variable("test", variable), new Symbol<>("test")));
+			
+			assertNotSame(expression, actual);
+			assertEquals(new Composite<>().add(new Symbol<>("test")), actual);
+		}
+		{
+			final Expression<?> expression = new Composite<>().add(new Symbol<>("a")).add(new Composite<>().add(new Symbol<>("a")).add(new Symbol<>("a")));
+			final Expression<?> actual = expression.accept(new Expression.Substitution().bind(new Symbol<>("a"), new Symbol<>("b")).at(0, 2));
+			
+			assertNotSame(expression, actual);
+			assertEquals(new Composite<>().add(new Symbol<>("b")).add(new Composite<>().add(new Symbol<>("a")).add(new Symbol<>("b"))), actual);
+		}
+	}
+	
 }
