@@ -1,10 +1,10 @@
 package averan3.core;
 
+import static averan3.core.Composite.EQUALS;
 import static averan3.core.Composite.FORALL;
 import static averan3.core.Composite.IMPLIES;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.last;
-import averan3.core.Expression.Substitution;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -26,9 +26,9 @@ public abstract class Proof implements Serializable {
 	
 	private Expression<?> proposition;
 	
-	protected Proof(final Deduction parent, final String name) {
+	protected Proof(final Deduction parent, final String propositionName) {
 		this.parent = parent;
-		this.propositionName = name != null ? name : parent.getPropositionName() + "." + (parent.getProofs().size() + 1);
+		this.propositionName = propositionName != null ? propositionName : parent.getPropositionName() + "." + (parent.getProofs().size() + 1);
 	}
 	
 	public final Deduction getParent() {
@@ -70,7 +70,7 @@ public abstract class Proof implements Serializable {
 		
 		private final List<Proof> proofs;
 		
-		private final Substitution protoparameterSubstitution;
+		private final Expression.Substitution protoparameterSubstitution;
 		
 		private final Collection<Symbol<String>> protoparameters;
 		
@@ -79,7 +79,7 @@ public abstract class Proof implements Serializable {
 		public Deduction(final Deduction parent, final String name, final Expression<?> goal) {
 			super(parent, name);
 			this.proofs = new ArrayList<>();
-			this.protoparameterSubstitution = new Substitution();
+			this.protoparameterSubstitution = new Expression.Substitution();
 			this.protoparameters = new LinkedHashSet<>();
 			this.goal = goal;
 			
@@ -88,11 +88,11 @@ public abstract class Proof implements Serializable {
 						parent.getProtoparameterSubstitution().getBindings());
 			}
 			// primitive module operations: suppose, apply, substitute
-			// primitive deduction operations: introduce, deduce, conclude
+			// primitive deduction operations: introduce, conclude
 			// standard tactics: recall, bind, rewrite, rewriteRight, autoDeduce
 		}
 		
-		public final Substitution getProtoparameterSubstitution() {
+		public final Expression.Substitution getProtoparameterSubstitution() {
 			return this.protoparameterSubstitution;
 		}
 		
@@ -147,7 +147,7 @@ public abstract class Proof implements Serializable {
 			}
 			
 			if (!this.getProtoparameters().isEmpty()) {
-				final Substitution substitution = new Substitution();
+				final Expression.Substitution substitution = new Expression.Substitution();
 				final Composite<Expression<?>> parameters = new Composite<>().add(FORALL);
 				
 				for (final Symbol<String> protoparameter : this.getProtoparameters()) {
@@ -167,6 +167,22 @@ public abstract class Proof implements Serializable {
 		
 		public final Expression<?> getGoal() {
 			return this.goal;
+		}
+		
+		public final String findPropositionName(final int index) {
+			if (0 <= index) {
+				throw new IllegalArgumentException();
+			}
+			
+			int j = index + 1;
+			
+			for (int i = this.getProofs().size() - 1; 0 <= i; --i, ++j) {
+				if (j == 0) {
+					return this.getProofs().get(i).getPropositionName();
+				}
+			}
+			
+			return this.getParent() != null ? this.getParent().findPropositionName(j) : null;
 		}
 		
 		@SuppressWarnings("unchecked")
@@ -300,6 +316,71 @@ public abstract class Proof implements Serializable {
 			}
 			
 			private static final long serialVersionUID = -2333420406462704258L;
+			
+		}
+		
+		/**
+		 * @author codistmonk (creation 2015-01-04)
+		 */
+		public final class Substitution extends Proof {
+			
+			private final Composite<Expression<?>> substitutionExpression;
+			
+			public Substitution(final String propositionName,
+					final Composite<Expression<?>> substitutionExpression) {
+				super(Deduction.this, propositionName);
+				this.substitutionExpression = substitutionExpression;
+			}
+			
+			@Override
+			public final void conclude() {
+				if (!(this.substitutionExpression.size() == 3
+						&& this.substitutionExpression.get(1) instanceof Composite<?>
+						&& this.substitutionExpression.get(2) instanceof Composite<?>)) {
+					throw new IllegalArgumentException();
+				}
+				
+				final Expression.Substitution substitution = new Expression.Substitution();
+				
+				{
+					@SuppressWarnings("unchecked")
+					final Composite<Composite<Expression<?>>> equalities =
+							(Composite<Composite<Expression<?>>>) this.substitutionExpression.get(1);
+					
+					for (final Composite<Expression<?>> equality : equalities) {
+						if (equality.getKey() == null || equality.getValue() == null) {
+							throw new IllegalArgumentException();
+						}
+						
+						substitution.bind(equality.getKey(), equality.getValue());
+					}
+				}
+				
+				{
+					@SuppressWarnings("unchecked")
+					final Composite<Symbol<Integer>> indices =
+							(Composite<Symbol<Integer>>) this.substitutionExpression.get(2);
+					
+					indices.forEach(i -> substitution.at(i.getObject()));
+				}
+				
+				this.setProposition(new Composite<>().add(this.substitutionExpression)
+						.add(EQUALS).add(this.substitutionExpression.get(0).accept(substitution)));
+			}
+			
+			@Override
+			public final String toString() {
+				final Expression<?> target = this.substitutionExpression.get(0);
+				final Expression<?> equalities = this.substitutionExpression.get(1);
+				final Expression<?> indices = this.substitutionExpression.get(2);
+				
+				return "By substituting in " + target
+						+ " using " + equalities
+						+ (indices.isEmpty() ? "" : " at indices " + indices);
+				
+			}
+			
+			private static final long serialVersionUID = 5765484578210551523L;
 			
 		}
 		

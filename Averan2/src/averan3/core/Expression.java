@@ -127,7 +127,7 @@ public abstract interface Expression<E extends Expression<?>> extends Container<
 				for (final Expression<?> element : composite) {
 					final Expression<?> newElement = element.accept(this);
 					
-					((Composite<Expression<?>>) newComposite.getContents()).add(newElement);
+					newComposite.add(newElement);
 					
 					if (!returnNewComposite && newElement != element) {
 						returnNewComposite = true;
