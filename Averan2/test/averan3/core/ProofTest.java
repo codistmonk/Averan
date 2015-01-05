@@ -66,13 +66,13 @@ public final class ProofTest {
 								c(FORALL, $E),
 								c(
 										c(c(FORALL, $X), $E),
-										"->",
+										IMPLIES,
 										c(
 												c(
 														c(FORALL, $F, $Y),
 														c(c($E, c(c($X, "=", $Y)), c()), "=", $F)
 												),
-												"->",
+												IMPLIES,
 												$F
 										)
 								)
