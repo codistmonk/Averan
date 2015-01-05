@@ -20,6 +20,16 @@ final class Composite<E extends Expression<?>> implements Expression<E> {
 	}
 	
 	@SuppressWarnings("unchecked")
+	public final <F extends E> F getKey() {
+		return this.size() == 3 && EQUALS.equals(this.get(1)) ? (F) this.get(0) : null;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public final <F extends E> F getValue() {
+		return this.getKey() != null ? (F) this.get(2) : null;
+	}
+	
+	@SuppressWarnings("unchecked")
 	public final <F extends E> F getCondition() {
 		return this.size() == 3 && IMPLIES.equals(this.get(1)) ? (F) this.get(0) : null;
 	}
@@ -121,7 +131,6 @@ final class Composite<E extends Expression<?>> implements Expression<E> {
 	
 	@Override
 	public final String toString() {
-//		return formatParameters(this.getParameters()) + this.elements.toString();
 		return this.elements.toString();
 	}
 	
@@ -132,9 +141,5 @@ final class Composite<E extends Expression<?>> implements Expression<E> {
 	public static final Symbol<String> IMPLIES = new Symbol<>("->");
 	
 	public static final Symbol<String> EQUALS = new Symbol<>("=");
-	
-	public static final String formatParameters(final Container<Variable> parameters) {
-		return parameters.isEmpty() ? "" : ("∀" + join(",", parameters.toArray()) + " ");
-	}
 	
 }
