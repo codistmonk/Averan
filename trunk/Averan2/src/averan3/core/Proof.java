@@ -65,9 +65,7 @@ public abstract class Proof implements Serializable {
 	 */
 	public static final class Deduction extends Proof {
 		
-		private Expression<?> root;
-		
-		private Composite<Expression<?>> leaf;
+		private final Module module;
 		
 		private final List<Proof> proofs;
 		
@@ -79,6 +77,7 @@ public abstract class Proof implements Serializable {
 		
 		public Deduction(final Deduction parent, final String name, final Expression<?> goal) {
 			super(parent, name);
+			this.module = new Module();
 			this.proofs = new ArrayList<>();
 			this.protoparameterSubstitution = new Expression.Substitution();
 			this.protoparameters = new LinkedHashSet<>();
@@ -103,9 +102,9 @@ public abstract class Proof implements Serializable {
 		
 		public final Composite<Expression<?>> getRootParameters() {
 			@SuppressWarnings("unchecked")
-			final Composite<Expression<?>> composite = cast(Composite.class, this.root);
+			final Composite<Expression<?>> composite = cast(Composite.class, this.module.getRoot());
 			
-			return composite != null && this.getProofs().get(0).getProposition() != this.root ?
+			return composite != null && this.getProofs().get(0).getProposition() != this.module.getRoot() ?
 					composite.getParameters() : null;
 		}
 		
@@ -135,7 +134,7 @@ public abstract class Proof implements Serializable {
 				}
 			}
 			
-			if (this.root != null) {
+			if (this.module.getRoot() != null) {
 				throw new IllegalStateException();
 			}
 			
@@ -149,22 +148,33 @@ public abstract class Proof implements Serializable {
 			}
 			
 			if (!this.getProtoparameters().isEmpty()) {
-				final Expression.Substitution substitution = new Expression.Substitution();
 				final Composite<Expression<?>> parameters = new Composite<>().add(FORALL);
 				
-				for (final Symbol<String> protoparameter : this.getProtoparameters()) {
-					final Variable parameter = new Variable(protoparameter.toString());
-					
-					parameters.add(parameter);
-					substitution.bind(protoparameter, parameter);
-				}
+				this.getProtoparameterSubstitution().getBindings().forEach(p -> parameters.add(p.getSecond()));
 				
-				this.root = new Composite<>().add(parameters).add(this.root.accept(substitution));
+				this.module.setRoot(new Composite<>().add(parameters).add(
+						this.module.getRoot().accept(this.getProtoparameterSubstitution())));
 				this.getProtoparameters().clear();
 			}
 			
-			// TODO extract proposition from root
-			this.setProposition(this.root.accept(this.getProtoparameterSubstitution()));
+			{
+				final Deduction reduced = new Deduction(null, "", null);
+				
+				this.getProofs().forEach(proof -> {
+					if (proof instanceof Supposition) {
+						reduced.add(proof);
+					}
+				});
+				
+				reduced.add(last(this.getProofs()));
+				
+				if (this.module.getRoot() != this.getProofs().get(0).getProposition()) {
+					reduced.module.setRoot(new Composite<>().add(
+							this.module.getRoot().get(0)).add(reduced.module.getRoot()));
+				}
+				
+				this.setProposition(reduced.module.getRoot());
+			}
 		}
 		
 		public final Expression<?> getGoal() {
@@ -200,6 +210,11 @@ public abstract class Proof implements Serializable {
 			return this.getParent() != null ? this.getParent().findProposition(name) : null;
 		}
 		
+		@Override
+		public final String toString() {
+			return "By deduction in " + this.getProofs().size() + " steps";
+		}
+		
 		final void add(final Proof proof) {
 			final Expression<?> proposition = proof.getProposition();
 			
@@ -209,25 +224,7 @@ public abstract class Proof implements Serializable {
 			
 			this.getProofs().add(proof);
 			
-			if (this.root == null) {
-				this.root = proposition;
-			} else if (this.leaf == null) {
-				this.root = this.leaf = new Composite<>().add(this.root).add(IMPLIES).add(proposition);
-			} else if (this.leaf.getParameters() != null && this.leaf.getContents() == null) {
-				this.leaf.removeLast();
-				this.leaf.add(proposition);
-			} else if (this.leaf.getCondition() != null) {
-				if (this.leaf.getConclusion() == null) {
-					throw new IllegalStateException();
-				}
-				
-				final Composite<Expression<?>> newLeaf = new Composite<>()
-						.add(this.leaf.removeLast()).add(IMPLIES).add(proposition);
-				this.leaf.add(newLeaf);
-				this.leaf = newLeaf;
-			} else {
-				throw new IllegalStateException();
-			}
+			this.module.add(proposition);
 		}
 		
 		private final Symbol<String> newParameter(final String name) {
@@ -448,9 +445,58 @@ public abstract class Proof implements Serializable {
 						+ (this.indices.isEmpty() ? "" : " at indices " + this.indices);
 			}
 			
+			private static final long serialVersionUID = 6500801432673800012L;
+			
 		}
 		
 		private static final long serialVersionUID = -4622604986554143041L;
+		
+		/**
+		 * @author codistmonk (creation 2015-01-05)
+		 */
+		private static final class Module implements Serializable {
+			
+			private Expression<?> root;
+			
+			private Composite<Expression<?>> leaf;
+			
+			Module() {
+				// package-private constructor to suppress access warning
+			}
+			
+			public final void setRoot(final Expression<?> root) {
+				this.root = root;
+			}
+			
+			public final Expression<?> getRoot() {
+				return this.root;
+			}
+			
+			public final void add(final Expression<?> proposition) {
+				if (this.root == null) {
+					this.root = proposition;
+				} else if (this.leaf == null) {
+					this.root = this.leaf = new Composite<>().add(this.root).add(IMPLIES).add(proposition);
+				} else if (this.leaf.getParameters() != null && this.leaf.getContents() == null) {
+					this.leaf.removeLast();
+					this.leaf.add(proposition);
+				} else if (this.leaf.getCondition() != null) {
+					if (this.leaf.getConclusion() == null) {
+						throw new IllegalStateException();
+					}
+					
+					final Composite<Expression<?>> newLeaf = new Composite<>()
+							.add(this.leaf.removeLast()).add(IMPLIES).add(proposition);
+					this.leaf.add(newLeaf);
+					this.leaf = newLeaf;
+				} else {
+					throw new IllegalStateException();
+				}
+			}
+			
+			private static final long serialVersionUID = -7495741010510033390L;
+			
+		}
 		
 	}
 	
