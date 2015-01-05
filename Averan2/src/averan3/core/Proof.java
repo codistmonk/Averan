@@ -1,5 +1,6 @@
 package averan3.core;
 
+import static averan3.core.Composite.FORALL;
 import static averan3.core.Composite.IMPLIES;
 import static net.sourceforge.aprog.tools.Tools.cast;
 
@@ -18,21 +19,21 @@ public abstract class Proof implements Serializable {
 	
 	private final Deduction parent;
 	
-	private final String name;
+	private final String propositionName;
 	
 	private Expression<?> proposition;
 	
 	protected Proof(final Deduction parent, final String name) {
 		this.parent = parent;
-		this.name = name != null ? name : parent.getName() + "." + (parent.getProofs().size() + 1);
+		this.propositionName = name != null ? name : parent.getPropositionName() + "." + (parent.getProofs().size() + 1);
 	}
 	
 	public final Deduction getParent() {
 		return this.parent;
 	}
 	
-	public final String getName() {
-		return this.name;
+	public final String getPropositionName() {
+		return this.propositionName;
 	}
 	
 	public final Expression<?> getProposition() {
@@ -73,13 +74,20 @@ public abstract class Proof implements Serializable {
 			this.proofs = new ArrayList<>();
 			this.protoparameters = new LinkedHashSet<>();
 			this.goal = goal;
-			// primitive module operations: parametrize, suppose, apply, substitute
+			// primitive module operations: suppose, apply, substitute
 			// primitive deduction operations: introduce, deduce, conclude
 			// standard tactics: recall, bind, rewrite, rewriteRight, autoDeduce
 		}
 		
 		public final Collection<Symbol<String>> getProtoparameters() {
 			return this.protoparameters;
+		}
+		
+		public final Composite<Expression<?>> getRootParameters() {
+			@SuppressWarnings("unchecked")
+			final Composite<Expression<?>> composite = cast(Composite.class, this.root);
+			
+			return composite != null ? composite.getParameters() : null;
 		}
 		
 		public final List<Proof> getProofs() {
@@ -127,12 +135,16 @@ public abstract class Proof implements Serializable {
 		public final void conclude() {
 			if (!this.getProtoparameters().isEmpty()) {
 				final Substitution substitution = new Substitution();
+				final Composite<Expression<?>> parameters = new Composite<>().add(FORALL);
 				
 				for (final Symbol<String> protoparameter : this.getProtoparameters()) {
-					substitution.bind(protoparameter, new Variable(protoparameter.toString()));
+					final Variable parameter = new Variable(protoparameter.toString());
+					
+					parameters.add(parameter);
+					substitution.bind(protoparameter, parameter);
 				}
 				
-				this.root = this.root.accept(substitution);
+				this.root = new Composite<>().add(parameters).add(this.root.accept(substitution));
 				this.getProtoparameters().clear();
 			}
 			
@@ -144,6 +156,19 @@ public abstract class Proof implements Serializable {
 		
 		public final Expression<?> getGoal() {
 			return this.goal;
+		}
+		
+		@SuppressWarnings("unchecked")
+		public final <E extends Expression<?>> E findProposition(final String name) {
+			for (int i = this.getProofs().size() - 1; 0 <= i; --i) {
+				final Proof proof = this.getProofs().get(i);
+				
+				if (proof.getPropositionName().equals(name)) {
+					return (E) proof.getProposition();
+				}
+			}
+			
+			return this.getParent() != null ? this.getParent().findProposition(name) : null;
 		}
 		
 		final void add(final Proof proof) {
@@ -199,6 +224,50 @@ public abstract class Proof implements Serializable {
 			}
 			
 			private static final long serialVersionUID = -2449310594857640213L;
+			
+		}
+		
+		/**
+		 * @author codistmonk (creation 2015-01-04)
+		 */
+		public final class ModusPonens extends Proof {
+			
+			private final String ruleName;
+			
+			private final String conditionName;
+			
+			public ModusPonens(final String propositionName, final String ruleName, final String conditionName) {
+				super(Deduction.this, propositionName);
+				this.ruleName = ruleName;
+				this.conditionName = conditionName;
+			}
+			
+			@Override
+			public final void conclude() {
+				final Expression<?> condition = this.getParent().findProposition(this.conditionName);
+				Composite<Expression<?>> rule = this.getParent().findProposition(this.ruleName);
+				
+				if (rule.getParameters() != null) {
+					rule = rule.getContents();
+				}
+				
+				rule.accept(Variable.RESET);
+				
+				if (!rule.getCondition().equals(condition)) {
+					throw new IllegalArgumentException();
+				}
+				
+				this.addToDeduction(rule.getConclusion().accept(Variable.BIND));
+				
+				rule.accept(Variable.RESET);
+			}
+			
+			@Override
+			public final String toString() {
+				return "Apply (" + this.ruleName + ") on (" + this.conditionName + ")";
+			}
+			
+			private static final long serialVersionUID = -2333420406462704258L;
 			
 		}
 		
