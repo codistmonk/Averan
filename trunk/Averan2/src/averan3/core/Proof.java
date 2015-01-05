@@ -9,12 +9,9 @@ import static net.sourceforge.aprog.tools.Tools.last;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.TreeSet;
-
-import net.sourceforge.aprog.tools.Pair;
 
 /**
  * @author codistmonk (creation 2015-01-04)
@@ -49,7 +46,7 @@ public abstract class Proof implements Serializable {
 			throw new IllegalStateException();
 		}
 		
-		this.proposition = this.getParent() == null ? proposition : proposition.accept(this.getParent().getProtoparameterSubstitution());
+		this.proposition = proposition;
 		
 		if (this.getParent() != null) {
 			this.getParent().add(this);
@@ -69,35 +66,17 @@ public abstract class Proof implements Serializable {
 		
 		private final List<Proof> proofs;
 		
-		private final Expression.Substitution protoparameterSubstitution;
-		
-		private final Collection<Symbol<String>> protoparameters;
-		
 		private Expression<?> goal;
 		
 		public Deduction(final Deduction parent, final String name, final Expression<?> goal) {
 			super(parent, name);
 			this.module = new Module();
 			this.proofs = new ArrayList<>();
-			this.protoparameterSubstitution = new Expression.Substitution();
-			this.protoparameters = new LinkedHashSet<>();
 			this.goal = goal;
 			
-			if (parent != null) {
-				this.protoparameterSubstitution.getBindings().addAll(
-						parent.getProtoparameterSubstitution().getBindings());
-			}
 			// primitive module operations: suppose, apply, substitute
 			// primitive deduction operations: introduce, conclude
 			// standard tactics: recall, bind, rewrite, rewriteRight, autoDeduce
-		}
-		
-		public final Expression.Substitution getProtoparameterSubstitution() {
-			return this.protoparameterSubstitution;
-		}
-		
-		public final Collection<Symbol<String>> getProtoparameters() {
-			return this.protoparameters;
 		}
 		
 		public final Composite<Expression<?>> getRootParameters() {
@@ -119,9 +98,20 @@ public abstract class Proof implements Serializable {
 			if (goal != null) {
 				if (goal.getParameters() != null) {
 					final Variable parameter = (Variable) goal.getParameters().get(1);
-					final Symbol<String> result = this.newParameter(parameterOrPropositionName);
+					final Variable result = this.newParameter(parameterOrPropositionName);
 					
-					this.goal = this.goal.accept(new Expression.Substitution().bind(parameter, result));
+					{
+						final Composite<Expression<?>> newParameters = new Composite<>().add(FORALL);
+						final int n = goal.getParameters().size();
+						
+						for (int i = 2; i < n; ++i) {
+							newParameters.add(goal.getParameters().get(i));
+						}
+						
+						final Expression<?> newContents = goal.getContents().accept(new Expression.Substitution().bind(parameter, result));
+						
+						this.goal = 1 < newParameters.size() ? new Composite<>().add(newParameters).add(newContents) : newContents;
+					}
 					
 					return (E) result;
 				}
@@ -145,16 +135,6 @@ public abstract class Proof implements Serializable {
 		public final void conclude() {
 			if (this.getProofs().isEmpty() || last(this.getProofs()) instanceof Supposition) {
 				throw new IllegalStateException();
-			}
-			
-			if (!this.getProtoparameters().isEmpty()) {
-				final Composite<Expression<?>> parameters = new Composite<>().add(FORALL);
-				
-				this.getProtoparameterSubstitution().getBindings().forEach(p -> parameters.add(p.getSecond()));
-				
-				this.module.setRoot(new Composite<>().add(parameters).add(
-						this.module.getRoot().accept(this.getProtoparameterSubstitution())));
-				this.getProtoparameters().clear();
 			}
 			
 			{
@@ -227,25 +207,8 @@ public abstract class Proof implements Serializable {
 			this.module.add(proposition);
 		}
 		
-		private final Symbol<String> newParameter(final String name) {
-			final Symbol<String> result = new Symbol<>(name);
-			
-			if (name == null || !this.getProtoparameters().add(result)) {
-				throw new IllegalArgumentException();
-			}
-			
-			{
-				for (final Iterator<Pair<Expression<?>, Expression<?>>> i =
-						this.getProtoparameterSubstitution().getBindings().iterator(); i.hasNext();) {
-					if (result.implies(i.next().getFirst())) {
-						i.remove();
-					}
-				}
-				
-				this.getProtoparameterSubstitution().bind(result, new Variable(name));
-			}
-			
-			return result;
+		private final Variable newParameter(final String name) {
+			return this.module.parametrize(name);
 		}
 		
 		/**
@@ -464,6 +427,20 @@ public abstract class Proof implements Serializable {
 				// package-private constructor to suppress access warning
 			}
 			
+			public final Variable parametrize(final String parameterName) {
+				final Variable result = new Variable(parameterName);
+				
+				if (this.root == null) {
+					this.root = this.leaf = new Composite<>().add(new Composite<>().add(FORALL).add(result)).add(null);
+				} else if (this.leaf.getParameters() != null && this.leaf.getContents() == null) {
+					this.leaf.getParameters().add(result);
+				} else {
+					throw new IllegalStateException();
+				}
+				
+				return result;
+			}
+			
 			public final void setRoot(final Expression<?> root) {
 				this.root = root;
 			}
@@ -477,21 +454,29 @@ public abstract class Proof implements Serializable {
 					this.root = proposition;
 				} else if (this.leaf == null) {
 					this.root = this.leaf = new Composite<>().add(this.root).add(IMPLIES).add(proposition);
-				} else if (this.leaf.getParameters() != null && this.leaf.getContents() == null) {
-					this.leaf.removeLast();
-					this.leaf.add(proposition);
+				} else if (this.leaf.getParameters() != null) {
+					if (this.leaf.getContents() == null) {
+						this.leaf.removeLast();
+						this.leaf.add(proposition);
+					} else {
+						this.addConclusion(proposition);
+					}
 				} else if (this.leaf.getCondition() != null) {
 					if (this.leaf.getConclusion() == null) {
 						throw new IllegalStateException();
 					}
 					
-					final Composite<Expression<?>> newLeaf = new Composite<>()
-							.add(this.leaf.removeLast()).add(IMPLIES).add(proposition);
-					this.leaf.add(newLeaf);
-					this.leaf = newLeaf;
+					this.addConclusion(proposition);
 				} else {
 					throw new IllegalStateException();
 				}
+			}
+			
+			private final void addConclusion(final Expression<?> proposition) {
+				final Composite<Expression<?>> newLeaf = new Composite<>()
+						.add(this.leaf.removeLast()).add(IMPLIES).add(proposition);
+				this.leaf.add(newLeaf);
+				this.leaf = newLeaf;
 			}
 			
 			private static final long serialVersionUID = -7495741010510033390L;

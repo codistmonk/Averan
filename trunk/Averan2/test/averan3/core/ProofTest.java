@@ -22,7 +22,8 @@ public final class ProofTest {
 		final Deduction deduction = new Deduction(null, getThisMethodName(), null);
 		
 		try {
-			final Symbol<String> x = deduction.introduce("X");
+//			final Symbol<String> x = deduction.introduce("X");
+			final Variable x = deduction.introduce("X");
 			
 			deduction.new Supposition(null, x).conclude();
 			
@@ -82,7 +83,7 @@ public final class ProofTest {
 			{
 				final Deduction subDeduction = new Deduction(deduction, "recall", null);
 				{
-					final Symbol<String> p = subDeduction.introduce("P");
+					final Variable p = subDeduction.introduce("P");
 					
 					subDeduction.new Supposition(null, p).conclude();
 					final String suppositionName = subDeduction.findPropositionName(-1);
@@ -121,9 +122,7 @@ public final class ProofTest {
 		
 		out.println(indent + "Deduce (" + deduction.getPropositionName() + ")");
 		
-		if (!deduction.getProtoparameters().isEmpty()) {
-			out.println(indent1 + '∀' + join(",", deduction.getProtoparameters()));
-		} else if (deduction.getRootParameters() != null) {
+		if (deduction.getRootParameters() != null) {
 			out.println(indent1 + deduction.getRootParameters());
 		}
 		
