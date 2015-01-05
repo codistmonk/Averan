@@ -1,5 +1,6 @@
 package averan3.core;
 
+import static averan3.core.Composite.FORALL;
 import averan.common.Container;
 
 import java.io.Serializable;
@@ -92,41 +93,48 @@ public abstract interface Expression<E extends Expression<?>> extends Container<
 				return candidate;
 			}
 			
-			final Composite<Expression<?>> newComposite = new Composite<>();
-			boolean returnNewComposite = false;
 			final Composite<Expression<?>> parameters = composite.getParameters();
 			
 			if (parameters != null) {
-				newComposite.setupAsBlock();
-			}
-			
-			for (final Expression<?> element : composite) {
-				final Expression<?> newElement = element.accept(this);
-				
-				((Composite<Expression<?>>) newComposite.getContents()).add(newElement);
-				
-				if (!returnNewComposite && newElement != element) {
-					returnNewComposite = true;
-				}
-			}
-			
-			if (parameters != null) {
 				final int n = parameters.size();
-				final Collection<Variable> variables = newComposite.accept(new CollectVariables()).getVariables().keySet();
+				final Expression<?> newContents = composite.getContents().accept(this);
+				final Collection<Variable> variables = newContents.accept(new CollectVariables()).getVariables().keySet();
+				final Composite<Expression<?>> newParameters = new Composite<>().add(FORALL);
+				boolean returnNewExpression = false;
 				
-//				for (final Variable parameter : composite.getParameters()) {
 				for (int i = 1; i < n; ++i) {
-					final Variable parameter = (Variable) parameters.get(i);
+					final Expression<?> parameter = parameters.get(i);
 					
-					if (!variables.contains(parameter)) {
-						newComposite.getParameters().add(parameter);
-					} else if (!returnNewComposite) {
+					if (variables.contains(parameter)) {
+						newParameters.add(parameter);
+					} else if (!returnNewExpression) {
+						returnNewExpression = true;
+					}
+				}
+				
+				if (1 < newParameters.size()) {
+					return returnNewExpression ? new Composite<>().add(newParameters).add(newContents) : composite;
+				}
+				
+				return newContents;
+			}
+			
+			{
+				final Composite<Expression<?>> newComposite = new Composite<>();
+				boolean returnNewComposite = false;
+				
+				for (final Expression<?> element : composite) {
+					final Expression<?> newElement = element.accept(this);
+					
+					((Composite<Expression<?>>) newComposite.getContents()).add(newElement);
+					
+					if (!returnNewComposite && newElement != element) {
 						returnNewComposite = true;
 					}
 				}
+				
+				return returnNewComposite ? newComposite : composite;
 			}
-			
-			return returnNewComposite ? newComposite : composite;
 		}
 		
 		@Override
