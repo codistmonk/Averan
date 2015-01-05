@@ -2,6 +2,7 @@ package averan3.core;
 
 import static averan3.core.Composite.FORALL;
 import static net.sourceforge.aprog.tools.Tools.cast;
+
 import averan.common.Container;
 
 import java.io.Serializable;
