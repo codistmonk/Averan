@@ -1,8 +1,6 @@
 package averan3.core;
 
 import static net.sourceforge.aprog.tools.Tools.cast;
-import static net.sourceforge.aprog.tools.Tools.join;
-import averan.common.Container;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -138,7 +136,7 @@ final class Composite<E extends Expression<?>> implements Expression<E> {
 	
 	public static final Symbol<String> FORALL = new Symbol<>("∀");
 	
-	public static final Symbol<String> IMPLIES = new Symbol<>("->");
+	public static final Symbol<String> IMPLIES = new Symbol<>("→");
 	
 	public static final Symbol<String> EQUALS = new Symbol<>("=");
 	
