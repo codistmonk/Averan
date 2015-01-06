@@ -3,7 +3,7 @@ package averan3.core;
 import static net.sourceforge.aprog.tools.Tools.array;
 import static net.sourceforge.aprog.tools.Tools.ignore;
 import static net.sourceforge.aprog.tools.Tools.last;
-
+import static net.sourceforge.aprog.tools.Tools.lastIndex;
 import averan3.core.Proof.Deduction;
 
 import java.io.Serializable;
@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
+
+import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2015-01-06)
@@ -22,6 +24,10 @@ public final class Session implements Serializable {
 	
 	public final List<Deduction> getDeductions() {
 		return this.deductions;
+	}
+	
+	public final Deduction removeCurrentDeduction() {
+		return this.getDeductions().remove(lastIndex(this.getDeductions()));
 	}
 	
 	public final Deduction getCurrentDeduction() {
@@ -97,13 +103,19 @@ public final class Session implements Serializable {
 	}
 	
 	public static final Deduction cancel() {
-		final List<Deduction> deductions = session().getDeductions();
-		
-		return deductions.remove(deductions.size() - 1);
+		return session().removeCurrentDeduction();
 	}
 	
 	public static final void abort(final String message) {
 		throw new RuntimeException(message);
+	}
+	
+	public static final String name(final int index) {
+		return deduction().findPropositionName(index);
+	}
+	
+	public static final <E extends Expression<?>> E proposition(final String name) {
+		return deduction().findProposition(name);
 	}
 	
 	public static final void intros() {
@@ -165,7 +177,7 @@ public final class Session implements Serializable {
 	}
 	
 	public static final Deduction conclude() {
-		final Deduction result = deduction();
+		final Deduction result = session().removeCurrentDeduction();
 		
 		result.conclude();
 		
