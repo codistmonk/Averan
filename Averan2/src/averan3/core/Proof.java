@@ -74,9 +74,10 @@ public abstract class Proof implements Serializable {
 			this.proofs = new ArrayList<>();
 			this.goal = goal;
 			
-			// primitive module operations: suppose, apply, substitute
-			// primitive deduction operations: introduce, conclude
-			// standard tactics: recall, bind, rewrite, rewriteRight, autoDeduce
+			// primitive module operations: suppose, apply, substitute, rewrite
+			// primitive deduction operations: include, introduce, conclude
+			// standard rules: recall, bind, conjunction/disjunction definition+elimination
+			// standard tactics: recall, bind, rewriteRight, autoDeduce
 		}
 		
 		public final Composite<Expression<?>> getRootParameters() {
@@ -89,6 +90,27 @@ public abstract class Proof implements Serializable {
 		
 		public final List<Proof> getProofs() {
 			return this.proofs;
+		}
+		
+		public final Deduction include(final Deduction deduction, final Expression<?>... arguments) {
+			final Composite<Expression<?>> deductionParameters = deduction.getRootParameters();
+			final Expression.Substitution substitution = new Expression.Substitution();
+			
+			if (deductionParameters != null) {
+				final int n = deductionParameters.size();
+				
+				if (n - 1 != arguments.length) {
+					throw new IllegalArgumentException();
+				}
+				
+				for (int i = 1; i < n; ++i) {
+					substitution.bind(deductionParameters.get(i), arguments[i - 1]);
+				}
+			}
+			
+			deduction.getProofs().forEach(proof -> this.new Inclusion(proof, substitution).conclude());
+			
+			return this;
 		}
 		
 		@SuppressWarnings("unchecked")
@@ -409,6 +431,41 @@ public abstract class Proof implements Serializable {
 			}
 			
 			private static final long serialVersionUID = 6500801432673800012L;
+			
+		}
+		
+		
+		/**
+		 * @author codistmonk (creation 2015-01-06)
+		 */
+		public final class Inclusion extends Proof {
+			
+			private final Proof included;
+			
+			private final Expression.Substitution specialization;
+			
+			public Inclusion(final Proof included, final Expression.Substitution specialization) {
+				super(Deduction.this, included.getPropositionName());
+				this.included = included;
+				this.specialization = specialization;
+			}
+			
+			public final Proof getIncluded() {
+				return this.included;
+			}
+			
+			@Override
+			public final void conclude() {
+				this.setProposition(this.included.getProposition().accept(this.specialization));
+			}
+			
+			@Override
+			public final String toString() {
+				return "By inclusion from (" + this.included.getParent().getPropositionName() + ")"
+						+ (this.specialization.getBindings().isEmpty() ? "" : " using " + this.specialization.getBindings());
+			}
+			
+			private static final long serialVersionUID = -1808210996095205537L;
 			
 		}
 		
