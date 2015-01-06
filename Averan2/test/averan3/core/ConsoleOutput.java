@@ -4,10 +4,10 @@ import static averan3.core.Composite.FORALL;
 import static java.util.Collections.nCopies;
 import static net.sourceforge.aprog.tools.Tools.join;
 
-import java.io.PrintStream;
-
 import averan3.core.Proof.Deduction;
 import averan3.core.Session.Output;
+
+import java.io.PrintStream;
 
 /**
  * @author codistmonk (creation 2015-01-06)

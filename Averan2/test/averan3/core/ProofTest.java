@@ -2,14 +2,10 @@ package averan3.core;
 
 import static averan3.core.Composite.FORALL;
 import static averan3.core.Composite.IMPLIES;
-import static averan3.core.Session.export;
+import static averan3.core.Session.*;
 import static net.sourceforge.aprog.tools.Tools.getThisMethodName;
-import static net.sourceforge.aprog.tools.Tools.ignore;
+
 import averan3.core.Proof.Deduction;
-
-import java.io.Serializable;
-
-import net.sourceforge.aprog.tools.Tools;
 
 import org.junit.Test;
 
@@ -41,7 +37,7 @@ public final class ProofTest {
 		try {
 			final Symbol<String> x = new Symbol<>("X");
 			
-			deduction.new Supposition(null, c(x, IMPLIES, x)).conclude();
+			deduction.new Supposition(null, $(x, IMPLIES, x)).conclude();
 			deduction.new Supposition(null, x).conclude();
 			deduction.new ModusPonens(null, deductionName + ".1", deductionName + ".2").conclude();
 			
@@ -63,15 +59,15 @@ public final class ProofTest {
 				final Variable $Y = new Variable("Y");
 				
 				deduction.new Supposition("bind",
-						c(
-								c(FORALL, $E),
-								c(
-										c(c(FORALL, $X), $E),
+						$(
+								$(FORALL, $E),
+								$(
+										$($(FORALL, $X), $E),
 										IMPLIES,
-										c(
-												c(
-														c(FORALL, $F, $Y),
-														c(c($E, c(c($X, "=", $Y)), c()), "=", $F)
+										$(
+												$(
+														$(FORALL, $F, $Y),
+														$($($E, $($($X, "=", $Y)), $()), "=", $F)
 												),
 												IMPLIES,
 												$F
@@ -87,7 +83,7 @@ public final class ProofTest {
 					
 					subDeduction.new Supposition(null, p).conclude();
 					final String suppositionName = subDeduction.findPropositionName(-1);
-					subDeduction.new Substitution(null, c(p, c(), c())).conclude();
+					subDeduction.new Substitution(null, $$(p, $(), $())).conclude();
 					final String identityName = subDeduction.findPropositionName(-1);
 					subDeduction.new Rewrite(null, identityName).using(identityName).conclude();
 					subDeduction.new Rewrite(null, suppositionName).using(identityName).conclude();
@@ -100,16 +96,6 @@ public final class ProofTest {
 		} finally {
 			export(deduction);
 		}
-	}
-	
-	public static final Composite<Expression<?>> c(final Object... expressions) {
-		final Composite<Expression<?>> result = new Composite<>();
-		
-		for (final Object element : expressions) {
-			result.add(element instanceof Expression<?> ? (Expression<?>) element : new Symbol<>(element));
-		}
-		
-		return result;
 	}
 	
 	public static final void export(final Deduction deduction) {

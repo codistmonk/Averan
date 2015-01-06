@@ -1,7 +1,10 @@
 package averan3.core;
 
+import static net.sourceforge.aprog.tools.Tools.array;
 import static net.sourceforge.aprog.tools.Tools.ignore;
 import static net.sourceforge.aprog.tools.Tools.last;
+
+import averan3.core.Proof.Deduction;
 
 import java.io.Serializable;
 import java.util.ArrayDeque;
@@ -9,8 +12,6 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
-
-import averan3.core.Proof.Deduction;
 
 /**
  * @author codistmonk (creation 2015-01-06)
@@ -47,6 +48,26 @@ public final class Session implements Serializable {
 		return stack.getLast();
 	}
 	
+	public static final Expression<?> $(final Object... objects) {
+		if (objects.length == 1) {
+			final Object object = objects[0];
+			
+			return object instanceof Expression<?> ? (Expression<?>) object : new Symbol<>(object);
+		}
+		
+		return $$(objects);
+	}
+	
+	public static final Composite<Expression<?>> $$(final Object... objects) {
+		final Composite<Expression<?>> result = new Composite<>();
+		
+		for (final Object element : objects) {
+			result.add(element instanceof Expression<?> ? (Expression<?>) element : $(element));
+		}
+		
+		return result;
+	}
+	
 	public static final Deduction deduction() {
 		return session().getCurrentDeduction();
 	}
@@ -73,6 +94,82 @@ public final class Session implements Serializable {
 	
 	public static final void include(final Deduction deduction, final Expression<?>... arguments) {
 		deduction().include(deduction, arguments);
+	}
+	
+	public static final Deduction cancel() {
+		final List<Deduction> deductions = session().getDeductions();
+		
+		return deductions.remove(deductions.size() - 1);
+	}
+	
+	public static final void abort(final String message) {
+		throw new RuntimeException(message);
+	}
+	
+	public static final void intros() {
+		try {
+			while (true) {
+				introduce();
+			}
+		} catch (final Exception exception) {
+			ignore(exception);
+		}
+	}
+	
+	public static final <E extends Expression<?>> E introduce() {
+		return introduce(null);
+	}
+	
+	public static final <E extends Expression<?>> E introduce(final String parameterOrPropositionName) {
+		return deduction().introduce(parameterOrPropositionName);
+	}
+	
+	public static final void suppose(final Expression<?> proposition) {
+		suppose(null, proposition);
+	}
+	
+	public static final void suppose(final String propositionName, final Expression<?> proposition) {
+		deduction().new Supposition(propositionName, proposition).conclude();
+	}
+	
+	public static final void apply(final String ruleName, final String conditionName) {
+		apply(null, ruleName, conditionName);
+	}
+	
+	public static final void apply(final String propositionName, final String ruleName, final String conditionName) {
+		deduction().new ModusPonens(propositionName, ruleName, conditionName).conclude();
+	}
+	
+	public static final void substitute(final Composite<Expression<?>> substitutionExpression) {
+		substitute(null, substitutionExpression);
+	}
+	
+	public static final void substitute(final String propositionName, final Composite<Expression<?>> substitutionExpression) {
+		deduction().new Substitution(propositionName, substitutionExpression).conclude();
+	}
+	
+	public static final void rewrite(final String targetName, final String equalityName, final int... indices) {
+		rewrite(null, targetName, equalityName, indices);
+	}
+	
+	public static final void rewrite(final String propositionName, final String targetName, final String equalityName, final int... indices) {
+		rewrite(propositionName, targetName, array(equalityName), indices);
+	}
+	
+	public static final void rewrite(final String targetName, final String[] equalityNames, final int... indices) {
+		rewrite(null, targetName, equalityNames, indices);
+	}
+	
+	public static final void rewrite(final String propositionName, final String targetName, final String[] equalityNames, final int... indices) {
+		deduction().new Rewrite(propositionName, targetName).using(equalityNames).at(indices).conclude();
+	}
+	
+	public static final Deduction conclude() {
+		final Deduction result = deduction();
+		
+		result.conclude();
+		
+		return result;
 	}
 	
 	public static final void export(final Session session, final Output output) {

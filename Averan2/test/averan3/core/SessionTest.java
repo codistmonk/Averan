@@ -1,5 +1,6 @@
 package averan3.core;
 
+import static averan3.core.Session.*;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
@@ -11,12 +12,15 @@ public final class SessionTest {
 	
 	@Test
 	public final void test1() {
-		Session.begin();
+		begin();
 		
 		try {
-			
+			deduce("averan.deductions.Standard");
+			{
+				
+			}
 		} finally {
-			Session.export(Session.end(), new ConsoleOutput());
+			export(end(), new ConsoleOutput());
 		}
 	}
 	
