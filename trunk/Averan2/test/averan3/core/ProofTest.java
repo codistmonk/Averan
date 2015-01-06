@@ -22,7 +22,6 @@ public final class ProofTest {
 		final Deduction deduction = new Deduction(null, getThisMethodName(), null);
 		
 		try {
-//			final Symbol<String> x = deduction.introduce("X");
 			final Variable x = deduction.introduce("X");
 			
 			deduction.new Supposition(null, x).conclude();
