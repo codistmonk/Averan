@@ -72,15 +72,17 @@ public abstract class Proof implements Serializable {
 		
 		private Expression<?> goal;
 		
+		private String conclusionMessage;
+		
 		public Deduction(final Deduction parent, final String name, final Expression<?> goal) {
 			super(parent, name);
 			this.module = new Module();
 			this.proofs = new ArrayList<>();
 			this.goal = goal;
 			
-			// primitive module operations: suppose, apply, substitute, rewrite
+			// primitive module operations: suppose, apply, substitute, rewrite, bind
 			// primitive deduction operations: include, introduce, conclude
-			// standard rules: recall, bind, conjunction/disjunction definition+elimination
+			// standard rules: recall, conjunction/disjunction definition+elimination
 			// standard tactics: recall, bind, rewriteRight, autoDeduce
 		}
 		
@@ -159,6 +161,11 @@ public abstract class Proof implements Serializable {
 			return (E) this.newParameter(parameterOrPropositionName);
 		}
 		
+		public final void conclude(final String conclusionMessage) {
+			this.conclusionMessage = conclusionMessage;
+			this.conclude();
+		}
+		
 		@Override
 		public final void conclude() {
 			if (this.getProofs().isEmpty() || last(this.getProofs()) instanceof Supposition) {
@@ -220,7 +227,8 @@ public abstract class Proof implements Serializable {
 		
 		@Override
 		public final String toString() {
-			return "By deduction in " + this.getProofs().size() + " steps";
+			return this.conclusionMessage != null ? this.conclusionMessage :
+				"By deduction in " + this.getProofs().size() + " steps";
 		}
 		
 		final void add(final Proof proof) {

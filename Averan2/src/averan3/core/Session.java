@@ -177,9 +177,13 @@ public final class Session implements Serializable {
 	}
 	
 	public static final Deduction conclude() {
+		return conclude(null);
+	}
+	
+	public static final Deduction conclude(final String conclusionMessage) {
 		final Deduction result = session().removeCurrentDeduction();
 		
-		result.conclude();
+		result.conclude(conclusionMessage);
 		
 		return result;
 	}

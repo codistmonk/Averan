@@ -74,8 +74,7 @@ final class Variable implements Expression<Variable> {
 	@Override
 	public final String toString() {
 //		return "$" + this.getName() + "(" + formatFilter(this.getFilter()) + ")<" + (this.getMatch() == null ? "" : this.getMatch()) + ">";
-//		return "$" + this.getName() + "<" + (this.getMatch() == null ? "" : "...") + ">";
-		return "$" + this.getName() + "<" + (this.getMatch() == null ? "" : this.getMatch().accept(ConsoleOutput.TO_STRING)) + ">";
+		return "$" + this.getName() + "<" + (this.getMatch() == null ? "" : "...") + ">";
 	}
 	
 	public static final String formatFilter(final Object filter) {
