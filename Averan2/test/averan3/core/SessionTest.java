@@ -11,7 +11,13 @@ public final class SessionTest {
 	
 	@Test
 	public final void test1() {
-		fail("Not yet implemented");
+		Session.begin();
+		
+		try {
+			
+		} finally {
+			Session.export(Session.end(), new ConsoleOutput());
+		}
 	}
 	
 }
