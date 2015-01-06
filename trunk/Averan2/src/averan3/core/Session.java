@@ -4,6 +4,7 @@ import static net.sourceforge.aprog.tools.Tools.array;
 import static net.sourceforge.aprog.tools.Tools.ignore;
 import static net.sourceforge.aprog.tools.Tools.last;
 import static net.sourceforge.aprog.tools.Tools.lastIndex;
+
 import averan3.core.Proof.Deduction;
 
 import java.io.Serializable;
@@ -12,8 +13,6 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
-
-import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2015-01-06)
@@ -174,6 +173,14 @@ public final class Session implements Serializable {
 	
 	public static final void rewrite(final String propositionName, final String targetName, final String[] equalityNames, final int... indices) {
 		deduction().new Rewrite(propositionName, targetName).using(equalityNames).at(indices).conclude();
+	}
+	
+	public static final void bind(final String targetName, final Expression<?>... values) {
+		bind(null, targetName, values);
+	}
+	
+	public static final void bind(final String propositionName, final String targetName, final Expression<?>... values) {
+		deduction().new Binding(propositionName, targetName, values).conclude();
 	}
 	
 	public static final Deduction conclude() {

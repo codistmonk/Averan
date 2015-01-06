@@ -8,6 +8,7 @@ import static net.sourceforge.aprog.tools.Tools.last;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -90,8 +91,7 @@ public abstract class Proof implements Serializable {
 			@SuppressWarnings("unchecked")
 			final Composite<Expression<?>> composite = cast(Composite.class, this.module.getRoot());
 			
-			return composite != null && this.getProofs().get(0).getProposition() != this.module.getRoot() ?
-					composite.getParameters() : null;
+			return composite != null && this.hasParameters ? composite.getParameters() : null;
 		}
 		
 		public final List<Proof> getProofs() {
@@ -152,7 +152,7 @@ public abstract class Proof implements Serializable {
 				}
 			}
 			
-			if (this.module.getRoot() != null) {
+			if (!this.getProofs().isEmpty()) {
 				throw new IllegalStateException();
 			}
 			
@@ -451,6 +451,47 @@ public abstract class Proof implements Serializable {
 			
 		}
 		
+		/**
+		 * @author codistmonk (creation 2015-01-06)
+		 */
+		public final class Binding extends Proof {
+			
+			private final String targetName;
+			
+			private final Expression<?>[] values;
+			
+			public Binding(final String propositionName,
+					final String targetName, final Expression<?>... values) {
+				super(Deduction.this, propositionName);
+				this.targetName = targetName;
+				this.values = values;
+			}
+			
+			@Override
+			public final void conclude() {
+				final int n = this.values.length;
+				final Composite<?> target = this.getParent().findProposition(this.targetName);
+				final Composite<Expression<?>> parameters = target.getParameters();
+				
+				target.accept(Variable.RESET);
+				
+				for (int i = 0; i < n; ++i) {
+					((Variable) parameters.get(i + 1)).equals(this.values[i]);
+				}
+				
+				this.setProposition(target.accept(Variable.BIND));
+				
+				target.accept(Variable.RESET);
+			}
+			
+			@Override
+			public final String toString() {
+				return "By binding in (" + this.targetName + ") with " + Arrays.toString(this.values);
+			}
+			
+			private static final long serialVersionUID = 7752042237978618815L;
+			
+		}
 		
 		/**
 		 * @author codistmonk (creation 2015-01-06)

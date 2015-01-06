@@ -3,6 +3,8 @@ package averan3.core;
 import static averan3.core.Composite.*;
 import static averan3.core.Session.*;
 
+import java.util.Arrays;
+
 import org.junit.Test;
 
 /**
@@ -17,15 +19,33 @@ public final class SessionTest {
 		try {
 			deduce("averan.deductions.Standard");
 			{
+				deduce("identity");
+				{
+					final Variable x = introduce("x");
+					
+					substitute($$(x, $(), $()));
+					rewrite(name(-1), name(-1));
+					conclude();
+				}
+				
+				deduce("symmetry_of_equality");
+				{
+					final Variable x = introduce("x");
+					final Variable y = introduce("y");
+					
+					suppose($(x, EQUALS, y));
+					bind("identity", x);
+					rewrite(name(-1), name(-2), 0);
+					conclude();
+				}
+				
 				deduce("recall");
 				{
 					final Variable p = introduce("P");
 					
 					suppose(p);
-					substitute($$(p, $(), $()));
-					rewrite(name(-1), name(-1));
-					rewrite(name(-3), name(-1));
-					
+					bind("identity", p);
+					rewrite(name(-2), name(-1));
 					conclude();
 				}
 				
@@ -42,10 +62,31 @@ public final class SessionTest {
 													IMPLIES, $F))));
 				}
 				
-				bind1("test", "recall", $("toto"));
+				bind1("test1", "recall", $("toto"));
+				
+				deduce("test2");
+				{
+					suppose($("a", EQUALS, "b"));
+					suppose($("b"));
+					rewriteRight(name(-1), name(-2));
+					conclude();
+				}
 			}
 		} finally {
 			export(end(), new ConsoleOutput());
+		}
+	}
+	
+	public static final void rewriteRight(final String targetName, final String equalityName, final int... indices) {
+		rewriteRight(null, targetName, equalityName, indices);
+	}
+	
+	public static final void rewriteRight(final String propositionName, final String targetName, final String equalityName, final int... indices) {
+		deduce(propositionName);
+		{
+			apply("symmetry_of_equality", equalityName);
+			rewrite(targetName, name(-1), indices);
+			conclude("By right-rewriting (" + equalityName + ") in (" + targetName + ") at indices " + Arrays.toString(indices));
 		}
 	}
 	
@@ -62,7 +103,7 @@ public final class SessionTest {
 			apply(propositionName, "bind1", targetName);
 			substitute($$(target.get(1), $$($(parameter , EQUALS, value)), $()));
 			apply(name(-2), name(-1));
-			conclude("By binding " + parameter.getName() + " with " + value + " in " + targetName);
+			conclude("By binding " + parameter.getName() + " with " + value + " in (" + targetName + ")");
 		}
 	}
 	

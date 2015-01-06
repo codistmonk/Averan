@@ -1,6 +1,7 @@
 package averan3.core;
 
 import static averan3.core.Composite.FORALL;
+import static java.lang.Math.max;
 import static java.util.Collections.nCopies;
 import static net.sourceforge.aprog.tools.Tools.join;
 
@@ -55,7 +56,7 @@ public final class ConsoleOutput implements Output {
 		
 		this.println('.');
 		
-		--this.level;
+		this.indent = join("", nCopies(max(0, --this.level), ' '));
 	}
 	
 	private final void println(final Object... objects) {
