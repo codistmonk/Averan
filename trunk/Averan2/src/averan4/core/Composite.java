@@ -16,6 +16,8 @@ final class Composite<E extends Expression<?>> implements Expression<E> {
 		this.elements = new ArrayList<>();
 	}
 	
+	// BEGIN EQUALITY METHODS
+	
 	@SuppressWarnings("unchecked")
 	public final <F extends E> F getKey() {
 		return this.size() == 3 && EQUALS.equals(this.get(1)) ? (F) this.get(0) : null;
@@ -25,6 +27,10 @@ final class Composite<E extends Expression<?>> implements Expression<E> {
 	public final <F extends E> F getValue() {
 		return this.getKey() != null ? (F) this.get(2) : null;
 	}
+	
+	// END EQUALITY METHODS
+	
+	// BEGIN RULE METHODS
 	
 	@SuppressWarnings("unchecked")
 	public final <F extends E> F getCondition() {
@@ -36,6 +42,59 @@ final class Composite<E extends Expression<?>> implements Expression<E> {
 		return this.getCondition() != null ? (F) this.get(2) : null;
 	}
 	
+	// END RULE METHODS
+	
+	// BEGIN SUBSTITUTION METHODS
+	
+	@SuppressWarnings("unchecked")
+	public final <F extends E> F getTarget() {
+		if (this.size() == 3 && this.get(1) instanceof Composite<?> && this.get(2) instanceof Composite<?>) {
+			return (F) this.get(0);
+		}
+		
+		return null;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public final Composite<Expression<?>> getEqualities() {
+		if (this.size() == 3 && this.get(1) instanceof Composite<?> && this.get(2) instanceof Composite<?>) {
+			return (Composite<Expression<?>>) this.get(1);
+		}
+		
+		return null;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public final Composite<Expression<?>> getIndices() {
+		if (this.size() == 3 && this.get(1) instanceof Composite<?> && this.get(2) instanceof Composite<?>) {
+			return (Composite<Expression<?>>) this.get(2);
+		}
+		
+		return null;
+	}
+	
+	// END SUBSTITUTION METHODS
+	
+	// BEGIN LIST METHODS
+	
+	public final boolean isList() {
+		Composite<?> end = this;
+		
+		while (!end.isEmpty()) {
+			if (end.size() == 2) {
+				end = cast(Composite.class, end.get(1));
+				
+				if (end == null) {
+					return false;
+				}
+			} else {
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
 	@SuppressWarnings("unchecked")
 	public final <F extends E> F getHead() {
 		return this.getTail() != null ? (F) this.get(0) : null;
@@ -44,24 +103,6 @@ final class Composite<E extends Expression<?>> implements Expression<E> {
 	@SuppressWarnings("unchecked")
 	public final Composite<Expression<?>> getTail() {
 		return this.size() == 2 ? cast(Composite.class, this.get(1)) : null;
-	}
-	
-	public final Composite<Expression<?>> getParameters() {
-		if (this.size() == 2) {
-			@SuppressWarnings("unchecked")
-			final Composite<Expression<?>> candidate = cast(Composite.class, this.get(0));
-			
-			if (candidate != null && (2 <= candidate.size() && FORALL.equals(candidate.get(0)))) {
-				return candidate;
-			}
-		}
-		
-		return null;
-	}
-	
-	@SuppressWarnings("unchecked")
-	public final <F extends Expression<?>> F getContents() {
-		return (F) (this.getParameters() != null ? this.get(1) : this);
 	}
 	
 	public final int getListSize() {
@@ -89,6 +130,30 @@ final class Composite<E extends Expression<?>> implements Expression<E> {
 		
 		return this;
 	}
+	
+	// END LIST METHODS
+	
+	// BEGIN BLOCK METHODS
+	
+	public final Composite<Expression<?>> getParameters() {
+		if (this.size() == 2) {
+			@SuppressWarnings("unchecked")
+			final Composite<Expression<?>> candidate = cast(Composite.class, this.get(0));
+			
+			if (candidate != null && (2 <= candidate.size() && FORALL.equals(candidate.get(0)))) {
+				return candidate;
+			}
+		}
+		
+		return null;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public final <F extends Expression<?>> F getContents() {
+		return (F) (this.getParameters() != null ? this.get(1) : this);
+	}
+	
+	// END BLOCK METHODS
 	
 	public final Composite<E> add(final E element) {
 		this.elements.add(element);
