@@ -36,7 +36,7 @@ public final class ConsoleOutput implements Output {
 		this.println("Deduce (", deduction.getPropositionName(), ")");
 		
 		if (deduction.getRootParameters() != null) {
-			this.println1(deduction.getRootParameters());
+			this.println1(deduction.getRootParameters().accept(TO_STRING));
 		}
 	}
 	

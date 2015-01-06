@@ -13,6 +13,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.TreeSet;
 
+import net.sourceforge.aprog.tools.Tools;
+
 /**
  * @author codistmonk (creation 2015-01-04)
  */
@@ -66,6 +68,8 @@ public abstract class Proof implements Serializable {
 		
 		private final List<Proof> proofs;
 		
+		private boolean hasParameters;
+		
 		private Expression<?> goal;
 		
 		public Deduction(final Deduction parent, final String name, final Expression<?> goal) {
@@ -81,6 +85,7 @@ public abstract class Proof implements Serializable {
 		}
 		
 		public final Composite<Expression<?>> getRootParameters() {
+			@SuppressWarnings("unchecked")
 			final Composite<Expression<?>> composite = cast(Composite.class, this.module.getRoot());
 			
 			return composite != null && this.getProofs().get(0).getProposition() != this.module.getRoot() ?
@@ -149,6 +154,8 @@ public abstract class Proof implements Serializable {
 				throw new IllegalStateException();
 			}
 			
+			this.hasParameters = true;
+			
 			return (E) this.newParameter(parameterOrPropositionName);
 		}
 		
@@ -169,7 +176,7 @@ public abstract class Proof implements Serializable {
 				
 				reduced.add(last(this.getProofs()));
 				
-				if (this.module.getRoot() != this.getProofs().get(0).getProposition()) {
+				if (this.hasParameters) {
 					reduced.module.setRoot(new Composite<>().add(
 							this.module.getRoot().get(0)).add(reduced.module.getRoot()));
 				}
@@ -283,8 +290,11 @@ public abstract class Proof implements Serializable {
 				}
 				
 				rule.accept(Variable.RESET);
+				condition.accept(Variable.RESET);
 				
 				if (!rule.getCondition().equals(condition)) {
+					Tools.debugPrint(rule.getCondition());
+					Tools.debugPrint(condition);
 					throw new IllegalArgumentException();
 				}
 				
