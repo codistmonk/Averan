@@ -58,7 +58,7 @@ public final class SessionTest {
 					suppose("bind1",
 							$($(FORALL, $E, $X, $Y, $F),
 									$($($(FORALL, $X), $E),
-											IMPLIES, $($($($E, $$($($X, EQUALS, $Y)), $()), EQUALS, $F),
+											IMPLIES, $($($($E, $$().append($($X, EQUALS, $Y)), $()), EQUALS, $F),
 													IMPLIES, $F))));
 				}
 				
@@ -101,7 +101,7 @@ public final class SessionTest {
 			final Variable parameter = (Variable) target.getParameters().getListElement(1);
 			
 			apply(propositionName, "bind1", targetName);
-			substitute($$(target.get(1), $$($(parameter , EQUALS, value)), $()));
+			substitute($$(target.get(1), $$().append($(parameter , EQUALS, value)), $()));
 			apply(name(-2), name(-1));
 			conclude("By binding " + parameter.getName() + " with " + value + " in (" + targetName + ")");
 		}

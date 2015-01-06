@@ -2,7 +2,6 @@ package averan4.core;
 
 import static averan4.core.Composite.FORALL;
 import static net.sourceforge.aprog.tools.Tools.cast;
-import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2015-01-04)
@@ -144,7 +143,6 @@ final class Variable implements Expression<Variable> {
 			if (parameters != null) {
 				final Composite<Expression<?>> newParameters = new Composite<>().append(FORALL);
 				
-				Tools.debugPrint(parameters);
 				final int n = parameters.getListSize();
 				
 				for (int i = 1; i < n; ++i) {

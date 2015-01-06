@@ -14,8 +14,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.TreeSet;
 
-import net.sourceforge.aprog.tools.Tools;
-
 /**
  * @author codistmonk (creation 2015-01-04)
  */
@@ -301,8 +299,6 @@ public abstract class Proof implements Serializable {
 				condition.accept(Variable.RESET);
 				
 				if (!rule.getCondition().equals(condition)) {
-					Tools.debugPrint(rule.getCondition());
-					Tools.debugPrint(condition);
 					throw new IllegalArgumentException();
 				}
 				
@@ -344,11 +340,13 @@ public abstract class Proof implements Serializable {
 				final Expression.Substitution substitution = new Expression.Substitution();
 				
 				{
-					@SuppressWarnings("unchecked")
-					final Composite<Composite<Expression<?>>> equalities =
-							(Composite<Composite<Expression<?>>>) this.substitutionExpression.get(1);
+					final Composite<Expression<?>> equalities = this.substitutionExpression.getEqualities();
+					final int n = equalities.getListSize();
 					
-					for (final Composite<Expression<?>> equality : equalities) {
+					for (int i = 0; i < n; ++i) {
+						@SuppressWarnings("unchecked")
+						final Composite<Expression<?>> equality = (Composite<Expression<?>>) equalities.getListElement(i);
+						
 						if (equality.getKey() == null || equality.getValue() == null) {
 							throw new IllegalArgumentException();
 						}
@@ -358,11 +356,14 @@ public abstract class Proof implements Serializable {
 				}
 				
 				{
-					@SuppressWarnings("unchecked")
-					final Composite<Symbol<Integer>> indices =
-							(Composite<Symbol<Integer>>) this.substitutionExpression.get(2);
+					final Composite<Expression<?>> indices = this.substitutionExpression.getIndices();
+					final int n = indices.getListSize();
 					
-					indices.forEach(i -> substitution.at(i.getObject()));
+					for (int i = 0; i < n; ++i) {
+						@SuppressWarnings("unchecked")
+						final Symbol<Integer> index = (Symbol<Integer>) indices.getListElement(i);
+						substitution.at(index.getObject());
+					}
 				}
 				
 				this.setProposition(new Composite<>().add(this.substitutionExpression)
@@ -552,7 +553,6 @@ public abstract class Proof implements Serializable {
 				if (this.root == null) {
 					this.root = this.leaf = new Composite<>().add(new Composite<>().append(FORALL).append(result)).add(null);
 				} else if (this.leaf.getParameters() != null && this.leaf.getContents() == null) {
-					Tools.debugPrint(this.leaf.getParameters());
 					this.leaf.getParameters().append(result);
 				} else {
 					throw new IllegalStateException();
