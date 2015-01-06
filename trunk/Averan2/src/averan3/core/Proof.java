@@ -81,7 +81,6 @@ public abstract class Proof implements Serializable {
 		}
 		
 		public final Composite<Expression<?>> getRootParameters() {
-			@SuppressWarnings("unchecked")
 			final Composite<Expression<?>> composite = cast(Composite.class, this.module.getRoot());
 			
 			return composite != null && this.getProofs().get(0).getProposition() != this.module.getRoot() ?
@@ -485,6 +484,10 @@ public abstract class Proof implements Serializable {
 			}
 			
 			public final Variable parametrize(final String parameterName) {
+				if (parameterName == null) {
+					throw new IllegalArgumentException();
+				}
+				
 				final Variable result = new Variable(parameterName);
 				
 				if (this.root == null) {
