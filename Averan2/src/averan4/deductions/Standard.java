@@ -69,6 +69,21 @@ public final class Standard {
 										IMPLIES, $($($($E, list($($X, EQUALS, $Y)), list()), EQUALS, $F),
 												IMPLIES, $($$().add(FORALL).add($T), $F)))));
 			}
+			
+			{
+				final Variable $E = new Variable("E");
+				final Variable $F = new Variable("F");
+				final Variable $X = new Variable("X");
+				final Variable $Y = new Variable("Y");
+				final Variable $I = new Variable("I");
+				final Variable $T = new Variable("‥");
+				
+				suppose("rewrite1",
+						$(forall($E, $X, $Y, $T, $I, $F),
+								$($E, IMPLIES, $($($X, EQUALS, $Y),
+										IMPLIES, $($($($E, $$().add($($X, EQUALS, $Y)).add($T), $I), EQUALS, $F),
+												IMPLIES, $F)))));
+			}
 		}
 		
 	}, new ConsoleOutput());
@@ -96,11 +111,43 @@ public final class Standard {
 			final Composite<?> target = proposition(targetName);
 			final Variable parameter = (Variable) target.getParameters().getListElement(1);
 			
-			apply(propositionName, "bind1", targetName);
+			apply("bind1", targetName);
 			substitute($$(target.get(1), $$().append($(parameter , EQUALS, value)), $()));
 			apply(name(-2), name(-1));
 			conclude("By binding " + parameter.getName() + " with " + value + " in (" + targetName + ")");
 		}
+	}
+	
+	public static final void rewrite1(final String targetName, final String equalityName, final int... indices) {
+		rewrite1(null, targetName, equalityName, indices);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static final void rewrite1(final String propositionName, final String targetName, final String equalityName, final int... indices) {
+		deduce(propositionName);
+		{
+			apply("rewrite1", targetName);
+			apply(name(-1), equalityName);
+			
+			final Composite<Expression<?>> block = proposition(name(-1));
+			
+			block.getParameters().getListElement(1).equals(list());
+			block.getParameters().getListElement(2).equals(indices(indices));
+			
+			substitute((Composite<Expression<?>>) block.getContents().get(0).get(0).accept(Variable.BIND));
+			apply(name(-2), name(-1));
+			conclude("By rewriting (" + targetName + ") using (" + equalityName + ") at indices " + Arrays.toString(indices));
+		}
+	}
+	
+	public static final Composite<Expression<?>> indices(final int... indices) {
+		final Composite<Expression<?>> result = list();
+		
+		for (final int index : indices) {
+			result.append($(index));
+		}
+		
+		return result;
 	}
 	
 }
