@@ -97,6 +97,11 @@ public final class Session implements Serializable {
 		return session().getCurrentDeduction();
 	}
 	
+	@SuppressWarnings("unchecked")
+	public static final <E extends Expression<?>> E goal() {
+		return (E) deduction().getGoal();
+	}
+	
 	public static final Deduction deduce() {
 		return deduce(null, null);
 	}

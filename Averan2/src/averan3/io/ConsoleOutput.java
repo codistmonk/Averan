@@ -37,8 +37,9 @@ public final class ConsoleOutput implements Output {
 	
 	@Override
 	public final void beginDeduction(final Deduction deduction) {
-		this.indent = join("", nCopies(++this.level, ' '));
+		this.indent = join("", nCopies(++this.level, '	'));
 		
+		this.out.println();
 		this.println("Deduce (", deduction.getPropositionName(), ")");
 		
 		if (deduction.getRootParameters() != null) {
@@ -65,7 +66,7 @@ public final class ConsoleOutput implements Output {
 		
 		this.println('.');
 		
-		this.indent = join("", nCopies(max(0, --this.level), ' '));
+		this.indent = join("", nCopies(max(0, --this.level), '	'));
 	}
 	
 	private final void println(final Object... objects) {
