@@ -58,17 +58,13 @@ public final class Variable implements Expression<Variable> {
 	
 	@Override
 	public final boolean equals(final Object object) {
-		if (this == object) {
-			return true;
-		}
-		
 		if (this.match == null) {
 			this.match = (Expression<?>) object;
 			
 			return true;
 		}
 		
-		return this.getMatch().equals(object);
+		return this == object || this.getMatch().equals(object);
 	}
 	
 	@Override
@@ -140,7 +136,7 @@ public final class Variable implements Expression<Variable> {
 			Composite<Expression<?>> candidate = null;
 			boolean returnCandidate = false;
 			
-			if (parameters != null) {
+			if (parameters != null && parameters.isList()) {
 				final Composite<Expression<?>> newParameters = new Composite<>().append(FORALL);
 				final int n = parameters.getListSize();
 				
@@ -159,7 +155,7 @@ public final class Variable implements Expression<Variable> {
 				}
 			}
 			
-			if (parameters == null) {
+			if (parameters == null || !parameters.isList()) {
 				candidate = new Composite<>();
 				
 				for (final Expression<?> element : composite) {

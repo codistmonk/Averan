@@ -2,6 +2,7 @@ package averan4.core;
 
 import static averan4.core.Composite.FORALL;
 import static net.sourceforge.aprog.tools.Tools.cast;
+
 import averan.common.Container;
 
 import java.io.Serializable;
@@ -13,7 +14,6 @@ import java.util.Map;
 import java.util.TreeSet;
 
 import net.sourceforge.aprog.tools.Pair;
-import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2015-01-04)

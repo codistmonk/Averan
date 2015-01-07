@@ -15,7 +15,8 @@ public final class ProofTest {
 	
 	@Test(expected=IllegalStateException.class)
 	public final void test1() {
-		final Deduction deduction = new Deduction(null, getThisMethodName(), null);
+		final String deductionName = this.getClass().getName() + "." + getThisMethodName();
+		final Deduction deduction = new Deduction(null, deductionName, null);
 		
 		try {
 			final Variable x = deduction.introduce("X");
@@ -30,7 +31,7 @@ public final class ProofTest {
 	
 	@Test
 	public final void test2() {
-		final String deductionName = getThisMethodName();
+		final String deductionName = this.getClass().getName() + "." + getThisMethodName();
 		final Deduction deduction = new Deduction(null, deductionName, null);
 		
 		try {
@@ -48,7 +49,8 @@ public final class ProofTest {
 	
 	@Test
 	public final void test3() {
-		final Deduction deduction = new Deduction(null, getThisMethodName(), null);
+		final String deductionName = this.getClass().getName() + "." + getThisMethodName();
+		final Deduction deduction = new Deduction(null, deductionName, null);
 		
 		try {
 			{
@@ -98,7 +100,13 @@ public final class ProofTest {
 	}
 	
 	public static final void export(final Deduction deduction) {
-		Session.export(deduction, new ConsoleOutput());
+		final boolean debug = false;
+		
+		if (debug) {
+			Session.export(deduction, new ConsoleOutput());
+		} else {
+			Session.export(deduction, Output.NOP);
+		}
 	}
 	
 }
