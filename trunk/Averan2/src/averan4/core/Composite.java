@@ -20,7 +20,7 @@ final class Composite<E extends Expression<?>> implements Expression<E> {
 	
 	@SuppressWarnings("unchecked")
 	public final <F extends E> F getKey() {
-		return this.size() == 3 && EQUALS.equals(this.get(1)) ? (F) this.get(0) : null;
+		return this.size() == 3 && EQUALS.implies(this.get(1)) ? (F) this.get(0) : null;
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -34,7 +34,7 @@ final class Composite<E extends Expression<?>> implements Expression<E> {
 	
 	@SuppressWarnings("unchecked")
 	public final <F extends E> F getCondition() {
-		return this.size() == 3 && IMPLIES.equals(this.get(1)) ? (F) this.get(0) : null;
+		return this.size() == 3 && IMPLIES.implies(this.get(1)) ? (F) this.get(0) : null;
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -140,7 +140,7 @@ final class Composite<E extends Expression<?>> implements Expression<E> {
 			@SuppressWarnings("unchecked")
 			final Composite<Expression<?>> candidate = cast(Composite.class, this.get(0));
 			
-			if (candidate != null && (2 <= candidate.size() && FORALL.equals(candidate.get(0)))) {
+			if (candidate != null && (2 == candidate.size() && FORALL.implies(candidate.get(0)))) {
 				return candidate;
 			}
 		}
