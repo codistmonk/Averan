@@ -16,8 +16,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import net.sourceforge.aprog.tools.Tools;
-
 import org.junit.Test;
 
 /**
@@ -100,6 +98,25 @@ public final class SessionTest {
 			include(Standard.DEDUCTION);
 			
 			deduce(rule(rule("a", "b"), rule("b", "c"), rule("c", "d"), rule("a", "d")));
+			{
+				check(autoDeduce());
+				conclude();
+			}
+		}, new ConsoleOutput());
+	}
+	
+	@Test
+	public final void test5() {
+		final String deductionName = this.getClass().getName() + "." + getThisMethodName();
+		
+		build(deductionName, () -> {
+			include(Standard.DEDUCTION);
+			
+			final Variable $x = new Variable("x");
+			
+			suppose($(forall($x), rule($($x, " is real"), $($($x, "+", $x), " is real"))));
+			
+			deduce($(rule($("0", " is real"), $($("0", "+", "0"), " is real"))));
 			{
 				check(autoDeduce());
 				conclude();
@@ -193,9 +210,7 @@ public final class SessionTest {
 							}
 							
 							if (step instanceof Justification.Bind) {
-								Tools.debugError("TODO"); // TODO
-								cancel();
-								break subdeduction;
+								bind(justificationName, ((Justification.Bind) step).getValues().toArray(new Expression[0]));
 							}
 						}
 						
@@ -246,26 +261,37 @@ public final class SessionTest {
 			return append(steps, new Justification.Recall());
 		}
 		
-		proposition.accept(Variable.RESET);
-		
 		@SuppressWarnings("unchecked")
 		final Composite<Expression<?>> composite = cast(Composite.class, proposition);
 		
 		if (composite == null) {
+			proposition.accept(Variable.RESET);
+			
 			return Justification.NOTHING;
 		}
 		
 		final Composite<Expression<?>> parameters = composite.getParameters();
 		
 		if (parameters != null && parameters.isList()) {
+			final List<Expression<?>> values = new ArrayList<>();
+			final int n = parameters.getListSize();
+			
+			for (int i = 1; i < n; ++i) {
+				final Variable parameter = (Variable) parameters.getListElement(i);
+				
+				values.add(parameter.getMatch() != null ? parameter.getMatch() : parameter);
+			}
+			
 			return findSteps(composite.getContents(), goal, append(steps,
-					new Justification.Bind(parameters)));
+					new Justification.Bind(values)));
 		}
 		
 		if (composite.getCondition() != null) {
 			return findSteps(composite.getConclusion(), goal, append(steps,
 					new Justification.Apply(composite.getCondition().accept(Variable.BIND))));
 		}
+		
+		proposition.accept(Variable.RESET);
 		
 		return Justification.NOTHING;
 	}
@@ -359,19 +385,19 @@ public final class SessionTest {
 		 */
 		public static final class Bind implements Step {
 			
-			private final Composite<Expression<?>> parameters;
+			private final List<Expression<?>> values;
 			
-			public Bind(final Composite<Expression<?>> parameters) {
-				this.parameters = parameters;
+			public Bind(final List<Expression<?>> values) {
+				this.values = values;
 			}
 			
-			public final Composite<Expression<?>> getParameters() {
-				return this.parameters;
+			public final List<Expression<?>> getValues() {
+				return this.values;
 			}
 			
 			@Override
 			public final String toString() {
-				return "Bind " + this.getParameters();
+				return "Bind " + this.getValues();
 			}
 			
 			private static final long serialVersionUID = -2178774924606129974L;
