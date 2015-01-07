@@ -1,10 +1,11 @@
 package averan4.core;
 
+import static averan4.core.Composite.FORALL;
+import static net.sourceforge.aprog.tools.Tools.append;
 import static net.sourceforge.aprog.tools.Tools.array;
 import static net.sourceforge.aprog.tools.Tools.ignore;
 import static net.sourceforge.aprog.tools.Tools.last;
 import static net.sourceforge.aprog.tools.Tools.lastIndex;
-
 import averan4.core.Proof.Deduction;
 
 import java.io.Serializable;
@@ -68,6 +69,25 @@ public final class Session implements Serializable {
 		
 		for (final Object element : objects) {
 			result.add(element instanceof Expression<?> ? (Expression<?>) element : $(element));
+		}
+		
+		return result;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static final Composite<Expression<?>> forall(final Variable... variables) {
+		if (variables.length == 0) {
+			throw new IllegalArgumentException();
+		}
+		
+		return list(append(array((Expression<?>) FORALL), variables));
+	}
+	
+	public static final Composite<Expression<?>> list(final Expression<?>... elements) {
+		final Composite<Expression<?>> result = new Composite<>();
+		
+		for (final Expression<?> element : elements) {
+			result.append(element);
 		}
 		
 		return result;

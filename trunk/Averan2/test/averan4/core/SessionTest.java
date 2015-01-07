@@ -58,7 +58,7 @@ public final class SessionTest {
 					suppose("bind1",
 							$(forall($E, $X, $Y, $F),
 									$($(forall($X), $E),
-											IMPLIES, $($($($E, $$().append($($X, EQUALS, $Y)), $()), EQUALS, $F),
+											IMPLIES, $($($($E, list($($X, EQUALS, $Y)), list()), EQUALS, $F),
 													IMPLIES, $F))));
 				}
 				
@@ -75,20 +75,6 @@ public final class SessionTest {
 		} finally {
 			export(end(), new ConsoleOutput());
 		}
-	}
-	
-	public static final Composite<Expression<?>> forall(final Variable... variables) {
-		if (variables.length == 0) {
-			throw new IllegalArgumentException();
-		}
-		
-		final Composite<Expression<?>> result = new Composite<>().append(FORALL);
-		
-		for (final Variable variable : variables) {
-			result.append(variable);
-		}
-		
-		return result;
 	}
 	
 	public static final void rewriteRight(final String targetName, final String equalityName, final int... indices) {
