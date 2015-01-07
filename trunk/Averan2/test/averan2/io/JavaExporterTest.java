@@ -15,7 +15,6 @@ import static net.sourceforge.aprog.tools.Tools.getThisMethodName;
 import static net.sourceforge.aprog.tools.Tools.ignore;
 import static net.sourceforge.aprog.tools.Tools.join;
 import static net.sourceforge.aprog.tools.Tools.unchecked;
-
 import averan2.core.Composite;
 import averan2.core.Equality;
 import averan2.core.Expression;
@@ -42,13 +41,13 @@ import java.util.function.Function;
 
 import net.sourceforge.aprog.tools.Pair;
 import net.sourceforge.aprog.tools.Tee;
-import net.sourceforge.aprog.tools.Tools;
 
 import org.junit.Test;
 
 /**
  * @author codistmonk (creation 2014-12-31)
  */
+@SuppressWarnings("unchecked")
 public final class JavaExporterTest {
 	
 	@Test
