@@ -3,9 +3,9 @@ package averan3.core;
 import static averan3.core.Composite.*;
 import static averan3.core.Session.*;
 import static net.sourceforge.aprog.tools.Tools.append;
-import static net.sourceforge.aprog.tools.Tools.array;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.getThisMethodName;
+
 import averan3.core.Proof.Deduction;
 import averan3.deductions.Standard;
 import averan3.io.ConsoleOutput;
@@ -32,13 +32,13 @@ public final class SessionTest {
 		build(deductionName, () -> {
 			deduce();
 			{
-				suppose($("a", IMPLIES, "b"));
+				suppose(rule("a", "b"));
 				suppose($("a"));
 				apply(name(-2), name(-1));
 				conclude();
 			}
 			
-			deduce($($("a", IMPLIES, "b"), IMPLIES, $("a", IMPLIES, "b")));
+			deduce(rule(rule("a", "b"), "a", "b"));
 			{
 				intros();
 				apply(name(-2), name(-1));
@@ -54,7 +54,7 @@ public final class SessionTest {
 		build(deductionName, () -> {
 			include(Standard.DEDUCTION);
 			
-			deduce($($("a", IMPLIES, "b"), IMPLIES, $($("b", IMPLIES, "c"), IMPLIES, $("a", IMPLIES, "c"))));
+			deduce(rule(rule("a", "b"), rule("b", "c"), rule("a", "c")));
 			{
 				intros();
 				check(autoDeduce());
@@ -63,9 +63,9 @@ public final class SessionTest {
 			
 			deduce();
 			{
-				suppose($("a", IMPLIES, "b"));
-				suppose($("b", IMPLIES, "c"));
-				deduce($("a", IMPLIES, "c"));
+				suppose(rule("a", "b"));
+				suppose(rule("b", "c"));
+				deduce(rule("a", "c"));
 				{
 					intros();
 					apply(name(-3), name(-1));
@@ -77,7 +77,32 @@ public final class SessionTest {
 		}, new ConsoleOutput());
 	}
 	
+	@Test
+	public final void test3() {
+		final String deductionName = this.getClass().getName() + "." + getThisMethodName();
+		
+		build(deductionName, () -> {
+			include(Standard.DEDUCTION);
+			
+			deduce(rule(rule("a", "b"), rule("b", "c"), rule("a", "c")));
+			{
+				check(autoDeduce());
+				conclude();
+			}
+		}, new ConsoleOutput());
+	}
+	
 	public static final AtomicInteger autoDeduceDepth = new AtomicInteger(4); 
+	
+	public static final Composite<Expression<?>> rule(final Object condition0, final Object conclusion0, final Object... moreConclusions) {
+		final Composite<Expression<?>> result = $$(condition0, IMPLIES, conclusion0);
+		
+		for (final Object conclusion : moreConclusions) {
+			result.add($$(result.removeLast(), IMPLIES, conclusion));
+		}
+		
+		return result;
+	}
 	
 	public static final void check(final boolean ok) {
 		check(ok, "");
@@ -128,7 +153,7 @@ public final class SessionTest {
 			
 			use_justifications:
 			{
-				for (final Justification justification : justify(goal)) {
+				for (final Justification justification : justify(goal())) {
 					String justificationName = justification.getPropositionName();
 					
 					deduce();
@@ -151,6 +176,8 @@ public final class SessionTest {
 							
 							if (step instanceof Justification.Bind) {
 								Tools.debugError("TODO"); // TODO
+								cancel();
+								break subdeduction;
 							}
 						}
 						
