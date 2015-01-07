@@ -201,10 +201,10 @@ public abstract class Proof implements Serializable {
 				throw new IllegalArgumentException();
 			}
 			
-			int j = index + 1;
+			int j = index;
 			
-			for (int i = this.getProofs().size() - 1; 0 <= i; --i, ++j) {
-				if (j == 0) {
+			for (int i = this.getProofs().size() - 1; 0 <= i; --i) {
+				if (++j == 0) {
 					return this.getProofs().get(i).getPropositionName();
 				}
 			}

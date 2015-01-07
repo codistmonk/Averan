@@ -3,6 +3,7 @@ package averan3.core;
 import static averan3.core.Composite.*;
 import static averan3.core.Session.*;
 import static net.sourceforge.aprog.tools.Tools.getThisMethodName;
+
 import averan3.io.ConsoleOutput;
 
 import org.junit.Test;
@@ -17,7 +18,7 @@ public final class SessionTest {
 		final String deductionName = this.getClass().getName() + "." + getThisMethodName();
 		
 		build(deductionName, () -> {
-			deduce("test1");
+			deduce();
 			{
 				suppose($("a", IMPLIES, "b"));
 				suppose($("a"));
@@ -25,10 +26,31 @@ public final class SessionTest {
 				conclude();
 			}
 			
-			deduce("test2", $($("a", IMPLIES, "b"), IMPLIES, $("a", IMPLIES, "b")));
+			deduce($($("a", IMPLIES, "b"), IMPLIES, $("a", IMPLIES, "b")));
 			{
 				intros();
 				apply(name(-2), name(-1));
+				conclude();
+			}
+		}, new ConsoleOutput());
+	}
+	
+	@Test
+	public final void test2() {
+		final String deductionName = this.getClass().getName() + "." + getThisMethodName();
+		
+		build(deductionName, () -> {
+			deduce();
+			{
+				suppose($("a", IMPLIES, "b"));
+				suppose($("b", IMPLIES, "c"));
+				deduce($("a", IMPLIES, "c"));
+				{
+					intros();
+					apply(name(-3), name(-1));
+					apply(name(-3), name(-1));
+					conclude();
+				}
 				conclude();
 			}
 		}, new ConsoleOutput());
