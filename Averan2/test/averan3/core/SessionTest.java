@@ -207,7 +207,7 @@ public final class SessionTest {
 		final Composite<Expression<?>> composite = cast(Composite.class, proposition);
 		
 		if (composite == null) {
-			return array();
+			return Justification.NOTHING;
 		}
 		
 		final Composite<Expression<?>> parameters = composite.getParameters();
@@ -222,7 +222,7 @@ public final class SessionTest {
 					new Justification.Apply(composite.getCondition().accept(Variable.BIND))));
 		}
 		
-		return array();
+		return Justification.NOTHING;
 	}
 	
 	/**
@@ -261,6 +261,8 @@ public final class SessionTest {
 		}
 		
 		private static final long serialVersionUID = -3897122482315195936L;
+		
+		public static final Step[] NOTHING = {};
 		
 		/**
 		 * @author codistmonk (creation 2015-01-07)
