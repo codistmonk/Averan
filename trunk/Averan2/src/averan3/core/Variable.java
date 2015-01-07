@@ -1,6 +1,6 @@
-package averan4.core;
+package averan3.core;
 
-import static averan4.core.Composite.FORALL;
+import static averan3.core.Composite.FORALL;
 import static net.sourceforge.aprog.tools.Tools.cast;
 
 /**

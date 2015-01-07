@@ -1,8 +1,8 @@
-package averan4.core;
+package averan3.core;
 
-import static averan4.core.Composite.EQUALS;
-import static averan4.core.Composite.FORALL;
-import static averan4.core.Composite.IMPLIES;
+import static averan3.core.Composite.EQUALS;
+import static averan3.core.Composite.FORALL;
+import static averan3.core.Composite.IMPLIES;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.last;
 

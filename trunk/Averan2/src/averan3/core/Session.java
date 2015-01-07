@@ -1,13 +1,12 @@
-package averan4.core;
+package averan3.core;
 
-import static averan4.core.Composite.FORALL;
+import static averan3.core.Composite.FORALL;
 import static net.sourceforge.aprog.tools.Tools.append;
 import static net.sourceforge.aprog.tools.Tools.array;
 import static net.sourceforge.aprog.tools.Tools.ignore;
 import static net.sourceforge.aprog.tools.Tools.last;
 import static net.sourceforge.aprog.tools.Tools.lastIndex;
-
-import averan4.core.Proof.Deduction;
+import averan3.core.Proof.Deduction;
 
 import java.io.Serializable;
 import java.util.ArrayDeque;

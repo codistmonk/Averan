@@ -1,13 +1,14 @@
-package averan4.deductions;
+package averan3.deductions;
 
-import static averan4.core.Composite.EQUALS;
-import static averan4.core.Session.*;
-import static averan4.deductions.Standard.*;
+import static averan3.core.Composite.EQUALS;
+import static averan3.core.Session.*;
+import static averan3.deductions.Standard.*;
 import static net.sourceforge.aprog.tools.Tools.getThisMethodName;
 
 import org.junit.Test;
 
-import averan4.io.ConsoleOutput;
+import averan3.deductions.Standard;
+import averan3.io.ConsoleOutput;
 
 /**
  * @author codistmonk (creation 2015-01-07)

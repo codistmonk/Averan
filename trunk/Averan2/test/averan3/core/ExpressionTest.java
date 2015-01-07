@@ -1,9 +1,14 @@
-package averan4.core;
+package averan3.core;
 
-import static averan4.core.Composite.FORALL;
+import static averan3.core.Composite.FORALL;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
+
+import averan3.core.Composite;
+import averan3.core.Expression;
+import averan3.core.Symbol;
+import averan3.core.Variable;
 
 /**
  * @author codistmonk (creation 2015-01-05)

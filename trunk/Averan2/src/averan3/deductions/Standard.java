@@ -1,13 +1,12 @@
-package averan4.deductions;
+package averan3.deductions;
 
-import static averan4.core.Composite.*;
-import static averan4.core.Session.*;
-
-import averan4.core.Composite;
-import averan4.core.Expression;
-import averan4.core.Variable;
-import averan4.core.Proof.Deduction;
-import averan4.io.ConsoleOutput;
+import static averan3.core.Composite.*;
+import static averan3.core.Session.*;
+import averan3.core.Composite;
+import averan3.core.Expression;
+import averan3.core.Variable;
+import averan3.core.Proof.Deduction;
+import averan3.io.ConsoleOutput;
 
 import java.util.Arrays;
 
