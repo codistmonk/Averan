@@ -16,6 +16,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import net.sourceforge.aprog.tools.Tools;
+
 import org.junit.Test;
 
 /**
@@ -112,14 +114,36 @@ public final class SessionTest {
 		build(deductionName, () -> {
 			include(Standard.DEDUCTION);
 			
-			final Variable $x = new Variable("x");
-			
-			suppose($(forall($x), rule($($x, " is real"), $($($x, "+", $x), " is real"))));
-			
-			deduce($(rule($("0", " is real"), $($("0", "+", "0"), " is real"))));
 			{
-				check(autoDeduce());
-				conclude();
+				final Variable $x = new Variable("x");
+				
+				suppose($(forall($x), rule($($x, " is real"), $($($x, "+", $x), " is real"))));
+			}
+			
+			check(autoDeduce($(rule($("0", " is real"), $($("0", "+", "0"), " is real")))));
+			
+			{
+				final Variable $x = new Variable("x");
+				final Variable $y = new Variable("y");
+				final Variable $m = new Variable("m");
+				final Variable $n = new Variable("n");
+				final Variable $o = new Variable("o");
+				
+				suppose($(forall($x, $y, $m, $n, $o), rule($($x, " is matrix ", $m, "×", $n),
+						$($y, " is matrix ", $n, "×", $o),
+						$($($x, $y), " is matrix ", $m, "×", $o))));
+			}
+			
+			{
+				autoDeduce(rule($("a", " is matrix ", "i", "×", "j"),
+						$("b", " is matrix ", "j", "×", "k"),
+						$($("a", "b"), " is matrix ", "i", "×", "k")));
+			}
+			
+			{
+				autoDeduce(rule($("a", " is matrix ", "i", "×", "j"),
+						$("b", " is matrix ", "j", "×", "k"),
+						$($("a", "b"), " is matrix ", new Variable("m?"), "×", new Variable("n?"))));
 			}
 		}, new ConsoleOutput());
 	}
@@ -188,13 +212,17 @@ public final class SessionTest {
 			
 			use_justifications:
 			{
+				Tools.debugPrint(goal());
 				for (final Justification justification : justify(goal())) {
+					Tools.debugPrint(justification);
 					String justificationName = justification.getPropositionName();
 					
 					deduce();
 					subdeduction:
 					{
 						for (final Justification.Step step : justification.getSteps()) {
+							Tools.debugPrint(step);
+							
 							if (step instanceof Justification.Recall) {
 								apply("recall", justificationName);
 							}
@@ -261,39 +289,42 @@ public final class SessionTest {
 			return append(steps, new Justification.Recall());
 		}
 		
+		proposition.accept(Variable.RESET);
+		
 		@SuppressWarnings("unchecked")
 		final Composite<Expression<?>> composite = cast(Composite.class, proposition);
 		
 		if (composite == null) {
-			proposition.accept(Variable.RESET);
-			
 			return Justification.NOTHING;
 		}
 		
 		final Composite<Expression<?>> parameters = composite.getParameters();
 		
 		if (parameters != null && parameters.isList()) {
-			final List<Expression<?>> values = new ArrayList<>();
-			final int n = parameters.getListSize();
-			
-			for (int i = 1; i < n; ++i) {
-				final Variable parameter = (Variable) parameters.getListElement(i);
-				
-				values.add(parameter.getMatch() != null ? parameter.getMatch() : parameter);
-			}
-			
 			return findSteps(composite.getContents(), goal, append(steps,
-					new Justification.Bind(values)));
+					new Justification.Bind(parameters)));
 		}
 		
 		if (composite.getCondition() != null) {
 			return findSteps(composite.getConclusion(), goal, append(steps,
-					new Justification.Apply(composite.getCondition().accept(Variable.BIND))));
+					new Justification.Apply(composite.getCondition())));
 		}
 		
 		proposition.accept(Variable.RESET);
 		
 		return Justification.NOTHING;
+	}
+	
+	public static final List<Expression<?>> extractValues(final Composite<Expression<?>> parameters) {
+		final List<Expression<?>> result = new ArrayList<>();
+		final int n = parameters.getListSize();
+		
+		for (int i = 1; i < n; ++i) {
+			final Variable parameter = (Variable) parameters.getListElement(i);
+			result.add(parameter.getMatch() != null ? parameter.getMatch() : null);
+		}
+		
+		return result;
 	}
 	
 	/**
@@ -363,12 +394,18 @@ public final class SessionTest {
 			
 			private final Expression<?> condition;
 			
+			private Expression<?> boundCondition;
+			
 			public Apply(final Expression<?> condition) {
 				this.condition = condition;
 			}
 			
 			public final Expression<?> getCondition() {
-				return this.condition;
+				if (this.boundCondition == null) {
+					this.boundCondition = this.condition.accept(Variable.BIND);
+				}
+				
+				return this.boundCondition;
 			}
 			
 			@Override
@@ -385,13 +422,19 @@ public final class SessionTest {
 		 */
 		public static final class Bind implements Step {
 			
-			private final List<Expression<?>> values;
+			private final Composite<Expression<?>> parameters;
 			
-			public Bind(final List<Expression<?>> values) {
-				this.values = values;
+			private List<Expression<?>> values;
+			
+			public Bind(final Composite<Expression<?>> values) {
+				this.parameters = values;
 			}
 			
 			public final List<Expression<?>> getValues() {
+				if (this.values == null) {
+					this.values = extractValues(this.parameters);
+				}
+				
 				return this.values;
 			}
 			
