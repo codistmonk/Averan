@@ -80,11 +80,6 @@ public abstract class Proof implements Serializable {
 			this.module = new Module();
 			this.proofs = new ArrayList<>();
 			this.goal = goal;
-			
-			// primitive module operations: suppose, apply, substitute, rewrite, bind
-			// primitive deduction operations: include, introduce, conclude
-			// standard rules: recall, conjunction/disjunction definition+elimination
-			// standard tactics: recall, bind, rewriteRight, autoDeduce
 		}
 		
 		public final Composite<Expression<?>> getRootParameters() {
@@ -168,9 +163,6 @@ public abstract class Proof implements Serializable {
 		public final void conclude() {
 			if (this.getProofs().isEmpty() || last(this.getProofs()) instanceof Supposition
 					|| (this.getGoal() != null && !last(this.getProofs()).getProposition().equals(this.getGoal()))) {
-				Tools.debugError(this.getProofs());
-				Tools.debugError(last(this.getProofs()).getProposition());
-				Tools.debugError(this.getGoal());
 				throw new IllegalStateException();
 			}
 			
