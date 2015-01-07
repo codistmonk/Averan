@@ -1,10 +1,9 @@
-package averan4.core;
+package averan3.core;
 
-import static averan4.core.Composite.*;
-import static averan4.core.Session.*;
+import static averan3.core.Composite.*;
+import static averan3.core.Session.*;
 import static net.sourceforge.aprog.tools.Tools.getThisMethodName;
-
-import averan4.io.ConsoleOutput;
+import averan3.io.ConsoleOutput;
 
 import org.junit.Test;
 

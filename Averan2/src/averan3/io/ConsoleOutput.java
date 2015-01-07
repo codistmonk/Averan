@@ -1,18 +1,17 @@
-package averan4.io;
+package averan3.io;
 
-import static averan4.core.Composite.FORALL;
+import static averan3.core.Composite.FORALL;
 import static java.lang.Math.max;
 import static java.util.Collections.nCopies;
 import static net.sourceforge.aprog.tools.Tools.join;
-
-import averan4.core.Composite;
-import averan4.core.Expression;
-import averan4.core.Proof;
-import averan4.core.Proof.Deduction.Inclusion;
-import averan4.core.Symbol;
-import averan4.core.Variable;
-import averan4.core.Proof.Deduction;
-import averan4.core.Session.Output;
+import averan3.core.Composite;
+import averan3.core.Expression;
+import averan3.core.Proof;
+import averan3.core.Symbol;
+import averan3.core.Variable;
+import averan3.core.Proof.Deduction;
+import averan3.core.Proof.Deduction.Inclusion;
+import averan3.core.Session.Output;
 
 import java.io.PrintStream;
 
