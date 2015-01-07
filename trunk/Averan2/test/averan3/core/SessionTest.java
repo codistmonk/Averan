@@ -2,22 +2,18 @@ package averan3.core;
 
 import static averan3.core.Composite.*;
 import static averan3.core.Session.*;
+import static net.sourceforge.aprog.tools.Tools.append;
+import static net.sourceforge.aprog.tools.Tools.array;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.getThisMethodName;
-
-
-
-
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import averan3.core.Proof.Deduction;
 import averan3.io.ConsoleOutput;
-import net.sourceforge.aprog.tools.Pair;
 
-
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import net.sourceforge.aprog.tools.Tools;
 
@@ -95,19 +91,30 @@ public final class SessionTest {
 	}
 	
 	public static final boolean autoDeduce(final String propositionName, final Expression<?> goal, final int depth) {
+		if (depth <= 0) {
+			return false;
+		}
+		
 		deduce(propositionName, goal);
 		{
 			intros();
 			
-			Tools.debugPrint(justify(goal));
+			final List<Justification> justifications = justify(goal);
+			
+			Tools.debugPrint(justifications);
+			
+			for (final Justification justification : justifications) {
+				
+			}
 			
 			conclude();
 		}
-		return false; // TODO
+		
+		return true;
 	}
 	
-	public static final List<Pair<String, Expression<?>>> justify(final Expression<?> goal) {
-		List<Pair<String, Expression<?>>> result = new ArrayList<>();
+	public static final List<Justification> justify(final Expression<?> goal) {
+		List<Justification> result = new ArrayList<>();
 		
 		Deduction deduction = deduction();
 		
@@ -117,9 +124,10 @@ public final class SessionTest {
 			for (int i = proofs.size() - 1; 0 <= i; --i) {
 				final Proof proof = proofs.get(i);
 				final Expression<?> proposition = proof.getProposition();
+				final Object[] steps = findSteps(proposition, goal);
 				
-				if (justifies(proposition, goal)) {
-					result.add(new Pair<>(proof.getPropositionName(), proposition.accept(Variable.BIND)));
+				if (0 < steps.length) {
+					result.add(new Justification(proof.getPropositionName(), steps, proposition.accept(Variable.BIND)));
 				}
 			}
 			
@@ -129,30 +137,70 @@ public final class SessionTest {
 		return result;
 	}
 	
-	public static final boolean justifies(final Expression<?> proposition, final Expression<?> goal) {
+	public static final Object[] findSteps(final Expression<?> proposition, final Expression<?> goal, final Object... steps) {
 		if (proposition.accept(Variable.RESET).equals(goal.accept(Variable.RESET))) {
-			return true;
+			return append(steps, EQUALS);
 		}
 		
 		proposition.accept(Variable.RESET);
 		
+		@SuppressWarnings("unchecked")
 		final Composite<Expression<?>> composite = cast(Composite.class, proposition);
 		
 		if (composite == null) {
-			return false;
+			return array();
 		}
 		
 		final Composite<Expression<?>> parameters = composite.getParameters();
 		
 		if (parameters != null && parameters.isList()) {
-			return justifies(composite.getContents(), goal);
+			return findSteps(composite.getContents(), goal, append(steps, FORALL));
 		}
 		
 		if (composite.getCondition() != null) {
-			return justifies(composite.getConclusion(), goal);
+			return findSteps(composite.getConclusion(), goal, append(steps, IMPLIES));
 		}
 		
-		return false;
+		return array();
+	}
+	
+	/**
+	 * @author codistmonk (creation 2015-01-07)
+	 */
+	public static final class Justification implements Serializable {
+		
+		private final String propositionName;
+		
+		private final Object[] steps;
+		
+		private final Expression<?> boundProposition;
+		
+		public Justification(final String propositionName, final Object[] steps,
+				final Expression<?> boundProposition) {
+			this.propositionName = propositionName;
+			this.steps = steps;
+			this.boundProposition = boundProposition;
+		}
+		
+		public final String getPropositionName() {
+			return this.propositionName;
+		}
+		
+		public final Object[] getSteps() {
+			return this.steps;
+		}
+		
+		public final Expression<?> getBoundProposition() {
+			return this.boundProposition;
+		}
+		
+		@Override
+		public final String toString() {
+			return "(" + this.getPropositionName() + " " + Arrays.toString(this.getSteps()) + " " + this.getBoundProposition() + ")";
+		}
+		
+		private static final long serialVersionUID = -3897122482315195936L;
+		
 	}
 	
 }
