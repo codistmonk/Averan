@@ -92,13 +92,31 @@ public final class SessionTest {
 		}, new ConsoleOutput());
 	}
 	
-	public static final AtomicInteger autoDeduceDepth = new AtomicInteger(4); 
+	@Test
+	public final void test4() {
+		final String deductionName = this.getClass().getName() + "." + getThisMethodName();
+		
+		build(deductionName, () -> {
+			include(Standard.DEDUCTION);
+			
+			deduce(rule(rule("a", "b"), rule("b", "c"), rule("c", "d"), rule("a", "d")));
+			{
+				check(autoDeduce());
+				conclude();
+			}
+		}, new ConsoleOutput());
+	}
+	
+	public static final AtomicInteger autoDeduceDepth = new AtomicInteger(5); 
 	
 	public static final Composite<Expression<?>> rule(final Object condition0, final Object conclusion0, final Object... moreConclusions) {
 		final Composite<Expression<?>> result = $$(condition0, IMPLIES, conclusion0);
+		Composite<Expression<?>> end = result;
 		
 		for (final Object conclusion : moreConclusions) {
-			result.add($$(result.removeLast(), IMPLIES, conclusion));
+			final Composite<Expression<?>> newEnd = $$(end.removeLast(), IMPLIES, conclusion); 
+			end.add(newEnd);
+			end = newEnd;
 		}
 		
 		return result;
@@ -284,7 +302,7 @@ public final class SessionTest {
 		
 		@Override
 		public final String toString() {
-			return "(" + this.getPropositionName() + " " + Arrays.toString(this.getSteps()) + " " + this.getBoundProposition() + ")";
+			return "(" + this.getPropositionName() + ": " + proposition(this.getPropositionName()) + " " + Arrays.toString(this.getSteps()) + " " + this.getBoundProposition() + ")";
 		}
 		
 		private static final long serialVersionUID = -3897122482315195936L;
@@ -305,6 +323,11 @@ public final class SessionTest {
 			
 			private static final long serialVersionUID = -391482341455285510L;
 			
+			@Override
+			public final String toString() {
+				return "Recall";
+			}
+			
 		}
 		
 		/**
@@ -320,6 +343,11 @@ public final class SessionTest {
 			
 			public final Expression<?> getCondition() {
 				return this.condition;
+			}
+			
+			@Override
+			public final String toString() {
+				return "Apply on " + this.getCondition();
 			}
 			
 			private static final long serialVersionUID = -882415070219823810L;
@@ -339,6 +367,11 @@ public final class SessionTest {
 			
 			public final Composite<Expression<?>> getParameters() {
 				return this.parameters;
+			}
+			
+			@Override
+			public final String toString() {
+				return "Bind " + this.getParameters();
 			}
 			
 			private static final long serialVersionUID = -2178774924606129974L;
