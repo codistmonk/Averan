@@ -2,7 +2,10 @@ package averan3.core;
 
 import static averan3.core.Composite.*;
 import static averan3.core.Session.*;
+import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.getThisMethodName;
+
+
 
 
 
@@ -15,6 +18,8 @@ import averan3.io.ConsoleOutput;
 import net.sourceforge.aprog.tools.Pair;
 
 
+
+import net.sourceforge.aprog.tools.Tools;
 
 import org.junit.Test;
 
@@ -50,6 +55,13 @@ public final class SessionTest {
 		final String deductionName = this.getClass().getName() + "." + getThisMethodName();
 		
 		build(deductionName, () -> {
+			deduce($($("a", IMPLIES, "b"), IMPLIES, $($("b", IMPLIES, "c"), IMPLIES, $("a", IMPLIES, "c"))));
+			{
+				intros();
+				check(autoDeduce());
+				conclude();
+			}
+			
 			deduce();
 			{
 				suppose($("a", IMPLIES, "b"));
@@ -61,13 +73,6 @@ public final class SessionTest {
 					apply(name(-3), name(-1));
 					conclude();
 				}
-				conclude();
-			}
-			
-			deduce($($("a", IMPLIES, "b"), IMPLIES, $($("b", IMPLIES, "c"), IMPLIES, $("a", IMPLIES, "c"))));
-			{
-				intros();
-				check(autoDeduce());
 				conclude();
 			}
 		}, new ConsoleOutput());
@@ -94,6 +99,8 @@ public final class SessionTest {
 		{
 			intros();
 			
+			Tools.debugPrint(justify(goal));
+			
 			conclude();
 		}
 		return false; // TODO
@@ -115,13 +122,37 @@ public final class SessionTest {
 					result.add(new Pair<>(proof.getPropositionName(), proposition.accept(Variable.BIND)));
 				}
 			}
+			
+			deduction = deduction.getParent();
 		}
 		
 		return result;
 	}
 	
 	public static final boolean justifies(final Expression<?> proposition, final Expression<?> goal) {
-		return false; // TODO
+		if (proposition.accept(Variable.RESET).equals(goal.accept(Variable.RESET))) {
+			return true;
+		}
+		
+		proposition.accept(Variable.RESET);
+		
+		final Composite<Expression<?>> composite = cast(Composite.class, proposition);
+		
+		if (composite == null) {
+			return false;
+		}
+		
+		final Composite<Expression<?>> parameters = composite.getParameters();
+		
+		if (parameters != null && parameters.isList()) {
+			return justifies(composite.getContents(), goal);
+		}
+		
+		if (composite.getCondition() != null) {
+			return justifies(composite.getConclusion(), goal);
+		}
+		
+		return false;
 	}
 	
 }
