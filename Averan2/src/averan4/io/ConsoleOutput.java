@@ -4,10 +4,10 @@ import static averan4.core.Composite.FORALL;
 import static java.lang.Math.max;
 import static java.util.Collections.nCopies;
 import static net.sourceforge.aprog.tools.Tools.join;
-
 import averan4.core.Composite;
 import averan4.core.Expression;
 import averan4.core.Proof;
+import averan4.core.Proof.Deduction.Inclusion;
 import averan4.core.Symbol;
 import averan4.core.Variable;
 import averan4.core.Proof.Deduction;
@@ -48,6 +48,10 @@ public final class ConsoleOutput implements Output {
 	
 	@Override
 	public final void processProof(final Proof proof) {
+		if (proof instanceof Inclusion) {
+			return;
+		}
+		
 		this.println("(", proof.getPropositionName(), ")");
 		this.println1(proof.getProposition().accept(TO_STRING));
 		this.println1(proof);
@@ -93,24 +97,24 @@ public final class ConsoleOutput implements Output {
 		
 		@Override
 		public final String visit(final Composite<Expression<?>> composite) {
-			if (2 == composite.size() && FORALL.implies(composite.get(0))) {
-				final StringBuilder resultBuilder = new StringBuilder().append(FORALL);
-				final int n = composite.getListSize();
-				
-				for (int i = 1; i < n; ++i) {
-					if (1 < i) {
-						resultBuilder.append(',');
+			if (composite.isList()) {
+				if (FORALL.implies(composite.get(0))) {
+					final StringBuilder resultBuilder = new StringBuilder().append(FORALL);
+					final int n = composite.getListSize();
+					
+					for (int i = 1; i < n; ++i) {
+						if (1 < i) {
+							resultBuilder.append(',');
+						}
+						
+						resultBuilder.append(composite.getListElement(i).accept(this));
 					}
 					
-					resultBuilder.append(composite.getListElement(i).accept(this));
+					resultBuilder.append(' ');
+					
+					return resultBuilder.toString();
 				}
 				
-				resultBuilder.append(' ');
-				
-				return resultBuilder.toString();
-			}
-			
-			if (composite.isList()) {
 				final StringBuilder resultBuilder = new StringBuilder();
 				final int n = composite.getListSize();
 				

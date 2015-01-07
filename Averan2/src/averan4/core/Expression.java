@@ -2,7 +2,6 @@ package averan4.core;
 
 import static averan4.core.Composite.FORALL;
 import static net.sourceforge.aprog.tools.Tools.cast;
-
 import averan.common.Container;
 
 import java.io.Serializable;
@@ -14,6 +13,7 @@ import java.util.Map;
 import java.util.TreeSet;
 
 import net.sourceforge.aprog.tools.Pair;
+import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2015-01-04)
@@ -102,7 +102,7 @@ public abstract interface Expression<E extends Expression<?>> extends Container<
 			
 			final Composite<Expression<?>> parameters = composite.getParameters();
 			
-			if (parameters != null) {
+			if (parameters != null && parameters.isList()) {
 				final int n = parameters.getListSize();
 				final Expression<?> newContents = composite.getContents().accept(this);
 				final Collection<Variable> variables = newContents.accept(new CollectVariables()).getVariables().keySet();
