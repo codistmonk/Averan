@@ -126,39 +126,44 @@ public final class SessionTest {
 		{
 			intros();
 			
-			int d = depth;
-			
-			use_a_justification:
-			while (true) {
+			use_justifications:
+			{
 				for (final Justification justification : justify(goal)) {
-					final Justification.Step step = justification.getSteps()[0];
+					String justificationName = justification.getPropositionName();
 					
-					if (step instanceof Justification.Recall) {
-						apply("recall", justification.getPropositionName());
-						break use_a_justification;
-					}
-					
-					if (step instanceof Justification.Apply) {
-						if (autoDeduce(((Justification.Apply) step).getCondition(), depth - 1)) {
-							apply(justification.getPropositionName(), name(-1));
+					deduce();
+					subdeduction:
+					{
+						for (final Justification.Step step : justification.getSteps()) {
+							if (step instanceof Justification.Recall) {
+								apply("recall", justificationName);
+							}
 							
-							if (1 < justification.getSteps().length) {
-								break;
-							} else {
-								break use_a_justification;
+							if (step instanceof Justification.Apply) {
+								if (autoDeduce(((Justification.Apply) step).getCondition(), depth - 1)) {
+									apply(justificationName, name(-1));
+									justificationName = name(-1);
+								} else {
+									cancel();
+									break subdeduction;
+								}
+							}
+							
+							if (step instanceof Justification.Bind) {
+								Tools.debugError("TODO"); // TODO
 							}
 						}
+						
+						conclude();
+						
+						break use_justifications;
 					}
 					
-					if (step instanceof Justification.Bind) {
-						Tools.debugError("TODO"); // TODO
-					}
 				}
 				
-				if (--d <= 0) {
-					cancel();
-					return false;
-				}
+				cancel();
+				
+				return false;
 			}
 			
 			conclude();
