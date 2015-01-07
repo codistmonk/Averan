@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * @author codistmonk (creation 2015-01-04)
  */
-final class Composite<E extends Expression<?>> implements Expression<E> {
+public final class Composite<E extends Expression<?>> implements Expression<E> {
 	
 	private final List<E> elements;
 	

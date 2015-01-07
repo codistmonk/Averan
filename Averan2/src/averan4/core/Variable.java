@@ -6,7 +6,7 @@ import static net.sourceforge.aprog.tools.Tools.cast;
 /**
  * @author codistmonk (creation 2015-01-04)
  */
-final class Variable implements Expression<Variable> {
+public final class Variable implements Expression<Variable> {
 	
 	private final String name;
 	
