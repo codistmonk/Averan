@@ -168,6 +168,9 @@ public abstract class Proof implements Serializable {
 		public final void conclude() {
 			if (this.getProofs().isEmpty() || last(this.getProofs()) instanceof Supposition
 					|| (this.getGoal() != null && !last(this.getProofs()).getProposition().equals(this.getGoal()))) {
+				Tools.debugError(this.getProofs());
+				Tools.debugError(last(this.getProofs()).getProposition());
+				Tools.debugError(this.getGoal());
 				throw new IllegalStateException();
 			}
 			
