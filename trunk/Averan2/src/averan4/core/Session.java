@@ -6,6 +6,7 @@ import static net.sourceforge.aprog.tools.Tools.array;
 import static net.sourceforge.aprog.tools.Tools.ignore;
 import static net.sourceforge.aprog.tools.Tools.last;
 import static net.sourceforge.aprog.tools.Tools.lastIndex;
+
 import averan4.core.Proof.Deduction;
 
 import java.io.Serializable;
@@ -247,6 +248,24 @@ public final class Session implements Serializable {
 		output.endDeduction(deduction);
 	}
 	
+	public static final Deduction build(final String name, final Runnable commands) {
+		return build(name, commands, Output.NOP);
+	}
+	
+	public static final Deduction build(final String name, final Runnable commands, final Output output) {
+		begin();
+		
+		try {
+			final Deduction result = deduce(name);
+			
+			commands.run();
+			
+			return result;
+		} finally {
+			export(end(), output);
+		}
+	}
+	
 	/**
 	 * @author codistmonk (creation 2015-01-06)
 	 */
@@ -271,6 +290,12 @@ public final class Session implements Serializable {
 		public default void endSession(final Session session) {
 			ignore(session);
 		}
+		
+		public static final Output NOP = new Output() {
+			
+			private static final long serialVersionUID = -741439775274369520L;
+			
+		};
 		
 	}
 	
