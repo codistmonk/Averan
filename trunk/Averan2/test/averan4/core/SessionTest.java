@@ -27,6 +27,14 @@ public final class SessionTest {
 			deduce("test3");
 			{
 				suppose($("a", EQUALS, "b"));
+				suppose($("a"));
+				rewrite1(name(-1), name(-2));
+				conclude();
+			}
+			
+			deduce("test4");
+			{
+				suppose($("a", EQUALS, "b"));
 				suppose($("b"));
 				rewriteRight(name(-1), name(-2));
 				conclude();
