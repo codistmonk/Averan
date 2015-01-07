@@ -2,10 +2,8 @@ package averan4.core;
 
 import static averan4.core.Composite.*;
 import static averan4.core.Session.*;
-import static averan4.deductions.Standard.*;
 import static net.sourceforge.aprog.tools.Tools.getThisMethodName;
 
-import averan4.deductions.Standard;
 import averan4.io.ConsoleOutput;
 
 import org.junit.Test;
@@ -17,26 +15,21 @@ public final class SessionTest {
 	
 	@Test
 	public final void test1() {
-		build(this.getClass().getName() + "." + getThisMethodName(), () -> {
-			include(Standard.DEDUCTION);
-			
-			bind1("test1", "recall", $("toto"));
-			
-			bind1("test2", "symmetry_of_equality", $("toto"));
-			
-			deduce("test3");
+		final String deductionName = this.getClass().getName() + "." + getThisMethodName();
+		
+		build(deductionName, () -> {
+			deduce("test1");
 			{
-				suppose($("a", EQUALS, "b"));
+				suppose($("a", IMPLIES, "b"));
 				suppose($("a"));
-				rewrite1(name(-1), name(-2));
+				apply(name(-2), name(-1));
 				conclude();
 			}
 			
-			deduce("test4");
+			deduce("test2", $($("a", IMPLIES, "b"), IMPLIES, $("a", IMPLIES, "b")));
 			{
-				suppose($("a", EQUALS, "b"));
-				suppose($("b"));
-				rewriteRight(name(-1), name(-2));
+				intros();
+				apply(name(-2), name(-1));
 				conclude();
 			}
 		}, new ConsoleOutput());
