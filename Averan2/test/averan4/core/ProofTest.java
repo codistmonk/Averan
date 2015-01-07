@@ -1,6 +1,5 @@
 package averan4.core;
 
-import static averan4.core.Composite.FORALL;
 import static averan4.core.Composite.IMPLIES;
 import static averan4.core.Session.*;
 import static net.sourceforge.aprog.tools.Tools.getThisMethodName;
@@ -58,16 +57,16 @@ public final class ProofTest {
 				final Variable $X = new Variable("X");
 				final Variable $Y = new Variable("Y");
 				
-				deduction.new Supposition("bind",
+				deduction.new Supposition("bind1",
 						$(
-								$(FORALL, $E),
+								forall($E),
 								$(
-										$($(FORALL, $X), $E),
+										$(forall($X), $E),
 										IMPLIES,
 										$(
 												$(
-														$(FORALL, $F, $Y),
-														$($($E, $($($X, "=", $Y)), $()), "=", $F)
+														forall($F, $Y),
+														$($($E, list($($X, "=", $Y)), list()), "=", $F)
 												),
 												IMPLIES,
 												$F

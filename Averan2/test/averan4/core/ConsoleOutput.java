@@ -4,11 +4,12 @@ import static averan4.core.Composite.FORALL;
 import static java.lang.Math.max;
 import static java.util.Collections.nCopies;
 import static net.sourceforge.aprog.tools.Tools.join;
-
 import averan4.core.Proof.Deduction;
 import averan4.core.Session.Output;
 
 import java.io.PrintStream;
+
+import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2015-01-06)
@@ -88,19 +89,34 @@ public final class ConsoleOutput implements Output {
 		
 		@Override
 		public final String visit(final Composite<Expression<?>> composite) {
-			if (1 < composite.size() && FORALL.implies(composite.get(0))) {
+			if (2 == composite.size() && FORALL.implies(composite.get(0))) {
 				final StringBuilder resultBuilder = new StringBuilder().append(FORALL);
-				final int n = composite.size();
+				final int n = composite.getListSize();
 				
 				for (int i = 1; i < n; ++i) {
 					if (1 < i) {
 						resultBuilder.append(',');
 					}
 					
-					resultBuilder.append(composite.get(i).accept(this));
+					resultBuilder.append(composite.getListElement(i).accept(this));
 				}
 				
 				resultBuilder.append(' ');
+				
+				return resultBuilder.toString();
+			}
+			
+			if (composite.isList()) {
+				final StringBuilder resultBuilder = new StringBuilder();
+				final int n = composite.getListSize();
+				
+				resultBuilder.append('[');
+				
+				for (int i = 0; i < n; ++i) {
+					resultBuilder.append(composite.getListElement(i).accept(this));
+				}
+				
+				resultBuilder.append(']');
 				
 				return resultBuilder.toString();
 			}
