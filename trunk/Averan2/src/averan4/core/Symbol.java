@@ -7,7 +7,7 @@ import net.sourceforge.aprog.tools.Tools;
 /**
  * @author codistmonk (creation 2015-01-04)
  */
-final class Symbol<T> implements Expression<Symbol<T>> {
+public final class Symbol<T> implements Expression<Symbol<T>> {
 	
 	private final T object;
 	

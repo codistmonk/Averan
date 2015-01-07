@@ -7,6 +7,8 @@ import java.util.Arrays;
 
 import org.junit.Test;
 
+import averan4.io.ConsoleOutput;
+
 /**
  * @author codistmonk (creation 2015-01-06)
  */

@@ -3,8 +3,8 @@ package averan4.core;
 import static averan4.core.Composite.IMPLIES;
 import static averan4.core.Session.*;
 import static net.sourceforge.aprog.tools.Tools.getThisMethodName;
-
 import averan4.core.Proof.Deduction;
+import averan4.io.ConsoleOutput;
 
 import org.junit.Test;
 

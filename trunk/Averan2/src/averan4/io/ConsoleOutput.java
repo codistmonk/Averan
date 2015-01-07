@@ -1,15 +1,19 @@
-package averan4.core;
+package averan4.io;
 
 import static averan4.core.Composite.FORALL;
 import static java.lang.Math.max;
 import static java.util.Collections.nCopies;
 import static net.sourceforge.aprog.tools.Tools.join;
+
+import averan4.core.Composite;
+import averan4.core.Expression;
+import averan4.core.Proof;
+import averan4.core.Symbol;
+import averan4.core.Variable;
 import averan4.core.Proof.Deduction;
 import averan4.core.Session.Output;
 
 import java.io.PrintStream;
-
-import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2015-01-06)
