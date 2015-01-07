@@ -142,7 +142,6 @@ final class Variable implements Expression<Variable> {
 			
 			if (parameters != null) {
 				final Composite<Expression<?>> newParameters = new Composite<>().append(FORALL);
-				
 				final int n = parameters.getListSize();
 				
 				for (int i = 1; i < n; ++i) {
