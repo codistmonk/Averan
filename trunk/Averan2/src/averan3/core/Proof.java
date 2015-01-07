@@ -156,8 +156,6 @@ public abstract class Proof implements Serializable {
 				throw new IllegalStateException();
 			}
 			
-			this.hasParameters = true;
-			
 			return (E) this.newParameter(parameterOrPropositionName);
 		}
 		
@@ -168,7 +166,8 @@ public abstract class Proof implements Serializable {
 		
 		@Override
 		public final void conclude() {
-			if (this.getProofs().isEmpty() || last(this.getProofs()) instanceof Supposition) {
+			if (this.getProofs().isEmpty() || last(this.getProofs()) instanceof Supposition
+					|| (this.getGoal() != null && !last(this.getProofs()).getProposition().equals(this.getGoal()))) {
 				throw new IllegalStateException();
 			}
 			
@@ -244,7 +243,11 @@ public abstract class Proof implements Serializable {
 		}
 		
 		private final Variable newParameter(final String name) {
-			return this.module.parametrize(name);
+			final Variable result = this.module.parametrize(name);
+			
+			this.hasParameters = true;
+			
+			return result;
 		}
 		
 		/**
