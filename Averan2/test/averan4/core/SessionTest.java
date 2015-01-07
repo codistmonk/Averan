@@ -22,7 +22,9 @@ public final class SessionTest {
 			
 			bind1("test1", "recall", $("toto"));
 			
-			deduce("test2");
+			bind1("test2", "symmetry_of_equality", $("toto"));
+			
+			deduce("test3");
 			{
 				suppose($("a", EQUALS, "b"));
 				suppose($("b"));

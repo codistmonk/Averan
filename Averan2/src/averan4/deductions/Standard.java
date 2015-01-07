@@ -3,13 +3,13 @@ package averan4.deductions;
 import static averan4.core.Composite.*;
 import static averan4.core.Session.*;
 
-import java.util.Arrays;
-
 import averan4.core.Composite;
 import averan4.core.Expression;
 import averan4.core.Variable;
 import averan4.core.Proof.Deduction;
 import averan4.io.ConsoleOutput;
+
+import java.util.Arrays;
 
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 
@@ -67,7 +67,7 @@ public final class Standard {
 						$(forall($E, $X, $T, $Y, $F),
 								$($($$().add(FORALL).add($($X, $T)), $E),
 										IMPLIES, $($($($E, list($($X, EQUALS, $Y)), list()), EQUALS, $F),
-												IMPLIES, $F))));
+												IMPLIES, $($$().add(FORALL).add($T), $F)))));
 			}
 		}
 		

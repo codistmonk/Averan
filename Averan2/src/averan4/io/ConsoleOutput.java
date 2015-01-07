@@ -4,6 +4,7 @@ import static averan4.core.Composite.FORALL;
 import static java.lang.Math.max;
 import static java.util.Collections.nCopies;
 import static net.sourceforge.aprog.tools.Tools.join;
+
 import averan4.core.Composite;
 import averan4.core.Expression;
 import averan4.core.Proof;

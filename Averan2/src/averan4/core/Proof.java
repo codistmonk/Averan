@@ -14,6 +14,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.TreeSet;
 
+import net.sourceforge.aprog.tools.Tools;
+
 /**
  * @author codistmonk (creation 2015-01-04)
  */
@@ -290,8 +292,9 @@ public abstract class Proof implements Serializable {
 			public final void conclude() {
 				final Expression<?> condition = this.getParent().findProposition(this.conditionName);
 				Composite<Expression<?>> rule = this.getParent().findProposition(this.ruleName);
+				final Composite<Expression<?>> parameters = rule.getParameters();
 				
-				if (rule.getParameters() != null) {
+				if (parameters != null) {
 					rule = rule.getContents();
 				}
 				
@@ -302,7 +305,30 @@ public abstract class Proof implements Serializable {
 					throw new IllegalArgumentException();
 				}
 				
-				this.setProposition(rule.getConclusion().accept(Variable.BIND));
+				final Expression<?> conclusion = rule.getConclusion().accept(Variable.BIND);
+				
+				if (parameters != null) {
+					@SuppressWarnings("unchecked")
+					final Composite<Expression<?>> boundParameters = (Composite<Expression<?>>) parameters.accept(Variable.BIND);
+					final int n = boundParameters.getListSize();
+					final Composite<Expression<?>> newParameters = new Composite<>().append(FORALL);
+					
+					for (int i = 1; i < n; ++i) {
+						final Variable parameter = cast(Variable.class, boundParameters.getListElement(i));
+						
+						if (parameter != null && parameter.getMatch() == null) {
+							newParameters.append(parameter);
+						}
+					}
+					
+					if (1 < newParameters.getListSize()) {
+						this.setProposition(new Composite<>().add(newParameters).add(conclusion));
+					} else {
+						this.setProposition(conclusion);
+					}
+				} else {
+					this.setProposition(conclusion);
+				}
 				
 				rule.accept(Variable.RESET);
 			}
@@ -433,6 +459,7 @@ public abstract class Proof implements Serializable {
 					final Composite<Expression<?>> equality = this.getParent().findProposition(equalityName);
 					
 					if (equality == null || equality.getKey() == null || equality.getValue() == null) {
+						Tools.debugError(equalityName, equality);
 						throw new IllegalArgumentException();
 					}
 					
