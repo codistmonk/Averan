@@ -105,8 +105,9 @@ public final class SessionTest {
 			
 			{
 				final Variable $x = new Variable("x");
+				final Variable $y = new Variable("y");
 				
-				suppose($(forall($x), rule($($x, " is real"), $($($x, "+", $x), " is real"))));
+				suppose($(forall($x), rule($($x, " is real"), $($y, " is real"), $($($x, "+", $y), " is real"))));
 			}
 			
 			assertTrue(autoDeduce($(rule($("0", " is real"), $($("0", "+", "0"), " is real")))));
