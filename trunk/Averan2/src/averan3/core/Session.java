@@ -2,12 +2,12 @@ package averan3.core;
 
 import static averan3.core.Composite.FORALL;
 import static averan3.core.Composite.IMPLIES;
-import static averan3.core.Session.$$;
 import static net.sourceforge.aprog.tools.Tools.append;
 import static net.sourceforge.aprog.tools.Tools.array;
 import static net.sourceforge.aprog.tools.Tools.ignore;
 import static net.sourceforge.aprog.tools.Tools.last;
 import static net.sourceforge.aprog.tools.Tools.lastIndex;
+
 import averan3.core.Proof.Deduction;
 
 import java.io.Serializable;
@@ -149,12 +149,26 @@ public final class Session implements Serializable {
 		throw new RuntimeException(message);
 	}
 	
-	public static final String name(final int index) {
-		return deduction().findPropositionName(index);
+	public static final Proof proof(final int index) {
+		return deduction().findProof(index);
 	}
 	
+	public static final Proof proof(final String name) {
+		return deduction().findProof(name);
+	}
+	
+	public static final String name(final int index) {
+		return proof(index).getPropositionName();
+	}
+	
+	@SuppressWarnings("unchecked")
 	public static final <E extends Expression<?>> E proposition(final String name) {
-		return deduction().findProposition(name);
+		return (E) proof(name).getProposition();
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static final <E extends Expression<?>> E proposition(final int index) {
+		return (E) proof(index).getProposition();
 	}
 	
 	public static final void intros() {

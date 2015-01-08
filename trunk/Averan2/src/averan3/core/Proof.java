@@ -190,33 +190,31 @@ public abstract class Proof implements Serializable {
 			return this.goal;
 		}
 		
-		public final String findPropositionName(final int index) {
+		public final Proof findProof(final String name) {
+			for (final Proof proof : this.getProofs()) {
+				if (proof.getPropositionName().equals(name)) {
+					return proof;
+				}
+			}
+			
+			return this.getParent() != null ? this.getParent().findProof(name) : null;
+		}
+		
+		public final Proof findProof(final int index) {
 			if (0 <= index) {
 				throw new IllegalArgumentException();
 			}
 			
-			int j = index;
+			final int i = this.getProofs().size() + index;
 			
-			for (int i = this.getProofs().size() - 1; 0 <= i; --i) {
-				if (++j == 0) {
-					return this.getProofs().get(i).getPropositionName();
-				}
-			}
-			
-			return this.getParent() != null ? this.getParent().findPropositionName(j) : null;
+			return 0 <= i ? this.getProofs().get(i) :
+				this.getParent() != null ? this.getParent().findProof(i) :
+					null;
 		}
 		
 		@SuppressWarnings("unchecked")
 		public final <E extends Expression<?>> E findProposition(final String name) {
-			for (int i = this.getProofs().size() - 1; 0 <= i; --i) {
-				final Proof proof = this.getProofs().get(i);
-				
-				if (proof.getPropositionName().equals(name)) {
-					return (E) proof.getProposition();
-				}
-			}
-			
-			return this.getParent() != null ? this.getParent().findProposition(name) : null;
+			return (E) this.findProof(name).getProposition();
 		}
 		
 		@Override
