@@ -7,8 +7,8 @@ import static net.sourceforge.aprog.tools.Tools.array;
 import static net.sourceforge.aprog.tools.Tools.ignore;
 import static net.sourceforge.aprog.tools.Tools.last;
 import static net.sourceforge.aprog.tools.Tools.lastIndex;
-
 import averan3.core.Proof.Deduction;
+import averan3.core.Proof.Deduction.Instance;
 
 import java.io.Serializable;
 import java.util.ArrayDeque;
@@ -163,12 +163,12 @@ public final class Session implements Serializable {
 	
 	@SuppressWarnings("unchecked")
 	public static final <E extends Expression<?>> E proposition(final String name) {
-		return (E) proof(name).getProposition();
+		return (E) proof(name).getProposition().accept(new Instance());
 	}
 	
 	@SuppressWarnings("unchecked")
 	public static final <E extends Expression<?>> E proposition(final int index) {
-		return (E) proof(index).getProposition();
+		return (E) proof(index).getProposition().accept(new Instance());
 	}
 	
 	public static final void intros() {

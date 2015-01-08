@@ -10,8 +10,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeSet;
 
 import averan3.core.Expression.Visitor;
@@ -247,13 +249,62 @@ public abstract class Proof implements Serializable {
 		}
 		
 		@SuppressWarnings("unchecked")
-		public final <E extends Expression<?>> E findProposition(final String name) {
-			return (E) this.findProof(name).getProposition();
+		public final <E extends Expression<?>> E instantiateProposition(final String name) {
+			return (E) this.findProof(name).getProposition().accept(new Instance());
+		}
+		
+		/**
+		 * @author codistmonk (creation 2015-01-08)
+		 */
+		public static final class Instance implements Visitor<Expression<?>> {
+			
+			private final Map<Variable, Variable> variables = new IdentityHashMap<>();
+			
+			@Override
+			public final Expression<?> visit(final Symbol<?> symbol) {
+				return symbol;
+			}
+			
+			@Override
+			public final Expression<?> visit(final Variable variable) {
+				return variable.isLocked() ? variable : this.variables.computeIfAbsent(variable, v -> new Variable(v.getName()));
+			}
+			
+			@Override
+			public final Expression<?> visit(final Composite<Expression<?>> composite) {
+				final Composite<Expression<?>> newComposite = new Composite<>();
+				boolean returnNewComposite = false;
+				
+				for (final Expression<?> element : composite) {
+					final Expression<?> newElement = element.accept(this);
+					
+					newComposite.add(newElement);
+					
+					if (!returnNewComposite && element != newElement) {
+						returnNewComposite = true;
+					}
+				}
+				
+				return returnNewComposite ? newComposite : composite;
+			}
+			
+			private static final long serialVersionUID = 6918127691328544719L;
+			
 		}
 		
 		@Override
 		public final String toString() {
-			return this.conclusionMessage != null ? this.conclusionMessage :
+			if (this.conclusionMessage != null) {
+				return this.conclusionMessage;
+			}
+			
+			Proof informativeProof = this;
+			
+			while (informativeProof instanceof Deduction && ((Deduction) informativeProof).getProofs().size() == 1) {
+				informativeProof = ((Deduction) informativeProof).getProofs().get(0);
+			}
+			
+			return this != informativeProof ? informativeProof.toString() :
 				"By deduction in " + this.getProofs().size() + " steps";
 		}
 		
@@ -320,8 +371,8 @@ public abstract class Proof implements Serializable {
 			
 			@Override
 			public final void conclude() {
-				final Expression<?> condition = this.getParent().findProposition(this.conditionName);
-				Composite<Expression<?>> rule = this.getParent().findProposition(this.ruleName);
+				final Expression<?> condition = this.getParent().instantiateProposition(this.conditionName);
+				Composite<Expression<?>> rule = this.getParent().instantiateProposition(this.ruleName);
 				final Composite<Expression<?>> parameters = rule.getParameters();
 				
 				if (parameters != null) {
@@ -484,11 +535,11 @@ public abstract class Proof implements Serializable {
 			
 			@Override
 			public final void conclude() {
-				final Expression<?> target = this.getParent().findProposition(this.targetName);
+				final Expression<?> target = this.getParent().instantiateProposition(this.targetName);
 				final Expression.Substitution substitution = new Expression.Substitution();
 				
 				for (final String equalityName : this.equalityNames) {
-					final Composite<Expression<?>> equality = this.getParent().findProposition(equalityName);
+					final Composite<Expression<?>> equality = this.getParent().instantiateProposition(equalityName);
 					
 					if (equality == null || equality.getKey() == null || equality.getValue() == null) {
 						Tools.debugError(equalityName, equality);
@@ -530,7 +581,7 @@ public abstract class Proof implements Serializable {
 			@Override
 			public final void conclude() {
 				final int n = this.values.length;
-				final Composite<?> target = this.getParent().findProposition(this.targetName);
+				final Composite<?> target = this.getParent().instantiateProposition(this.targetName);
 				final Composite<Expression<?>> parameters = target.getParameters();
 				
 				target.accept(Variable.RESET);
