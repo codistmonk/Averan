@@ -4,7 +4,7 @@ import static averan3.core.Composite.FORALL;
 import static java.lang.Math.max;
 import static java.util.Collections.nCopies;
 import static net.sourceforge.aprog.tools.Tools.join;
-
+import averan.common.Metadata;
 import averan3.core.Composite;
 import averan3.core.Expression;
 import averan3.core.Proof;
@@ -82,6 +82,12 @@ public final class ConsoleOutput implements Output {
 	
 	public static final ConsoleOutput.ToString TO_STRING = new ToString();
 	
+	public static final <E extends Expression<?>> E group(final E expression) {
+		Metadata.put(expression, "forcedGrouping", true);
+		
+		return expression;
+	}
+	
 	/**
 	 * @author codistmonk (creation 2015-01-05)
 	 */
@@ -94,7 +100,6 @@ public final class ConsoleOutput implements Output {
 		
 		@Override
 		public final String visit(final Variable variable) {
-//			return variable.getName();
 			return Variable.getNumberedName(variable);
 		}
 		

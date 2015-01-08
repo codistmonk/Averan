@@ -5,6 +5,7 @@ import static averan2.core.Equality.equality;
 import static averan2.core.Symbol.symbol;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.join;
+import averan.common.Metadata;
 
 import java.util.Collection;
 import java.util.List;

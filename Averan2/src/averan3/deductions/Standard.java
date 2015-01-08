@@ -4,6 +4,7 @@ import static averan3.core.Composite.*;
 import static averan3.core.Session.*;
 import static net.sourceforge.aprog.tools.Tools.append;
 import static net.sourceforge.aprog.tools.Tools.cast;
+
 import averan3.core.Composite;
 import averan3.core.Expression;
 import averan3.core.Proof;
@@ -29,6 +30,8 @@ public final class Standard {
 	private Standard() {
 		throw new IllegalInstantiationException();
 	}
+	
+	public static final AtomicInteger autoDeduceDepth = new AtomicInteger(6); 
 	
 	public static final Deduction DEDUCTION = build(Standard.class.getName(), new Runnable() {
 		
@@ -96,7 +99,17 @@ public final class Standard {
 		
 	}, new ConsoleOutput());
 	
-	public static final AtomicInteger autoDeduceDepth = new AtomicInteger(6); 
+	public static final Composite<?> conjunction(final Object... expressions) {
+		return binaryOperation("⋀", expressions);
+	}
+	
+	public static final Composite<?> disjunction(final Object... expressions) {
+		return binaryOperation("⋁", expressions);
+	}
+	
+	public static final Composite<?> membership(final Object element, final Object set) {
+		return binaryOperation("∈", element, set);
+	}
 	
 	public static final void rewriteRight(final String targetName, final String equalityName, final int... indices) {
 		rewriteRight(null, targetName, equalityName, indices);
