@@ -16,6 +16,9 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
+
+import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2015-01-06)
@@ -39,6 +42,26 @@ public final class Session implements Serializable {
 	private static final long serialVersionUID = 2232568962812683141L;
 	
 	private static final Deque<Session> stack = new ArrayDeque<>();
+	
+	private static final AtomicLong breakpointIndex = new AtomicLong();
+	
+	public static final boolean DEBUG = false;
+	
+	public static final void breakpoint(final long value) {
+		final long m = breakpointIndex.incrementAndGet();
+		
+		Tools.getDebugOutput().println(Tools.debug(Tools.DEBUG_STACK_OFFSET + 1, m));
+		
+		if (m == value) {
+			throw new RuntimeException("BREAKPOINT");
+		}
+	}
+	
+	public static final void log(final Object... objects) {
+		if (DEBUG) {
+			Tools.getDebugOutput().println(Tools.debug(Tools.DEBUG_STACK_OFFSET + 1, objects));
+		}
+	}
 	
 	public static final Session begin() {
 		final Session result = new Session();
