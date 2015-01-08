@@ -86,9 +86,9 @@ public final class ProofTest {
 					final Variable p = subDeduction.introduce("P");
 					
 					subDeduction.new Supposition(null, p).conclude();
-					final String suppositionName = subDeduction.findPropositionName(-1);
+					final String suppositionName = subDeduction.findProof(-1).getPropositionName();
 					subDeduction.new Substitution(null, $$(p, $(), $())).conclude();
-					final String identityName = subDeduction.findPropositionName(-1);
+					final String identityName = subDeduction.findProof(-1).getPropositionName();
 					subDeduction.new Rewrite(null, identityName).using(identityName).conclude();
 					subDeduction.new Rewrite(null, suppositionName).using(identityName).conclude();
 					
