@@ -4,9 +4,11 @@ import static averan3.core.Composite.*;
 import static averan3.core.Session.*;
 import static net.sourceforge.aprog.tools.Tools.append;
 import static net.sourceforge.aprog.tools.Tools.cast;
+
 import averan3.core.Composite;
 import averan3.core.Expression;
 import averan3.core.Proof;
+import averan3.core.Proof.Deduction.Supposition;
 import averan3.core.Variable;
 import averan3.core.Proof.Deduction;
 import averan3.io.ConsoleOutput;
@@ -16,10 +18,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
-import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2015-01-07)
@@ -188,18 +188,6 @@ public final class Standard {
 		return autoDeduce(null, goal, depth);
 	}
 	
-	public static final AtomicLong mark = new AtomicLong();
-	
-	public static final void breakpoint(final long value) {
-		final long m = mark.incrementAndGet();
-		
-		Tools.getDebugOutput().println(Tools.debug(Tools.DEBUG_STACK_OFFSET + 1, m));
-		
-		if (m == value) {
-			throw new RuntimeException("BREAKPOINT");
-		}
-	}
-	
 	public static final boolean autoDeduce(final String propositionName, final Expression<?> goal, final int depth) {
 		if (depth <= 0) {
 			return false;
@@ -211,32 +199,32 @@ public final class Standard {
 			
 			use_justifications:
 			{
-				Tools.debugPrint();
-				Tools.debugPrint("TRYING TO PROVE ", goal());
+				log();
+				log("TRYING TO PROVE ", goal());
 				
 				for (final Justification justification : justify(goal())) {
-					Tools.debugPrint("TRYING TO USE ", justification);
+					log("TRYING TO USE", justification);
 					String justificationName = justification.getPropositionName();
 					
 					deduce();
 					subdeduction:
 					{
 						for (final Justification.Step step : justification.getSteps()) {
-							step.lock();
+							step.bind();
 							
-							Tools.debugPrint(step);
+							log("STEP", step);
 							
-							if (step instanceof Justification.Recall) {
+							if (step instanceof Justification.Recall &&
+									(!justificationName.equals(name(-1)) || proof(-1) instanceof Supposition)) {
 								apply("recall", justificationName);
-								Tools.debugPrint("GENERATED ", name(-1), proposition(-1));
-								breakpoint(0L);
+								log("GENERATED", name(-1), proof(-1).getProposition());
 							}
 							
 							if (step instanceof Justification.Apply) {
 								if (autoDeduce(((Justification.Apply) step).getCondition(), depth - 1)) {
-									Tools.debugPrint("GENERATED ", name(-1), proposition(-1));
+									log("GENERATED", name(-1), proof(-1).getProposition());
 									apply(justificationName, name(-1));
-									Tools.debugPrint("GENERATED ", name(-1), proposition(-1));
+									log("GENERATED", name(-1), proof(-1).getProposition());
 									justificationName = name(-1);
 								} else {
 									cancel();
@@ -246,28 +234,28 @@ public final class Standard {
 							
 							if (step instanceof Justification.Bind) {
 								bind(justificationName, ((Justification.Bind) step).getValues().toArray(new Expression[0]));
-								Tools.debugPrint("GENERATED ", name(-1), proposition(-1));
+								log("GENERATED", name(-1), proof(-1).getProposition());
 							}
 						}
 						
-						Tools.debugPrint("USED ", justification);
+						log("USED", justification);
 						
 						conclude();
 						
 						break use_justifications;
 					}
 					
-					Tools.debugPrint("FAILED TO USE ", justification);
+					log("FAILED TO USE", justification);
 				}
 				
-				Tools.debugPrint("FAILED TO PROVE ", goal());
+				log("FAILED TO PROVE", goal());
 				
 				cancel();
 				
 				return false;
 			}
 			
-			Tools.debugPrint("PROVED ", goal());
+			log("PROVED", goal());
 			
 			conclude();
 		}
@@ -302,7 +290,7 @@ public final class Standard {
 	public static final Justification.Step[] findSteps(final Expression<?> proposition, final Expression<?> goal, final Justification.Step... steps) {
 		if (proposition.accept(Variable.RESET).equals(goal.accept(Variable.RESET))) {
 			for (final Justification.Step step : steps) {
-				step.lock();
+				step.bind();
 			}
 			
 			return append(steps, new Justification.Recall());
@@ -390,7 +378,7 @@ public final class Standard {
 		 */
 		public static abstract interface Step extends Serializable {
 			
-			public abstract Step lock();
+			public abstract Step bind();
 			
 		}
 		
@@ -400,7 +388,7 @@ public final class Standard {
 		public static final class Recall implements Step {
 			
 			@Override
-			public final Recall lock() {
+			public final Recall bind() {
 				return this;
 			}
 			
@@ -431,7 +419,7 @@ public final class Standard {
 			}
 			
 			@Override
-			public final Apply lock() {
+			public final Apply bind() {
 				if (this.boundCondition == null) {
 					this.boundCondition = this.condition;
 				}
@@ -468,7 +456,7 @@ public final class Standard {
 			}
 			
 			@Override
-			public final Bind lock() {
+			public final Bind bind() {
 				if (this.values == null) {
 					this.values = extractValues(this.parameters);
 				} else {
