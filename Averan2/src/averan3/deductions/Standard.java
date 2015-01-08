@@ -4,10 +4,10 @@ import static averan3.core.Composite.*;
 import static averan3.core.Session.*;
 import static net.sourceforge.aprog.tools.Tools.append;
 import static net.sourceforge.aprog.tools.Tools.cast;
-
 import averan3.core.Composite;
 import averan3.core.Expression;
 import averan3.core.Proof;
+import averan3.core.Proof.Deduction.Instance;
 import averan3.core.Proof.Deduction.Supposition;
 import averan3.core.Variable;
 import averan3.core.Proof.Deduction;
@@ -96,7 +96,7 @@ public final class Standard {
 		
 	}, new ConsoleOutput());
 	
-	public static final AtomicInteger autoDeduceDepth = new AtomicInteger(5); 
+	public static final AtomicInteger autoDeduceDepth = new AtomicInteger(6); 
 	
 	public static final void rewriteRight(final String targetName, final String equalityName, final int... indices) {
 		rewriteRight(null, targetName, equalityName, indices);
@@ -273,7 +273,7 @@ public final class Standard {
 			
 			for (int i = proofs.size() - 1; 0 <= i; --i) {
 				final Proof proof = proofs.get(i);
-				final Expression<?> proposition = proof.getProposition();
+				final Expression<?> proposition = proof.getProposition().accept(new Instance());
 				final Justification.Step[] steps = findSteps(proposition, goal);
 				
 				if (0 < steps.length) {

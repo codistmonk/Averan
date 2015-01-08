@@ -4,6 +4,7 @@ import static averan3.core.Composite.FORALL;
 import static java.lang.Math.max;
 import static java.util.Collections.nCopies;
 import static net.sourceforge.aprog.tools.Tools.join;
+
 import averan3.core.Composite;
 import averan3.core.Expression;
 import averan3.core.Proof;
@@ -93,7 +94,8 @@ public final class ConsoleOutput implements Output {
 		
 		@Override
 		public final String visit(final Variable variable) {
-			return variable.getName();
+//			return variable.getName();
+			return Variable.getNumberedName(variable);
 		}
 		
 		@Override
