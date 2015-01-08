@@ -142,8 +142,7 @@ public final class Standard {
 					
 					apply("left_elimination_of_conjunction", name(-1));
 					bind("right_introduction_of_conjunction", y, x);
-					apply(name(-1), name(-2));
-					
+					check(autoDeduce());
 					conclude();
 				}
 			}
@@ -187,10 +186,8 @@ public final class Standard {
 					
 					bind("elimination_of_disjunction", x, y, disjunction(y, x));
 					bind("right_introduction_of_disjunction", y, x);
-					apply(name(-2), name(-1));
 					bind("left_introduction_of_disjunction", y, x);
-					apply(name(-2), name(-1));
-					autoDeduce(); // XXX
+					check(autoDeduce()); // XXX why doesn't it bind by itself?
 					conclude();
 				}
 			}
@@ -316,6 +313,7 @@ public final class Standard {
 				
 				for (final Justification justification : justify(goal())) {
 					log("TRYING TO USE", justification);
+					
 					String justificationName = justification.getPropositionName();
 					
 					deduce();
@@ -350,6 +348,14 @@ public final class Standard {
 							}
 						}
 						
+						if (!deduction().canConclude()) {
+							log("FAILED TO USE", justification);
+							
+							cancel();
+							
+							break use_justifications;
+						}
+						
 						log("USED", justification);
 						
 						conclude();
@@ -359,7 +365,9 @@ public final class Standard {
 					
 					log("FAILED TO USE", justification);
 				}
-				
+			}
+			
+			if (!deduction().canConclude()) {
 				log("FAILED TO PROVE", goal());
 				
 				cancel();
