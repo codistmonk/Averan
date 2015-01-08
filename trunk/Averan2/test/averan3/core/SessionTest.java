@@ -4,7 +4,6 @@ import static averan3.core.Session.*;
 import static averan3.deductions.Standard.*;
 import static net.sourceforge.aprog.tools.Tools.getThisMethodName;
 import static org.junit.Assert.assertTrue;
-
 import averan3.deductions.Standard;
 import averan3.io.ConsoleOutput;
 
@@ -119,21 +118,21 @@ public final class SessionTest {
 				final Variable $n = new Variable("n");
 				final Variable $o = new Variable("o");
 				
-				suppose($(forall($x, $y, $m, $n, $o), rule($($x, " is matrix ", $m, "×", $n),
-						$($y, " is matrix ", $n, "×", $o),
-						$($($x, $y), " is matrix ", $m, "×", $o))));
+				suppose($(forall($x, $y, $m, $n, $o), rule($($x, IS_MATRIX, $m, "×", $n),
+						$($y, IS_MATRIX, $n, "×", $o),
+						$($($x, $y), IS_MATRIX, $m, "×", $o))));
 			}
 			
 			{
-				assertTrue(autoDeduce(rule($("a", " is matrix ", "i", "×", "j"),
-						$("b", " is matrix ", "j", "×", "k"),
-						$($("a", "b"), " is matrix ", "i", "×", "k"))));
+				assertTrue(autoDeduce(rule($("a", IS_MATRIX, "i", "×", "j"),
+						$("b", IS_MATRIX, "j", "×", "k"),
+						$($("a", "b"), IS_MATRIX, "i", "×", "k"))));
 			}
 			
 			{
-				assertTrue(autoDeduce(rule($("a", " is matrix ", "i", "×", "j"),
-						$("b", " is matrix ", "j", "×", "k"),
-						$($("a", "b"), " is matrix ", new Variable("m?"), "×", new Variable("n?")))));
+				assertTrue(autoDeduce(rule($("a", IS_MATRIX, "i", "×", "j"),
+						$("b", IS_MATRIX, "j", "×", "k"),
+						$($("a", "b"), IS_MATRIX, new Variable("m?"), "×", new Variable("n?")))));
 			}
 		}, new ConsoleOutput());
 	}
@@ -152,18 +151,20 @@ public final class SessionTest {
 				final Variable $n = new Variable("n");
 				final Variable $o = new Variable("o");
 				
-				suppose($(forall($x, $y, $m, $n, $o), rule($($x, " is matrix ", $m, "×", $n),
-						$($y, " is matrix ", $n, "×", $o),
-						$($($x, $y), " is matrix ", $m, "×", $o))));
+				suppose($(forall($x, $y, $m, $n, $o), rule($($x, IS_MATRIX, $m, "×", $n),
+						$($y, IS_MATRIX, $n, "×", $o),
+						$($($x, $y), IS_MATRIX, $m, "×", $o))));
 			}
 			
 			{
-				assertTrue(autoDeduce(rule($("a", " is matrix ", "i", "×", "j"),
-						$("b", " is matrix ", "j", "×", "k"),
-						$("c", " is matrix ", "k", "×", "l"),
-						$($("a", $("b", "c")), " is matrix ", new Variable("m?"), "×", new Variable("n?")))));
+				assertTrue(autoDeduce(rule($("a", IS_MATRIX, "i", "×", "j"),
+						$("b", IS_MATRIX, "j", "×", "k"),
+						$("c", IS_MATRIX, "k", "×", "l"),
+						$($("a", $("b", "c")), IS_MATRIX, new Variable("m?"), "×", new Variable("n?")))));
 			}
 		}, new ConsoleOutput());
 	}
+	
+	public static final String IS_MATRIX = " is a matrix of size ";
 	
 }
