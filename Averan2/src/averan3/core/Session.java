@@ -1,6 +1,8 @@
 package averan3.core;
 
 import static averan3.core.Composite.FORALL;
+import static averan3.core.Composite.IMPLIES;
+import static averan3.core.Session.$$;
 import static net.sourceforge.aprog.tools.Tools.append;
 import static net.sourceforge.aprog.tools.Tools.array;
 import static net.sourceforge.aprog.tools.Tools.ignore;
@@ -81,6 +83,19 @@ public final class Session implements Serializable {
 		}
 		
 		return list(append(array((Expression<?>) FORALL), variables));
+	}
+	
+	public static final Composite<Expression<?>> rule(final Object condition0, final Object conclusion0, final Object... moreConclusions) {
+		final Composite<Expression<?>> result = $$(condition0, IMPLIES, conclusion0);
+		Composite<Expression<?>> end = result;
+		
+		for (final Object conclusion : moreConclusions) {
+			final Composite<Expression<?>> newEnd = $$(end.removeLast(), IMPLIES, conclusion); 
+			end.add(newEnd);
+			end = newEnd;
+		}
+		
+		return result;
 	}
 	
 	public static final Composite<Expression<?>> list(final Expression<?>... elements) {
