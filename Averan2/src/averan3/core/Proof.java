@@ -123,7 +123,6 @@ public abstract class Proof implements Serializable {
 			final Composite<?> goal = cast(Composite.class, this.getGoal());
 			
 			if (goal != null) {
-				Tools.debugPrint(goal.getParameters());
 				if (goal.getParameters() != null && goal.getParameters().isList()) {
 					final Variable parameter = (Variable) goal.getParameters().getListElement(1);
 					final Variable result = this.newParameter(
