@@ -102,7 +102,7 @@ public final class Variable implements Expression<Variable> {
 			return true;
 		}
 		
-		return this == object || this.getMatch().equals(object);
+		return this == object || (this.getMatch() != this && this.getMatch().equals(object));
 	}
 	
 	@Override

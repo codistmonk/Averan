@@ -138,7 +138,8 @@ public final class Reals {
 				
 				suppose("associativity_of_real_multiplication",
 						$(forall($x, $y, $z), rule(real($x), real($y), real($z),
-								$(multiplication($x, group(multiplication($y, $z))), "=", multiplication(group(multiplication($x, $y)), $z)))));
+								equality(multiplication($x, group(multiplication($y, $z))),
+										multiplication(group(multiplication($x, $y)), $z)))));
 			}
 			
 			{
@@ -146,25 +147,27 @@ public final class Reals {
 				final Variable $y = variable("y");
 				
 				suppose("commutativity_of_real_multiplication",
-						$(forall($x, $y), rule(real($x), real($y), $(multiplication($x, $y), "=", multiplication($y, $x)))));
+						$(forall($x, $y), rule(real($x), real($y), equality(multiplication($x, $y), multiplication($y, $x)))));
 			}
 			
-//			{
-//				final Variable $X = variable("X");
-//				final Variable $i = variable("i");
-//				
-//				suppose("definition_of_sum_0",
-//						$(forall($X, $i), equality(sum($i, ZERO, $X), $($X, new Substitution().using(equality($i, ZERO))))));
-//			}
-//			
-//			{
-//				final Variable $X = variable("X");
-//				final Variable $n = variable("n");
-//				final Variable $i = variable("i");
-//				
-//				suppose("definition_of_sum_n",
-//						$(forall($X, $n, $i), equality(sum($i, $n, $X), addition(sum($i, subtraction($n, ONE), $X), $($X, new Substitution().using(equality($i, $n)))))));
-//			}
+			{
+				final Variable $X = variable("X");
+				final Variable $i = variable("i");
+				
+				suppose("definition_of_sum_0",
+						$(forall($X, $i), equality(sum($i, ZERO, $X),
+								$($X, list(equality($i, ZERO)), list()))));
+			}
+			
+			{
+				final Variable $X = variable("X");
+				final Variable $n = variable("n");
+				final Variable $i = variable("i");
+				
+				suppose("definition_of_sum_n",
+						$(forall($X, $n, $i), equality(sum($i, $n, $X),
+								addition(sum($i, subtraction($n, ONE), $X), $($X, list(equality($i, $n)), list())))));
+			}
 			
 			{
 				final Variable $X = variable("X");
@@ -181,16 +184,16 @@ public final class Reals {
 										real($("X", "_", $($i, ",", $j)))))))));
 			}
 			
-//			{
-//				autoDeduce("realness_of_0",
-//						real(ZERO));
-//				autoDeduce("realness_of_1",
-//						real(ONE));
-//				autoDeduce(
-//						real(addition(ZERO, ONE)));
-//				autoDeduce(
-//						real(multiplication(ZERO, ONE)));
-//			}
+			{
+				autoDeduce("realness_of_0",
+						real(ZERO));
+				autoDeduce("realness_of_1",
+						real(ONE));
+				autoDeduce(
+						real(addition(ZERO, ONE)));
+				autoDeduce(
+						real(multiplication(ZERO, ONE)));
+			}
 		}
 		
 	}, new ConsoleOutput());

@@ -164,10 +164,14 @@ public abstract class Proof implements Serializable {
 			this.conclude();
 		}
 		
+		public final boolean canConclude() {
+			return !(this.getProofs().isEmpty() || last(this.getProofs()) instanceof Supposition
+					|| (this.getGoal() != null && !last(this.getProofs()).getProposition().equals(this.getGoal())));
+		}
+		
 		@Override
 		public final void conclude() {
-			if (this.getProofs().isEmpty() || last(this.getProofs()) instanceof Supposition
-					|| (this.getGoal() != null && !last(this.getProofs()).getProposition().equals(this.getGoal()))) {
+			if (!this.canConclude()) {
 				Tools.debugError(this.getProofs().size());
 				if (!this.getProofs().isEmpty()) {
 					Tools.debugError(last(this.getProofs()).getProposition());

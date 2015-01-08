@@ -1,5 +1,6 @@
 package averan3.core;
 
+import static averan3.core.Composite.EQUALS;
 import static averan3.core.Composite.FORALL;
 import static averan3.core.Composite.IMPLIES;
 import static net.sourceforge.aprog.tools.Tools.append;
@@ -7,7 +8,6 @@ import static net.sourceforge.aprog.tools.Tools.array;
 import static net.sourceforge.aprog.tools.Tools.ignore;
 import static net.sourceforge.aprog.tools.Tools.last;
 import static net.sourceforge.aprog.tools.Tools.lastIndex;
-
 import averan3.core.Proof.Deduction;
 import averan3.core.Proof.Deduction.Instance;
 
@@ -61,6 +61,12 @@ public final class Session implements Serializable {
 	public static final void log(final Object... objects) {
 		if (DEBUG) {
 			Tools.getDebugOutput().println(Tools.debug(Tools.DEBUG_STACK_OFFSET + 1, objects));
+		}
+	}
+	
+	public static final void check(final boolean ok) {
+		if (!ok) {
+			throw new RuntimeException();
 		}
 	}
 	
@@ -134,6 +140,10 @@ public final class Session implements Serializable {
 	
 	public static final Composite<Expression<?>> rule(final Object condition0, final Object conclusion0, final Object... moreConclusions) {
 		return binaryOperation(IMPLIES, append(array(condition0, conclusion0), moreConclusions));
+	}
+	
+	public static final Composite<Expression<?>> equality(final Object left, final Object right) {
+		return $$(left, EQUALS, right);
 	}
 	
 	public static final Composite<Expression<?>> list(final Expression<?>... elements) {
