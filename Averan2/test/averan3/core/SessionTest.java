@@ -138,4 +138,32 @@ public final class SessionTest {
 		}, new ConsoleOutput());
 	}
 	
+	@Test
+	public final void test6() {
+		final String deductionName = this.getClass().getName() + "." + getThisMethodName();
+		
+		build(deductionName, () -> {
+			include(Standard.DEDUCTION);
+			
+			{
+				final Variable $x = new Variable("x");
+				final Variable $y = new Variable("y");
+				final Variable $m = new Variable("m");
+				final Variable $n = new Variable("n");
+				final Variable $o = new Variable("o");
+				
+				suppose($(forall($x, $y, $m, $n, $o), rule($($x, " is matrix ", $m, "×", $n),
+						$($y, " is matrix ", $n, "×", $o),
+						$($($x, $y), " is matrix ", $m, "×", $o))));
+			}
+			
+			{
+				assertTrue(autoDeduce(rule($("a", " is matrix ", "i", "×", "j"),
+						$("b", " is matrix ", "j", "×", "k"),
+						$("c", " is matrix ", "k", "×", "l"),
+						$($("a", $("b", "c")), " is matrix ", new Variable("m?"), "×", new Variable("n?")))));
+			}
+		}, new ConsoleOutput());
+	}
+	
 }
