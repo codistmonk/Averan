@@ -18,8 +18,12 @@ public final class Variable implements Expression<Variable> {
 		this.name = name;
 	}
 	
+	public final boolean isLocked() {
+		return this.locked;
+	}
+	
 	public final Variable lock() {
-		if (this.locked) {
+		if (this.isLocked()) {
 			throw new IllegalStateException();
 		}
 		
@@ -29,7 +33,7 @@ public final class Variable implements Expression<Variable> {
 	}
 	
 	public final Variable unlock() {
-		if (!this.locked) {
+		if (!this.isLocked()) {
 			throw new IllegalStateException();
 		}
 		
@@ -43,7 +47,7 @@ public final class Variable implements Expression<Variable> {
 	}
 	
 	public final Expression<?> getMatch() {
-		if (this.locked) {
+		if (this.isLocked()) {
 			return this;
 		}
 		
@@ -84,7 +88,7 @@ public final class Variable implements Expression<Variable> {
 	
 	@Override
 	public final boolean equals(final Object object) {
-		if (this.locked) {
+		if (this.isLocked()) {
 			return this == object;
 		}
 		

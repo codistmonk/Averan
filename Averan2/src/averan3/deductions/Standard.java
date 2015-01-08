@@ -4,7 +4,6 @@ import static averan3.core.Composite.*;
 import static averan3.core.Session.*;
 import static net.sourceforge.aprog.tools.Tools.append;
 import static net.sourceforge.aprog.tools.Tools.cast;
-
 import averan3.core.Composite;
 import averan3.core.Expression;
 import averan3.core.Proof;
@@ -17,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 import net.sourceforge.aprog.tools.Tools;
@@ -188,6 +188,18 @@ public final class Standard {
 		return autoDeduce(null, goal, depth);
 	}
 	
+	public static final AtomicLong mark = new AtomicLong();
+	
+	public static final void breakpoint(final long value) {
+		final long m = mark.incrementAndGet();
+		
+		Tools.getDebugOutput().println(Tools.debug(Tools.DEBUG_STACK_OFFSET + 1, m));
+		
+		if (m == value) {
+			throw new RuntimeException("BREAKPOINT");
+		}
+	}
+	
 	public static final boolean autoDeduce(final String propositionName, final Expression<?> goal, final int depth) {
 		if (depth <= 0) {
 			return false;
@@ -210,11 +222,14 @@ public final class Standard {
 					subdeduction:
 					{
 						for (final Justification.Step step : justification.getSteps()) {
+							step.lock();
+							
 							Tools.debugPrint(step);
 							
 							if (step instanceof Justification.Recall) {
 								apply("recall", justificationName);
 								Tools.debugPrint("GENERATED ", name(-1), proposition(-1));
+								breakpoint(0L);
 							}
 							
 							if (step instanceof Justification.Apply) {
@@ -375,7 +390,7 @@ public final class Standard {
 		 */
 		public static abstract interface Step extends Serializable {
 			
-			public abstract void lock();
+			public abstract Step lock();
 			
 		}
 		
@@ -385,8 +400,8 @@ public final class Standard {
 		public static final class Recall implements Step {
 			
 			@Override
-			public final void lock() {
-				// NOP
+			public final Recall lock() {
+				return this;
 			}
 			
 			@Override
@@ -412,16 +427,18 @@ public final class Standard {
 			}
 			
 			public final Expression<?> getCondition() {
-				if (this.boundCondition == null) {
-					this.boundCondition = this.condition.accept(Variable.BIND);
-				}
-				
 				return this.boundCondition;
 			}
 			
 			@Override
-			public final void lock() {
-				this.getCondition();
+			public final Apply lock() {
+				if (this.boundCondition == null) {
+					this.boundCondition = this.condition;
+				}
+				
+				this.boundCondition = this.boundCondition.accept(Variable.BIND);
+				
+				return this;
 			}
 			
 			@Override
@@ -447,16 +464,27 @@ public final class Standard {
 			}
 			
 			public final List<Expression<?>> getValues() {
-				if (this.values == null) {
-					this.values = extractValues(this.parameters);
-				}
-				
 				return this.values;
 			}
 			
 			@Override
-			public final void lock() {
-				this.getValues();
+			public final Bind lock() {
+				if (this.values == null) {
+					this.values = extractValues(this.parameters);
+				} else {
+					final int n = this.parameters.getListSize();
+					
+					for (int i = 1; i < n; ++i) {
+						final Variable parameter = (Variable) this.parameters.getListElement(i);
+						
+						if (this.values.get(i - 1) == null && parameter.getMatch() != null) {
+							this.values.set(i - 1, parameter.getMatch());
+						}
+					}
+				}
+				
+				
+				return this;
 			}
 			
 			@Override
