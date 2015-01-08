@@ -3,6 +3,10 @@ package averan3.core;
 import static averan3.core.Composite.FORALL;
 import static net.sourceforge.aprog.tools.Tools.cast;
 
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.Map;
+
 /**
  * @author codistmonk (creation 2015-01-04)
  */
@@ -104,7 +108,8 @@ public final class Variable implements Expression<Variable> {
 	@Override
 	public final String toString() {
 //		return "$" + this.getName() + "(" + formatFilter(this.getFilter()) + ")<" + (this.getMatch() == null ? "" : this.getMatch()) + ">";
-		return "$" + this.getName() + "<" + (this.locked ? "!" : this.getMatch() == null ? "" : "...") + ">";
+//		return "$" + this.getName() + "<" + (this.locked ? "!" : this.getMatch() == null ? "" : "...") + ">";
+		return "$" + getNumberedName(this) + "<" + (this.locked ? "!" : this.getMatch() == null ? "" : "...") + ">";
 	}
 	
 	public static final String formatFilter(final Object filter) {
@@ -122,6 +127,23 @@ public final class Variable implements Expression<Variable> {
 	public static final Reset RESET = new Reset();
 	
 	public static final Bind BIND = new Bind();
+	
+	public static final Unlock UNLOCK = new Unlock();
+	
+	public static final boolean DEBUG = false;
+	
+	private static final Map<String, Map<Variable, Integer>> names = new HashMap<>();
+	
+	public static final String getNumberedName(final Variable variable) {
+		if (!DEBUG) {
+			return variable.getName();
+		}
+		
+		final Map<Variable, Integer> variables = names.computeIfAbsent(variable.getName(), name -> new IdentityHashMap<>());
+		final Integer index = variables.computeIfAbsent(variable, v -> variables.size() + 1);
+		
+		return variable.getName() + (index.equals(1) ? "" : "#" + index);
+	}
 	
 	/**
 	 * @author codistmonk (creation 2015-01-04)
@@ -217,6 +239,32 @@ public final class Variable implements Expression<Variable> {
 		}
 		
 		private static final long serialVersionUID = 8086793860438225779L;
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2015-01-08)
+	 */
+	public static final class Unlock implements Visitor<Expression<?>> {
+		
+		@Override
+		public Symbol<?> visit(final Symbol<?> symbol) {
+			return symbol;
+		}
+
+		@Override
+		public final Variable visit(final Variable variable) {
+			return variable.unlock();
+		}
+		
+		@Override
+		public final Composite<Expression<?>> visit(final Composite<Expression<?>> composite) {
+			composite.forEach(element -> element.accept(this));
+			
+			return composite;
+		}
+		
+		private static final long serialVersionUID = -6533689663664108766L;
 		
 	}
 	

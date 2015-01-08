@@ -6,6 +6,8 @@ import static averan3.core.Composite.IMPLIES;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.last;
 
+import averan3.core.Expression.Visitor;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
-import averan3.core.Expression.Visitor;
 import net.sourceforge.aprog.tools.Tools;
 
 /**
@@ -187,39 +188,11 @@ public abstract class Proof implements Serializable {
 				
 				if (this.hasParameters) {
 					reduced.module.setRoot(new Composite<>().add(
-							this.module.getRoot().get(0).accept(UNLOCK)).add(reduced.module.getRoot()));
+							this.module.getRoot().get(0).accept(Variable.UNLOCK)).add(reduced.module.getRoot()));
 				}
 				
 				this.setProposition(reduced.module.getRoot());
 			}
-		}
-		
-		public static final Unlock UNLOCK = new Unlock();
-		
-		/**
-		 * @author codistmonk (creation 2015-01-08)
-		 */
-		public static final class Unlock implements Visitor<Expression<?>> {
-			
-			@Override
-			public Symbol<?> visit(final Symbol<?> symbol) {
-				return symbol;
-			}
-
-			@Override
-			public final Variable visit(final Variable variable) {
-				return variable.unlock();
-			}
-			
-			@Override
-			public final Composite<Expression<?>> visit(final Composite<Expression<?>> composite) {
-				composite.forEach(element -> element.accept(this));
-				
-				return composite;
-			}
-			
-			private static final long serialVersionUID = -6533689663664108766L;
-			
 		}
 		
 		public final Expression<?> getGoal() {
