@@ -199,9 +199,11 @@ public final class Standard {
 			
 			use_justifications:
 			{
-				Tools.debugPrint(goal());
+				Tools.debugPrint();
+				Tools.debugPrint("TRYING TO PROVE ", goal());
+				
 				for (final Justification justification : justify(goal())) {
-					Tools.debugPrint(justification);
+					Tools.debugPrint("TRYING TO USE ", justification);
 					String justificationName = justification.getPropositionName();
 					
 					deduce();
@@ -212,11 +214,14 @@ public final class Standard {
 							
 							if (step instanceof Justification.Recall) {
 								apply("recall", justificationName);
+								Tools.debugPrint("GENERATED ", name(-1), proposition(-1));
 							}
 							
 							if (step instanceof Justification.Apply) {
 								if (autoDeduce(((Justification.Apply) step).getCondition(), depth - 1)) {
+									Tools.debugPrint("GENERATED ", name(-1), proposition(-1));
 									apply(justificationName, name(-1));
+									Tools.debugPrint("GENERATED ", name(-1), proposition(-1));
 									justificationName = name(-1);
 								} else {
 									cancel();
@@ -226,20 +231,28 @@ public final class Standard {
 							
 							if (step instanceof Justification.Bind) {
 								bind(justificationName, ((Justification.Bind) step).getValues().toArray(new Expression[0]));
+								Tools.debugPrint("GENERATED ", name(-1), proposition(-1));
 							}
 						}
+						
+						Tools.debugPrint("USED ", justification);
 						
 						conclude();
 						
 						break use_justifications;
 					}
 					
+					Tools.debugPrint("FAILED TO USE ", justification);
 				}
+				
+				Tools.debugPrint("FAILED TO PROVE ", goal());
 				
 				cancel();
 				
 				return false;
 			}
+			
+			Tools.debugPrint("PROVED ", goal());
 			
 			conclude();
 		}
@@ -273,6 +286,10 @@ public final class Standard {
 	
 	public static final Justification.Step[] findSteps(final Expression<?> proposition, final Expression<?> goal, final Justification.Step... steps) {
 		if (proposition.accept(Variable.RESET).equals(goal.accept(Variable.RESET))) {
+			for (final Justification.Step step : steps) {
+				step.lock();
+			}
+			
 			return append(steps, new Justification.Recall());
 		}
 		
@@ -357,7 +374,9 @@ public final class Standard {
 		 * @author codistmonk (creation 2015-01-07)
 		 */
 		public static abstract interface Step extends Serializable {
-			// NOP
+			
+			public abstract void lock();
+			
 		}
 		
 		/**
@@ -365,12 +384,17 @@ public final class Standard {
 		 */
 		public static final class Recall implements Step {
 			
-			private static final long serialVersionUID = -391482341455285510L;
+			@Override
+			public final void lock() {
+				// NOP
+			}
 			
 			@Override
 			public final String toString() {
 				return "Recall";
 			}
+			
+			private static final long serialVersionUID = -391482341455285510L;
 			
 		}
 		
@@ -396,6 +420,11 @@ public final class Standard {
 			}
 			
 			@Override
+			public final void lock() {
+				this.getCondition();
+			}
+			
+			@Override
 			public final String toString() {
 				return "Apply on " + this.getCondition();
 			}
@@ -413,8 +442,8 @@ public final class Standard {
 			
 			private List<Expression<?>> values;
 			
-			public Bind(final Composite<Expression<?>> values) {
-				this.parameters = values;
+			public Bind(final Composite<Expression<?>> parameters) {
+				this.parameters = parameters;
 			}
 			
 			public final List<Expression<?>> getValues() {
@@ -426,8 +455,13 @@ public final class Standard {
 			}
 			
 			@Override
+			public final void lock() {
+				this.getValues();
+			}
+			
+			@Override
 			public final String toString() {
-				return "Bind " + this.getValues();
+				return "Bind " + this.parameters + " with " + this.getValues();
 			}
 			
 			private static final long serialVersionUID = -2178774924606129974L;

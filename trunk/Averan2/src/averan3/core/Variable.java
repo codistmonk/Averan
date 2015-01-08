@@ -12,8 +12,30 @@ public final class Variable implements Expression<Variable> {
 	
 	private Expression<?> match;
 	
+	private boolean locked;
+	
 	public Variable(final String name) {
 		this.name = name;
+	}
+	
+	public final Variable lock() {
+		if (this.locked) {
+			throw new IllegalStateException();
+		}
+		
+		this.locked = true;
+		
+		return this;
+	}
+	
+	public final Variable unlock() {
+		if (!this.locked) {
+			throw new IllegalStateException();
+		}
+		
+		this.locked = false;
+		
+		return this;
 	}
 	
 	public final String getName() {
@@ -21,6 +43,10 @@ public final class Variable implements Expression<Variable> {
 	}
 	
 	public final Expression<?> getMatch() {
+		if (this.locked) {
+			return this;
+		}
+		
 		return this.match;
 	}
 	
@@ -58,6 +84,10 @@ public final class Variable implements Expression<Variable> {
 	
 	@Override
 	public final boolean equals(final Object object) {
+		if (this.locked) {
+			return this == object;
+		}
+		
 		if (this.match == null) {
 			this.match = (Expression<?>) object;
 			
@@ -70,7 +100,7 @@ public final class Variable implements Expression<Variable> {
 	@Override
 	public final String toString() {
 //		return "$" + this.getName() + "(" + formatFilter(this.getFilter()) + ")<" + (this.getMatch() == null ? "" : this.getMatch()) + ">";
-		return "$" + this.getName() + "<" + (this.getMatch() == null ? "" : "...") + ">";
+		return "$" + this.getName() + "<" + (this.locked ? "!" : this.getMatch() == null ? "" : "...") + ">";
 	}
 	
 	public static final String formatFilter(final Object filter) {
