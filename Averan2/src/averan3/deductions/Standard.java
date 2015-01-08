@@ -95,6 +95,105 @@ public final class Standard {
 										IMPLIES, $($($($E, $$().add($($X, EQUALS, $Y)).add($T), $I), EQUALS, $F),
 												IMPLIES, $F)))));
 			}
+			
+			{
+				final Variable $X = variable("X");
+				final Variable $Y = variable("Y");
+				
+				suppose("left_introduction_of_conjunction",
+						$(forall($X, $Y), rule($X, conjunction($X, $Y))));
+			}
+			
+			{
+				final Variable $X = variable("X");
+				final Variable $Y = variable("Y");
+				
+				suppose("right_introduction_of_conjunction",
+						$(forall($X, $Y), rule($Y, conjunction($X, $Y))));
+			}
+			
+			{
+				final Variable $X = variable("X");
+				final Variable $Y = variable("Y");
+				
+				suppose("left_elimination_of_conjunction",
+						$(forall($X, $Y), rule(conjunction($X, $Y), $X)));
+			}
+			
+			{
+				final Variable $X = variable("X");
+				final Variable $Y = variable("Y");
+				
+				suppose("right_elimination_of_conjunction",
+						$(forall($X, $Y), rule(conjunction($X, $Y), $Y)));
+			}
+			
+			{
+				final Variable $X = variable("X");
+				final Variable $Y = variable("Y");
+				
+				deduce("commutativity_of_conjunction",
+						$(forall($X, $Y), rule(conjunction($X, $Y), conjunction($Y, $X))));
+				{
+					final Variable x = introduce();
+					final Variable y = introduce();
+					
+					intros();
+					
+					apply("left_elimination_of_conjunction", name(-1));
+					bind("right_introduction_of_conjunction", y, x);
+					apply(name(-1), name(-2));
+					
+					conclude();
+				}
+			}
+			
+			{
+				final Variable $X = variable("X");
+				final Variable $Y = variable("Y");
+				
+				suppose("left_introduction_of_disjunction",
+						$(forall($X, $Y), rule($X, disjunction($X, $Y))));
+			}
+			
+			{
+				final Variable $X = variable("X");
+				final Variable $Y = variable("Y");
+				
+				suppose("right_introduction_of_disjunction",
+						$(forall($X, $Y), rule($Y, disjunction($X, $Y))));
+			}
+			
+			{
+				final Variable $X = variable("X");
+				final Variable $Y = variable("Y");
+				final Variable $Z = variable("Z");
+				
+				suppose("elimination_of_disjunction",
+						$(forall($X, $Y, $Z), rule(rule($X, $Z), rule($Y, $Z), rule(disjunction($X, $Y), $Z))));
+			}
+			
+			{
+				final Variable $X = variable("X");
+				final Variable $Y = variable("Y");
+				
+				deduce("commutativity_of_disjunction",
+						$(forall($X, $Y), rule(disjunction($X, $Y), disjunction($Y, $X))));
+				{
+					final Variable x = introduce();
+					final Variable y = introduce();
+					
+					intros();
+					
+					bind("elimination_of_disjunction", x, y, disjunction(y, x));
+					bind("right_introduction_of_disjunction", y, x);
+					apply(name(-2), name(-1));
+					bind("left_introduction_of_disjunction", y, x);
+					apply(name(-2), name(-1));
+					autoDeduce(); // XXX
+					conclude();
+				}
+			}
 		}
 		
 	}, new ConsoleOutput());

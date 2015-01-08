@@ -123,21 +123,23 @@ public abstract class Proof implements Serializable {
 			final Composite<?> goal = cast(Composite.class, this.getGoal());
 			
 			if (goal != null) {
-				if (goal.getParameters() != null) {
+				Tools.debugPrint(goal.getParameters());
+				if (goal.getParameters() != null && goal.getParameters().isList()) {
 					final Variable parameter = (Variable) goal.getParameters().getListElement(1);
-					final Variable result = this.newParameter(parameterOrPropositionName);
+					final Variable result = this.newParameter(
+							parameterOrPropositionName != null ? parameterOrPropositionName : parameter.getName());
 					
 					{
-						final Composite<Expression<?>> newParameters = new Composite<>().add(FORALL);
+						final Composite<Expression<?>> newParameters = new Composite<>().append(FORALL);
 						final int n = goal.getParameters().getListSize();
 						
 						for (int i = 2; i < n; ++i) {
-							newParameters.add(goal.getParameters().getListElement(i));
+							newParameters.append(goal.getParameters().getListElement(i));
 						}
 						
 						final Expression<?> newContents = goal.getContents().accept(new Expression.Substitution().bind(parameter, result));
 						
-						this.goal = 1 < newParameters.size() ? new Composite<>().add(newParameters).add(newContents) : newContents;
+						this.goal = 1 < newParameters.getListSize() ? new Composite<>().add(newParameters).add(newContents) : newContents;
 					}
 					
 					return (E) result;

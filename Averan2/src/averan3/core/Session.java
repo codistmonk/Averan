@@ -84,6 +84,10 @@ public final class Session implements Serializable {
 		return new Symbol<>(object);
 	}
 	
+	public static final Variable variable(final String name) {
+		return new Variable(name);
+	}
+	
 	public static final Expression<?> $(final Object... objects) {
 		if (objects.length == 1) {
 			final Object object = objects[0];
