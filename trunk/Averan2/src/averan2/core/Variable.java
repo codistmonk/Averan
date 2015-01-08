@@ -2,6 +2,7 @@ package averan2.core;
 
 import static averan2.core.Equality.equality;
 import static net.sourceforge.aprog.tools.Tools.cast;
+import averan.common.Metadata;
 
 import java.util.Collection;
 

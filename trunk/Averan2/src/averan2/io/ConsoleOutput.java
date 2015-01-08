@@ -2,11 +2,10 @@ package averan2.io;
 
 import static java.util.Collections.nCopies;
 import static net.sourceforge.aprog.tools.Tools.join;
-
+import averan.common.Metadata;
 import averan2.core.Composite;
 import averan2.core.Equality;
 import averan2.core.Expression;
-import averan2.core.Expression.Metadata;
 import averan2.core.Expression.Visitor;
 import averan2.core.Module;
 import averan2.core.Module.Proof;

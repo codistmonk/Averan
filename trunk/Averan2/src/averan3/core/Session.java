@@ -7,6 +7,7 @@ import static net.sourceforge.aprog.tools.Tools.array;
 import static net.sourceforge.aprog.tools.Tools.ignore;
 import static net.sourceforge.aprog.tools.Tools.last;
 import static net.sourceforge.aprog.tools.Tools.lastIndex;
+
 import averan3.core.Proof.Deduction;
 import averan3.core.Proof.Deduction.Instance;
 
@@ -79,6 +80,10 @@ public final class Session implements Serializable {
 		return stack.getLast();
 	}
 	
+	public static final <T> Symbol<T> symbol(final T object) {
+		return new Symbol<>(object);
+	}
+	
 	public static final Expression<?> $(final Object... objects) {
 		if (objects.length == 1) {
 			final Object object = objects[0];
@@ -108,17 +113,23 @@ public final class Session implements Serializable {
 		return list(append(array((Expression<?>) FORALL), variables));
 	}
 	
-	public static final Composite<Expression<?>> rule(final Object condition0, final Object conclusion0, final Object... moreConclusions) {
-		final Composite<Expression<?>> result = $$(condition0, IMPLIES, conclusion0);
+	public static final Composite<Expression<?>> binaryOperation(final Object operator, final Object... expressions) {
+		final Composite<Expression<?>> result = $$(expressions[0], operator, expressions[1]);
 		Composite<Expression<?>> end = result;
 		
-		for (final Object conclusion : moreConclusions) {
-			final Composite<Expression<?>> newEnd = $$(end.removeLast(), IMPLIES, conclusion); 
+		final int n = expressions.length;
+		
+		for (int i = 2; i < n; ++i) {
+			final Composite<Expression<?>> newEnd = $$(end.removeLast(), operator, expressions[i]); 
 			end.add(newEnd);
 			end = newEnd;
 		}
 		
 		return result;
+	}
+	
+	public static final Composite<Expression<?>> rule(final Object condition0, final Object conclusion0, final Object... moreConclusions) {
+		return binaryOperation(IMPLIES, append(array(condition0, conclusion0), moreConclusions));
 	}
 	
 	public static final Composite<Expression<?>> list(final Expression<?>... elements) {
