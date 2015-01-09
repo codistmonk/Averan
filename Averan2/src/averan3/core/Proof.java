@@ -561,14 +561,26 @@ public abstract class Proof implements Serializable {
 				final int n = this.values.length;
 				final Composite<?> target = this.getParent().instantiateProposition(this.targetName);
 				final Composite<Expression<?>> parameters = target.getParameters();
+				final Composite<Expression<?>> newParameters = new Composite<>().append(FORALL);
+				boolean useContentsOnly = true;
 				
 				target.accept(Variable.RESET);
 				
 				for (int i = 0; i < n; ++i) {
-					((Variable) parameters.getListElement(i + 1)).equals(this.values[i]);
+					final Variable parameter = (Variable) parameters.getListElement(i + 1);
+					
+					if (this.values[i] == null) {
+						newParameters.append(parameter);
+						useContentsOnly = false;
+					} else {
+						parameter.equals(this.values[i]);
+					}
 				}
 				
-				this.setProposition(target.accept(Variable.BIND));
+				final Expression<?> newContents = target.getContents().accept(Variable.BIND);
+				
+				this.setProposition(useContentsOnly ? newContents :
+					new Composite<>().add(newParameters).add(newContents));
 				
 				target.accept(Variable.RESET);
 			}

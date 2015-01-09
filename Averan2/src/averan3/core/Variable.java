@@ -1,6 +1,5 @@
 package averan3.core;
 
-import static averan3.core.Composite.FORALL;
 import static net.sourceforge.aprog.tools.Tools.cast;
 
 import java.util.HashMap;
@@ -188,54 +187,20 @@ public final class Variable implements Expression<Variable> {
 		
 		@Override
 		public final Expression<?> visit(final Composite<Expression<?>> composite) {
-			final Composite<Expression<?>> parameters = composite.getParameters();
-			Composite<Expression<?>> candidate = null;
-			boolean returnCandidate = false;
+			final Composite<Expression<?>> newComposite = new Composite<>();
+			boolean returnNewComposite = false;
 			
-			if (parameters != null && parameters.isList()) {
-				final Composite<Expression<?>> newParameters = new Composite<>().append(FORALL);
-				final int n = parameters.getListSize();
+			for (final Expression<?> element : composite) {
+				final Expression<?> newElement = element.accept(this);
 				
-				for (int i = 1; i < n; ++i) {
-					final Variable parameter = (Variable) parameters.getListElement(i);
-					
-					if (parameter.getMatch() == null) {
-						newParameters.append(parameter);
-					} else if (!returnCandidate) {
-						returnCandidate = true;
-					}
-				}
+				newComposite.add(newElement);
 				
-				if (1 < newParameters.getListSize()) {
-					candidate = new Composite<>().add(newParameters);
+				if (!returnNewComposite && element != newElement) {
+					returnNewComposite = true;
 				}
 			}
 			
-			if (parameters == null || !parameters.isList()) {
-				candidate = new Composite<>();
-				
-				for (final Expression<?> element : composite) {
-					final Expression<?> newElement = element.accept(this);
-					
-					candidate.add(newElement);
-					
-					if (!returnCandidate && newElement != element) {
-						returnCandidate = true;
-					}
-				}
-				
-				return returnCandidate ? candidate : composite;
-			} else if (candidate == null) {
-				return composite.getContents().accept(this);
-			} else {
-				final Expression<?> newContents = composite.getContents().accept(this);
-				
-				if (!returnCandidate && newContents != composite.getContents()) {
-					returnCandidate = true;
-				}
-				
-				return returnCandidate ? candidate.add(newContents) : composite;
-			}
+			return returnNewComposite ? newComposite : composite;
 		}
 		
 		private static final long serialVersionUID = 8086793860438225779L;

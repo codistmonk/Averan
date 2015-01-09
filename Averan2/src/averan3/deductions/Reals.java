@@ -143,28 +143,11 @@ public final class Reals {
 				
 				check(autoDeduce("type_of_matrix_rows",
 						$(forall($X, $m, $n), rule(realMatrix($X, $m, $n), nonzeroNatural($m))), 5));
-//				check(autoDeduce("type_of_matrix_columns",
-//						$(forall($X, $m, $n), rule(realMatrix($X, $m, $n), nonzeroNatural($n))), 5));
-				deduce("type_of_matrix_element",
+				check(autoDeduce("type_of_matrix_columns",
+						$(forall($X, $m, $n), rule(realMatrix($X, $m, $n), nonzeroNatural($n))), 5));
+				check(autoDeduce("type_of_matrix_element",
 						$(forall($X, $m, $n), rule(realMatrix($X, $m, $n), $(forall($i, $j),
-								rule(natural($i, $m), natural($j, $n), real(matrixElement($X, $i, $j)))))));
-				{
-					final Variable x = introduce();
-					final Variable m = introduce();
-					final Variable n = introduce();
-					
-					intros();
-					
-					bind("definition_of_matrices", x, m, n);
-					rewrite(name(-2), name(-1));
-					bind("right_elimination_of_conjunction", (Expression<?>) proposition(-1).get(0), proposition(-1).get(2));
-					apply(name(-1), name(-2));
-					bind("right_elimination_of_conjunction", (Expression<?>) proposition(-1).get(0), proposition(-1).get(2));
-					apply(name(-1), name(-2));
-					
-					check(autoDeduce(2)); // XXX there is a problem with binding protected parameters during application
-					conclude();
-				}
+								rule(natural($i, $m), natural($j, $n), real(matrixElement($X, $i, $j)))))), 5));
 			}
 			
 			{

@@ -5,6 +5,7 @@ import static averan3.core.Session.*;
 import static net.sourceforge.aprog.tools.Tools.append;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.join;
+
 import averan3.core.Composite;
 import averan3.core.Expression;
 import averan3.core.Proof;
