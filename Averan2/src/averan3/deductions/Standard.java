@@ -31,7 +31,7 @@ public final class Standard {
 		throw new IllegalInstantiationException();
 	}
 	
-	public static final AtomicInteger autoDeduceDepth = new AtomicInteger(6); 
+	public static final AtomicInteger autoDeduceDepth = new AtomicInteger(4); 
 	
 	public static final Deduction DEDUCTION = build(Standard.class.getName(), new Runnable() {
 		
@@ -132,19 +132,8 @@ public final class Standard {
 				final Variable $X = variable("X");
 				final Variable $Y = variable("Y");
 				
-				deduce("commutativity_of_conjunction",
-						$(forall($X, $Y), rule(conjunction($X, $Y), conjunction($Y, $X))));
-				{
-					final Variable x = introduce();
-					final Variable y = introduce();
-					
-					intros();
-					
-					apply("left_elimination_of_conjunction", name(-1));
-					bind("right_introduction_of_conjunction", y, x);
-					check(autoDeduce());
-					conclude();
-				}
+				check(autoDeduce("commutativity_of_conjunction",
+						$(forall($X, $Y), rule(conjunction($X, $Y), conjunction($Y, $X)))));
 			}
 			
 			{
@@ -185,8 +174,6 @@ public final class Standard {
 					intros();
 					
 					bind("elimination_of_disjunction", x, y, disjunction(y, x));
-					bind("right_introduction_of_disjunction", y, x);
-					bind("left_introduction_of_disjunction", y, x);
 					check(autoDeduce()); // XXX why doesn't it bind by itself?
 					conclude();
 				}
@@ -308,11 +295,12 @@ public final class Standard {
 			
 			use_justifications:
 			{
-				log();
 				log("TRYING TO PROVE ", goal());
 				
-				for (final Justification justification : justify(goal())) {
-					log("TRYING TO USE", justification);
+				final List<Justification> justifications = justify(goal());
+				
+				for (final Justification justification : justifications) {
+					log(depth, "TRYING TO USE", justification);
 					
 					String justificationName = justification.getPropositionName();
 					
@@ -344,6 +332,7 @@ public final class Standard {
 							
 							if (step instanceof Justification.Bind) {
 								bind(justificationName, ((Justification.Bind) step).getValues().toArray(new Expression[0]));
+								justificationName = name(-1);
 								log("GENERATED", name(-1), proof(-1).getProposition());
 							}
 						}

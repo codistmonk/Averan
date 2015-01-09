@@ -93,7 +93,9 @@ public final class Variable implements Expression<Variable> {
 	@Override
 	public final boolean equals(final Object object) {
 		if (this.isLocked()) {
-			return this == object;
+			final Variable that = cast(this.getClass(), object);
+			
+			return this == object || (that != null && !that.isLocked() && that.equals(this));
 		}
 		
 		if (this.match == null) {
@@ -107,8 +109,6 @@ public final class Variable implements Expression<Variable> {
 	
 	@Override
 	public final String toString() {
-//		return "$" + this.getName() + "(" + formatFilter(this.getFilter()) + ")<" + (this.getMatch() == null ? "" : this.getMatch()) + ">";
-//		return "$" + this.getName() + "<" + (this.locked ? "!" : this.getMatch() == null ? "" : "...") + ">";
 		return "$" + getNumberedName(this) + "<" + (this.locked ? "!" : this.getMatch() == null ? "" : "...") + ">";
 	}
 	
