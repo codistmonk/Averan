@@ -1,7 +1,7 @@
 package averan3.core;
 
-import static averan3.core.Composite.FORALL;
 import static net.sourceforge.aprog.tools.Tools.cast;
+
 import averan.common.Container;
 
 import java.io.Serializable;
@@ -93,36 +93,12 @@ public abstract interface Expression<E extends Expression<?>> extends Container<
 		
 		@Override
 		public final Expression<?> visit(final Composite<Expression<?>> composite) {
-			final Expression<?> candidate = this.tryToReplace(composite);
-			
-			if (candidate != composite) {
-				return candidate;
-			}
-			
-			final Composite<Expression<?>> parameters = composite.getParameters();
-			
-			if (parameters != null && parameters.isList()) {
-				final int n = parameters.getListSize();
-				final Expression<?> newContents = composite.getContents().accept(this);
-				final Collection<Variable> variables = newContents.accept(new CollectVariables()).getVariables().keySet();
-				final Composite<Expression<?>> newParameters = new Composite<>().append(FORALL);
-				boolean returnNewExpression = false;
+			{
+				final Expression<?> candidate = this.tryToReplace(composite);
 				
-				for (int i = 1; i < n; ++i) {
-					final Expression<?> parameter = parameters.getListElement(i);
-					
-					if (variables.contains(parameter)) {
-						newParameters.append(parameter);
-					} else if (!returnNewExpression) {
-						returnNewExpression = true;
-					}
+				if (candidate != composite) {
+					return candidate;
 				}
-				
-				if (1 < newParameters.getListSize()) {
-					return returnNewExpression ? new Composite<>().add(newParameters).add(newContents) : composite;
-				}
-				
-				return newContents;
 			}
 			
 			{
@@ -134,7 +110,7 @@ public abstract interface Expression<E extends Expression<?>> extends Container<
 					
 					newComposite.add(newElement);
 					
-					if (!returnNewComposite && newElement != element) {
+					if (!returnNewComposite && element != newElement) {
 						returnNewComposite = true;
 					}
 				}

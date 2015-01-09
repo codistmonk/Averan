@@ -1,10 +1,10 @@
 package averan3.core;
 
+import static averan3.core.Composite.EQUALS;
 import static averan3.core.Session.*;
 import static averan3.deductions.Standard.*;
 import static net.sourceforge.aprog.tools.Tools.getThisMethodName;
 import static org.junit.Assert.assertTrue;
-
 import averan3.deductions.Standard;
 import averan3.io.ConsoleOutput;
 
@@ -87,7 +87,35 @@ public final class SessionTest {
 		final String deductionName = this.getClass().getName() + "." + getThisMethodName();
 		
 		build(deductionName, () -> {
-			include(Standard.DEDUCTION);
+			deduce("identity");
+			{
+				final Variable x = introduce("x");
+				
+				substitute($$(x, $(), $()));
+				rewrite(name(-1), name(-1));
+				conclude();
+			}
+			
+			deduce("symmetry_of_equality");
+			{
+				final Variable x = introduce("x");
+				final Variable y = introduce("y");
+				
+				suppose($(x, EQUALS, y));
+				bind("identity", x);
+				rewrite(name(-1), name(-2), 0);
+				conclude();
+			}
+			
+			deduce("recall");
+			{
+				final Variable p = introduce("P");
+				
+				suppose(p);
+				bind("identity", p);
+				rewrite(name(-2), name(-1));
+				conclude();
+			}
 			
 			deduce(rule(rule("a", "b"), rule("b", "c"), rule("c", "d"), rule("a", "d")));
 			{
