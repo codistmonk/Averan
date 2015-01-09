@@ -56,9 +56,6 @@ public final class Reals {
 			{
 				suppose("type_of_0",
 						natural(ZERO));
-			}
-			
-			{
 				suppose("type_of_1",
 						natural(ONE));
 			}
@@ -68,18 +65,8 @@ public final class Reals {
 				
 				suppose("nonzero_naturals_are_naturals",
 						$(forall($x), rule(nonzeroNatural($x), natural($x))));
-			}
-			
-			{
-				final Variable $x = variable("x");
-				
 				suppose("nonzero_reals_are_reals",
 						$(forall($x), rule(nonzeroReal($x), real($x))));
-			}
-			
-			{
-				final Variable $x = variable("x");
-				
 				suppose("nonzero_naturals_are_nonzero_reals",
 						$(forall($x), rule(nonzeroNatural($x), nonzeroReal($x))));
 			}
@@ -100,24 +87,12 @@ public final class Reals {
 			{
 				final Variable $x = variable("x");
 				final Variable $y = variable("y");
+				final Variable $z = variable("z");
 				
 				suppose("type_of_real_addition",
 						$(forall($x, $y), rule(real($x), real($y), real(addition($x, $y)))));
-			}
-			
-			{
-				final Variable $x = variable("x");
-				final Variable $y = variable("y");
-				
 				suppose("commutativity_of_real_addition",
 						$(forall($x, $y), rule(real($x), real($y), $(addition($x, $y), "=", addition($y, $x)))));
-			}
-			
-			{
-				final Variable $x = variable("x");
-				final Variable $y = variable("y");
-				final Variable $z = variable("z");
-				
 				suppose("associativity_of_real_addition",
 						$(forall($x, $y, $z), rule(real($x), real($y), real($z),
 								$(addition($x, group(addition($y, $z))), "=", addition(group(addition($x, $y)), $z)))));
@@ -126,43 +101,26 @@ public final class Reals {
 			{
 				final Variable $x = variable("x");
 				final Variable $y = variable("y");
+				final Variable $z = variable("z");
 				
 				suppose("type_of_real_multiplication",
 						$(forall($x, $y), rule(real($x), real($y), real(multiplication($x, $y)))));
-			}
-			
-			{
-				final Variable $x = variable("x");
-				final Variable $y = variable("y");
-				final Variable $z = variable("z");
-				
 				suppose("associativity_of_real_multiplication",
 						$(forall($x, $y, $z), rule(real($x), real($y), real($z),
 								equality(multiplication($x, group(multiplication($y, $z))),
 										multiplication(group(multiplication($x, $y)), $z)))));
-			}
-			
-			{
-				final Variable $x = variable("x");
-				final Variable $y = variable("y");
-				
 				suppose("commutativity_of_real_multiplication",
 						$(forall($x, $y), rule(real($x), real($y), equality(multiplication($x, $y), multiplication($y, $x)))));
 			}
 			
 			{
 				final Variable $X = variable("X");
+				final Variable $n = variable("n");
 				final Variable $i = variable("i");
 				
 				suppose("definition_of_sum_0",
 						$(forall($X, $i), equality(sum($i, ZERO, $X),
 								$($X, list(equality($i, ZERO)), list()))));
-			}
-			
-			{
-				final Variable $X = variable("X");
-				final Variable $n = variable("n");
-				final Variable $i = variable("i");
 				
 				suppose("definition_of_sum_n",
 						$(forall($X, $n, $i), equality(sum($i, $n, $X),
@@ -181,7 +139,32 @@ public final class Reals {
 								nonzeroNatural($m),
 								nonzeroNatural($n),
 								$(forall($i, $j), rule(natural($i, $m), natural($j, $n),
-										real($("X", "_", $($i, ",", $j)))))))));
+										real(matrixElement($X, $i, $j))))))));
+				
+				check(autoDeduce("type_of_matrix_rows",
+						$(forall($X, $m, $n), rule(realMatrix($X, $m, $n), nonzeroNatural($m))), 5));
+//				check(autoDeduce("type_of_matrix_columns",
+//						$(forall($X, $m, $n), rule(realMatrix($X, $m, $n), nonzeroNatural($n))), 5));
+				deduce("type_of_matrix_element",
+						$(forall($X, $m, $n), rule(realMatrix($X, $m, $n), $(forall($i, $j),
+								rule(natural($i, $m), natural($j, $n), real(matrixElement($X, $i, $j)))))));
+				{
+					final Variable x = introduce();
+					final Variable m = introduce();
+					final Variable n = introduce();
+					
+					intros();
+					
+					bind("definition_of_matrices", x, m, n);
+					rewrite(name(-2), name(-1));
+					bind("right_elimination_of_conjunction", (Expression<?>) proposition(-1).get(0), proposition(-1).get(2));
+					apply(name(-1), name(-2));
+					bind("right_elimination_of_conjunction", (Expression<?>) proposition(-1).get(0), proposition(-1).get(2));
+					apply(name(-1), name(-2));
+					
+					check(autoDeduce(2)); // XXX there is a problem with binding protected parameters during application
+					conclude();
+				}
 			}
 			
 			{
@@ -197,6 +180,10 @@ public final class Reals {
 		}
 		
 	}, new ConsoleOutput());
+	
+	public static final Composite<Expression<?>> matrixElement(final Object matrix, final Object row, final Object column) {
+		return $$(matrix, "_", $(row, ",", column));
+	}
 	
 	public static final Composite<?> natural(final Object expression) {
 		return membership(expression, NATURALS);
