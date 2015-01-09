@@ -76,9 +76,9 @@ public final class Standard {
 				
 				suppose("bind1",
 						$(forall($E, $X, $T, $Y, $F),
-								$($($$().add(FORALL).add($($X, $T)), $E),
-										IMPLIES, $($($($E, list($($X, EQUALS, $Y)), list()), EQUALS, $F),
-												IMPLIES, $($$().add(FORALL).add($T), $F)))));
+								rule($($$(FORALL, $($X, $T)), $E),
+										equality($($E, list(equality($X, $Y)), list()), $F),
+										$($$(FORALL, $T), $F))));
 			}
 			
 			{
@@ -91,9 +91,10 @@ public final class Standard {
 				
 				suppose("rewrite1",
 						$(forall($E, $X, $Y, $T, $I, $F),
-								$($E, IMPLIES, $($($X, EQUALS, $Y),
-										IMPLIES, $($($($E, $$().add($($X, EQUALS, $Y)).add($T), $I), EQUALS, $F),
-												IMPLIES, $F)))));
+								rule($E,
+										equality($X, $Y),
+										equality($($E, $$(equality($X, $Y), $T), $I), $F),
+										$F)));
 			}
 			
 			{
