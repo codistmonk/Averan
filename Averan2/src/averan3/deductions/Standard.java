@@ -103,6 +103,32 @@ public final class Standard {
 				final Variable $X = variable("X");
 				final Variable $Y = variable("Y");
 				
+				deduce("left_elimination_of_equality",
+						$(forall($X, $Y), rule($X, equality($X, $Y), $Y)));
+				{
+					intros();
+					rewrite(name(-2), name(-1));
+					conclude();
+				}
+			}
+			
+			{
+				final Variable $X = variable("X");
+				final Variable $Y = variable("Y");
+				
+				deduce("right_elimination_of_equality",
+						$(forall($X, $Y), rule($Y, equality($X, $Y), $X)));
+				{
+					intros();
+					rewriteRight(name(-2), name(-1));
+					conclude();
+				}
+			}
+			
+			{
+				final Variable $X = variable("X");
+				final Variable $Y = variable("Y");
+				
 				suppose("left_introduction_of_conjunction",
 						$(forall($X, $Y), rule($X, conjunction($X, $Y))));
 			}
@@ -297,10 +323,18 @@ public final class Standard {
 		}
 		
 		final String indent = join("", Collections.nCopies(callDepth() - 1, "    "));
+		int toConclude = 0;
 		
 		deduce(propositionName, goal);
+		++toConclude;
 		{
 			intros();
+			
+			while (goal() instanceof Composite<?> && ((Composite<?>) goal()).getParameters() != null) {
+				deduce((Expression<?>) goal());
+				++toConclude;
+				intros();
+			}
 			
 			use_justifications:
 			{
@@ -332,7 +366,14 @@ public final class Standard {
 							if (step instanceof Justification.Apply) {
 								if (autoDeduce(null, ((Justification.Apply) step).getCondition(), depth - 1)) {
 									log(indent, "GENERATED", name(-1), proof(-1).getProposition());
-									apply(justificationName, name(-1));
+									try {
+										// FIXME failure should be predicted before calling apply
+										apply(justificationName, name(-1));
+									} catch (final Exception exception) {
+										Tools.debugError(exception);
+										cancel();
+										break subdeduction;
+									}
 									log(indent, "GENERATED", name(-1), proof(-1).getProposition());
 									justificationName = name(-1);
 								} else {
@@ -382,7 +423,9 @@ public final class Standard {
 			
 			log(indent, "PROVED", goal());
 			
-			conclude();
+			for (int i = 0; i < toConclude; ++i) {
+				conclude();
+			}
 		}
 		
 		return true;
