@@ -4,9 +4,11 @@ import static averan3.core.Composite.EQUALS;
 import static averan3.core.Session.*;
 import static averan3.deductions.Standard.*;
 import static net.sourceforge.aprog.tools.Tools.getThisMethodName;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
+import averan3.core.Variable;
 import averan3.deductions.Standard;
 import averan3.io.ConsoleOutput;
 
@@ -42,6 +44,73 @@ public final class StandardTest {
 				conclude();
 			}
 		}, new ConsoleOutput());
+	}
+	
+	@Test
+	public final void test2() {
+		final String deductionName = this.getClass().getName() + "." + getThisMethodName();
+		
+		build(deductionName, () -> {
+			deduce("identity");
+			{
+				final Variable x = introduce("x");
+				
+				substitute($$(x, $(), $()));
+				rewrite(name(-1), name(-1));
+				conclude();
+			}
+			
+			deduce("recall");
+			{
+				final Variable p = introduce("P");
+				
+				suppose(p);
+				bind("identity", p);
+				rewrite(name(-2), name(-1));
+				conclude();
+			}
+			
+			{
+				final Variable $X = variable("X");
+				final Variable $Y = variable("Y");
+				
+				suppose("left_introduction_of_conjunction",
+						$(forall($X, $Y), rule($X, conjunction($X, $Y))));
+			}
+			
+			{
+				final Variable $X = variable("X");
+				final Variable $Y = variable("Y");
+				
+				suppose("right_introduction_of_conjunction",
+						$(forall($X, $Y), rule($Y, conjunction($X, $Y))));
+			}
+			
+			{
+				final Variable $X = variable("X");
+				final Variable $Y = variable("Y");
+				
+				suppose("left_elimination_of_conjunction",
+						$(forall($X, $Y), rule(conjunction($X, $Y), $X)));
+			}
+			
+			{
+				final Variable $X = variable("X");
+				final Variable $Y = variable("Y");
+				
+				suppose("right_elimination_of_conjunction",
+						$(forall($X, $Y), rule(conjunction($X, $Y), $Y)));
+			}
+			
+			{
+				final Variable $X = variable("X");
+				final Variable $Y = variable("Y");
+				
+				assertTrue(autoDeduce("commutativity_of_conjunction",
+						$(forall($X, $Y), rule(conjunction($X, $Y), conjunction($Y, $X)))));
+			}
+		}, new ConsoleOutput());
+		
 	}
 	
 }

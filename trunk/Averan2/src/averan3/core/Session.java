@@ -8,6 +8,7 @@ import static net.sourceforge.aprog.tools.Tools.array;
 import static net.sourceforge.aprog.tools.Tools.ignore;
 import static net.sourceforge.aprog.tools.Tools.last;
 import static net.sourceforge.aprog.tools.Tools.lastIndex;
+
 import averan3.core.Proof.Deduction;
 import averan3.core.Proof.Deduction.Instance;
 
@@ -15,9 +16,11 @@ import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import net.sourceforge.aprog.tools.Tools;
 
@@ -44,18 +47,21 @@ public final class Session implements Serializable {
 	
 	private static final Deque<Session> stack = new ArrayDeque<>();
 	
-	private static final AtomicLong breakpointIndex = new AtomicLong();
+	private static final Map<String, AtomicInteger> breakpoints = new HashMap<>();
 	
 	public static final boolean DEBUG = false;
 	
-	public static final void breakpoint(final long value) {
-		final long m = breakpointIndex.incrementAndGet();
+	public static final int breakpoint(final int value) {
+		final int result = breakpoints.computeIfAbsent(
+				Tools.debug(Tools.DEBUG_STACK_OFFSET + 1), s -> new AtomicInteger()).incrementAndGet();
 		
-		Tools.getDebugOutput().println(Tools.debug(Tools.DEBUG_STACK_OFFSET + 1, m));
+		Tools.getDebugOutput().println(Tools.debug(Tools.DEBUG_STACK_OFFSET + 1, result));
 		
-		if (m == value) {
+		if (result == value) {
 			throw new RuntimeException("BREAKPOINT");
 		}
+		
+		return result;
 	}
 	
 	public static final void log(final Object... objects) {
