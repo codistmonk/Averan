@@ -167,7 +167,7 @@ public final class StandardTest {
 				final Variable $Y = variable("Y");
 				
 				assertTrue(autoDeduce("commutativity_of_disjunction",
-						$(forall($X, $Y), rule(disjunction($X, $Y), disjunction($Y, $X)))));
+						$(forall($X, $Y), rule(disjunction($X, $Y), disjunction($Y, $X))), 3));
 			}
 		}, new ConsoleOutput());
 		

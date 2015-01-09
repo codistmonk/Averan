@@ -4,7 +4,7 @@ import static averan3.core.Composite.*;
 import static averan3.core.Session.*;
 import static net.sourceforge.aprog.tools.Tools.append;
 import static net.sourceforge.aprog.tools.Tools.cast;
-
+import static net.sourceforge.aprog.tools.Tools.join;
 import averan3.core.Composite;
 import averan3.core.Expression;
 import averan3.core.Proof;
@@ -17,10 +17,12 @@ import averan3.io.ConsoleOutput;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
+import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2015-01-07)
@@ -166,18 +168,8 @@ public final class Standard {
 				final Variable $X = variable("X");
 				final Variable $Y = variable("Y");
 				
-				deduce("commutativity_of_disjunction",
-						$(forall($X, $Y), rule(disjunction($X, $Y), disjunction($Y, $X))));
-				{
-					final Variable x = introduce();
-					final Variable y = introduce();
-					
-					intros();
-					
-					bind("elimination_of_disjunction", x, y, disjunction(y, x));
-					check(autoDeduce()); // XXX why doesn't it bind by itself?
-					conclude();
-				}
+				check(autoDeduce("commutativity_of_disjunction",
+						$(forall($X, $Y), rule(disjunction($X, $Y), disjunction($Y, $X)))));
 			}
 		}
 		
@@ -285,10 +277,26 @@ public final class Standard {
 		return autoDeduce(null, goal, depth);
 	}
 	
+	public static final int callDepth() {
+		String methodId = Tools.debug(Tools.DEBUG_STACK_OFFSET + 1);
+		methodId = methodId.substring(0, methodId.indexOf('('));
+		int result = 0;
+		
+		for (final StackTraceElement element : Thread.currentThread().getStackTrace()) {
+			if (element.toString().startsWith(methodId)) {
+				++result;
+			}
+		}
+		
+		return result;
+	}
+	
 	public static final boolean autoDeduce(final String propositionName, final Expression<?> goal, final int depth) {
 		if (depth <= 0) {
 			return false;
 		}
+		
+		final String indent = join("", Collections.nCopies(callDepth() - 1, "    "));
 		
 		deduce(propositionName, goal);
 		{
@@ -296,12 +304,14 @@ public final class Standard {
 			
 			use_justifications:
 			{
-				log("TRYING TO PROVE ", goal());
+				log(indent, "???");
+				log(indent, "TRYING TO PROVE ", goal());
 				
 				final List<Justification> justifications = justify(goal());
 				
 				for (final Justification justification : justifications) {
-					log(depth, "TRYING TO USE", justification);
+					log(indent, "???");
+					log(indent, "TRYING TO USE", justification);
 					
 					String justificationName = justification.getPropositionName();
 					
@@ -311,19 +321,19 @@ public final class Standard {
 						for (final Justification.Step step : justification.getSteps()) {
 							step.bind();
 							
-							log("STEP", step);
+							log(indent, "STEP", step);
 							
 							if (step instanceof Justification.Recall &&
 									(!justificationName.equals(name(-1)) || proof(-1) instanceof Supposition)) {
 								apply("recall", justificationName);
-								log("GENERATED", name(-1), proof(-1).getProposition());
+								log(indent, "GENERATED", name(-1), proof(-1).getProposition());
 							}
 							
 							if (step instanceof Justification.Apply) {
-								if (autoDeduce(((Justification.Apply) step).getCondition(), depth - 1)) {
-									log("GENERATED", name(-1), proof(-1).getProposition());
+								if (autoDeduce(null, ((Justification.Apply) step).getCondition(), depth - 1)) {
+									log(indent, "GENERATED", name(-1), proof(-1).getProposition());
 									apply(justificationName, name(-1));
-									log("GENERATED", name(-1), proof(-1).getProposition());
+									log(indent, "GENERATED", name(-1), proof(-1).getProposition());
 									justificationName = name(-1);
 								} else {
 									cancel();
@@ -334,38 +344,43 @@ public final class Standard {
 							if (step instanceof Justification.Bind) {
 								bind(justificationName, ((Justification.Bind) step).getValues().toArray(new Expression[0]));
 								justificationName = name(-1);
-								log("GENERATED", name(-1), proof(-1).getProposition());
+								log(indent, "GENERATED", name(-1), proof(-1).getProposition());
 							}
 						}
 						
 						if (!deduction().canConclude()) {
-							log("FAILED TO USE", justification);
+							log(indent, "XXX");
+							log(indent, "FAILED TO USE", justification);
 							
 							cancel();
 							
 							break use_justifications;
 						}
 						
-						log("USED", justification);
+						log(indent, "USED", justification);
 						
 						conclude();
 						
-						break use_justifications;
+						if (deduction().canConclude()) {
+							break use_justifications;
+						}
 					}
 					
-					log("FAILED TO USE", justification);
+					log(indent, "XXX");
+					log(indent, "FAILED TO USE", justification);
 				}
 			}
 			
 			if (!deduction().canConclude()) {
-				log("FAILED TO PROVE", goal());
+				log(indent, "XXX");
+				log(indent, "FAILED TO PROVE", goal());
 				
 				cancel();
 				
 				return false;
 			}
 			
-			log("PROVED", goal());
+			log(indent, "PROVED", goal());
 			
 			conclude();
 		}
