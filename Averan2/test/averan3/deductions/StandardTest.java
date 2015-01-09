@@ -113,4 +113,64 @@ public final class StandardTest {
 		
 	}
 	
+	@Test
+	public final void test3() {
+		final String deductionName = this.getClass().getName() + "." + getThisMethodName();
+		
+		build(deductionName, () -> {
+			deduce("identity");
+			{
+				final Variable x = introduce("x");
+				
+				substitute($$(x, $(), $()));
+				rewrite(name(-1), name(-1));
+				conclude();
+			}
+			
+			deduce("recall");
+			{
+				final Variable p = introduce("P");
+				
+				suppose(p);
+				bind("identity", p);
+				rewrite(name(-2), name(-1));
+				conclude();
+			}
+			
+			{
+				final Variable $X = variable("X");
+				final Variable $Y = variable("Y");
+				
+				suppose("left_introduction_of_disjunction",
+						$(forall($X, $Y), rule($X, disjunction($X, $Y))));
+			}
+			
+			{
+				final Variable $X = variable("X");
+				final Variable $Y = variable("Y");
+				
+				suppose("right_introduction_of_disjunction",
+						$(forall($X, $Y), rule($Y, disjunction($X, $Y))));
+			}
+			
+			{
+				final Variable $X = variable("X");
+				final Variable $Y = variable("Y");
+				final Variable $Z = variable("Z");
+				
+				suppose("elimination_of_disjunction",
+						$(forall($X, $Y, $Z), rule(rule($X, $Z), rule($Y, $Z), rule(disjunction($X, $Y), $Z))));
+			}
+			
+			{
+				final Variable $X = variable("X");
+				final Variable $Y = variable("Y");
+				
+				assertTrue(autoDeduce("commutativity_of_disjunction",
+						$(forall($X, $Y), rule(disjunction($X, $Y), disjunction($Y, $X)))));
+			}
+		}, new ConsoleOutput());
+		
+	}
+	
 }
