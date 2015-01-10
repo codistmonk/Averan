@@ -48,6 +48,8 @@ public abstract class Proof implements Serializable {
 		return this.proposition;
 	}
 	
+	public abstract Proof copyFor(Deduction deduction, String propositionName);
+	
 	protected final void setProposition(final Expression<?> proposition) {
 		if (this.getProposition() != null || proposition == null) {
 			throw new IllegalStateException();
@@ -84,6 +86,19 @@ public abstract class Proof implements Serializable {
 			this.module = new Module();
 			this.proofs = new ArrayList<>();
 			this.goal = goal;
+		}
+		
+		@Override
+		public final Deduction copyFor(final Deduction deduction, final String propositionName) {
+			final Deduction result = new Deduction(deduction, propositionName, this.goal);
+			
+			result.module.set(this.module);
+			result.getProofs().addAll(this.getProofs());
+			result.hasParameters = this.hasParameters;
+			result.goal = this.goal;
+			result.conclusionMessage = this.conclusionMessage;
+			
+			return result;
 		}
 		
 		public final Composite<Expression<?>> getRootParameters() {
@@ -329,6 +344,11 @@ public abstract class Proof implements Serializable {
 			}
 			
 			@Override
+			public final Supposition copyFor(final Deduction deduction, final String propositionName) {
+				return deduction.new Supposition(propositionName, this.proposition);
+			}
+			
+			@Override
 			public final void conclude() {
 				this.setProposition(this.proposition.accept(Variable.RESET));
 			}
@@ -355,6 +375,11 @@ public abstract class Proof implements Serializable {
 				super(Deduction.this, propositionName);
 				this.ruleName = ruleName;
 				this.conditionName = conditionName;
+			}
+			
+			@Override
+			public final ModusPonens copyFor(final Deduction deduction, final String propositionName) {
+				return deduction.new ModusPonens(propositionName, this.ruleName, this.conditionName);
 			}
 			
 			@Override
@@ -424,6 +449,11 @@ public abstract class Proof implements Serializable {
 					final Composite<Expression<?>> substitutionExpression) {
 				super(Deduction.this, propositionName);
 				this.substitutionExpression = substitutionExpression;
+			}
+			
+			@Override
+			public final Substitution copyFor(final Deduction deduction, final String propositionName) {
+				return deduction.new Substitution(propositionName, this.substitutionExpression);
 			}
 			
 			@Override
@@ -501,6 +531,16 @@ public abstract class Proof implements Serializable {
 				this.indices = new TreeSet<>();
 			}
 			
+			@Override
+			public final Rewrite copyFor(final Deduction deduction, final String propositionName) {
+				final Rewrite result = deduction.new Rewrite(propositionName, this.targetName);
+				
+				result.equalityNames.addAll(this.equalityNames);
+				result.indices.addAll(this.indices);
+				
+				return result;
+			}
+			
 			public final Rewrite using(final String... equalityNames) {
 				if (!this.indices.isEmpty()) {
 					throw new IllegalStateException();
@@ -567,6 +607,11 @@ public abstract class Proof implements Serializable {
 			}
 			
 			@Override
+			public final Binding copyFor(final Deduction deduction, final String propositionName) {
+				return deduction.new Binding(propositionName, this.targetName, this.values);
+			}
+			
+			@Override
 			public final void conclude() {
 				final int n = this.values.length;
 				final Composite<?> target = this.getParent().instantiateProposition(this.targetName);
@@ -619,6 +664,11 @@ public abstract class Proof implements Serializable {
 				this.specialization = specialization;
 			}
 			
+			@Override
+			public final Inclusion copyFor(final Deduction deduction, final String propositionName) {
+				return deduction.new Inclusion(this.getIncluded(), this.specialization);
+			}
+			
 			public final Proof getIncluded() {
 				return this.included;
 			}
@@ -651,6 +701,13 @@ public abstract class Proof implements Serializable {
 			
 			Module() {
 				// package-private constructor to suppress access warning
+			}
+			
+			public final Module set(final Module module) {
+				this.root = module.getRoot();
+				this.leaf = module.leaf;
+				
+				return this;
 			}
 			
 			public final Variable parametrize(final String parameterName) {
