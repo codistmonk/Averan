@@ -56,11 +56,19 @@ public final class HTMLOutput implements Output {
 				this.out.println("<li>Include <a href='" + includedParentName + ".html'>" + escape(includedParentName) + "</a></li>");
 			}
 		} else {
-			this.out.println("<li><div>"
-					+ "(" + escape(proof.getPropositionName()) + ")<br/>"
-					+ "<div style='margin-left:5em'>" + escape(proof.getProposition().accept(ConsoleOutput.TO_STRING)) + "<br/>"
-					+ escape(proof.toString())
-					+ "</div></div></li>");
+			this.out.println("<li><div><a id='" + escape(proof.getPropositionName()) + "'>"
+					+ "(" + escape(proof.getPropositionName()) + ")</a><br/>"
+					+ "<div style='margin-left:2em'>" + escape(proof.getProposition().accept(ConsoleOutput.TO_STRING)) + "<br/>");
+			
+			this.out.println(escape(proof.toString()));
+			
+			if (proof instanceof Deduction) {
+				this.out.println("<ul>");
+				((Deduction) proof).getProofs().forEach(this::processProof);
+				this.out.println("</ul>");
+			}
+			
+			this.out.println("</div></div></li>");
 		}
 	}
 	
