@@ -91,11 +91,9 @@ public final class Variable implements Expression<Variable> {
 	
 	@Override
 	public final boolean equals(final Object object) {
-		// XXX It is possible this method is not working properly (r575)
+		final Variable that = cast(this.getClass(), object);
 		
 		if (this.isLocked()) {
-			final Variable that = cast(this.getClass(), object);
-			
 			return this == object || (that != null && !that.isLocked() && that.equals(this));
 		}
 		

@@ -500,15 +500,13 @@ public abstract class Proof implements Serializable {
 				final Expression<?> conclusion = rule.getConclusion().accept(Variable.BIND);
 				
 				if (parameters != null) {
-					@SuppressWarnings("unchecked")
-					final Composite<Expression<?>> boundParameters = (Composite<Expression<?>>) parameters.accept(Variable.BIND);
-					final int n = boundParameters.getListSize();
+					final int n = parameters.getListSize();
 					final Composite<Expression<?>> newParameters = new Composite<>().append(FORALL);
 					
 					for (int i = 1; i < n; ++i) {
-						final Variable parameter = cast(Variable.class, boundParameters.getListElement(i));
+						final Variable parameter = (Variable) parameters.getListElement(i);
 						
-						if (parameter != null && parameter.getMatch() == null) {
+						if (parameter.getMatch() == null) {
 							newParameters.append(parameter);
 						}
 					}
@@ -927,10 +925,6 @@ public abstract class Proof implements Serializable {
 			
 			public final Expression<?> getRoot() {
 				return this.root;
-			}
-			
-			public final void undo() {
-				// TODO expected difficulty: a lot
 			}
 			
 			public final void add(final Expression<?> proposition) {

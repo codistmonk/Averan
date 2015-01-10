@@ -7,6 +7,7 @@ import static net.sourceforge.aprog.tools.Tools.getThisMethodName;
 import static org.junit.Assert.assertTrue;
 import averan3.deductions.Standard;
 import averan3.io.ConsoleOutput;
+import net.sourceforge.aprog.tools.Tools;
 
 import org.junit.Test;
 
@@ -222,6 +223,31 @@ public final class SessionTest {
 						$("E", IS_MATRIX, "m", "×", "n"),
 						$($($($("A", "B"), "C"), $("D", "E")), IS_MATRIX, new Variable("m?"), "×", new Variable("n?")))));
 			}
+		}, new ConsoleOutput());
+	}
+	
+	@Test
+	public final void test8() {
+		final String deductionName = this.getClass().getName() + "." + getThisMethodName();
+		
+		build(deductionName, new Runnable() {
+			
+			@Override
+			public final void run() {
+				include(Standard.DEDUCTION);
+				
+				deduce();
+				{
+					final Variable x = new Variable("x");
+					
+					suppose(x);
+					Tools.debugPrint();
+					Tools.debugPrint();
+					Tools.debugPrint();
+					apply("recall", name(-1));
+				}
+			}
+			
 		}, new ConsoleOutput());
 	}
 	
