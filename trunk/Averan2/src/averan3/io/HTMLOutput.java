@@ -38,7 +38,10 @@ public final class HTMLOutput implements Output {
 			this.out = newPrintStream(propositionName + ".html");
 		}
 		
-		this.out.println("<html><head><title>" + escape(propositionName) + "</title></head><body>");
+		this.out.println("<html><head>");
+		this.out.println("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">");
+		this.out.println("<title>" + escape(propositionName) + "</title>");
+		this.out.println("</head><body>");
 	}
 	
 	@Override
