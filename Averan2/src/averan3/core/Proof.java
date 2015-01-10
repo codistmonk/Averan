@@ -5,8 +5,9 @@ import static averan3.core.Composite.FORALL;
 import static averan3.core.Composite.IMPLIES;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.last;
-
 import averan3.core.Expression.Visitor;
+import averan3.core.Proof.Message.Reference;
+import averan3.core.Proof.Message.Text;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -30,6 +31,8 @@ public abstract class Proof implements Serializable {
 	private final String propositionName;
 	
 	private Expression<?> proposition;
+	
+	private Message<?> message;
 	
 	protected Proof(final Deduction parent, final String propositionName) {
 		this.parent = parent;
@@ -62,9 +65,161 @@ public abstract class Proof implements Serializable {
 		}
 	}
 	
+	public final Message<?> getMessage() {
+		return this.message;
+	}
+	
+	public final Proof setMessage(final Message<?> message) {
+		this.message = message;
+		
+		return this;
+	}
+	
 	public abstract void conclude();
 	
 	private static final long serialVersionUID = -5949193213742615021L;
+	
+	/**
+	 * @author codistmonk (creation 2015-01-10)
+	 */
+	public static abstract class Message<T> implements Serializable {
+		
+		private final T object;
+		
+		protected Message(final T object) {
+			this.object = object;
+		}
+		
+		public final T getObject() {
+			return this.object;
+		}
+		
+		public abstract <V> V accept(Visitor<V> visitor);
+		
+		private static final long serialVersionUID = 6197002498021038411L;
+		
+		/**
+		 * @author codistmonk (creation 2015-01-10)
+		 */
+		public static final class Text extends Message<String> {
+			
+			public Text(final String object) {
+				super(object);
+			}
+			
+			@Override
+			public final <V> V accept(final Visitor<V> visitor) {
+				return visitor.visit(this);
+			}
+			
+			private static final long serialVersionUID = 5170374710752129434L;
+			
+		}
+		
+		/**
+		 * @author codistmonk (creation 2015-01-10)
+		 */
+		public static final class Reference extends Message<String> {
+			
+			public Reference(final String object) {
+				super(object);
+			}
+			
+			@Override
+			public final <V> V accept(final Visitor<V> visitor) {
+				return visitor.visit(this);
+			}
+			
+			private static final long serialVersionUID = -8541256304251687194L;
+			
+		}
+		
+		/**
+		 * @author codistmonk (creation 2015-01-10)
+		 */
+		public static final class Expression extends Message<averan3.core.Expression<?>> {
+			
+			public Expression(final averan3.core.Expression<?> object) {
+				super(object);
+			}
+			
+			@Override
+			public final <V> V accept(final Visitor<V> visitor) {
+				return visitor.visit(this);
+			}
+			
+			private static final long serialVersionUID = 8804468508855956218L;
+			
+		}
+		
+		/**
+		 * @author codistmonk (creation 2015-01-10)
+		 */
+		public static final class Composite extends Message<Message<?>[]> {
+			
+			public Composite(final Message<?>... object) {
+				super(object);
+			}
+			
+			@Override
+			public final <V> V accept(final Visitor<V> visitor) {
+				return visitor.visit(this);
+			}
+			
+			private static final long serialVersionUID = 6188120659646502107L;
+			
+		}
+		
+		/**
+		 * @author codistmonk (creation 2015-01-10)
+		 * 
+		 * @param <V>
+		 */
+		public static abstract interface Visitor<V> extends Serializable {
+			
+			public abstract V visit(Text text);
+			
+			public abstract V visit(Reference reference);
+			
+			public abstract V visit(Expression expression);
+			
+			public abstract V visit(Composite composite);
+			
+		}
+		
+		public static final Visitor<String> TO_STRING = new Visitor<String>() {
+			
+			@Override
+			public final String visit(final Text text) {
+				return text.getObject();
+			}
+			
+			@Override
+			public final String visit(final Reference reference) {
+				return "(" + reference.getObject() + ")";
+			}
+			
+			@Override
+			public final String visit(final Expression expression) {
+				return "" + expression.getObject();
+			}
+			
+			@Override
+			public final String visit(final Composite composite) {
+				final StringBuilder result = new StringBuilder();
+				
+				for (final Message<?> message : composite.getObject()) {
+					result.append(message.accept(this));
+				}
+				
+				return result.toString();
+			}
+			
+			private static final long serialVersionUID = -3794122982531859778L;
+			
+		};
+		
+	}
 	
 	/**
 	 * @author codistmonk (creation 2015-01-04)
@@ -78,8 +233,6 @@ public abstract class Proof implements Serializable {
 		private boolean hasParameters;
 		
 		private Expression<?> goal;
-		
-		private String conclusionMessage;
 		
 		public Deduction(final Deduction parent, final String name, final Expression<?> goal) {
 			super(parent, name);
@@ -96,7 +249,7 @@ public abstract class Proof implements Serializable {
 			result.getProofs().addAll(this.getProofs());
 			result.hasParameters = this.hasParameters;
 			result.goal = this.goal;
-			result.conclusionMessage = this.conclusionMessage;
+			result.setMessage(this.getMessage());
 			
 			return result;
 		}
@@ -175,7 +328,7 @@ public abstract class Proof implements Serializable {
 		}
 		
 		public final void conclude(final String conclusionMessage) {
-			this.conclusionMessage = conclusionMessage;
+			this.setMessage(conclusionMessage == null ? null : new Message.Text(conclusionMessage));
 			this.conclude();
 		}
 		
@@ -246,49 +399,12 @@ public abstract class Proof implements Serializable {
 			return (E) this.findProof(name).getProposition().accept(new Instance());
 		}
 		
-		/**
-		 * @author codistmonk (creation 2015-01-08)
-		 */
-		public static final class Instance implements Visitor<Expression<?>> {
-			
-			private final Map<Variable, Variable> variables = new IdentityHashMap<>();
-			
-			@Override
-			public final Expression<?> visit(final Symbol<?> symbol) {
-				return symbol;
-			}
-			
-			@Override
-			public final Expression<?> visit(final Variable variable) {
-				return variable.isLocked() ? variable : this.variables.computeIfAbsent(variable, v -> new Variable(v.getName()));
-			}
-			
-			@Override
-			public final Expression<?> visit(final Composite<Expression<?>> composite) {
-				final Composite<Expression<?>> newComposite = new Composite<>();
-				boolean returnNewComposite = false;
-				
-				for (final Expression<?> element : composite) {
-					final Expression<?> newElement = element.accept(this);
-					
-					newComposite.add(newElement);
-					
-					if (!returnNewComposite && element != newElement) {
-						returnNewComposite = true;
-					}
-				}
-				
-				return returnNewComposite ? newComposite : composite;
-			}
-			
-			private static final long serialVersionUID = 6918127691328544719L;
-			
-		}
-		
 		@Override
 		public final String toString() {
-			if (this.conclusionMessage != null) {
-				return this.conclusionMessage;
+			if (this.getMessage() != null) {
+				Tools.debugPrint(this.getMessage());
+				Tools.debugPrint(this.getMessage().accept(Message.TO_STRING));
+				return this.getMessage().accept(Message.TO_STRING);
 			}
 			
 			Proof informativeProof = this;
@@ -689,6 +805,45 @@ public abstract class Proof implements Serializable {
 		}
 		
 		private static final long serialVersionUID = -4622604986554143041L;
+		
+		/**
+		 * @author codistmonk (creation 2015-01-08)
+		 */
+		public static final class Instance implements Visitor<Expression<?>> {
+			
+			private final Map<Variable, Variable> variables = new IdentityHashMap<>();
+			
+			@Override
+			public final Expression<?> visit(final Symbol<?> symbol) {
+				return symbol;
+			}
+			
+			@Override
+			public final Expression<?> visit(final Variable variable) {
+				return variable.isLocked() ? variable : this.variables.computeIfAbsent(variable, v -> new Variable(v.getName()));
+			}
+			
+			@Override
+			public final Expression<?> visit(final Composite<Expression<?>> composite) {
+				final Composite<Expression<?>> newComposite = new Composite<>();
+				boolean returnNewComposite = false;
+				
+				for (final Expression<?> element : composite) {
+					final Expression<?> newElement = element.accept(this);
+					
+					newComposite.add(newElement);
+					
+					if (!returnNewComposite && element != newElement) {
+						returnNewComposite = true;
+					}
+				}
+				
+				return returnNewComposite ? newComposite : composite;
+			}
+			
+			private static final long serialVersionUID = 6918127691328544719L;
+			
+		}
 		
 		/**
 		 * @author codistmonk (creation 2015-01-05)
