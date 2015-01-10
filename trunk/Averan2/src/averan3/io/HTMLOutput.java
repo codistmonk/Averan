@@ -27,7 +27,7 @@ public final class HTMLOutput implements Output {
 	
 	public HTMLOutput(final PrintStream out) {
 		this.out = out;
-		this.included = new HashSet<String>();
+		this.included = new HashSet<>();
 	}
 	
 	@Override
@@ -63,11 +63,12 @@ public final class HTMLOutput implements Output {
 			
 			if (proof instanceof Deduction) {
 				final String proofContentsId = proof.getPropositionName() + "_contents";
-				this.out.println("<span onclick=\"var style=document.getElementById('"+ proofContentsId + "').style; style.display=style.display==''?'none':''\"><u>" + escape(proof.toString()) + "</u></span>");
+				this.out.println("<span onclick=\"var style=document.getElementById('" + escape(proofContentsId) + "').style; style.display=style.display==''?'none':''\"><u>"
+						+ escape(proof.toString()) + "</u></span>");
 				
 				final Deduction proofAsDeduction = (Deduction) proof;
 				
-				this.out.println("<ul id='" + proofContentsId + "' style='display:none'>");
+				this.out.println("<ul id='" + escape(proofContentsId) + "' style='display:none'>");
 				
 				if (proofAsDeduction.getRootParameters() != null) {
 					this.out.println("<li>" + escape(proofAsDeduction.getRootParameters().accept(ConsoleOutput.TO_STRING)) + "</li>");
