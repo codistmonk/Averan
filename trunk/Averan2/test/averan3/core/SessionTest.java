@@ -5,9 +5,9 @@ import static averan3.core.Session.*;
 import static averan3.deductions.Standard.*;
 import static net.sourceforge.aprog.tools.Tools.getThisMethodName;
 import static org.junit.Assert.assertTrue;
+
 import averan3.deductions.Standard;
 import averan3.io.ConsoleOutput;
-import net.sourceforge.aprog.tools.Tools;
 
 import org.junit.Test;
 
@@ -241,10 +241,11 @@ public final class SessionTest {
 					final Variable x = new Variable("x");
 					
 					suppose(x);
-					Tools.debugPrint();
-					Tools.debugPrint();
-					Tools.debugPrint();
 					apply("recall", name(-1));
+					
+					assertTrue(proposition(-1) instanceof Variable);
+					
+					cancel();
 				}
 			}
 			
