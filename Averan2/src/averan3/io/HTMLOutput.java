@@ -3,9 +3,12 @@ package averan3.io;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.io.UncheckedIOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 
+import net.sourceforge.aprog.tools.Tools;
+import averan3.core.Expression;
 import averan3.core.Proof;
 import averan3.core.Proof.Deduction;
 import averan3.core.Proof.Message;
@@ -70,7 +73,7 @@ public final class HTMLOutput implements Output {
 			if (proof instanceof Deduction) {
 				final String proofContentsId = proof.getPropositionName() + "_contents";
 				this.out.println("<span onclick=\"var style=document.getElementById('" + escape(proofContentsId) + "').style; style.display=style.display==''?'none':''\"><u>"
-						+ escape(proof.getMessage().accept(MESSAGE_TO_STRING)) + "</u></span>");
+						+ proof.getMessage().accept(MESSAGE_TO_STRING) + "</u></span>");
 				
 				final Deduction proofAsDeduction = (Deduction) proof;
 				
@@ -84,7 +87,7 @@ public final class HTMLOutput implements Output {
 				
 				this.out.println("</ul>");
 			} else {
-				this.out.println(escape(proof.getMessage().accept(MESSAGE_TO_STRING)));
+				this.out.println(proof.getMessage().accept(MESSAGE_TO_STRING));
 			}
 			
 			this.out.println("</div></div></li>");
@@ -113,12 +116,30 @@ public final class HTMLOutput implements Output {
 		
 		@Override
 		public final String visit(final Element element) {
-			return element.accept(Message.TO_STRING); // TODO pretty-print expressions
+			if (element.getObject() instanceof Expression[]) {
+				return Tools.join(", ", Arrays.stream((Expression<?>[]) element.getObject()).map(e -> e == null ? "_" : e.accept(ConsoleOutput.TO_STRING)).toArray());
+			}
+			
+			return escape(element.accept(Message.TO_STRING));
 		}
 		
 		@Override
 		public final String visit(final Reference reference) {
-			return reference.accept(Message.TO_STRING); // TODO make link
+			final Proof proof = reference.getObject().getFirst().findProof(reference.getObject().getSecond());
+			Deduction root = reference.getObject().getFirst();
+			
+			if (proof instanceof Inclusion) {
+				root = ((Inclusion) proof).getIncluded().getParent();
+			}
+			
+			while (root.getParent() != null) {
+				root = root.getParent();
+			}
+			
+			final String deductionName = escape(root.getPropositionName());
+			final String proofName = escape(proof.getPropositionName());
+			
+			return "<a href=\"" + deductionName + ".html#" + proofName + "\">" + proofName + "</a>";
 		}
 		
 		@Override
