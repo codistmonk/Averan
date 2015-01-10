@@ -3,13 +3,14 @@ package averan3.deductions;
 import static averan3.core.Session.*;
 import static averan3.deductions.Standard.*;
 import static averan3.io.ConsoleOutput.group;
+
 import averan3.core.Composite;
 import averan3.core.Expression;
 import averan3.core.Symbol;
 import averan3.core.Proof.Deduction;
 import averan3.core.Variable;
-import averan3.io.ConsoleOutput;
 import averan3.io.HTMLOutput;
+
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 
 /**

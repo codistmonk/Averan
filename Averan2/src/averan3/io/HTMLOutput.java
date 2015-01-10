@@ -3,9 +3,12 @@ package averan3.io;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.io.UncheckedIOException;
+import java.util.Collection;
+import java.util.HashSet;
 
 import averan3.core.Proof;
 import averan3.core.Proof.Deduction;
+import averan3.core.Proof.Deduction.Inclusion;
 import averan3.core.Session;
 import averan3.core.Session.Output;
 
@@ -16,12 +19,15 @@ public final class HTMLOutput implements Output {
 	
 	private PrintStream out;
 	
+	private final Collection<String> included;
+	
 	public HTMLOutput() {
 		this(null);
 	}
 	
 	public HTMLOutput(final PrintStream out) {
 		this.out = out;
+		this.included = new HashSet<String>();
 	}
 	
 	@Override
@@ -43,11 +49,19 @@ public final class HTMLOutput implements Output {
 	
 	@Override
 	public final void processProof(final Proof proof) {
-		this.out.println("<li><div>"
-				+ "(" + escape(proof.getPropositionName()) + ")<br/>"
-				+ "<div style='margin-left:5em'>" + escape(proof.getProposition().accept(ConsoleOutput.TO_STRING)) + "<br/>"
-				+ escape(proof.toString())
-				+ "</div></div></li>");
+		if (proof instanceof Inclusion) {
+			final String includedParentName = ((Inclusion) proof).getIncluded().getParent().getPropositionName();
+			
+			if (this.included.add(includedParentName)) {
+				this.out.println("<li>Include <a href='" + includedParentName + ".html'>" + escape(includedParentName) + "</a></li>");
+			}
+		} else {
+			this.out.println("<li><div>"
+					+ "(" + escape(proof.getPropositionName()) + ")<br/>"
+					+ "<div style='margin-left:5em'>" + escape(proof.getProposition().accept(ConsoleOutput.TO_STRING)) + "<br/>"
+					+ escape(proof.toString())
+					+ "</div></div></li>");
+		}
 	}
 	
 	@Override
