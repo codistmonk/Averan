@@ -401,7 +401,17 @@ public final class Standard {
 						
 						log(indent, "USED", justification);
 						
-						conclude();
+						//simplification:
+						{
+							final Deduction deduction = deduction();
+							
+							if (deduction.getRootParameters() == null && deduction.getProofs().size() == 1) {
+								cancel();
+								deduction.getProofs().get(0).copyFor(deduction(), deduction.getPropositionName()).conclude();
+							} else {
+								conclude();
+							}
+						}
 						
 						if (deduction().canConclude()) {
 							break use_justifications;

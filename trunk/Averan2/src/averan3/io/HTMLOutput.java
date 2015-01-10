@@ -139,7 +139,7 @@ public final class HTMLOutput implements Output {
 			final String deductionName = escape(root.getPropositionName());
 			final String proofName = escape(proof.getPropositionName());
 			
-			return "<a href=\"" + deductionName + ".html#" + proofName + "\">" + proofName + "</a>";
+			return "<a href=\"" + deductionName + ".html#" + proofName + "\">(" + proofName + ")</a>";
 		}
 		
 		@Override

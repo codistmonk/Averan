@@ -397,7 +397,7 @@ public abstract class Proof implements Serializable {
 		}
 		
 		public final int countSubsteps() {
-			int result = this.getProofs().size();
+			int result = 0;
 			
 			for (final Proof proof : this.getProofs()) {
 				result += proof instanceof Deduction ? ((Deduction) proof).countSubsteps() : 1;
