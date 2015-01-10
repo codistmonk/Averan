@@ -343,18 +343,12 @@ public final class Standard {
 				log(indent, "TRYING TO PROVE ", goal());
 				
 				final List<Justification> justifications = justify(goal());
-				final Deduction justificationTarget = deduction();
-				final boolean debug = "commutativity_of_disjunction.2.2".equals(justificationTarget.getPropositionName());
 				
 				for (final Justification justification : justifications) {
 					log(indent, "???");
 					log(indent, "TRYING TO USE", justification);
 					
 					String justificationName = justification.getPropositionName();
-					
-					if (debug) {
-						Tools.debugPrint(justification);
-					}
 					
 					deduce();
 					subdeduction:
@@ -421,11 +415,6 @@ public final class Standard {
 						
 						if (deduction().canConclude()) {
 							break use_justifications;
-						} else {
-							if (debug) {
-								Tools.debugPrint(name(-1));
-							}
-//							justificationTarget.getProofs().remove(Tools.lastIndex(justificationTarget.getProofs()));
 						}
 					}
 					
