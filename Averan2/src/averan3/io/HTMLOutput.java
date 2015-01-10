@@ -60,12 +60,24 @@ public final class HTMLOutput implements Output {
 					+ "(" + escape(proof.getPropositionName()) + ")</a><br/>"
 					+ "<div style='margin-left:2em'>" + escape(proof.getProposition().accept(ConsoleOutput.TO_STRING)) + "<br/>");
 			
-			this.out.println(escape(proof.toString()));
 			
 			if (proof instanceof Deduction) {
-				this.out.println("<ul>");
-				((Deduction) proof).getProofs().forEach(this::processProof);
+				final String proofContentsId = proof.getPropositionName() + "_contents";
+				this.out.println("<span onclick=\"var style=document.getElementById('"+ proofContentsId + "').style; style.display=style.display==''?'none':''\"><u>" + escape(proof.toString()) + "</u></span>");
+				
+				final Deduction proofAsDeduction = (Deduction) proof;
+				
+				this.out.println("<ul id='" + proofContentsId + "' style='display:none'>");
+				
+				if (proofAsDeduction.getRootParameters() != null) {
+					this.out.println("<li>" + escape(proofAsDeduction.getRootParameters().accept(ConsoleOutput.TO_STRING)) + "</li>");
+				}
+				
+				proofAsDeduction.getProofs().forEach(this::processProof);
+				
 				this.out.println("</ul>");
+			} else {
+				this.out.println(escape(proof.toString()));
 			}
 			
 			this.out.println("</div></div></li>");
