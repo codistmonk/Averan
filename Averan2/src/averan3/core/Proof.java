@@ -283,7 +283,17 @@ public abstract class Proof implements Serializable {
 			}
 			
 			return this != informativeProof ? informativeProof.toString() :
-				"By deduction in " + this.getProofs().size() + " steps";
+				"By deduction in " + this.getProofs().size() + " steps (" + this.countSubsteps() + " substeps)";
+		}
+		
+		public final int countSubsteps() {
+			int result = this.getProofs().size();
+			
+			for (final Proof proof : this.getProofs()) {
+				result += proof instanceof Deduction ? ((Deduction) proof).countSubsteps() : 1;
+			}
+			
+			return result;
 		}
 		
 		final void add(final Proof proof) {
