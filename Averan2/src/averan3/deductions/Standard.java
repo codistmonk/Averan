@@ -5,7 +5,6 @@ import static averan3.core.Session.*;
 import static net.sourceforge.aprog.tools.Tools.append;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.join;
-
 import averan3.core.Composite;
 import averan3.core.Expression;
 import averan3.core.Proof;
@@ -40,35 +39,7 @@ public final class Standard {
 		
 		@Override
 		public final void run() {
-			deduce("identity");
-			{
-				final Variable x = introduce("x");
-				
-				substitute($$(x, $(), $()));
-				rewrite(name(-1), name(-1));
-				conclude();
-			}
-			
-			deduce("symmetry_of_equality");
-			{
-				final Variable x = introduce("x");
-				final Variable y = introduce("y");
-				
-				suppose($(x, EQUALS, y));
-				bind("identity", x);
-				rewrite(name(-1), name(-2), 0);
-				conclude();
-			}
-			
-			deduce("recall");
-			{
-				final Variable p = introduce("P");
-				
-				suppose(p);
-				bind("identity", p);
-				rewrite(name(-2), name(-1));
-				conclude();
-			}
+			setupIdentitySymmetryRecall();
 			
 			{
 				final Variable $E = new Variable("E");
@@ -201,6 +172,38 @@ public final class Standard {
 		}
 		
 	}, new HTMLOutput());
+	
+	public static final void setupIdentitySymmetryRecall() {
+		deduce("identity");
+		{
+			final Variable x = introduce("x");
+			
+			substitute($$(x, $(), $()));
+			rewrite(name(-1), name(-1));
+			conclude();
+		}
+		
+		deduce("symmetry_of_equality");
+		{
+			final Variable x = introduce("x");
+			final Variable y = introduce("y");
+			
+			suppose($(x, EQUALS, y));
+			bind("identity", x);
+			rewrite(name(-1), name(-2), 0);
+			conclude();
+		}
+		
+		deduce("recall");
+		{
+			final Variable p = introduce("P");
+			
+			suppose(p);
+			bind("identity", p);
+			rewrite(name(-2), name(-1));
+			conclude();
+		}
+	}
 	
 	public static final Composite<?> conjunction(final Object... expressions) {
 		return binaryOperation("⋀", expressions);
@@ -465,11 +468,16 @@ public final class Standard {
 			
 			for (int i = proofs.size() - 1; 0 <= i; --i) {
 				final Proof proof = proofs.get(i);
-				final Expression<?> proposition = proof.getProposition().accept(new Instance());
-				final Justification.Step[] steps = findSteps(proposition, goal);
-				
-				if (0 < steps.length) {
-					result.add(new Justification(proof.getPropositionName(), steps, proposition.accept(Variable.BIND)));
+				try {
+					final Expression<?> proposition = proof.getProposition().accept(new Instance());
+					final Justification.Step[] steps = findSteps(proposition, goal);
+					
+					if (0 < steps.length) {
+						result.add(new Justification(proof.getPropositionName(), steps, proposition.accept(Variable.BIND)));
+					}
+				} catch (final RuntimeException exception) {
+					Tools.debugError(proof.getProposition());
+					throw exception;
 				}
 			}
 			
