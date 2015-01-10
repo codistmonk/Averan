@@ -163,7 +163,7 @@ public final class Standard {
 				final Variable $Y = variable("Y");
 				
 				check(autoDeduce("commutativity_of_conjunction",
-						$(forall($X, $Y), rule(conjunction($X, $Y), conjunction($Y, $X)))));
+						$(forall($X, $Y), rule(conjunction($X, $Y), conjunction($Y, $X))), 3));
 			}
 			
 			{
@@ -196,7 +196,7 @@ public final class Standard {
 				final Variable $Y = variable("Y");
 				
 				check(autoDeduce("commutativity_of_disjunction",
-						$(forall($X, $Y), rule(disjunction($X, $Y), disjunction($Y, $X)))));
+						$(forall($X, $Y), rule(disjunction($X, $Y), disjunction($Y, $X))), 3));
 			}
 		}
 		
