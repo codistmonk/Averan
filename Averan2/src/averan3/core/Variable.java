@@ -129,7 +129,7 @@ public final class Variable implements Expression<Variable> {
 	
 	public static final Unlock UNLOCK = new Unlock();
 	
-	public static final boolean DEBUG = true;
+	public static final boolean DEBUG = false;
 	
 	private static final Map<String, Map<Variable, Integer>> names = new HashMap<>();
 	
