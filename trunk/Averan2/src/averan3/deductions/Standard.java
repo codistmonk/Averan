@@ -424,6 +424,17 @@ public final class Standard {
 			
 			log(indent, "PROVED", goal());
 			
+			//simplification:
+			{
+				final Deduction deduction = deduction();
+				
+				if (deduction.getRootParameters() == null && deduction.getProofs().size() == 1) {
+					cancel();
+					deduction.getProofs().get(0).copyFor(deduction(), deduction.getPropositionName()).conclude();
+					--toConclude;
+				}
+			}
+			
 			for (int i = 0; i < toConclude; ++i) {
 				conclude();
 			}
