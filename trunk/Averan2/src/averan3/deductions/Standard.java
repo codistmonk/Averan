@@ -13,7 +13,7 @@ import averan3.core.Proof.Deduction.Instance;
 import averan3.core.Proof.Deduction.Supposition;
 import averan3.core.Variable;
 import averan3.core.Proof.Deduction;
-import averan3.io.ConsoleOutput;
+import averan3.io.HTMLOutput;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -200,7 +200,7 @@ public final class Standard {
 			}
 		}
 		
-	}, new ConsoleOutput());
+	}, new HTMLOutput());
 	
 	public static final Composite<?> conjunction(final Object... expressions) {
 		return binaryOperation("⋀", expressions);
