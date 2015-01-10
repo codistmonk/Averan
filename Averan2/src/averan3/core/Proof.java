@@ -929,11 +929,15 @@ public abstract class Proof implements Serializable {
 				return this.root;
 			}
 			
+			public final void undo() {
+				// TODO expected difficulty: a lot
+			}
+			
 			public final void add(final Expression<?> proposition) {
 				if (this.root == null) {
-					this.root = proposition;
+					this.setRoot(proposition);
 				} else if (this.leaf == null) {
-					this.root = this.leaf = new Composite<>().add(this.root).add(IMPLIES).add(proposition);
+					this.setRoot(this.leaf = new Composite<>().add(this.getRoot()).add(IMPLIES).add(proposition));
 				} else if (this.leaf.getParameters() != null) {
 					if (this.leaf.getContents() == null) {
 						this.leaf.removeLast();
