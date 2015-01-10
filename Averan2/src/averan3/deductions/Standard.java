@@ -75,7 +75,7 @@ public final class Standard {
 				final Variable $F = new Variable("F");
 				final Variable $X = new Variable("X");
 				final Variable $Y = new Variable("Y");
-				final Variable $T = new Variable("‥");
+				final Variable $T = new Variable("..");
 				
 				suppose("bind1",
 						$(forall($E, $X, $T, $Y, $F),
@@ -90,7 +90,7 @@ public final class Standard {
 				final Variable $X = new Variable("X");
 				final Variable $Y = new Variable("Y");
 				final Variable $I = new Variable("I");
-				final Variable $T = new Variable("‥");
+				final Variable $T = new Variable("..");
 				
 				suppose("rewrite1",
 						$(forall($E, $X, $Y, $T, $I, $F),
