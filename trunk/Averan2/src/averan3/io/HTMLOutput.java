@@ -8,7 +8,11 @@ import java.util.HashSet;
 
 import averan3.core.Proof;
 import averan3.core.Proof.Deduction;
+import averan3.core.Proof.Message;
 import averan3.core.Proof.Deduction.Inclusion;
+import averan3.core.Proof.Message.Composite;
+import averan3.core.Proof.Message.Element;
+import averan3.core.Proof.Message.Reference;
 import averan3.core.Session;
 import averan3.core.Session.Output;
 
@@ -63,11 +67,10 @@ public final class HTMLOutput implements Output {
 					+ "(" + escape(proof.getPropositionName()) + ")</a><br/>"
 					+ "<div style='margin-left:2em'>" + escape(proof.getProposition().accept(ConsoleOutput.TO_STRING)) + "<br/>");
 			
-			
 			if (proof instanceof Deduction) {
 				final String proofContentsId = proof.getPropositionName() + "_contents";
 				this.out.println("<span onclick=\"var style=document.getElementById('" + escape(proofContentsId) + "').style; style.display=style.display==''?'none':''\"><u>"
-						+ escape(proof.toString()) + "</u></span>");
+						+ escape(proof.getMessage().accept(MESSAGE_TO_STRING)) + "</u></span>");
 				
 				final Deduction proofAsDeduction = (Deduction) proof;
 				
@@ -81,7 +84,7 @@ public final class HTMLOutput implements Output {
 				
 				this.out.println("</ul>");
 			} else {
-				this.out.println(escape(proof.toString()));
+				this.out.println(escape(proof.getMessage().accept(MESSAGE_TO_STRING)));
 			}
 			
 			this.out.println("</div></div></li>");
@@ -103,8 +106,35 @@ public final class HTMLOutput implements Output {
 	public final void endSession(final Session session) {
 		this.out.println("</body></html>");
 	}
-
+	
 	private static final long serialVersionUID = 8823222879002739370L;
+	
+	public static final Message.Visitor<String> MESSAGE_TO_STRING = new Message.Visitor<String>() {
+		
+		@Override
+		public final String visit(final Element element) {
+			return element.accept(Message.TO_STRING); // TODO pretty-print expressions
+		}
+		
+		@Override
+		public final String visit(final Reference reference) {
+			return reference.accept(Message.TO_STRING); // TODO make link
+		}
+		
+		@Override
+		public final String visit(final Composite composite) {
+			final StringBuilder result = new StringBuilder();
+			
+			for (final Message<?> message : composite.getObject()) {
+				result.append(message.accept(this));
+			}
+			
+			return result.toString();
+		}
+		
+		private static final long serialVersionUID = 1466918098245297850L;
+		
+	};
 	
 	public static final PrintStream newPrintStream(final String filePath) {
 		try {
