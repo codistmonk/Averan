@@ -5,6 +5,7 @@ import static averan3.core.Composite.FORALL;
 import static averan3.core.Composite.IMPLIES;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.last;
+
 import averan3.core.Expression.Visitor;
 
 import java.io.Serializable;
@@ -856,11 +857,27 @@ public abstract class Proof implements Serializable {
 			
 			@Override
 			public final Expression<?> visit(final Variable variable) {
-				return variable.isLocked() ? variable : this.variables.computeIfAbsent(variable, v -> new Variable(v.getName()));
+				return this.variables.getOrDefault(variable, variable);
 			}
 			
 			@Override
 			public final Expression<?> visit(final Composite<Expression<?>> composite) {
+				if (composite.isList()) {
+					final int n = composite.getListSize();
+					
+					if (1 < n && FORALL.implies(composite.getListElement(0))) {
+						for (int i = 1; i < n; ++i) {
+							final Variable parameter = (Variable) composite.getListElement(i);
+							
+							if (parameter.isLocked()) {
+								continue;
+							}
+							
+							this.variables.computeIfAbsent(parameter, p -> new Variable(p.getName()));
+						}
+					}
+				}
+				
 				final Composite<Expression<?>> newComposite = new Composite<>();
 				boolean returnNewComposite = false;
 				
