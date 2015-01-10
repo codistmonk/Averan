@@ -6,8 +6,6 @@ import static averan3.core.Composite.IMPLIES;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.last;
 import averan3.core.Expression.Visitor;
-import averan3.core.Proof.Message.Reference;
-import averan3.core.Proof.Message.Text;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -19,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
+import net.sourceforge.aprog.tools.Pair;
 import net.sourceforge.aprog.tools.Tools;
 
 /**
@@ -101,9 +100,9 @@ public abstract class Proof implements Serializable {
 		/**
 		 * @author codistmonk (creation 2015-01-10)
 		 */
-		public static final class Text extends Message<String> {
+		public static final class Element extends Message<Object> {
 			
-			public Text(final String object) {
+			public Element(final Object object) {
 				super(object);
 			}
 			
@@ -119,10 +118,10 @@ public abstract class Proof implements Serializable {
 		/**
 		 * @author codistmonk (creation 2015-01-10)
 		 */
-		public static final class Reference extends Message<String> {
+		public static final class Reference extends Message<Pair<Deduction, String>> {
 			
-			public Reference(final String object) {
-				super(object);
+			public Reference(final Deduction deduction, final String propositionName) {
+				super(new Pair<>(deduction, propositionName));
 			}
 			
 			@Override
@@ -131,24 +130,6 @@ public abstract class Proof implements Serializable {
 			}
 			
 			private static final long serialVersionUID = -8541256304251687194L;
-			
-		}
-		
-		/**
-		 * @author codistmonk (creation 2015-01-10)
-		 */
-		public static final class Expression extends Message<averan3.core.Expression<?>> {
-			
-			public Expression(final averan3.core.Expression<?> object) {
-				super(object);
-			}
-			
-			@Override
-			public final <V> V accept(final Visitor<V> visitor) {
-				return visitor.visit(this);
-			}
-			
-			private static final long serialVersionUID = 8804468508855956218L;
 			
 		}
 		
@@ -177,11 +158,9 @@ public abstract class Proof implements Serializable {
 		 */
 		public static abstract interface Visitor<V> extends Serializable {
 			
-			public abstract V visit(Text text);
+			public abstract V visit(Element element);
 			
 			public abstract V visit(Reference reference);
-			
-			public abstract V visit(Expression expression);
 			
 			public abstract V visit(Composite composite);
 			
@@ -190,18 +169,15 @@ public abstract class Proof implements Serializable {
 		public static final Visitor<String> TO_STRING = new Visitor<String>() {
 			
 			@Override
-			public final String visit(final Text text) {
-				return text.getObject();
+			public final String visit(final Element element) {
+				final Object object = element.getObject();
+				
+				return "" + (object instanceof Object[] ? Arrays.toString((Object[]) object) : object);
 			}
 			
 			@Override
 			public final String visit(final Reference reference) {
-				return "(" + reference.getObject() + ")";
-			}
-			
-			@Override
-			public final String visit(final Expression expression) {
-				return "" + expression.getObject();
+				return "(" + reference.getObject().getSecond() + ")";
 			}
 			
 			@Override
@@ -328,7 +304,7 @@ public abstract class Proof implements Serializable {
 		}
 		
 		public final void conclude(final String conclusionMessage) {
-			this.setMessage(conclusionMessage == null ? null : new Message.Text(conclusionMessage));
+			this.setMessage(conclusionMessage == null ? null : new Message.Element(conclusionMessage));
 			this.conclude();
 		}
 		
@@ -366,6 +342,22 @@ public abstract class Proof implements Serializable {
 				
 				this.setProposition(reduced.module.getRoot());
 			}
+			
+			if (this.getMessage() == null) {
+				Proof informativeProof = this;
+				
+				while (informativeProof instanceof Deduction && ((Deduction) informativeProof).getProofs().size() == 1) {
+					informativeProof = ((Deduction) informativeProof).getProofs().get(0);
+				}
+				
+				this.setMessage(this != informativeProof ? informativeProof.getMessage() :
+					new Message.Composite(
+							new Message.Element("By deduction in "),
+							new Message.Element(this.getProofs().size()),
+							new Message.Element(" steps ("),
+							new Message.Element(this.countSubsteps()),
+							new Message.Element(" substeps)")));
+			}
 		}
 		
 		public final Expression<?> getGoal() {
@@ -401,20 +393,7 @@ public abstract class Proof implements Serializable {
 		
 		@Override
 		public final String toString() {
-			if (this.getMessage() != null) {
-				Tools.debugPrint(this.getMessage());
-				Tools.debugPrint(this.getMessage().accept(Message.TO_STRING));
-				return this.getMessage().accept(Message.TO_STRING);
-			}
-			
-			Proof informativeProof = this;
-			
-			while (informativeProof instanceof Deduction && ((Deduction) informativeProof).getProofs().size() == 1) {
-				informativeProof = ((Deduction) informativeProof).getProofs().get(0);
-			}
-			
-			return this != informativeProof ? informativeProof.toString() :
-				"By deduction in " + this.getProofs().size() + " steps (" + this.countSubsteps() + " substeps)";
+			return this.getMessage().accept(Message.TO_STRING);
 		}
 		
 		public final int countSubsteps() {
@@ -467,11 +446,12 @@ public abstract class Proof implements Serializable {
 			@Override
 			public final void conclude() {
 				this.setProposition(this.proposition.accept(Variable.RESET));
+				this.setMessage(new Message.Element("By supposition"));
 			}
 			
 			@Override
 			public final String toString() {
-				return "By supposition";
+				return this.getMessage().accept(Message.TO_STRING);
 			}
 			
 			private static final long serialVersionUID = -2449310594857640213L;
@@ -543,11 +523,17 @@ public abstract class Proof implements Serializable {
 				}
 				
 				rule.accept(Variable.RESET);
+				
+				this.setMessage(new Message.Composite(
+						new Message.Element("By applying "),
+						new Message.Reference(this.getParent(), this.ruleName),
+						new Message.Element(" on "),
+						new Message.Reference(this.getParent(), this.conditionName)));
 			}
 			
 			@Override
 			public final String toString() {
-				return "By applying (" + this.ruleName + ") on (" + this.conditionName + ")";
+				return this.getMessage().accept(Message.TO_STRING);
 			}
 			
 			private static final long serialVersionUID = -2333420406462704258L;
@@ -611,18 +597,30 @@ public abstract class Proof implements Serializable {
 				
 				this.setProposition(new Composite<>().add(this.substitutionExpression)
 						.add(EQUALS).add(this.substitutionExpression.get(0).accept(substitution)));
+				{
+					final Expression<?> target = this.substitutionExpression.get(0);
+					final Expression<?> equalities = this.substitutionExpression.get(1);
+					final Expression<?> indices = this.substitutionExpression.get(2);
+					final List<Message<?>> elements = new ArrayList<>();
+					
+					elements.add(new Message.Element("By substitution in "));
+					elements.add(new Message.Element(target));
+					elements.add(new Message.Element(" using "));
+					elements.add(new Message.Element(equalities));
+					
+					if (!indices.isEmpty()) {
+						elements.add(new Message.Element(" at indices "));
+						elements.add(new Message.Element(indices));
+						
+					}
+					
+					this.setMessage(new Message.Composite(elements.toArray(new Message[elements.size()])));
+				}
 			}
 			
 			@Override
 			public final String toString() {
-				final Expression<?> target = this.substitutionExpression.get(0);
-				final Expression<?> equalities = this.substitutionExpression.get(1);
-				final Expression<?> indices = this.substitutionExpression.get(2);
-				
-				return "By substitution in " + target
-						+ " using " + equalities
-						+ (indices.isEmpty() ? "" : " at indices " + indices);
-				
+				return this.getMessage().accept(Message.TO_STRING);
 			}
 			
 			private static final long serialVersionUID = 5765484578210551523L;
@@ -694,12 +692,32 @@ public abstract class Proof implements Serializable {
 				}
 				
 				this.setProposition(target.accept(substitution.at(this.indices)));
+				
+				{
+					final List<Message<?>> elements = new ArrayList<>();
+					
+					elements.add(new Message.Element("By rewriting "));
+					elements.add(new Message.Reference(this.getParent(), this.targetName));
+					elements.add(new Message.Element(" using ["));
+					
+					for (final String equalityName : this.equalityNames) {
+						elements.add(new Message.Reference(this.getParent(), equalityName));
+					}
+					
+					elements.add(new Message.Element("]"));
+					
+					if (!this.indices.isEmpty()) {
+						elements.add(new Message.Element(" at indices "));
+						elements.add(new Message.Element(this.indices));
+					}
+					
+					this.setMessage(new Message.Composite(elements.toArray(new Message[elements.size()])));
+				}
 			}
 			
 			@Override
 			public final String toString() {
-				return "By rewriting (" + this.targetName + ") using " + this.equalityNames
-						+ (this.indices.isEmpty() ? "" : " at indices " + this.indices);
+				return this.getMessage().accept(Message.TO_STRING);
 			}
 			
 			private static final long serialVersionUID = 6500801432673800012L;
@@ -754,11 +772,17 @@ public abstract class Proof implements Serializable {
 					new Composite<>().add(newParameters).add(newContents));
 				
 				target.accept(Variable.RESET);
+				
+				this.setMessage(new Message.Composite(
+						new Message.Element("By binding in "),
+						new Message.Reference(this.getParent(), this.targetName),
+						new Message.Element(" with "),
+						new Message.Element(this.values)));
 			}
 			
 			@Override
 			public final String toString() {
-				return "By binding in (" + this.targetName + ") with " + Arrays.toString(this.values);
+				return this.getMessage().accept(Message.TO_STRING);
 			}
 			
 			private static final long serialVersionUID = 7752042237978618815L;
@@ -792,12 +816,26 @@ public abstract class Proof implements Serializable {
 			@Override
 			public final void conclude() {
 				this.setProposition(this.included.getProposition().accept(this.specialization));
+				{
+					final List<Message<?>> elements = new ArrayList<>();
+					
+					elements.add(new Message.Element("By inclusion from "));
+					elements.add(new Message.Reference(
+							this.included.getParent(),
+							this.included.getParent().getPropositionName()));
+					
+					if (!this.specialization.getBindings().isEmpty()) {
+						elements.add(new Message.Element(" using "));
+						elements.add(new Message.Element(this.specialization.getBindings()));
+					}
+					
+					this.setMessage(new Message.Composite(elements.toArray(new Message[elements.size()])));
+				}
 			}
 			
 			@Override
 			public final String toString() {
-				return "By inclusion from (" + this.included.getParent().getPropositionName() + ")"
-						+ (this.specialization.getBindings().isEmpty() ? "" : " using " + this.specialization.getBindings());
+				return this.getMessage().accept(Message.TO_STRING);
 			}
 			
 			private static final long serialVersionUID = -1808210996095205537L;
