@@ -93,6 +93,46 @@ public final class Variable implements Expression<Variable> {
 	public final boolean equals(final Object object) {
 		final Variable that = cast(this.getClass(), object);
 		
+		if (true) {
+			final Expression<?> thisMatch = this.getMatch();
+			
+			if (that != null) {
+				final Expression<?> thatMatch = that.getMatch();
+				
+				if (thisMatch == null && thatMatch == null) {
+					this.match = that.match = that;
+					
+					return true;
+				}
+				
+				if (thisMatch == null) {
+					this.match = thatMatch;
+					
+					return true;
+				}
+				
+				if (thatMatch == null) {
+					that.match = thisMatch;
+					
+					return true;
+				}
+				
+				if (thisMatch instanceof Variable || thatMatch instanceof Variable) {
+					return thisMatch == thatMatch;
+				}
+				
+				return thisMatch.equals(thatMatch);
+			}
+			
+			if (thisMatch == null) {
+				this.match = (Expression<?>) object;
+				
+				return true;
+			}
+			
+			return !(thisMatch instanceof Variable) && thisMatch.equals(object);
+		}
+		
 		if (this.isLocked()) {
 			return this == object || (that != null && !that.isLocked() && that.equals(this));
 		}

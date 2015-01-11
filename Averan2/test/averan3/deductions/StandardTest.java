@@ -3,14 +3,16 @@ package averan3.deductions;
 import static averan3.core.Composite.EQUALS;
 import static averan3.core.Session.*;
 import static averan3.deductions.Standard.*;
+import static averan3.deductions.AutoDeduce.autoDeduce;
 import static net.sourceforge.aprog.tools.Tools.getThisMethodName;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-
-import org.junit.Test;
 
 import averan3.core.Variable;
 import averan3.deductions.Standard;
 import averan3.io.ConsoleOutput;
+
+import org.junit.Test;
 
 /**
  * @author codistmonk (creation 2015-01-07)
@@ -19,6 +21,11 @@ public final class StandardTest {
 	
 	@Test
 	public final void test1() {
+		assertNotNull(Standard.DEDUCTION);
+	}
+	
+	@Test
+	public final void test2() {
 		final String deductionName = this.getClass().getName() + "." + getThisMethodName();
 		
 		build(deductionName, () -> {
@@ -47,7 +54,7 @@ public final class StandardTest {
 	}
 	
 	@Test
-	public final void test2() {
+	public final void test3() {
 		final String deductionName = this.getClass().getName() + "." + getThisMethodName();
 		
 		build(deductionName, () -> {
@@ -113,8 +120,8 @@ public final class StandardTest {
 		
 	}
 	
-	@Test
-	public final void test3() {
+//	@Test
+	public final void test4() {
 		final String deductionName = this.getClass().getName() + "." + getThisMethodName();
 		
 		build(deductionName, () -> {
@@ -167,7 +174,7 @@ public final class StandardTest {
 				final Variable $Y = variable("Y");
 				
 				assertTrue(autoDeduce("commutativity_of_disjunction",
-						$(forall($X, $Y), rule(disjunction($X, $Y), disjunction($Y, $X))), 3));
+						$(forall($X, $Y), rule(disjunction($X, $Y), disjunction($Y, $X))), 4));
 			}
 		}, new ConsoleOutput());
 		

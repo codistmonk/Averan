@@ -2,6 +2,7 @@ package averan3.deductions;
 
 import static averan3.core.Session.*;
 import static averan3.deductions.Standard.*;
+import static averan3.deductions.AutoDeduce.autoDeduce;
 import static averan3.io.ConsoleOutput.group;
 import averan3.core.Composite;
 import averan3.core.Expression;
@@ -43,7 +44,7 @@ public final class Reals {
 		@Override
 		public final void run() {
 			if (true) {
-//				return;
+//				throw new RuntimeException();
 			}
 			
 			include(Standard.DEDUCTION);
@@ -153,10 +154,14 @@ public final class Reals {
 				deduce("type_of_matrix_rows",
 						$(forall($X, $m, $n), rule(realMatrix($X, $m, $n), nonzeroNatural($m))));
 				{
-//					intros();
-//					apply("left_elimination_of_equality", name(-1));
-//					check(autoDeduce(3));
-					check(RealsTest.autoDeduce2(goal(), 3));
+					final Variable x = introduce();
+					final Variable m = introduce();
+					final Variable n = introduce();
+					intros();
+					apply("left_elimination_of_equality", name(-1));
+					bind("definition_of_matrices", x, m, n);
+					apply(name(-2), name(-1));
+					apply("left_elimination_of_conjunction", name(-1));
 					conclude();
 				}
 				

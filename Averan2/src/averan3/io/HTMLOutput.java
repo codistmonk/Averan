@@ -55,6 +55,10 @@ public final class HTMLOutput implements Output {
 	public final void beginDeduction(final Deduction deduction) {
 		this.out.println("<div>Deduce (" + escape(deduction.getPropositionName()) + ")<br/>");
 		this.out.println("<ul>");
+		
+		if (deduction.getRootParameters() != null) {
+			this.out.println("<li>" + escape(deduction.getRootParameters().accept(ConsoleOutput.TO_STRING)) + "</li>");
+		}
 	}
 	
 	@Override
