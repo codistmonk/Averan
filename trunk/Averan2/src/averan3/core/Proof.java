@@ -5,7 +5,7 @@ import static averan3.core.Composite.FORALL;
 import static averan3.core.Composite.IMPLIES;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.last;
-import averan3.core.Expression.Substitution.PatternEquals;
+
 import averan3.core.Expression.Visitor;
 
 import java.io.Serializable;
@@ -268,7 +268,7 @@ public abstract class Proof implements Serializable {
 			final Composite<?> goal = cast(Composite.class, this.getGoal());
 			
 			if (goal != null) {
-				if (goal.getParameters() != null && goal.getParameters().isList()) {
+				if (goal.getParameters() != null) {
 					final Variable parameter = (Variable) goal.getParameters().getListElement(1);
 					final Variable result = this.newParameter(
 							parameterOrPropositionName != null ? parameterOrPropositionName : parameter.getName());

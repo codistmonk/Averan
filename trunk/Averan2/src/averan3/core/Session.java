@@ -51,6 +51,20 @@ public final class Session implements Serializable {
 	
 	public static boolean DEBUG = false;
 	
+	public static final int recursionDepth() {
+		String methodId = Tools.debug(Tools.DEBUG_STACK_OFFSET + 1);
+		methodId = methodId.substring(0, methodId.indexOf('('));
+		int result = 0;
+		
+		for (final StackTraceElement element : Thread.currentThread().getStackTrace()) {
+			if (element.toString().startsWith(methodId)) {
+				++result;
+			}
+		}
+		
+		return result;
+	}
+	
 	public static final int breakpoint(final int value) {
 		final int result = breakpoints.computeIfAbsent(
 				Tools.debug(Tools.DEBUG_STACK_OFFSET + 1), s -> new AtomicInteger()).incrementAndGet();

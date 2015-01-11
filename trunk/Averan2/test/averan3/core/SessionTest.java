@@ -2,9 +2,10 @@ package averan3.core;
 
 import static averan3.core.Session.*;
 import static averan3.deductions.Standard.*;
+import static averan3.deductions.AutoDeduce.autoDeduce;
 import static net.sourceforge.aprog.tools.Tools.getThisMethodName;
 import static org.junit.Assert.*;
-
+import averan3.deductions.AutoDeduce3;
 import averan3.deductions.Standard;
 import averan3.io.ConsoleOutput;
 
@@ -87,7 +88,7 @@ public final class SessionTest {
 		final String deductionName = this.getClass().getName() + "." + getThisMethodName();
 		
 		build(deductionName, () -> {
-			setupIdentitySymmetryRecall();
+			AutoDeduce3.deduceFundamentalPropositions();
 			
 			deduce(rule(rule("a", "b"), rule("b", "c"), rule("c", "d"), rule("a", "d")));
 			{
@@ -205,7 +206,7 @@ public final class SessionTest {
 			
 			@Override
 			public final void run() {
-				setupIdentitySymmetryRecall();
+				AutoDeduce3.deduceFundamentalPropositions();
 				
 				deduce();
 				{
