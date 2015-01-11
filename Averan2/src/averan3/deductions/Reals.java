@@ -3,14 +3,12 @@ package averan3.deductions;
 import static averan3.core.Session.*;
 import static averan3.deductions.Standard.*;
 import static averan3.io.ConsoleOutput.group;
-
 import averan3.core.Composite;
 import averan3.core.Expression;
 import averan3.core.Symbol;
 import averan3.core.Proof.Deduction;
 import averan3.core.Variable;
 import averan3.io.HTMLOutput;
-
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 
 /**
@@ -44,6 +42,10 @@ public final class Reals {
 		
 		@Override
 		public final void run() {
+			if (true) {
+//				return;
+			}
+			
 			include(Standard.DEDUCTION);
 			
 			{
@@ -141,13 +143,48 @@ public final class Reals {
 								$(forall($i, $j), rule(natural($i, $m), natural($j, $n),
 										real(matrixElement($X, $i, $j))))))));
 				
-				check(autoDeduce("type_of_matrix_rows",
-						$(forall($X, $m, $n), rule(realMatrix($X, $m, $n), nonzeroNatural($m))), 5));
-				check(autoDeduce("type_of_matrix_columns",
-						$(forall($X, $m, $n), rule(realMatrix($X, $m, $n), nonzeroNatural($n))), 5));
-				check(autoDeduce("type_of_matrix_element",
+//				check(autoDeduce("type_of_matrix_rows",
+//						$(forall($X, $m, $n), rule(realMatrix($X, $m, $n), nonzeroNatural($m))), 5));
+//				check(autoDeduce("type_of_matrix_columns",
+//						$(forall($X, $m, $n), rule(realMatrix($X, $m, $n), nonzeroNatural($n))), 5));
+//				check(autoDeduce("type_of_matrix_element",
+//						$(forall($X, $m, $n), rule(realMatrix($X, $m, $n), $(forall($i, $j),
+//								rule(natural($i, $m), natural($j, $n), real(matrixElement($X, $i, $j)))))), 5));
+				deduce("type_of_matrix_rows",
+						$(forall($X, $m, $n), rule(realMatrix($X, $m, $n), nonzeroNatural($m))));
+				{
+					intros();
+					apply("left_elimination_of_equality", name(-1));
+					check(autoDeduce(3));
+					conclude();
+				}
+				
+				deduce("type_of_matrix_columns",
+						$(forall($X, $m, $n), rule(realMatrix($X, $m, $n), nonzeroNatural($n))));
+				{
+					intros();
+					apply("left_elimination_of_equality", name(-1));
+					check(autoDeduce(4));
+					conclude();
+				}
+				
+				deduce("type_of_matrix_element",
 						$(forall($X, $m, $n), rule(realMatrix($X, $m, $n), $(forall($i, $j),
-								rule(natural($i, $m), natural($j, $n), real(matrixElement($X, $i, $j)))))), 5));
+								rule(natural($i, $m), natural($j, $n), real(matrixElement($X, $i, $j)))))));
+				{
+					final Variable x = introduce();
+					final Variable m = introduce();
+					final Variable n = introduce();
+					
+					intros();
+					
+					apply("left_elimination_of_equality", name(-1));
+					bind("definition_of_matrices", x, m, n);
+					apply(name(-2), name(-1));
+					apply("right_elimination_of_conjunction", name(-1));
+					apply("right_elimination_of_conjunction", name(-1));
+					conclude();
+				}
 			}
 			
 			{
