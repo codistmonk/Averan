@@ -49,7 +49,7 @@ public final class Session implements Serializable {
 	
 	private static final Map<String, AtomicInteger> breakpoints = new HashMap<>();
 	
-	public static final boolean DEBUG = false;
+	public static boolean DEBUG = false;
 	
 	public static final int breakpoint(final int value) {
 		final int result = breakpoints.computeIfAbsent(

@@ -311,7 +311,7 @@ public abstract class Proof implements Serializable {
 		
 		public final boolean canConclude() {
 			return !(this.getProofs().isEmpty() || last(this.getProofs()) instanceof Supposition
-					|| (this.getGoal() != null && !last(this.getProofs()).getProposition().equals(this.getGoal())));
+					|| (this.getGoal() != null && !last(this.getProofs()).getProposition().equals(this.getGoal().accept(Variable.RESET))));
 		}
 		
 		@Override
