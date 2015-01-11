@@ -3,12 +3,16 @@ package averan3.deductions;
 import static averan3.core.Session.*;
 import static averan3.deductions.Reals.*;
 import static averan3.deductions.Standard.*;
+import static java.lang.Math.min;
+import static java.util.Collections.nCopies;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.getThisMethodName;
+import static net.sourceforge.aprog.tools.Tools.join;
 import static org.junit.Assert.*;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import net.sourceforge.aprog.tools.Tools;
@@ -93,14 +97,93 @@ public final class RealsTest {
 			return false;
 		}
 		
+		final String indent = join("", nCopies(recursionDepth(), "   "));
+		
 		for (final Justification justification : justify(goal)) {
-			Tools.debugPrint(justification);
-			if (justification.justify(goal, depth) && (deduction().canConclude() || autoDeduce2(goal(), depth - 1))) {
-				return true;
+			Tools.debugPrint(indent, justification, goal);
+			if (justification instanceof JustificationByApply) {
+				if (tryToApply((JustificationByApply) justification, goal, depth)) {
+					Tools.debugPrint(indent, "SUCCEEDED", justification);
+					return true;
+				}
+			} else {
+				if (justification.justify(goal, depth) && (deduction().canConclude())) {
+					Tools.debugPrint(indent, "SUCCEEDED", justification);
+					return true;
+				}
 			}
 		}
 		
 		return false;
+	}
+	
+	public static final boolean tryToApply(final JustificationByApply j, final Expression<?> goal, final int depth) {
+		if (depth <= 0) {
+			return false;
+		}
+		
+		Composite<Expression<?>> rule = proposition(j.getJustificationName());
+		
+		if (rule.getParameters() != null) {
+			rule = rule.getContents();
+		}
+		
+		final Expression<?> condition0 = rule.getCondition();
+		
+		for (int i = 0; i < j.depth; ++i) {
+			rule = rule.getConclusion();
+		}
+		
+		if (!rule.getConclusion().equals(goal.accept(Variable.RESET))) {
+			throw new IllegalStateException();
+		}
+		
+		final Expression<?> boundCondition0 = condition0.accept(Variable.BIND);
+		
+		for (final Justification justification : RealsTest.justify(boundCondition0)) {
+			if (justification instanceof JustificationByApply) {
+				tryToApply((JustificationByApply) justification, boundCondition0, depth - 1);
+				
+				if (deduction().canConclude()) {
+					return true;
+				}
+				
+				if (goalFromLastRule() != null) {
+					if (tryToApply(new JustificationByApply(name(-1), 0), goalFromLastRule(), depth - 1)) {
+						return true;
+					}
+				}
+			} else {
+				justification.justify(goal, 1);
+				apply(j.getJustificationName(), name(-1));
+				
+				if (deduction().canConclude()) {
+					return true;
+				}
+				
+				if (goalFromLastRule() != null) {
+					if (tryToApply(new JustificationByApply(name(-1), 0), goalFromLastRule(), depth - 1)) {
+						return true;
+					}
+				}
+			}
+		}
+		
+		return false;
+	}
+	
+	public static final Expression<?> goalFromLastRule() {
+		Composite<Expression<?>> rule = cast(Composite.class, proof(-1).getProposition());
+		
+		if (rule == null) {
+			return null;
+		}
+		
+		if (rule.getParameters() != null) {
+			rule = rule.getContents();
+		}
+		
+		return rule.getConclusion();
 	}
 	
 	public static final List<Justification> justify(final Expression<?> goal) {
@@ -112,7 +195,6 @@ public final class RealsTest {
 			
 			for (int i = proofs.size() - 1; 0 <= i; --i) {
 				final Proof proof = proofs.get(i);
-				Tools.debugPrint(goal);
 				if (proof.getProposition().accept(Variable.RESET).equals(goal.accept(Variable.RESET))) {
 					result.add(new JustificationByRecall(proof.getPropositionName()));
 				}
@@ -127,15 +209,18 @@ public final class RealsTest {
 					}
 				}
 				
+				int depth = 0;
+				
 				while (composite != null) {
 					final Expression<?> conclusion = composite.getConclusion();
 					
 					if (conclusion != null && conclusion.accept(Variable.RESET).equals(goal.accept(Variable.RESET))) {
-						result.add(new JustificationByApply(proof.getPropositionName()));
+						result.add(new JustificationByApply(proof.getPropositionName(), depth));
 						break;
 					}
 					
 					composite = cast(Composite.class, conclusion);
+					++depth;
 				}
 			}
 			
@@ -197,8 +282,11 @@ public final class RealsTest {
 	 */
 	public static final class JustificationByApply extends Justification {
 		
-		public JustificationByApply(final String name) {
+		private final int depth;
+		
+		public JustificationByApply(final String name, final int depth) {
 			super(name);
+			this.depth = depth;
 		}
 		
 		@Override
@@ -213,16 +301,22 @@ public final class RealsTest {
 				rule = rule.getContents();
 			}
 			
-			Tools.debugPrint(rule);
+			final Expression<?> condition0 = rule.getCondition();
 			
-			rule.getConclusion().equals(goal.accept(Variable.RESET));
+			for (int i = 0; i < this.depth; ++i) {
+				rule = rule.getConclusion();
+			}
 			
-			final Expression<?> boundCondition = rule.getCondition().accept(Variable.BIND);
+			if (!rule.getConclusion().equals(goal.accept(Variable.RESET))) {
+				throw new IllegalStateException();
+			}
 			
-			Tools.debugPrint(boundCondition);
+			final Expression<?> boundCondition0 = condition0.accept(Variable.BIND);
 			
-			for (final Justification justification : RealsTest.justify(boundCondition)) {
-				if (justification.justify(boundCondition, depth - 1)) {
+			for (final Justification justification : RealsTest.justify(boundCondition0)) {
+				if (justification.justify(boundCondition0, min(1, depth - 1))) {
+					Tools.debugPrint(proof(this.getJustificationName()).getProposition());
+					Tools.debugPrint(proof(-1).getProposition());
 					apply(this.getJustificationName(), name(-1));
 					return true;
 				}
@@ -339,12 +433,12 @@ public final class RealsTest {
 					deduce("type_of_matrix_rows",
 							$(forall($X, $m, $n), rule(realMatrix($X, $m, $n), nonzeroNatural($m))));
 					{
-						intros();
+//						intros();
 						
 //						apply("left_elimination_of_equality", name(-1));
 						
 						DEBUG = true;
-						check(autoDeduce(3));
+						check(autoDeduce2(goal(), 3));
 						DEBUG = false;
 						
 						conclude();

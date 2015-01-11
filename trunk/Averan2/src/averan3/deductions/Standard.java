@@ -307,7 +307,7 @@ public final class Standard {
 		return autoDeduce(null, goal, depth);
 	}
 	
-	public static final int callDepth() {
+	public static final int recursionDepth() {
 		String methodId = Tools.debug(Tools.DEBUG_STACK_OFFSET + 1);
 		methodId = methodId.substring(0, methodId.indexOf('('));
 		int result = 0;
@@ -326,7 +326,7 @@ public final class Standard {
 			return false;
 		}
 		
-		final String indent = join("", Collections.nCopies(callDepth() - 1, "    "));
+		final String indent = join("", Collections.nCopies(recursionDepth() - 1, "    "));
 		int toConclude = 0;
 		
 		deduce(propositionName, goal);
