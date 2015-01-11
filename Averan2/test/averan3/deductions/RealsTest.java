@@ -3,11 +3,22 @@ package averan3.deductions;
 import static averan3.core.Session.*;
 import static averan3.deductions.Reals.*;
 import static averan3.deductions.Standard.*;
+import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.getThisMethodName;
 import static org.junit.Assert.*;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
+import net.sourceforge.aprog.tools.Tools;
+
 import org.junit.Test;
 
+import averan3.core.Composite;
+import averan3.core.Expression;
+import averan3.core.Proof;
+import averan3.core.Proof.Deduction;
 import averan3.core.Variable;
 import averan3.io.ConsoleOutput;
 
@@ -45,12 +56,217 @@ public final class RealsTest {
 							$(forall($X, $Y), rule($X, equality($X, $Y), $Y)));
 				}
 				
-				DEBUG = true;
-				assertTrue(autoDeduce(rule("a", equality("a", "b"), "b"), 2));
-				DEBUG = false;
+//				DEBUG = true;
+//				assertTrue(autoDeduce(rule("a", equality("a", "b"), "b"), 2));
+//				DEBUG = false;
+				
+				deduce(rule("a", equality("a", "b"), "b"));
+				{
+					assertTrue(autoDeduce2(goal(), 2));
+					assertTrue(deduction().canConclude());
+					cancel();
+				}
+				
+				deduce(rule("a", equality("a", "b"), "b"));
+				{
+					introduce();
+					assertTrue(autoDeduce2(goal(), 2));
+					assertTrue(deduction().canConclude());
+					cancel();
+				}
+				
+				deduce(rule("a", equality("a", "b"), "b"));
+				{
+					introduce();
+					introduce();
+					assertTrue(autoDeduce2(goal(), 2));
+					assertTrue(deduction().canConclude());
+					cancel();
+				}
 			}
 			
 		}, new ConsoleOutput());
+	}
+	
+	public static final boolean autoDeduce2(final Expression<?> goal, final int depth) {
+		if (depth <= 0) {
+			return false;
+		}
+		
+		for (final Justification justification : justify(goal)) {
+			Tools.debugPrint(justification);
+			if (justification.justify(goal, depth) && (deduction().canConclude() || autoDeduce2(goal(), depth - 1))) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	public static final List<Justification> justify(final Expression<?> goal) {
+		final List<Justification> result = new ArrayList<>();
+		Deduction deduction = deduction();
+		
+		while (deduction != null) {
+			final List<Proof> proofs = deduction.getProofs();
+			
+			for (int i = proofs.size() - 1; 0 <= i; --i) {
+				final Proof proof = proofs.get(i);
+				Tools.debugPrint(goal);
+				if (proof.getProposition().accept(Variable.RESET).equals(goal.accept(Variable.RESET))) {
+					result.add(new JustificationByRecall(proof.getPropositionName()));
+				}
+				
+				Composite<Expression<?>> composite = cast(Composite.class, proof.getProposition());
+				
+				if (composite != null && composite.getParameters() != null) {
+					if (composite.getContents().accept(Variable.RESET).equals(goal.accept(Variable.RESET))) {
+						result.add(new JustificationByBind(proof.getPropositionName()));
+					} else {
+						composite = composite.getContents();
+					}
+				}
+				
+				while (composite != null) {
+					final Expression<?> conclusion = composite.getConclusion();
+					
+					if (conclusion != null && conclusion.accept(Variable.RESET).equals(goal.accept(Variable.RESET))) {
+						result.add(new JustificationByApply(proof.getPropositionName()));
+						break;
+					}
+					
+					composite = cast(Composite.class, conclusion);
+				}
+			}
+			
+			deduction = deduction.getParent();
+		}
+		
+		
+		return result;
+	}
+	
+	/**
+	 * @author codistmonk (creation 2015)
+	 */
+	public static abstract class Justification implements Serializable {
+		
+		private final String justificationName;
+		
+		protected Justification(final String name) {
+			this.justificationName = name;
+		}
+		
+		public final String getJustificationName() {
+			return this.justificationName;
+		}
+		
+		public abstract boolean justify(Expression<?> goal, int depth);
+		
+		@Override
+		public final String toString() {
+			return this.getClass().getSimpleName() + " (" + this.justificationName + ")";
+		}
+		
+		private static final long serialVersionUID = 4949397716206009683L;
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2015-01-11)
+	 */
+	public static final class JustificationByRecall extends Justification {
+		
+		public JustificationByRecall(final String name) {
+			super(name);
+		}
+		
+		@Override
+		public final boolean justify(final Expression<?> goal, final int depth) {
+			apply("recall", this.getJustificationName());
+			
+			return true;
+		}
+		
+		private static final long serialVersionUID = -8761694921382622419L;
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2015-01-11)
+	 */
+	public static final class JustificationByApply extends Justification {
+		
+		public JustificationByApply(final String name) {
+			super(name);
+		}
+		
+		@Override
+		public final boolean justify(final Expression<?> goal, final int depth) {
+			if (depth <= 0) {
+				return false;
+			}
+			
+			Composite<Expression<?>> rule = proposition(this.getJustificationName());
+			
+			if (rule.getParameters() != null) {
+				rule = rule.getContents();
+			}
+			
+			Tools.debugPrint(rule);
+			
+			rule.getConclusion().equals(goal.accept(Variable.RESET));
+			
+			final Expression<?> boundCondition = rule.getCondition().accept(Variable.BIND);
+			
+			Tools.debugPrint(boundCondition);
+			
+			for (final Justification justification : RealsTest.justify(boundCondition)) {
+				if (justification.justify(boundCondition, depth - 1)) {
+					apply(this.getJustificationName(), name(-1));
+					return true;
+				}
+			}
+			
+			return false;
+		}
+		
+		private static final long serialVersionUID = -3626348322127777493L;
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2015-01-11)
+	 */
+	public static final class JustificationByBind extends Justification {
+		
+		public JustificationByBind(final String name) {
+			super(name);
+		}
+		
+		@Override
+		public final boolean justify(final Expression<?> goal, final int depth) {
+			final Composite<?> block = proposition(this.getJustificationName());
+			
+			block.getContents().equals(goal.accept(Variable.RESET));
+			
+			final List<Expression<?>> values = new ArrayList<>();
+			final Composite<Expression<?>> parameters = block.getParameters();
+			final int n = parameters.getListSize();
+			
+			for (int i = 1; i < n; ++i) {
+				final Variable parameter = (Variable) parameters.getListElement(i);
+				
+				values.add(parameter.getMatch());
+			}
+			
+			bind(this.getJustificationName(), values.toArray(new Expression[n - 1]));
+			
+			return true;
+		}
+		
+		private static final long serialVersionUID = -1870583995665152073L;
+		
 	}
 	
 	@Test
