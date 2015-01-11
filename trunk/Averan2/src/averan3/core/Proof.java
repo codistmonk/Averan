@@ -5,7 +5,7 @@ import static averan3.core.Composite.FORALL;
 import static averan3.core.Composite.IMPLIES;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.last;
-
+import averan3.core.Expression.Substitution.PatternEquals;
 import averan3.core.Expression.Visitor;
 
 import java.io.Serializable;

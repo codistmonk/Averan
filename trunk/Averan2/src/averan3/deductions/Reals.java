@@ -153,9 +153,10 @@ public final class Reals {
 				deduce("type_of_matrix_rows",
 						$(forall($X, $m, $n), rule(realMatrix($X, $m, $n), nonzeroNatural($m))));
 				{
-					intros();
-					apply("left_elimination_of_equality", name(-1));
-					check(autoDeduce(3));
+//					intros();
+//					apply("left_elimination_of_equality", name(-1));
+//					check(autoDeduce(3));
+					check(RealsTest.autoDeduce2(goal(), 3));
 					conclude();
 				}
 				

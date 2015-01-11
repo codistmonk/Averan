@@ -104,6 +104,7 @@ public final class RealsTest {
 			if (justification instanceof JustificationByApply) {
 				if (tryToApply((JustificationByApply) justification, goal, depth)) {
 					Tools.debugPrint(indent, "SUCCEEDED", justification);
+					abort("");
 					return true;
 				}
 			} else {
@@ -155,7 +156,13 @@ public final class RealsTest {
 				}
 			} else {
 				justification.justify(goal, 1);
-				apply(j.getJustificationName(), name(-1));
+				
+				try {
+					apply(j.getJustificationName(), name(-1));
+				} catch (final Exception exception) {
+					Tools.debugPrint(exception);
+					continue;
+				}
 				
 				if (deduction().canConclude()) {
 					return true;
@@ -433,13 +440,7 @@ public final class RealsTest {
 					deduce("type_of_matrix_rows",
 							$(forall($X, $m, $n), rule(realMatrix($X, $m, $n), nonzeroNatural($m))));
 					{
-//						intros();
-						
-//						apply("left_elimination_of_equality", name(-1));
-						
-						DEBUG = true;
-						check(autoDeduce2(goal(), 3));
-						DEBUG = false;
+						check(autoDeduce2(goal(), 2));
 						
 						conclude();
 					}
