@@ -2,8 +2,11 @@ package averan3.deductions;
 
 import static averan3.core.Session.*;
 import static java.lang.Math.min;
+import static java.util.Collections.nCopies;
+import static java.util.stream.Collectors.toList;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.getThisMethodName;
+import static net.sourceforge.aprog.tools.Tools.join;
 import static org.junit.Assert.*;
 import averan3.core.Composite;
 import averan3.core.Proof.Deduction.Instance;
@@ -16,6 +19,8 @@ import averan3.io.HTMLOutput;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -112,6 +117,27 @@ public final class AutoDeduce3Test {
 					assertTrue(autoDeduce($(forall($x, $y), rule($($x, "&", $y), $x)), 1));
 					conclude();
 				}
+				
+				Tools.debugPrint("################################");
+				Tools.debugPrint("################################");
+				Tools.debugPrint("################################");
+				Tools.debugPrint("################################");
+				
+				{
+					final Variable $x = new Variable("x");
+					final Variable $y = new Variable("y");
+					
+					suppose("left_elim", $(forall($x, $y), rule($($x, "&", $y), $x)));
+					suppose("right_elim", $(forall($x, $y), rule($($x, "&", $y), $y)));
+					suppose("intro", $(forall($x, $y), rule($x, $y, $($x, "&", $y))));
+				}
+				
+				deduce($(rule($("a", "&", "b"), $("b", "&", "a"))));
+				{
+					intros();
+					assertTrue(autoDeduce(goal(), 3));
+					conclude();
+				}
 			}
 			
 		}, new HTMLOutput());
@@ -126,8 +152,10 @@ public final class AutoDeduce3Test {
 			return false;
 		}
 		
+		final String indent = join("", nCopies(recursionDepth(), "   "));
+		
 		for (final Justification  justification : justify(goal)) {
-			Tools.debugPrint(justification);
+			Tools.debugPrint(indent, justification);
 			
 			deduce();
 			{
@@ -142,9 +170,10 @@ public final class AutoDeduce3Test {
 					final int n = conditions.size();
 					final int[] indices = new int[n];
 					
-					Tools.debugPrint(conditions);
-					Tools.debugPrint(proposition(justification.getJustificationName()));
-					Tools.debugPrint(goal);
+					Tools.debugPrint(indent, conditions);
+					Tools.debugPrint(indent, Arrays.stream(conditionJustifications).map(List::size).collect(toList()));
+					Tools.debugPrint(indent, proposition(justification.getJustificationName()));
+					Tools.debugPrint(indent, goal, depth);
 					final String[] rcl = new String[1];
 					
 					for (int i = 0; i < n; ++i) {
@@ -152,6 +181,7 @@ public final class AutoDeduce3Test {
 						rcl[0] = null;
 						
 						for (; !ok && indices[i] < conditionJustifications[i].size(); ++indices[i]) {
+							Tools.debugPrint(indent, i, indices[i]);
 							ok = autoDeduce(conditions.get(i), depth - 1, rcl);
 						}
 						
