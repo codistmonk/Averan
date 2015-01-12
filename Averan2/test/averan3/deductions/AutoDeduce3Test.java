@@ -7,6 +7,7 @@ import static net.sourceforge.aprog.tools.Tools.getThisMethodName;
 import static org.junit.Assert.*;
 import averan3.core.Composite;
 import averan3.core.Proof.Deduction.Instance;
+import averan3.core.Proof.Deduction.Supposition;
 import averan3.core.Variable;
 import averan3.core.Expression;
 import averan3.core.Proof;
@@ -92,6 +93,10 @@ public final class AutoDeduce3Test {
 	}
 	
 	public static final boolean autoDeduce(final Expression<?> goal, final int depth) {
+		return autoDeduce(goal, depth, null);
+	}
+	
+	public static final boolean autoDeduce(final Expression<?> goal, final int depth, final String[] recall) {
 		if (depth <= 0) {
 			return false;
 		}
@@ -112,29 +117,36 @@ public final class AutoDeduce3Test {
 					Tools.debugPrint(conditions);
 					Tools.debugPrint(proposition(justification.getJustificationName()));
 					Tools.debugPrint(goal);
+					final String[] rcl = new String[1];
 					
 					for (int i = 0; i < n; ++i) {
 						boolean ok = false;
+						rcl[0] = null;
 						
-						for (; indices[i] < conditionJustifications[i].size(); ++indices[i]) {
-							ok = autoDeduce(conditions.get(i), 1);
+						for (; !ok && indices[i] < conditionJustifications[i].size(); ++indices[i]) {
+							ok = autoDeduce(conditions.get(i), 1, rcl);
 						}
 						
 						if (ok) {
-							apply(ruleName, name(-1));
+							apply(ruleName, rcl[0] != null ? rcl[0] : name(-1));
 							ruleName = name(-1);
 						} else {
-							Tools.debugPrint("TODO");
-							
-							return false;
+							--i;
+//							Tools.debugPrint("TODO");
+//							
+//							return false;
 						}
 					}
+				} else if (justification instanceof JustificationByRecall && recall != null) {
+					recall[0] = justification.getJustificationName();
+					cancel();
+					return true;
 				} else {
 					justification.forward(goal, depth);
 				}
 				
 				if (proposition(-1).equals(goal.accept(Variable.RESET))) {
-					conclude();
+					concludeOrSimplify();
 					
 					return true;
 				} else {
@@ -144,6 +156,29 @@ public final class AutoDeduce3Test {
 		}
 		
 		return false;
+	}
+	
+	public static final void concludeOrSimplify() {
+		final Deduction deduction = deduction();
+		final List<Proof> proofs = deduction.getProofs();
+		
+		if (proofs.isEmpty()) {
+			cancel();
+			
+			return;
+		}
+		
+		if (!deduction.canConclude()) {
+			throw new IllegalStateException();
+		}
+		
+		if (proofs.size() == 1) {
+			cancel();
+			
+			proofs.get(0).copyFor(deduction(), deduction.getPropositionName()).conclude();
+		} else {
+			conclude();
+		}
 	}
 	
 	public static final Iterable<Expression<?>[]> possibleUnifications(final Expression<?>... expressions) {
@@ -261,7 +296,11 @@ public final class AutoDeduce3Test {
 		
 		@Override
 		public final boolean forward(final Expression<?> goal, final int depth) {
-			apply("recall", this.getJustificationName());
+			final Proof lastProof = proof(-1);
+			
+			if (lastProof == null || lastProof instanceof Supposition || !lastProof.getPropositionName().equals(this.getJustificationName())) {
+				apply("recall", this.getJustificationName());
+			}
 			
 			return true;
 		}
