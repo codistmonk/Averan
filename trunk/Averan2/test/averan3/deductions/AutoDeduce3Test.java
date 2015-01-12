@@ -92,6 +92,31 @@ public final class AutoDeduce3Test {
 		}, new HTMLOutput());
 	}
 	
+	@Test
+	public final void test2() {
+		final String deductionName = this.getClass().getName() + "." + getThisMethodName();
+		
+		build(deductionName, new Runnable() {
+			
+			@Override
+			public final void run() {
+				AutoDeduce3.deduceFundamentalPropositions();
+				
+				deduce();
+				{
+					final Variable $x = new Variable("x");
+					final Variable $y = new Variable("y");
+					
+					suppose($(forall($x, $y), rule($($x, "&", $y), $x)));
+					suppose($(forall($x, $y), rule($($x, "&", $y), $y)));
+					assertTrue(autoDeduce($(forall($x, $y), rule($($x, "&", $y), $x)), 1));
+					conclude();
+				}
+			}
+			
+		}, new HTMLOutput());
+	}
+	
 	public static final boolean autoDeduce(final Expression<?> goal, final int depth) {
 		return autoDeduce(goal, depth, null);
 	}
@@ -107,6 +132,9 @@ public final class AutoDeduce3Test {
 			deduce();
 			{
 				if (justification instanceof JustificationByApply) {
+					if (false) {
+						continue;
+					}
 					String ruleName = justification.getJustificationName();
 					final List<Expression<?>> conditions = ((JustificationByApply) justification).getConditionsFor(goal);
 					final List<Justification>[] conditionJustifications =
@@ -124,18 +152,21 @@ public final class AutoDeduce3Test {
 						rcl[0] = null;
 						
 						for (; !ok && indices[i] < conditionJustifications[i].size(); ++indices[i]) {
-							ok = autoDeduce(conditions.get(i), 1, rcl);
+							ok = autoDeduce(conditions.get(i), depth - 1, rcl);
 						}
 						
 						if (ok) {
 							apply(ruleName, rcl[0] != null ? rcl[0] : name(-1));
 							ruleName = name(-1);
-						} else {
-							--i;
+						} else if (--i < 0) {
+							break;
+//						} else {
 //							Tools.debugPrint("TODO");
 //							
 //							return false;
 						}
+						
+						Tools.debugPrint(i);
 					}
 				} else if (justification instanceof JustificationByRecall && recall != null) {
 					recall[0] = justification.getJustificationName();
@@ -159,6 +190,11 @@ public final class AutoDeduce3Test {
 	}
 	
 	public static final void concludeOrSimplify() {
+		if (false) {
+			conclude();
+			return;
+		}
+		
 		final Deduction deduction = deduction();
 		final List<Proof> proofs = deduction.getProofs();
 		
@@ -240,8 +276,6 @@ public final class AutoDeduce3Test {
 					
 					while (composite != null && composite.getConclusion() != null) {
 						if (composite.getConclusion().accept(Variable.RESET).equals(goal)) {
-							Tools.debugPrint(composite);
-							Tools.debugPrint(goal);
 							result.add(new JustificationByApply(proof.getPropositionName(), depth));
 							break;
 						}
