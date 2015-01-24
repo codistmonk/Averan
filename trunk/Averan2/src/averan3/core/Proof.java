@@ -5,7 +5,6 @@ import static averan3.core.Composite.FORALL;
 import static averan3.core.Composite.IMPLIES;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.last;
-
 import averan3.core.Expression.Visitor;
 
 import java.io.Serializable;
@@ -58,6 +57,48 @@ public abstract class Proof implements Serializable {
 			throw new IllegalStateException();
 		}
 		
+		proposition.accept(new Visitor<Void>() {
+			
+			private final Map<Variable, Variable> declared = new IdentityHashMap<>();
+			
+			@Override
+			public final Void visit(final Symbol<?> symbol) {
+				return null;
+			}
+			
+			@Override
+			public final Void visit(final Variable variable) {
+				if (!this.declared.containsKey(variable) && !variable.isLocked()) {
+					throw Proof.this.new FreeVariablePreventsConclusionException(variable, proposition);
+				}
+				
+				return null;
+			}
+			
+			@Override
+			public final Void visit(final Composite<Expression<?>> composite) {
+				final Composite<Expression<?>> parameters = composite.getParameters();
+				
+				if (parameters != null) {
+					final int n = parameters.getListSize();
+					
+					for (int i = 1; i < n; ++i) {
+						final Variable parameter = (Variable) parameters.getListElement(i);
+						this.declared.put(parameter, parameter);
+					}
+					
+					composite.getContents().accept(this);
+				} else {
+					composite.forEach(e -> e.accept(this));
+				}
+				
+				return null;
+			}
+			
+			private static final long serialVersionUID = 7650648059287936444L;
+			
+		});
+		
 		this.proposition = proposition;
 		
 		if (this.getParent() != null) {
@@ -78,6 +119,37 @@ public abstract class Proof implements Serializable {
 	public abstract void conclude();
 	
 	private static final long serialVersionUID = -5949193213742615021L;
+	
+	/**
+	 * @author codistmonk (creation 2015-01-24)
+	 */
+	public final class FreeVariablePreventsConclusionException extends RuntimeException {
+		
+		private final Variable variable;
+		
+		private final Expression<?> proposition;
+		
+		public FreeVariablePreventsConclusionException(final Variable variable, final Expression<?> proposition) {
+			super(Proof.this.getPropositionName() + " cannot conclude " + proposition + " because of free variable " + variable);
+			this.variable = variable;
+			this.proposition = proposition;
+		}
+		
+		public final Proof getProof() {
+			return Proof.this;
+		}
+		
+		public final Variable getVariable() {
+			return this.variable;
+		}
+		
+		public final Expression<?> getProposition() {
+			return this.proposition;
+		}
+		
+		private static final long serialVersionUID = 8816494590531886894L;
+		
+	}
 	
 	/**
 	 * @author codistmonk (creation 2015-01-10)

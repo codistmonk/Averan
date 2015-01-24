@@ -15,11 +15,12 @@ import static averan3.core.Session.proposition;
 import static averan3.core.Session.recursionDepth;
 import static net.sourceforge.aprog.tools.Tools.append;
 import static net.sourceforge.aprog.tools.Tools.cast;
+import static net.sourceforge.aprog.tools.Tools.ignore;
 import static net.sourceforge.aprog.tools.Tools.join;
-
 import averan3.core.Composite;
 import averan3.core.Expression;
 import averan3.core.Proof;
+import averan3.core.Proof.FreeVariablePreventsConclusionException;
 import averan3.core.Variable;
 import averan3.core.Proof.Deduction;
 import averan3.core.Proof.Deduction.Instance;
@@ -137,9 +138,14 @@ public final class AutoDeduce {
 							}
 							
 							if (step instanceof Justification.Bind) {
-								bind(justificationName, ((Justification.Bind) step).getValues().toArray(new Expression[0]));
-								justificationName = name(-1);
-								log(indent, "GENERATED", name(-1), proof(-1).getProposition());
+								try {
+									bind(justificationName, ((Justification.Bind) step).getValues().toArray(new Expression[0]));
+									justificationName = name(-1);
+									log(indent, "GENERATED", name(-1), proof(-1).getProposition());
+								} catch (final FreeVariablePreventsConclusionException exception) {
+									cancel();
+									break subdeduction;
+								}
 							}
 						}
 						

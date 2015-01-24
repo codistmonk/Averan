@@ -1,14 +1,15 @@
 package averan3.core;
 
 import static averan3.core.Session.*;
-import static averan3.deductions.Standard.*;
 import static averan3.deductions.AutoDeduce.autoDeduce;
 import static net.sourceforge.aprog.tools.Tools.getThisMethodName;
 import static org.junit.Assert.*;
+
 import averan3.deductions.AutoDeduce3;
 import averan3.deductions.Standard;
 import averan3.io.ConsoleOutput;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -109,7 +110,7 @@ public final class SessionTest {
 				final Variable $x = new Variable("x");
 				final Variable $y = new Variable("y");
 				
-				suppose($(forall($x), rule($($x, " is real"), $($y, " is real"), $($($x, "+", $y), " is real"))));
+				suppose($(forall($x, $y), rule($($x, " is real"), $($y, " is real"), $($($x, "+", $y), " is real"))));
 			}
 			
 			assertTrue(autoDeduce($(rule($("0", " is real"), $($("0", "+", "0"), " is real")))));
@@ -140,6 +141,7 @@ public final class SessionTest {
 		}, new ConsoleOutput());
 	}
 	
+	@Ignore
 	@Test
 	public final void test6() {
 		final String deductionName = this.getClass().getName() + "." + getThisMethodName();
@@ -168,6 +170,7 @@ public final class SessionTest {
 		}, new ConsoleOutput());
 	}
 	
+	@Ignore
 	@Test
 	public final void test7() {
 		final String deductionName = this.getClass().getName() + "." + getThisMethodName();
@@ -198,6 +201,7 @@ public final class SessionTest {
 		}, new ConsoleOutput());
 	}
 	
+	@Ignore
 	@Test
 	public final void test8() {
 		final String deductionName = this.getClass().getName() + "." + getThisMethodName();

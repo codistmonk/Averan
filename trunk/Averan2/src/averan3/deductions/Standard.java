@@ -32,7 +32,7 @@ public final class Standard {
 		public final void run() {
 			AutoDeduce3.deduceFundamentalPropositions();
 			
-			{
+			if (false) {
 				final Variable $E = new Variable("E");
 				final Variable $F = new Variable("F");
 				final Variable $X = new Variable("X");
@@ -46,7 +46,7 @@ public final class Standard {
 										$($$(FORALL, $T), $F))));
 			}
 			
-			{
+			if (false) {
 				final Variable $E = new Variable("E");
 				final Variable $F = new Variable("F");
 				final Variable $X = new Variable("X");
