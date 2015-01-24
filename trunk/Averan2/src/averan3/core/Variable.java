@@ -27,7 +27,7 @@ public final class Variable implements Expression<Variable> {
 	
 	public final Variable lock() {
 		if (this.isLocked()) {
-			throw new IllegalStateException();
+//			throw new IllegalStateException();
 		}
 		
 		this.locked = true;
@@ -267,6 +267,55 @@ public final class Variable implements Expression<Variable> {
 		@Override
 		public final Composite<Expression<?>> visit(final Composite<Expression<?>> composite) {
 			composite.forEach(element -> element.accept(this));
+			
+			return composite;
+		}
+		
+		private static final long serialVersionUID = -6140058828588056521L;
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2015-01-24)
+	 */
+	public static final class LockFreeVariables implements Visitor<Expression<?>> {
+		
+		private Map<Variable, Variable> declared = new IdentityHashMap<>();
+		
+		@Override
+		public Symbol<?> visit(final Symbol<?> symbol) {
+			return symbol;
+		}
+		
+		@Override
+		public final Variable visit(final Variable variable) {
+			if (!this.declared.containsKey(variable)) {
+				variable.lock();
+			}
+			
+			return variable;
+		}
+		
+		@Override
+		public final Composite<Expression<?>> visit(final Composite<Expression<?>> composite) {
+			final Composite<Expression<?>> parameters = composite.getParameters();
+			
+			if (parameters != null) {
+				final int n = parameters.getListSize();
+				
+				for (int i = 1; i < n; ++i) {
+					final Variable parameter = (Variable) parameters.getListElement(i);
+					this.declared.put(parameter, parameter);
+				}
+				
+				composite.getContents().forEach(element -> element.accept(this));
+				
+				for (int i = 1; i < n; ++i) {
+					this.declared.remove(parameters.getListElement(i));
+				}
+			} else {
+				composite.forEach(element -> element.accept(this));
+			}
 			
 			return composite;
 		}

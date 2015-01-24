@@ -21,6 +21,7 @@ import averan3.core.Composite;
 import averan3.core.Expression;
 import averan3.core.Proof;
 import averan3.core.Proof.FreeVariablePreventsConclusionException;
+import averan3.core.Session;
 import averan3.core.Variable;
 import averan3.core.Proof.Deduction;
 import averan3.core.Proof.Deduction.Instance;
@@ -86,6 +87,8 @@ public final class AutoDeduce {
 			intros();
 			
 			while (goal() instanceof Composite<?> && ((Composite<?>) goal()).getParameters() != null) {
+				Session.breakpoint(0);
+				
 				deduce((Expression<?>) goal());
 				++toConclude;
 				intros();

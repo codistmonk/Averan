@@ -3,6 +3,7 @@ package averan3.deductions;
 import static averan3.core.Composite.*;
 import static averan3.core.Session.*;
 import static averan3.deductions.AutoDeduce.autoDeduce;
+import static net.sourceforge.aprog.tools.Tools.cast;
 
 import averan3.core.Composite;
 import averan3.core.Expression;
@@ -24,6 +25,8 @@ public final class Standard {
 		throw new IllegalInstantiationException();
 	}
 	
+	private static final boolean AUTO_DEDUCE = false;
+	
 	public static final AtomicInteger autoDeduceDepth = new AtomicInteger(4); 
 	
 	public static final Deduction DEDUCTION = build(Standard.class.getName(), new Runnable() {
@@ -32,7 +35,7 @@ public final class Standard {
 		public final void run() {
 			AutoDeduce3.deduceFundamentalPropositions();
 			
-			if (false) {
+			if (true) {
 				final Variable $E = new Variable("E");
 				final Variable $F = new Variable("F");
 				final Variable $X = new Variable("X");
@@ -46,7 +49,7 @@ public final class Standard {
 										$($$(FORALL, $T), $F))));
 			}
 			
-			if (false) {
+			if (true) {
 				final Variable $E = new Variable("E");
 				final Variable $F = new Variable("F");
 				final Variable $X = new Variable("X");
@@ -116,8 +119,21 @@ public final class Standard {
 				final Variable $X = variable("X");
 				final Variable $Y = variable("Y");
 				
-				check(autoDeduce("commutativity_of_conjunction",
-						$(forall($X, $Y), rule(conjunction($X, $Y), conjunction($Y, $X))), 3));
+				if (AUTO_DEDUCE) {
+					check(autoDeduce("commutativity_of_conjunction",
+							$(forall($X, $Y), rule(conjunction($X, $Y), conjunction($Y, $X))), 3));
+				} else {
+					deduce("commutativity_of_conjunction",
+							$(forall($X, $Y), rule(conjunction($X, $Y), conjunction($Y, $X))));
+					{
+						intros();
+						apply("right_elimination_of_conjunction", name(-1));
+						apply("left_elimination_of_conjunction", name(-2));
+						apply("introduction_of_conjunction", name(-2));
+						apply(name(-1), name(-2));
+						conclude();
+					}
+				}
 			}
 			
 			{
@@ -149,22 +165,24 @@ public final class Standard {
 				final Variable $X = variable("X");
 				final Variable $Y = variable("Y");
 				
-				
-				deduce("commutativity_of_disjunction",
-						$(forall($X, $Y), rule(disjunction($X, $Y), disjunction($Y, $X))));
-				{
-					final Variable x = introduce();
-					final Variable y = introduce();
-					intros();
-					bind("right_introduction_of_disjunction", y, x);
-					apply("elimination_of_disjunction", name(-1));
-					bind("left_introduction_of_disjunction", y, x);
-					apply(name(-2), name(-1));
-					apply(name(-1), name(-5));
-					conclude();
+				if (AUTO_DEDUCE) {
+					check(autoDeduce("commutativity_of_disjunction",
+							$(forall($X, $Y), rule(disjunction($X, $Y), disjunction($Y, $X))), 3));
+				} else {
+					deduce("commutativity_of_disjunction",
+							$(forall($X, $Y), rule(disjunction($X, $Y), disjunction($Y, $X))));
+					{
+						final Variable x = introduce();
+						final Variable y = introduce();
+						intros();
+						bind("right_introduction_of_disjunction", y, x);
+						apply("elimination_of_disjunction", name(-1));
+						bind("left_introduction_of_disjunction", y, x);
+						apply(name(-2), name(-1));
+						apply(name(-1), name(-5));
+						conclude();
+					}
 				}
-//				check(autoDeduce("commutativity_of_disjunction",
-//						$(forall($X, $Y), rule(disjunction($X, $Y), disjunction($Y, $X))), 3));
 			}
 		}
 		
@@ -202,15 +220,33 @@ public final class Standard {
 	public static final void bind1(final String propositionName, final String targetName, final Expression<?> value) {
 		deduce(propositionName);
 		{
-			final Composite<?> target = proposition(targetName);
-			final Variable parameter = (Variable) target.getParameters().getListElement(1);
-			
 			apply("bind1", targetName);
-			substitute($$(target.get(1), $$().append($(parameter , EQUALS, value)), $()));
+			
+//			final Composite<?> target = proposition(targetName);
+//			final Variable parameter = (Variable) target.getParameters().getListElement(1);
+//			
+//			substitute($$(target.get(1), $$().append($(parameter, EQUALS, value)), $()));
+			
+			final Expression<?> substitution = proof(-1).getProposition().get(1).get(0).get(0);
+			final Composite<?> target1 = substitution.get(0);
+			final Variable parameter1 = substitution.get(1).get(0).get(0);
+			
+			substitute($$(target1, $$().append($(parameter1, EQUALS, value)), $()));
 			apply(name(-2), name(-1));
-			conclude("By binding " + parameter.getName() + " with " + value + " in (" + targetName + ")");
+			eliminateEmptyUniversalQuantification();
+			conclude("By binding " + parameter1.getName() + " with " + value + " in (" + targetName + ")");
 		}
 	}
+	
+	public static final void eliminateEmptyUniversalQuantification() {
+		final Composite<?> composite = cast(Composite.class, proof(-1).getProposition());
+		
+		if (composite != null && composite.size() == 2 && EMPTY_PARAMETERS.implies(composite.get(0))) {
+			apply("elimination_of_empty_universal_quantification", name(-1));
+		}
+	}
+	
+	private static final Expression<?> EMPTY_PARAMETERS = list(Composite.FORALL);
 	
 	public static final void rewrite1(final String targetName, final String equalityName, final int... indices) {
 		rewrite1(null, targetName, equalityName, indices);
