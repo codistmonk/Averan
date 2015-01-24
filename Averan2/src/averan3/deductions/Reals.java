@@ -43,10 +43,6 @@ public final class Reals {
 		
 		@Override
 		public final void run() {
-			if (true) {
-//				throw new RuntimeException();
-			}
-			
 			include(Standard.DEDUCTION);
 			
 			{

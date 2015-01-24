@@ -7,11 +7,11 @@ import static averan3.deductions.AutoDeduce.autoDeduce;
 import static net.sourceforge.aprog.tools.Tools.getThisMethodName;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-
 import averan3.core.Variable;
 import averan3.deductions.Standard;
 import averan3.io.ConsoleOutput;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -31,18 +31,16 @@ public final class StandardTest {
 		build(deductionName, () -> {
 			include(Standard.DEDUCTION);
 			
-			if (false) {
-				bind1("test1", "recall", $("toto"));
-				
-				bind1("test2", "symmetry_of_equality", $("toto"));
-				
-				deduce("test3");
-				{
-					suppose($("a", EQUALS, "b"));
-					suppose($("a"));
-					rewrite1(name(-1), name(-2));
-					conclude();
-				}
+			bind1("test1", "recall", $("toto"));
+			
+			bind1("test2", "symmetry_of_equality", $("toto"));
+			
+			deduce("test3");
+			{
+				suppose($("a", EQUALS, "b"));
+				suppose($("a"));
+				rewrite1(name(-1), name(-2));
+				conclude();
 			}
 			
 			deduce("test4");
@@ -122,7 +120,8 @@ public final class StandardTest {
 		
 	}
 	
-//	@Test
+	@Ignore
+	@Test
 	public final void test4() {
 		final String deductionName = this.getClass().getName() + "." + getThisMethodName();
 		

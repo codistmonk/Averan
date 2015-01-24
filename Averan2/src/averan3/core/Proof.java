@@ -57,6 +57,8 @@ public abstract class Proof implements Serializable {
 			throw new IllegalStateException();
 		}
 		
+		proposition.accept(new Variable.LockFreeVariables());
+		
 		proposition.accept(new Visitor<Void>() {
 			
 			private final Map<Variable, Variable> declared = new IdentityHashMap<>();
@@ -409,8 +411,9 @@ public abstract class Proof implements Serializable {
 				reduced.add(last(this.getProofs()));
 				
 				if (this.hasParameters) {
+					this.getRootParameters().accept(Variable.UNLOCK);
 					reduced.module.setRoot(new Composite<>().add(
-							this.module.getRoot().get(0).accept(Variable.UNLOCK)).add(reduced.module.getRoot()));
+							this.module.getRoot().get(0)).add(reduced.module.getRoot()));
 				}
 				
 				this.setProposition(reduced.module.getRoot());

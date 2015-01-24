@@ -2,10 +2,10 @@ package averan3.deductions;
 
 import static averan3.core.Composite.EQUALS;
 import static averan3.core.Session.*;
-
+import averan3.core.Composite;
 import averan3.core.Variable;
-
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
+import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2015-01-11)
@@ -46,6 +46,13 @@ public final class AutoDeduce3 {
 			rewrite(name(-2), name(-1));
 			conclude();
 		}
+		
+		{
+			final Variable $x = new Variable("x");
+			
+			suppose("elimination_of_empty_universal_quantification",
+					$(forall($x), rule($(list(Composite.FORALL), $x), $x)));
+		}
 	}
-
+	
 }

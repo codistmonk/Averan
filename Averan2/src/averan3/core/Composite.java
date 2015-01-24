@@ -140,7 +140,7 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 			@SuppressWarnings("unchecked")
 			final Composite<Expression<?>> candidate = cast(Composite.class, this.get(0));
 			
-			if (candidate != null && candidate.isList()) {
+			if (candidate != null && candidate.isList() && 1 < candidate.getListSize() && FORALL.implies(candidate.getListElement(0))) {
 				return candidate;
 			}
 		}
@@ -199,6 +199,8 @@ public final class Composite<E extends Expression<?>> implements Expression<E> {
 					break full_implication;
 				}
 			}
+			
+			return true;
 		}
 		
 		if (this.getParameters() != null) {
