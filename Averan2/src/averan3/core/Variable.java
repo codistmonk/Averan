@@ -93,7 +93,7 @@ public final class Variable implements Expression<Variable> {
 	public final boolean equals(final Object object) {
 		final Variable that = cast(this.getClass(), object);
 		
-		if (true) {
+		if (false) {
 			final Expression<?> thisMatch = this.getMatch();
 			
 			if (that != null) {
@@ -166,6 +166,8 @@ public final class Variable implements Expression<Variable> {
 	public static final Reset RESET = new Reset();
 	
 	public static final Bind BIND = new Bind();
+	
+	public static final Lock LOCK = new Lock();
 	
 	public static final Unlock UNLOCK = new Unlock();
 	
@@ -244,6 +246,32 @@ public final class Variable implements Expression<Variable> {
 		}
 		
 		private static final long serialVersionUID = 8086793860438225779L;
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2015-01-24)
+	 */
+	public static final class Lock implements Visitor<Expression<?>> {
+		
+		@Override
+		public Symbol<?> visit(final Symbol<?> symbol) {
+			return symbol;
+		}
+		
+		@Override
+		public final Variable visit(final Variable variable) {
+			return variable.lock();
+		}
+		
+		@Override
+		public final Composite<Expression<?>> visit(final Composite<Expression<?>> composite) {
+			composite.forEach(element -> element.accept(this));
+			
+			return composite;
+		}
+		
+		private static final long serialVersionUID = -6140058828588056521L;
 		
 	}
 	

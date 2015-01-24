@@ -144,6 +144,7 @@ public final class Reals {
 								$(forall($i, $j), rule(natural($i, $m), natural($j, $n),
 										real(matrixElement($X, $i, $j))))))));
 				
+				// TODO fix and use autoDeduce()
 //				check(autoDeduce("type_of_matrix_rows",
 //						$(forall($X, $m, $n), rule(realMatrix($X, $m, $n), nonzeroNatural($m))), 5));
 //				check(autoDeduce("type_of_matrix_columns",
@@ -168,9 +169,16 @@ public final class Reals {
 				deduce("type_of_matrix_columns",
 						$(forall($X, $m, $n), rule(realMatrix($X, $m, $n), nonzeroNatural($n))));
 				{
+					final Variable x = introduce();
+					final Variable m = introduce();
+					final Variable n = introduce();
+					
 					intros();
 					apply("left_elimination_of_equality", name(-1));
-					check(autoDeduce(4));
+					bind("definition_of_matrices", x, m, n);
+					apply(name(-2), name(-1));
+					apply("right_elimination_of_conjunction", name(-1));
+					apply("left_elimination_of_conjunction", name(-1));
 					conclude();
 				}
 				

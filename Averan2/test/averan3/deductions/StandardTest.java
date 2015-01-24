@@ -31,16 +31,18 @@ public final class StandardTest {
 		build(deductionName, () -> {
 			include(Standard.DEDUCTION);
 			
-			bind1("test1", "recall", $("toto"));
-			
-			bind1("test2", "symmetry_of_equality", $("toto"));
-			
-			deduce("test3");
-			{
-				suppose($("a", EQUALS, "b"));
-				suppose($("a"));
-				rewrite1(name(-1), name(-2));
-				conclude();
+			if (false) {
+				bind1("test1", "recall", $("toto"));
+				
+				bind1("test2", "symmetry_of_equality", $("toto"));
+				
+				deduce("test3");
+				{
+					suppose($("a", EQUALS, "b"));
+					suppose($("a"));
+					rewrite1(name(-1), name(-2));
+					conclude();
+				}
 			}
 			
 			deduce("test4");

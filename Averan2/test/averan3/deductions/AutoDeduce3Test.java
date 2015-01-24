@@ -1,16 +1,17 @@
 package averan3.deductions;
 
 import static averan3.core.Session.*;
-import static java.lang.Math.min;
 import static java.util.Collections.nCopies;
 import static java.util.stream.Collectors.toList;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.getThisMethodName;
+import static net.sourceforge.aprog.tools.Tools.ignore;
 import static net.sourceforge.aprog.tools.Tools.join;
 import static org.junit.Assert.*;
 import averan3.core.Composite;
 import averan3.core.Proof.Deduction.Instance;
 import averan3.core.Proof.Deduction.Supposition;
+import averan3.core.Proof.FreeVariablePreventsConclusionException;
 import averan3.core.Variable;
 import averan3.core.Expression;
 import averan3.core.Proof;
@@ -20,18 +21,17 @@ import averan3.io.HTMLOutput;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import net.sourceforge.aprog.tools.Tools;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
  * @author codistmonk (creation 2015-01-11)
  */
+@Ignore
 public final class AutoDeduce3Test {
 	
 	@Test
@@ -118,11 +118,6 @@ public final class AutoDeduce3Test {
 					conclude();
 				}
 				
-				Tools.debugPrint("################################");
-				Tools.debugPrint("################################");
-				Tools.debugPrint("################################");
-				Tools.debugPrint("################################");
-				
 				{
 					final Variable $x = new Variable("x");
 					final Variable $y = new Variable("y");
@@ -138,6 +133,66 @@ public final class AutoDeduce3Test {
 					assertTrue(autoDeduce(goal(), 3));
 					conclude();
 				}
+				
+				{
+					final Variable $x = new Variable("x");
+					final Variable $y = new Variable("y");
+					
+					deduce($(forall($x), rule($($x, "&", $y), $($y, "&", $x))));
+					{
+						intros();
+						assertTrue(autoDeduce(goal(), 3));
+						conclude();
+					}
+				}
+			}
+			
+		}, new HTMLOutput());
+	}
+	
+	
+	@Test
+	public final void test3() {
+		final String deductionName = this.getClass().getName() + "." + getThisMethodName();
+		
+		build(deductionName, new Runnable() {
+			
+			@Override
+			public final void run() {
+				AutoDeduce3.deduceFundamentalPropositions();
+				
+				deduce();
+				{
+					final Variable $x = new Variable("x");
+					final Variable $y = new Variable("y");
+					
+					suppose("left_intro", $(forall($x, $y), rule($x, $($x, "|", $y))));
+					assertTrue(autoDeduce(rule(new Variable("z"), $("a", "|", "b")), 1));
+					conclude();
+				}
+				
+//				{
+//					final Variable $x = new Variable("x");
+//					final Variable $y = new Variable("y");
+//					final Variable $z = new Variable("z");
+//					
+////					suppose("left_intro", $(forall($x, $y), rule($x, $($x, "|", $y))));
+//					suppose("right_intro", $(forall($x, $y), rule($y, $($x, "|", $y))));
+////					suppose("elim", $(forall($x, $y, $z), rule(rule($x, $z), rule($y, $z), $($x, "|", $y), $z)));
+//				}
+//				
+//				Tools.debugPrint("###########################");
+//				Tools.debugPrint("###########################");
+//				Tools.debugPrint("###########################");
+//				Tools.debugPrint("###########################");
+//				Tools.debugPrint("###########################");
+//				
+//				deduce($(rule("a", $("b", "|", "a"))));
+//				{
+//					intros();
+//					assertTrue(autoDeduce(goal(), 2));
+//					conclude();
+//				}
 			}
 			
 		}, new HTMLOutput());
@@ -181,7 +236,7 @@ public final class AutoDeduce3Test {
 						rcl[0] = null;
 						
 						for (; !ok && indices[i] < conditionJustifications[i].size(); ++indices[i]) {
-							Tools.debugPrint(indent, i, indices[i]);
+//							Tools.debugPrint(indent, i, indices[i]);
 							ok = autoDeduce(conditions.get(i), depth - 1, rcl);
 						}
 						
@@ -196,14 +251,18 @@ public final class AutoDeduce3Test {
 //							return false;
 						}
 						
-						Tools.debugPrint(i);
+//						Tools.debugPrint(indent, i);
 					}
 				} else if (justification instanceof JustificationByRecall && recall != null) {
 					recall[0] = justification.getJustificationName();
 					cancel();
 					return true;
 				} else {
-					justification.forward(goal, depth);
+					try {
+						justification.forward(goal, depth);
+					} catch (final FreeVariablePreventsConclusionException exception) {
+						ignore(exception);
+					}
 				}
 				
 				if (proposition(-1).equals(goal.accept(Variable.RESET))) {
@@ -247,35 +306,6 @@ public final class AutoDeduce3Test {
 		}
 	}
 	
-	public static final Iterable<Expression<?>[]> possibleUnifications(final Expression<?>... expressions) {
-		return new Iterable<Expression<?>[]>() {
-			
-			@Override
-			public final Iterator<Expression<?>[]> iterator() {
-				final int n = expressions.length;
-				
-				return new Iterator<Expression<?>[]>() {
-					
-					private final Expression<?>[] result = expressions.clone();
-					
-					@Override
-					public final boolean hasNext() {
-						// TODO Auto-generated method stub
-						return false;
-					}
-					
-					@Override
-					public Expression<?>[] next() {
-						// TODO Auto-generated method stub
-						return null;
-					}
-					
-				};
-			}
-			
-		};
-	}
-	
 	public static final List<Justification> justify(final Expression<?> goal) {
 		final List<Justification> result = new ArrayList<>();
 		Deduction deduction = deduction();
@@ -294,8 +324,10 @@ public final class AutoDeduce3Test {
 				Composite<Expression<?>> composite = cast(Composite.class, proposition);
 				
 				if (composite != null) {
+					Tools.debugPrint(composite.getContents());
 					if (composite.getParameters() != null) {
-						if (composite.getContents().accept(Variable.RESET).equals(goal)) {
+						if (composite.getContents().accept(Variable.RESET).equals(goal.accept(Variable.RESET))) {
+							Tools.debugPrint(composite);
 							result.add(new JustificationByBind(proof.getPropositionName()));
 						} else {
 							composite = cast(Composite.class, composite.getContents());
@@ -304,17 +336,22 @@ public final class AutoDeduce3Test {
 					
 					int depth = 0;
 					
+					Tools.debugPrint(proof.getPropositionName(), composite, goal);
 					while (composite != null && composite.getConclusion() != null) {
-						if (composite.getConclusion().accept(Variable.RESET).equals(goal)) {
+						if (composite.getConclusion().accept(Variable.RESET).equals(goal.accept(Variable.RESET))) {
 							result.add(new JustificationByApply(proof.getPropositionName(), depth));
 							break;
 						}
 						
 						composite = cast(Composite.class, composite.getConclusion());
+						Tools.debugPrint(proof.getPropositionName(), composite, goal);
 						++depth;
 					}
 					
 				}
+				
+				proposition.accept(Variable.RESET);
+				goal.accept(Variable.RESET);
 			}
 			
 			deduction = deduction.getParent();
