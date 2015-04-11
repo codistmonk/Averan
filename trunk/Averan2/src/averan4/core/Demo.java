@@ -38,7 +38,7 @@ public final class Demo {
 		{
 			debugPrint();
 			
-			final Deduction deduction = new Deduction(null);
+			push();
 			
 			{
 				final List<Object> p = $new("P");
@@ -48,30 +48,30 @@ public final class Demo {
 				final List<Object> i = $new("I");
 				
 				// \/P P -> \/X,Y X=Y -> \/I,Q P|X=Y@[I] = Q -> Q 
-				deduction.suppose("rewrite", $forall(p, $rule(p, $forall(x_, $forall(y, $rule($equality(x_, y), $forall(i, $forall(q, $rule($equality($(p, GIVEN, asList($equality(x_, y)), AT, i), q), q)))))))));
+				suppose("rewrite", $forall(p, $rule(p, $forall(x_, $forall(y, $rule($equality(x_, y), $forall(i, $forall(q, $rule($equality($(p, GIVEN, asList($equality(x_, y)), AT, i), q), q)))))))));
 			}
 			
 			{
-				push(new Deduction(deduction));
+				push(new Deduction(deduction()));
 				
 				final List<Object> x = forall("X");
 				
-				conclude("p0", new Substitution(x, map(), indices()));
+				substitute("p0", x, map(), indices());
 				final List<Object> equality = proposition(-1);
-				conclude("p1", new Binding("rewrite", equality));
-				conclude("p2", new ModusPonens(name(-1), name(-2)));
-				conclude("p3", new Binding(name(-1), (List<Object>) equality.get(0)));
-				conclude("p4", new Binding(name(-1), (List<Object>) equality.get(2)));
-				conclude("p5", new ModusPonens(name(-1), name(-5)));
-				conclude("p6", new Binding(name(-1), $()/*TODO*/));
-				conclude("p7", new Binding(name(-1), $equality(x, x)));
-				conclude("p8", new Substitution(equality, map(equality.get(0), equality.get(2)), indices()));
-				conclude("p9", new ModusPonens(name(-2), name(-1)));
+				bind("p1", "rewrite", equality);
+				apply("p2", name(-1), name(-2));
+				bind("p3", name(-1), (List<Object>) equality.get(0));
+				bind("p4", name(-1), (List<Object>) equality.get(2));
+				apply("p5", name(-1), name(-5));
+				bind("p6", name(-1), $()/*TODO*/);
+				bind("p7", name(-1), $equality(x, x));
+				substitute("p8", equality, map(equality.get(0), equality.get(2)), indices());
+				apply("p9", name(-2), name(-1));
 				
-				deduction.conclude("p0", pop());
+				conclude("p0", pop());
 			}
 			
-			print(deduction);
+			print(pop());
 		}
 	}
 
