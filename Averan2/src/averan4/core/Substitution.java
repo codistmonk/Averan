@@ -1,5 +1,6 @@
 package averan4.core;
 
+import static averan4.core.AveranTools.*;
 import static java.util.stream.Collectors.toList;
 
 import java.util.ArrayList;
@@ -39,12 +40,13 @@ public final class Substitution implements Proof {
 	
 	@Override
 	public final List<Object> propositionFor(final Deduction context) {
-		final List<Object> substitution = Demo.expression(this.getTarget(),
-				Demo.GIVEN, Demo.join(Demo.AND, Demo.iterable(this.getEqualities().entrySet().stream().map(e -> Demo.equality(e.getKey(), e.getValue())))),
-				Demo.AT, new ArrayList<>(this.getIndices()));
+		final List<Object> substitution = $(this.getTarget(),
+				GIVEN, join(AND, iterable(
+						this.getEqualities().entrySet().stream().map(e -> $equality(e.getKey(), e.getValue())))),
+				AT, new ArrayList<>(this.getIndices()));
 		final List<Object> substituted = substituteIn(this.getTarget(), this.getEqualities(), this.getIndices());
 		
-		return Demo.equality(substitution, substituted);
+		return $equality(substitution, substituted);
 	}
 	
 	@Override

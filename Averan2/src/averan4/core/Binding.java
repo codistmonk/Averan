@@ -1,5 +1,7 @@
 package averan4.core;
 
+import static averan4.core.AveranTools.*;
+
 import java.util.List;
 
 /**
@@ -29,13 +31,13 @@ public final class Binding implements Proof {
 	public final List<Object> propositionFor(final Deduction context) {
 		final List<Object> block = context.getProposition(this.getBlockName());
 		
-		Demo.checkArgument(block.size() == 2);
+		checkArgument(block.size() == 2);
 		
 		final List<Object> quantification = (List<Object>) block.get(0);
 		
-		Demo.checkArgument(quantification.size() == 2 && Demo.FORALL.equals(quantification.get(0)));
+		checkArgument(quantification.size() == 2 && FORALL.equals(quantification.get(0)));
 		
-		return Substitution.substituteIn((List<Object>) block.get(1), Demo.map(quantification.get(1), this.getValue()), Demo.indices());
+		return Substitution.substituteIn((List<Object>) block.get(1), map(quantification.get(1), this.getValue()), indices());
 	}
 	
 	private static final long serialVersionUID = 5987805106367286343L;

@@ -1,5 +1,7 @@
 package averan4.core;
 
+import static averan4.core.AveranTools.*;
+
 import java.util.List;
 
 /**
@@ -29,14 +31,14 @@ public final class ModusPonens implements Proof {
 	public final List<Object> propositionFor(final Deduction context) {
 		final List<Object> rule = context.getProposition(this.getRuleName());
 		
-		if (rule.size() != 3 || !Demo.IMPLIES.equals(rule.get(1))) {
+		if (rule.size() != 3 || !IMPLIES.equals(rule.get(1))) {
 			throw new IllegalArgumentException();
 		}
 		
 		final List<Object> expectedCondition = (List<Object>) rule.get(0);
 		final List<Object> condition = context.getProposition(this.getConditionName());
 		
-		Demo.checkArgument(expectedCondition.equals(condition));
+		checkArgument(expectedCondition.equals(condition));
 		
 		return (List<Object>) rule.get(2);
 	}

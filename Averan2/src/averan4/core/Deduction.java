@@ -1,5 +1,6 @@
 package averan4.core;
 
+import static averan4.core.AveranTools.*;
 import static net.sourceforge.aprog.tools.Tools.last;
 
 import java.util.ArrayList;
@@ -50,7 +51,7 @@ public final class Deduction implements Proof {
 	}
 	
 	public final String getPropositionName(final int index) {
-		Demo.checkArgument(index < 0);
+		checkArgument(index < 0);
 		
 		final int i = this.getPropositionNames().size() + index;
 		
@@ -116,13 +117,13 @@ public final class Deduction implements Proof {
 		
 		for (final String conditionName : conditionNames) {
 			result.add(conditionName);
-			result.add(Demo.IMPLIES);
+			result.add(IMPLIES);
 		}
 		
 		result.add(this.getProposition(last(this.getConclusionNames())));
 		
 		for (final ListIterator<List<Object>> i = new ArrayList(this.getParameters()).listIterator(this.getParameters().size()); i.hasPrevious();) {
-			result = Demo.forall(i.previous(), result);
+			result = $forall(i.previous(), result);
 		}
 		
 		return result;
