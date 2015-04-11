@@ -66,8 +66,25 @@ public final class AveranTools {
 		return result;
 	}
 	
+	public static final void suppose(final String propositionName, final List<Object> proposition) {
+		deduction().suppose(propositionName, proposition);
+	}
+	
 	public static final void conclude(final String propositionName, final Proof proof) {
 		deduction().conclude(propositionName, proof);
+	}
+	
+	public static final void apply(final String propositionName, final String ruleName, final String conditionName) {
+		deduction().conclude(propositionName, new ModusPonens(ruleName, conditionName));
+	}
+	
+	public static final void substitute(final String propositionName, final List<Object> target,
+			final Map<List<Object>, List<Object>> equalities, final Collection<Integer> indices) {
+		deduction().conclude(propositionName, new Substitution(target, equalities, indices));
+	}
+	
+	public static final void bind(final String propositionName, final String targetName, final List<Object> value) {
+		deduction().conclude(propositionName, new Binding(targetName, value));
 	}
 	
 	public static final String name(final int index) {
