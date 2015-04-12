@@ -25,6 +25,7 @@ public final class Demo {
 	 * @param commandLineArguments
 	 * <br>Unused
 	 */
+	@SuppressWarnings("unchecked")
 	public static final void main(final String[] commandLineArguments) {
 		{
 			debugPrint();
@@ -61,24 +62,17 @@ public final class Demo {
 				final List<Object> equality = proposition(-1);
 				bind("rewrite", equality);
 				apply(name(-1), name(-2));
-				bind(name(-1), left(equality));
-				bind(name(-1), right(equality));
-				apply(name(-1), name(-5));
-				bind(name(-1), $()/*TODO*/);
-				bind(name(-1), $equality(x, x));
+				bind(name(-1), left(equality), right(equality));
+				apply(name(-1), name(-4));
+				bind(name(-1), $()/*TODO*/, $equality(x, x));
 				substitute(equality, map(left(equality), right(equality)), indices());
 				apply(name(-2), name(-1));
 				
-				set(conclude().getMessage(), "Done");
+				conclude();
 			}
 			
 			print(pop());
 		}
-	}
-	
-	public static final <T> void set(final Collection<T> collection, @SuppressWarnings("unchecked") final T... elements) {
-		collection.clear();
-		collection.addAll(Arrays.asList(elements));
 	}
 	
 	public static void print(final Deduction deduction) {

@@ -128,14 +128,20 @@ public final class Deduction extends Proof.Abstract {
 	@Override
 	public final List<Object> getProvedPropositionFor(final Deduction context) {
 		final List<String> conditionNames = this.getConditionNames();
-		List<Object> result = new ArrayList<>(2 * conditionNames.size() + 1);
+		List<Object> result;
 		
-		for (final String conditionName : conditionNames) {
-			result.add(conditionName);
-			result.add(IMPLIES);
+		if (!conditionNames.isEmpty()) {
+			result = new ArrayList<>(2 * conditionNames.size() + 1);
+			
+			for (final String conditionName : conditionNames) {
+				result.add(conditionName);
+				result.add(IMPLIES);
+			}
+			
+			result.add(this.getProposition(last(this.getConclusionNames())));
+		} else {
+			result = this.getProposition(last(this.getConclusionNames()));
 		}
-		
-		result.add(this.getProposition(last(this.getConclusionNames())));
 		
 		final ArrayList<List<Object>> parameters = new ArrayList<>(this.getParameters());
 		
