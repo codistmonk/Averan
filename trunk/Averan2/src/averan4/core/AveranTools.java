@@ -40,14 +40,18 @@ public final class AveranTools {
 	
 	private static final List<Deduction> stack = new ArrayList<>();
 	
+	public static final Deduction push() {
+		return push("");
+	}
+	
+	public static final Deduction push(final String deductionName) {
+		return push(new Deduction(null, deductionName));
+	}
+	
 	public static final Deduction push(final Deduction result) {
 		stack.add(result);
 		
 		return result;
-	}
-	
-	public static final Deduction push() {
-		return push(new Deduction(null));
 	}
 	
 	public static final Deduction pop() {
@@ -79,7 +83,7 @@ public final class AveranTools {
 	}
 	
 	public static final void apply(final String propositionName, final String ruleName, final String conditionName) {
-		deduction().conclude(new ModusPonens(propositionName, ruleName, conditionName));
+		conclude(new ModusPonens(propositionName, ruleName, conditionName));
 	}
 	
 	public static final void substitute(final List<Object> target,
@@ -89,7 +93,7 @@ public final class AveranTools {
 	
 	public static final void substitute(final String propositionName, final List<Object> target,
 			final Map<List<Object>, List<Object>> equalities, final Collection<Integer> indices) {
-		deduction().conclude(new Substitution(propositionName, target, equalities, indices));
+		conclude(new Substitution(propositionName, target, equalities, indices));
 	}
 	
 	public static final void bind(final String targetName, final List<Object> value) {
@@ -97,7 +101,19 @@ public final class AveranTools {
 	}
 	
 	public static final void bind(final String propositionName, final String targetName, final List<Object> value) {
-		deduction().conclude(new Binding(propositionName, targetName, value));
+		conclude(new Binding(propositionName, targetName, value));
+	}
+	
+	public static final void subdeduction() {
+		subdeduction(newName());
+	}
+	
+	public static final void subdeduction(final String propositionName) {
+		push(new Deduction(deduction(), propositionName));
+	}
+	
+	public static final void conclude() {
+		conclude(pop());
 	}
 	
 	public static final void conclude(final Proof proof) {
