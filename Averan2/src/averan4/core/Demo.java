@@ -52,7 +52,7 @@ public final class Demo {
 			}
 			
 			{
-				push(new Deduction(deduction()));
+				subdeduction();
 				
 				final List<Object> x = forall("X");
 				
@@ -60,15 +60,15 @@ public final class Demo {
 				final List<Object> equality = proposition(-1);
 				bind("rewrite", equality);
 				apply(name(-1), name(-2));
-				bind(name(-1), (List<Object>) equality.get(0));
-				bind(name(-1), (List<Object>) equality.get(2));
+				bind(name(-1), left(equality));
+				bind(name(-1), right(equality));
 				apply(name(-1), name(-5));
 				bind(name(-1), $()/*TODO*/);
 				bind(name(-1), $equality(x, x));
 				substitute(equality, map(equality.get(0), equality.get(2)), indices());
 				apply(name(-2), name(-1));
 				
-				conclude(pop());
+				conclude();
 			}
 			
 			print(pop());
@@ -80,6 +80,16 @@ public final class Demo {
 				Tools.join(IMPLIES.get(0).toString(), iterable(deduction.getConditionNames().stream().map(n -> n + ":" + deduction.getProposition(n)))),
 				IMPLIES, Tools.join(AND.get(0).toString(), iterable(deduction.getConclusionNames().stream().map(n -> n + ":" + deduction.getProposition(n)))));
 		debugPrint(deduction);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static final List<Object> left(final List<Object> binaryOperation) {
+		return (List<Object>) binaryOperation.get(0);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static final List<Object> right(final List<Object> binaryOperation) {
+		return (List<Object>) binaryOperation.get(2);
 	}
 	
 }
