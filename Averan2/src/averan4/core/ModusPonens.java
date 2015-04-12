@@ -7,13 +7,14 @@ import java.util.List;
 /**
  * @author codistmonk (creation 2015-04-11)
  */
-public final class ModusPonens implements Proof {
+public final class ModusPonens extends Proof.Abstract {
 	
 	private final String ruleName;
 	
 	private final String conditionName;
 	
-	public ModusPonens(final String ruleName, final String conditionName) {
+	public ModusPonens(final String provedPropositionName, final String ruleName, final String conditionName) {
+		super(provedPropositionName);
 		this.ruleName = ruleName;
 		this.conditionName = conditionName;
 	}
@@ -28,7 +29,7 @@ public final class ModusPonens implements Proof {
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public final List<Object> propositionFor(final Deduction context) {
+	public final List<Object> getProvedPropositionFor(final Deduction context) {
 		final List<Object> rule = context.getProposition(this.getRuleName());
 		
 		if (rule.size() != 3 || !IMPLIES.equals(rule.get(1))) {

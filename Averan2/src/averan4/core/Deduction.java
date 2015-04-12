@@ -14,7 +14,7 @@ import java.util.Map;
 /**
  * @author codistmonk (creation 2015-04-11)
  */
-public final class Deduction implements Proof {
+public final class Deduction extends Proof.Abstract {
 	
 	private final Deduction parent;
 	
@@ -27,6 +27,11 @@ public final class Deduction implements Proof {
 	private final Map<String, Proof> proofs;
 	
 	public Deduction(final Deduction parent) {
+		this(parent, parent == null ? "" : Integer.toString(parent.getPropositionNames().size() + 1));
+	}
+	
+	public Deduction(final Deduction parent, final String provedPropositionName) {
+		super(provedPropositionName);
 		this.parent = parent;
 		this.parameters = new LinkedHashSet<>();
 		this.propositions = new HashMap<>();
@@ -87,9 +92,9 @@ public final class Deduction implements Proof {
 		return this;
 	}
 	
-	public final Deduction conclude(final String propositionName, final Proof proof) {
-		this.suppose(propositionName, proof.propositionFor(this));
-		this.getProofs().put(propositionName, proof);
+	public final Deduction conclude(final Proof proof) {
+		this.suppose(proof.getProvedPropositionName(), proof.getProvedPropositionFor(this));
+		this.getProofs().put(proof.getProvedPropositionName(), proof);
 		
 		return this;
 	}
@@ -111,7 +116,7 @@ public final class Deduction implements Proof {
 	}
 	
 	@Override
-	public final List<Object> propositionFor(final Deduction context) {
+	public final List<Object> getProvedPropositionFor(final Deduction context) {
 		final List<String> conditionNames = this.getConditionNames();
 		List<Object> result = new ArrayList<>(2 * conditionNames.size() + 1);
 		
@@ -122,7 +127,9 @@ public final class Deduction implements Proof {
 		
 		result.add(this.getProposition(last(this.getConclusionNames())));
 		
-		for (final ListIterator<List<Object>> i = new ArrayList(this.getParameters()).listIterator(this.getParameters().size()); i.hasPrevious();) {
+		final ArrayList<List<Object>> parameters = new ArrayList<>(this.getParameters());
+		
+		for (final ListIterator<List<Object>> i = parameters.listIterator(parameters.size()); i.hasPrevious();) {
 			result = $forall(i.previous(), result);
 		}
 		

@@ -12,7 +12,7 @@ import java.util.TreeSet;
 /**
  * @author codistmonk (creation 2015-04-11)
  */
-public final class Substitution implements Proof {
+public final class Substitution extends Proof.Abstract {
 	
 	private final List<Object> target;
 	
@@ -20,7 +20,9 @@ public final class Substitution implements Proof {
 	
 	private final Collection<Integer> indices;
 	
-	public Substitution(final List<Object> target, final Map<List<Object>, List<Object>> equalities, final Collection<Integer> indices) {
+	public Substitution(final String provedPropositionName, final List<Object> target,
+			final Map<List<Object>, List<Object>> equalities, final Collection<Integer> indices) {
+		super(provedPropositionName);
 		this.target = target;
 		this.equalities = equalities;
 		this.indices = indices instanceof TreeSet ? indices : new TreeSet<>(indices);
@@ -39,7 +41,7 @@ public final class Substitution implements Proof {
 	}
 	
 	@Override
-	public final List<Object> propositionFor(final Deduction context) {
+	public final List<Object> getProvedPropositionFor(final Deduction context) {
 		final List<Object> substitution = $(this.getTarget(),
 				GIVEN, join(AND, iterable(
 						this.getEqualities().entrySet().stream().map(e -> $equality(e.getKey(), e.getValue())))),
