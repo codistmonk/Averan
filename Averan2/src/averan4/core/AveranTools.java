@@ -188,7 +188,7 @@ public final class AveranTools {
 	}
 	
 	public static final List<Object> $rule(final Object... propositions) {
-		return join(IMPLIES, propositions);
+		return join(IMPLIES, Arrays.stream(propositions).map(AveranTools::$).toArray());
 	}
 	
 	public static final List<Object> join(final Object separator, final Object... objects) {
@@ -242,12 +242,6 @@ public final class AveranTools {
 	public static final void checkArgument(final boolean check) {
 		if (!check) {
 			throw new IllegalArgumentException();
-		}
-	}
-	
-	public static final void checkRequiredProposition(final String propositionName) {
-		if (proposition(propositionName) == null) {
-			throw new IllegalStateException("Missing required proposition: " + propositionName);
 		}
 	}
 	
