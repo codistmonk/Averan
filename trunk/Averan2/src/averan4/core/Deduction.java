@@ -127,26 +127,30 @@ public final class Deduction extends Proof.Abstract {
 	
 	@Override
 	public final List<Object> getProvedPropositionFor(final Deduction context) {
-		final List<String> conditionNames = this.getConditionNames();
-		List<Object> result;
+		final List<Object> conclusion = this.getProposition(last(this.getConclusionNames()));
+		List<Object> result = conclusion;
 		
-		if (!conditionNames.isEmpty()) {
-			result = new ArrayList<>(2 * conditionNames.size() + 1);
+		{
+			final List<String> conditionNames = this.getConditionNames();
 			
-			for (final String conditionName : conditionNames) {
-				result.add(conditionName);
-				result.add(IMPLIES);
+			if (!conditionNames.isEmpty()) {
+				result = new ArrayList<>(2 * conditionNames.size() + 1);
+				
+				for (final String conditionName : conditionNames) {
+					result.add(conditionName);
+					result.add(IMPLIES);
+				}
+				
+				result.add(conclusion);
 			}
-			
-			result.add(this.getProposition(last(this.getConclusionNames())));
-		} else {
-			result = this.getProposition(last(this.getConclusionNames()));
 		}
 		
-		final ArrayList<List<Object>> parameters = new ArrayList<>(this.getParameters());
-		
-		for (final ListIterator<List<Object>> i = parameters.listIterator(parameters.size()); i.hasPrevious();) {
-			result = $forall(i.previous(), result);
+		{
+			final ArrayList<List<Object>> parameters = new ArrayList<>(this.getParameters());
+			
+			for (final ListIterator<List<Object>> i = parameters.listIterator(parameters.size()); i.hasPrevious();) {
+				result = $forall(i.previous(), result);
+			}
 		}
 		
 		return result;
