@@ -2,6 +2,7 @@ package averan4.core;
 
 import static averan4.core.AveranTools.*;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -14,7 +15,7 @@ public final class Binding extends Proof.Abstract {
 	private final List<Object> value;
 	
 	public Binding(final String provedPropositionName, final String blockName, final List<Object> value) {
-		super(provedPropositionName);
+		super(provedPropositionName, Arrays.asList("Bind", blockName, "with", value));
 		this.blockName = blockName;
 		this.value = value;
 	}
