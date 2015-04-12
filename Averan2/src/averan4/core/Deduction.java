@@ -65,6 +65,10 @@ public final class Deduction extends Proof.Abstract {
 		return this.propositionNames;
 	}
 	
+	public final String newPropositionName() {
+		return this.getProvedPropositionName() + "." + (this.getPropositions().size() + 1);
+	}
+	
 	public final String getPropositionName(final int index) {
 		checkArgument(index < 0);
 		
@@ -125,6 +129,10 @@ public final class Deduction extends Proof.Abstract {
 		return result;
 	}
 	
+	public final List<Object> getProvedProposition() {
+		return this.getProvedPropositionFor(this);
+	}
+	
 	@Override
 	public final List<Object> getProvedPropositionFor(final Deduction context) {
 		final List<Object> conclusion = this.getProposition(last(this.getConclusionNames()));
@@ -137,7 +145,7 @@ public final class Deduction extends Proof.Abstract {
 				result = new ArrayList<>(2 * conditionNames.size() + 1);
 				
 				for (final String conditionName : conditionNames) {
-					result.add(conditionName);
+					result.add(this.getProposition(conditionName));
 					result.add(IMPLIES);
 				}
 				

@@ -155,7 +155,7 @@ public final class AveranTools {
 	}
 	
 	public static final String newName() {
-		return deduction().getProvedPropositionName() + "." + (deduction().getPropositions().size() + 1);
+		return deduction().newPropositionName();
 	}
 	
 	public static final List<Object> $new(final String name) {

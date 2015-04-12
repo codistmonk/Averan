@@ -48,6 +48,8 @@ public final class Goal implements Serializable {
 		} else if (isRule(this.getProposition())) {
 			result = condition(this.getProposition());
 			this.proposition = conclusion(this.getProposition());
+			
+			this.getDeduction().suppose(this.getDeduction().newPropositionName(), result);
 		}
 		
 		return result;
@@ -64,7 +66,7 @@ public final class Goal implements Serializable {
 			throw new IllegalStateException();
 		}
 		
-		if (!Tools.equals(this.getInitialProposition(), this.getDeduction().getProvedPropositionFor(deduction()))) {
+		if (!Tools.equals(this.getInitialProposition(), this.getDeduction().getProvedProposition())) {
 			throw new IllegalStateException();
 		}
 		
