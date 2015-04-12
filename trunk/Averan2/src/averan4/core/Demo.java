@@ -30,7 +30,7 @@ public final class Demo {
 			
 			final Deduction deduction = new Deduction(null);
 			
-			deduction.conclude("p", new Substitution($("x"), map($("x"), $("y")), emptyList()));
+			deduction.conclude(new Substitution("p", $("x"), map($("x"), $("y")), emptyList()));
 			
 			print(deduction);
 		}
@@ -68,7 +68,7 @@ public final class Demo {
 				substitute("p8", equality, map(equality.get(0), equality.get(2)), indices());
 				apply("p9", name(-2), name(-1));
 				
-				conclude("p0", pop());
+				conclude(pop());
 			}
 			
 			print(pop());

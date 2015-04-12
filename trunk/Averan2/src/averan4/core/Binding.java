@@ -7,13 +7,14 @@ import java.util.List;
 /**
  * @author codistmonk (creation 2015-04-11)
  */
-public final class Binding implements Proof {
+public final class Binding extends Proof.Abstract {
 	
 	private final String blockName;
 	
 	private final List<Object> value;
 	
-	public Binding(final String blockName, final List<Object> value) {
+	public Binding(final String provedPropositionName, final String blockName, final List<Object> value) {
+		super(provedPropositionName);
 		this.blockName = blockName;
 		this.value = value;
 	}
@@ -28,7 +29,7 @@ public final class Binding implements Proof {
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public final List<Object> propositionFor(final Deduction context) {
+	public final List<Object> getProvedPropositionFor(final Deduction context) {
 		final List<Object> block = context.getProposition(this.getBlockName());
 		
 		checkArgument(block.size() == 2);
