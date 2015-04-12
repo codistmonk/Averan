@@ -96,6 +96,25 @@ public final class AveranTools {
 		conclude(new Substitution(propositionName, target, equalities, indices));
 	}
 	
+	public static final void bind(final String targetName, @SuppressWarnings("unchecked") final List<Object>... values) {
+		subdeduction();
+		
+		final int n = values.length;
+		
+		bind(targetName, values[0]);
+		
+		for (int i = 1; i < n; ++i) {
+			bind(name(-1), values[i]);
+		}
+		
+		set(conclude().getMessage(), "Bind", targetName, "with", Arrays.asList(values));
+	}
+	
+	public static final <T> void set(final Collection<T> collection, @SuppressWarnings("unchecked") final T... elements) {
+		collection.clear();
+		collection.addAll(Arrays.asList(elements));
+	}
+	
 	public static final void bind(final String targetName, final List<Object> value) {
 		bind(newName(), targetName, value);
 	}
