@@ -23,7 +23,6 @@ public final class Demo {
 	 * @param commandLineArguments
 	 * <br>Unused
 	 */
-	@SuppressWarnings("unchecked")
 	public static final void main(final String[] commandLineArguments) {
 		{
 			debugPrint();
@@ -65,7 +64,7 @@ public final class Demo {
 				apply(name(-1), name(-5));
 				bind(name(-1), $()/*TODO*/);
 				bind(name(-1), $equality(x, x));
-				substitute(equality, map(equality.get(0), equality.get(2)), indices());
+				substitute(equality, map(left(equality), right(equality)), indices());
 				apply(name(-2), name(-1));
 				
 				conclude();

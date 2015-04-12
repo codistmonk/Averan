@@ -26,9 +26,9 @@ public final class AveranTools {
 		throw new IllegalInstantiationException();
 	}
 	
-	public static final List<Object> FORALL = $("\\/");
+	public static final List<Object> FORALL = $("∀");
 	
-	public static final List<Object> IMPLIES = $("->");
+	public static final List<Object> IMPLIES = $("→");
 	
 	public static final List<Object> EQUALS = $("=");
 	
