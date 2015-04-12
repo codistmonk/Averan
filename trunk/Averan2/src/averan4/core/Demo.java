@@ -205,7 +205,7 @@ public final class Demo {
 		final String protoresult = Tools.join("", iterable(
 				expression.stream().map(e -> e instanceof List ? collapse((List<Object>) e) : "" + e)));
 		
-		if (isSubstitution(expression)) {
+		if (isSubstitution(expression) || isEquality(expression)) {
 			return group(protoresult);
 		}
 		
