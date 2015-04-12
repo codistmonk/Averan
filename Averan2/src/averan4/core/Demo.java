@@ -40,7 +40,26 @@ public final class Demo {
 			supposeRewriteLeft();
 			deduceIdentity();
 			
-			print(pop(), 3);
+			print(pop(), 1);
+		}
+		
+		{
+			debugPrint();
+			
+			push();
+			
+			supposeRewriteLeft();
+			deduceIdentity();
+			
+			{
+				final Goal goal = Goal.deduce($equality("a", "a"));
+				
+				bind("identity", $("a"));
+				
+				goal.conclude();
+			}
+			
+			print(pop(), 2);
 		}
 	}
 	
