@@ -87,13 +87,13 @@ public final class AveranTools {
 	}
 	
 	public static final void substitute(final List<Object> target,
-			final Map<List<Object>, List<Object>> equalities, final Collection<Integer> indices) {
+			final Map<List<Object>, List<Object>> equalities, final int... indices) {
 		substitute(newName(), target, equalities, indices);
 	}
 	
 	public static final void substitute(final String propositionName, final List<Object> target,
-			final Map<List<Object>, List<Object>> equalities, final Collection<Integer> indices) {
-		conclude(new Substitution(propositionName, target, equalities, indices));
+			final Map<List<Object>, List<Object>> equalities, final int... indices) {
+		conclude(new Substitution(propositionName, target, equalities, indices(indices)));
 	}
 	
 	public static final void bind(final String targetName, @SuppressWarnings("unchecked") final List<Object>... values) {
@@ -143,6 +143,10 @@ public final class AveranTools {
 	
 	public static final String name(final int index) {
 		return deduction().getPropositionName(index);
+	}
+	
+	public static final List<Object> proposition(final String name) {
+		return deduction().getProposition(name);
 	}
 	
 	public static final List<Object> proposition(final int index) {
@@ -221,8 +225,8 @@ public final class AveranTools {
 		return result;
 	}
 	
-	public static final Collection<Integer> indices(final int... indices) {
-		return Arrays.stream(indices).mapToObj(Integer::valueOf).collect(Collectors.toCollection(TreeSet::new));
+	public static final <E> List<E> indices(final int... indices) {
+		return (List<E>) Arrays.stream(indices).mapToObj(Integer::valueOf).collect(toList());
 	}
 	
 	public static final <T> Iterable<T> iterable(final Stream<T> stream) {
