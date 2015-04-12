@@ -41,8 +41,6 @@ public final class Standard {
 	
 	@SuppressWarnings("unchecked")
 	public static final void rewriteLeft(final String targetName, final String equalityName, final int... indices) {
-		checkRequiredProposition("rewriteLeft");
-		
 		subdeduction();
 		
 		final List<Object> target = proposition(targetName);
@@ -61,6 +59,19 @@ public final class Standard {
 		
 		set(conclude().getMessage(), "By left rewriting in", targetName, "using", equalityName, "at",
 				Arrays.stream(indices).mapToObj(Integer::valueOf).collect(toTreeSet()));
+	}
+	
+	public static final void deduceRecall() {
+		subdeduction("recall");
+		
+		final List<Object> x = forall("X");
+		
+		suppose(x);
+		
+		bind("identity", x);
+		rewriteLeft(name(-2), name(-1));
+		
+		conclude();
 	}
 	
 }

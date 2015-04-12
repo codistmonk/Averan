@@ -6,8 +6,6 @@ import static averan4.io.Simple.print;
 import static java.util.Collections.emptyList;
 import static net.sourceforge.aprog.tools.Tools.*;
 
-import java.util.List;
-
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 
 /**
@@ -71,15 +69,15 @@ public final class Demo {
 			
 			supposeRewriteLeft();
 			deduceIdentity();
+			deduceRecall();
 			
 			{
-				final List<Object> x = $new("X");
-				final Goal goal = Goal.deduce("recall", $forall(x, $rule(x, x)));
+				final Goal goal = Goal.deduce($rule("a", "a"));
 				
 				goal.intros();
 				
-				bind("identity", x);
-				rewriteLeft(name(-2), name(-1));
+				bind("recall", $("a"));
+				apply(name(-1), name(-2));
 				
 				goal.conclude();
 			}
