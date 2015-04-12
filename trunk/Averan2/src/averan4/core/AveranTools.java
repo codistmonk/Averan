@@ -112,12 +112,14 @@ public final class AveranTools {
 		push(new Deduction(deduction(), propositionName));
 	}
 	
-	public static final void conclude() {
-		conclude(pop());
+	public static final Deduction conclude() {
+		return conclude(pop());
 	}
 	
-	public static final void conclude(final Proof proof) {
+	public static final <P extends Proof> P conclude(final P proof) {
 		deduction().conclude(proof);
+		
+		return proof;
 	}
 	
 	public static final String name(final int index) {

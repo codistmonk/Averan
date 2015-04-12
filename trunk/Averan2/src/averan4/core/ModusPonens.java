@@ -2,6 +2,7 @@ package averan4.core;
 
 import static averan4.core.AveranTools.*;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -14,7 +15,7 @@ public final class ModusPonens extends Proof.Abstract {
 	private final String conditionName;
 	
 	public ModusPonens(final String provedPropositionName, final String ruleName, final String conditionName) {
-		super(provedPropositionName);
+		super(provedPropositionName, Arrays.asList("Apply", ruleName, "on", conditionName));
 		this.ruleName = ruleName;
 		this.conditionName = conditionName;
 	}
@@ -42,11 +43,6 @@ public final class ModusPonens extends Proof.Abstract {
 		checkArgument(expectedCondition.equals(condition));
 		
 		return (List<Object>) rule.get(2);
-	}
-	
-	@Override
-	public final String toString() {
-		return "Apply " + this.getRuleName() + " on " + this.getConditionName();
 	}
 	
 	private static final long serialVersionUID = 8564800788237315329L;

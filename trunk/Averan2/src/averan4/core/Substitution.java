@@ -4,6 +4,7 @@ import static averan4.core.AveranTools.*;
 import static java.util.stream.Collectors.toList;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -22,10 +23,12 @@ public final class Substitution extends Proof.Abstract {
 	
 	public Substitution(final String provedPropositionName, final List<Object> target,
 			final Map<List<Object>, List<Object>> equalities, final Collection<Integer> indices) {
-		super(provedPropositionName);
+		super(provedPropositionName, Arrays.asList("Substitute in", target, "using", equalities, "at", null));
 		this.target = target;
 		this.equalities = equalities;
 		this.indices = indices instanceof TreeSet ? indices : new TreeSet<>(indices);
+		
+		this.getMessage().set(5, this.getIndices());
 	}
 	
 	public final List<Object> getTarget() {
@@ -49,11 +52,6 @@ public final class Substitution extends Proof.Abstract {
 		final List<Object> substituted = substituteIn(this.getTarget(), this.getEqualities(), this.getIndices());
 		
 		return $equality(substitution, substituted);
-	}
-	
-	@Override
-	public final String toString() {
-		return "Substitution in " + this.getTarget() + " using " + this.getEqualities() + " at indices " + this.getIndices();
 	}
 	
 	private static final long serialVersionUID = -5039934017175763847L;

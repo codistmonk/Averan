@@ -4,6 +4,7 @@ import static averan4.core.AveranTools.*;
 import static net.sourceforge.aprog.tools.Tools.last;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -31,12 +32,21 @@ public final class Deduction extends Proof.Abstract {
 	}
 	
 	public Deduction(final Deduction parent, final String provedPropositionName) {
-		super(provedPropositionName);
+		super(provedPropositionName, new ArrayList<>(Arrays.asList("Deduced in", null, "step(s)")));
 		this.parent = parent;
 		this.parameters = new LinkedHashSet<>();
 		this.propositions = new HashMap<>();
 		this.propositionNames = new ArrayList<>();
 		this.proofs = new HashMap<>();
+		
+		this.getMessage().set(1, new Object() {
+			
+			@Override
+			public final String toString() {
+				return Integer.toString(getProofs().size());
+			}
+			
+		});
 	}
 	
 	public final Deduction getParent() {
@@ -134,11 +144,6 @@ public final class Deduction extends Proof.Abstract {
 		}
 		
 		return result;
-	}
-	
-	@Override
-	public final String toString() {
-		return "Deduced in " + this.getProofs().size() + " step(s)";
 	}
 	
 	private static final long serialVersionUID = -1040410980387761070L;

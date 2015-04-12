@@ -5,6 +5,8 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static net.sourceforge.aprog.tools.Tools.*;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
@@ -67,13 +69,18 @@ public final class Demo {
 				substitute(equality, map(left(equality), right(equality)), indices());
 				apply(name(-2), name(-1));
 				
-				conclude();
+				set(conclude().getMessage(), "Done");
 			}
 			
 			print(pop());
 		}
 	}
-
+	
+	public static final <T> void set(final Collection<T> collection, @SuppressWarnings("unchecked") final T... elements) {
+		collection.clear();
+		collection.addAll(Arrays.asList(elements));
+	}
+	
 	public static void print(final Deduction deduction) {
 		debugPrint(FORALL, deduction.getParameters(),
 				Tools.join(IMPLIES.get(0).toString(), iterable(deduction.getConditionNames().stream().map(n -> n + ":" + deduction.getProposition(n)))),
