@@ -11,8 +11,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
@@ -225,6 +223,7 @@ public final class AveranTools {
 		return result;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public static final <E> List<E> indices(final int... indices) {
 		return (List<E>) Arrays.stream(indices).mapToObj(Integer::valueOf).collect(toList());
 	}
@@ -237,6 +236,102 @@ public final class AveranTools {
 		if (!check) {
 			throw new IllegalArgumentException();
 		}
+	}
+	
+	public static final boolean isRule(final Object object) {
+		@SuppressWarnings("unchecked")
+		final List<Object> expression = cast(List.class, object);
+		
+		return expression != null
+				&& expression.size() == 3
+				&& IMPLIES.equals(expression.get(1));
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static final List<Object> condition(final List<Object> rule) {
+		return (List<Object>) rule.get(0);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static final List<Object> conclusion(final List<Object> rule) {
+		return (List<Object>) rule.get(2);
+	}
+	
+	public static final boolean isEquality(final Object object) {
+		@SuppressWarnings("unchecked")
+		final List<Object> expression = cast(List.class, object);
+		
+		return expression != null
+				&& expression.size() == 3
+				&& EQUALS.equals(expression.get(1));
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static final List<Object> left(final List<Object> binaryOperation) {
+		return (List<Object>) binaryOperation.get(0);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static final List<Object> right(final List<Object> binaryOperation) {
+		return (List<Object>) binaryOperation.get(2);
+	}
+	
+	public static final boolean isSubstitution(final Object object) {
+		@SuppressWarnings("unchecked")
+		final List<Object> expression = cast(List.class, object);
+		
+		return expression != null
+				&& expression.size() == 5
+				&& GIVEN.equals(expression.get(1))
+				&& AT.equals(expression.get(3));
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static final List<Object> target(final List<Object> substitution) {
+		return (List<Object>) substitution.get(0);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static final List<Object> equalities(final List<Object> substitution) {
+		return (List<Object>) substitution.get(2);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static final List<Object> indices(final List<Object> substitution) {
+		return (List<Object>) substitution.get(4);
+	}
+	
+	public static final boolean isQuantification(final Object object) {
+		@SuppressWarnings("unchecked")
+		final List<Object> expression = cast(List.class, object);
+		
+		return expression != null
+				&& expression.size() == 2
+				&& FORALL.equals(expression.get(0));
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static final List<Object> variable(final List<Object> quantitication) {
+		return (List<Object>) quantitication.get(1);
+	}
+	
+	public static final boolean isBlock(final Object object) {
+		@SuppressWarnings("unchecked")
+		final List<Object> expression = cast(List.class, object);
+		
+		return expression != null
+				&& expression.size() == 2
+				&& isQuantification(expression.get(0));
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static final List<Object> quantification(final List<Object> block) {
+		return (List<Object>) block.get(0);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static final List<Object> scope(final List<Object> block) {
+		return (List<Object>) block.get(1);
 	}
 	
 }

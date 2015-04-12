@@ -5,12 +5,14 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.nCopies;
 import static java.util.stream.Collectors.toCollection;
+import static java.util.stream.Collectors.toList;
 import static net.sourceforge.aprog.tools.Tools.*;
 
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeSet;
 import java.util.stream.Collector;
 
@@ -148,7 +150,7 @@ public final class Demo {
 				
 				for (final String conditionName : conditionNames) {
 					output.println(prefix1 + conditionName + ":");
-					output.println(prefix1 + deduction.getProposition(conditionName));
+					output.println(prefix1 + collapse(deduction.getProposition(conditionName)));
 				}
 			}
 		}
@@ -161,14 +163,14 @@ public final class Demo {
 				
 				for (final String conclusionName : conclusionNames) {
 					output.println(prefix1 + conclusionName + ":");
-					output.println(prefix1 + deduction.getProposition(conclusionName));
+					output.println(prefix1 + collapse(deduction.getProposition(conclusionName)));
 					
 					if (1 <= proofDepth) {
 						final Proof proof = deduction.getProofs().get(conclusionName);
 						
-						if (1 == proofDepth) {
-							output.println(prefix2 + proof);
-						} else if (proof instanceof Deduction) {
+						if (1 == proofDepth || !(proof instanceof Deduction)) {
+							output.println(prefix2 + collapse(proof.getMessage().stream().map(e -> e instanceof String ? " " + e + " " : collapse(e)).collect(toList())));
+						} else {
 							print((Deduction) proof, proofDepth - 1, prefix2, output);
 						}
 					}
@@ -178,13 +180,40 @@ public final class Demo {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static final List<Object> left(final List<Object> binaryOperation) {
-		return (List<Object>) binaryOperation.get(0);
+	public static final String collapse(final Object object) {
+		final Map<?, ?> map = cast(Map.class, object);
+		
+		if (map != null) {
+			return Tools.join(",", iterable(
+					map.entrySet().stream().map(e -> collapse(e.getKey()) + "=" + collapse(e.getValue()))));
+		}
+		
+		final List<Object> expression = cast(List.class, object);
+		
+		if (expression == null) {
+			return "" + object;
+		}
+		
+		if (expression.isEmpty()) {
+			return expression.toString();
+		}
+		
+		if (isBlock(expression)) {
+			return group(collapse(quantification(expression)) + " " + collapse(scope(expression)));
+		}
+		
+		final String protoresult = Tools.join("", iterable(
+				expression.stream().map(e -> e instanceof List ? collapse((List<Object>) e) : "" + e)));
+		
+		if (isSubstitution(expression)) {
+			return group(protoresult);
+		}
+		
+		return protoresult;
 	}
 	
-	@SuppressWarnings("unchecked")
-	public static final List<Object> right(final List<Object> binaryOperation) {
-		return (List<Object>) binaryOperation.get(2);
+	public static final String group(final Object object) {
+		return "(" + object + ")";
 	}
 	
 }
