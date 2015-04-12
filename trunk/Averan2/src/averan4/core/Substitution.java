@@ -23,7 +23,7 @@ public final class Substitution extends Proof.Abstract {
 	
 	public Substitution(final String provedPropositionName, final List<Object> target,
 			final Map<List<Object>, List<Object>> equalities, final Collection<Integer> indices) {
-		super(provedPropositionName, Arrays.asList("Substitute in", target, "using", equalities, "at", null));
+		super(provedPropositionName, Arrays.asList("By substituting in", target, "using", equalities, "at", null));
 		this.target = target;
 		this.equalities = equalities;
 		this.indices = indices instanceof TreeSet ? indices : new TreeSet<>(indices);

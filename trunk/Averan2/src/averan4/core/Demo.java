@@ -3,10 +3,13 @@ package averan4.core;
 import static averan4.core.AveranTools.*;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.nCopies;
 import static java.util.stream.Collectors.toCollection;
 import static net.sourceforge.aprog.tools.Tools.*;
 
+import java.io.PrintStream;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.stream.Collector;
@@ -35,7 +38,7 @@ public final class Demo {
 			
 			deduction.conclude(new Substitution("p", $("x"), map($("x"), $("y")), emptyList()));
 			
-			print(deduction);
+			print(deduction, 1);
 		}
 		
 		{
@@ -46,7 +49,7 @@ public final class Demo {
 			supposeRewriteLeft();
 			deduceIdentity();
 			
-			print(pop());
+			print(pop(), 3);
 		}
 	}
 	
@@ -102,15 +105,76 @@ public final class Demo {
 		bind(name(-2), indices(indices), right(proposition(-1)));
 		apply(name(-1), name(-2));
 		
-		set(conclude().getMessage(), "Rewrite left in", targetName, "using", equalityName, "at",
+		set(conclude().getMessage(), "By left rewriting in", targetName, "using", equalityName, "at",
 				Arrays.stream(indices).mapToObj(Integer::valueOf).collect(toTreeSet()));
 	}
 	
-	public static void print(final Deduction deduction) {
-		debugPrint(FORALL, deduction.getParameters(),
-				Tools.join(IMPLIES.get(0).toString(), iterable(deduction.getConditionNames().stream().map(n -> n + ":" + deduction.getProposition(n)))),
-				IMPLIES, Tools.join(AND.get(0).toString(), iterable(deduction.getConclusionNames().stream().map(n -> n + ":" + deduction.getProposition(n)))));
-		debugPrint(deduction);
+	public static int print(final Deduction deduction, final int proofDepth) {
+		return print(deduction, proofDepth, System.out);
+	}
+	
+	public static int print(final Deduction deduction, final int proofDepth, final PrintStream output) {
+		if (deduction == null) {
+			return -1;
+		}
+		
+		final int result = 1 + print(deduction.getParent(), 0, output);
+		
+		print(deduction, proofDepth, Tools.join("", nCopies(result, "\t")), output);
+		
+		return result;
+	}
+	
+	public static final void print(final Deduction deduction, final int proofDepth, final String prefix, final PrintStream output) {
+		final String tab = "\t";
+		final String prefix1 = prefix + tab;
+		final String prefix2 = prefix1 + tab;
+		
+		output.println(prefix + "((Deduction of " + deduction.getProvedPropositionName() + "))");
+		
+		{
+			final Collection<List<Object>> parameters = deduction.getParameters();
+			
+			if (!parameters.isEmpty()) {
+				output.println(prefix1 + FORALL.get(0) + parameters);
+			}
+		}
+		
+		{
+			final List<String> conditionNames = deduction.getConditionNames();
+			
+			if (!conditionNames.isEmpty()) {
+				output.println(prefix + "((Conditions))");
+				
+				for (final String conditionName : conditionNames) {
+					output.println(prefix1 + conditionName + ":");
+					output.println(prefix1 + deduction.getProposition(conditionName));
+				}
+			}
+		}
+		
+		{
+			final List<String> conclusionNames = deduction.getConclusionNames();
+			
+			if (!conclusionNames.isEmpty()) {
+				output.println(prefix + "((Conclusions))");
+				
+				for (final String conclusionName : conclusionNames) {
+					output.println(prefix1 + conclusionName + ":");
+					output.println(prefix1 + deduction.getProposition(conclusionName));
+					
+					if (1 <= proofDepth) {
+						final Proof proof = deduction.getProofs().get(conclusionName);
+						
+						if (1 == proofDepth) {
+							output.println(prefix2 + proof);
+						} else if (proof instanceof Deduction) {
+							print((Deduction) proof, proofDepth - 1, prefix2, output);
+						}
+					}
+				}
+			}
+		}
 	}
 	
 	@SuppressWarnings("unchecked")

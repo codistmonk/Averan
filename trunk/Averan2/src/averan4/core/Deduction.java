@@ -32,7 +32,7 @@ public final class Deduction extends Proof.Abstract {
 	}
 	
 	public Deduction(final Deduction parent, final String provedPropositionName) {
-		super(provedPropositionName, new ArrayList<>(Arrays.asList("Deduced in", null, "step(s)")));
+		super(provedPropositionName, new ArrayList<>(Arrays.asList("By deduction in", null, "step(s)")));
 		this.parent = parent;
 		this.parameters = new LinkedHashSet<>();
 		this.propositions = new HashMap<>();

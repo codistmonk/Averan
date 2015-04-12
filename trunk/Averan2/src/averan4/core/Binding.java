@@ -15,7 +15,7 @@ public final class Binding extends Proof.Abstract {
 	private final List<Object> value;
 	
 	public Binding(final String provedPropositionName, final String blockName, final List<Object> value) {
-		super(provedPropositionName, Arrays.asList("Bind", blockName, "with", value));
+		super(provedPropositionName, Arrays.asList("By binding", blockName, "with", value));
 		this.blockName = blockName;
 		this.value = value;
 	}
