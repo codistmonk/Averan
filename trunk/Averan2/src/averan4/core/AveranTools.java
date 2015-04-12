@@ -1,5 +1,6 @@
 package averan4.core;
 
+import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.last;
@@ -11,6 +12,8 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
+import java.util.stream.Collector;
 import java.util.stream.Stream;
 
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
@@ -232,9 +235,19 @@ public final class AveranTools {
 		return () -> stream.iterator();
 	}
 	
+    public static final <T> Collector<T, ?, TreeSet<T>> toTreeSet() {
+        return toCollection(TreeSet::new);
+    }
+	
 	public static final void checkArgument(final boolean check) {
 		if (!check) {
 			throw new IllegalArgumentException();
+		}
+	}
+	
+	public static final void checkRequiredProposition(final String propositionName) {
+		if (proposition(propositionName) == null) {
+			throw new IllegalStateException("Missing required proposition: " + propositionName);
 		}
 	}
 	
