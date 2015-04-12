@@ -56,17 +56,17 @@ public final class Demo {
 				
 				final List<Object> x = forall("X");
 				
-				substitute("p0", x, map(), indices());
+				substitute(x, map(), indices());
 				final List<Object> equality = proposition(-1);
-				bind("p1", "rewrite", equality);
-				apply("p2", name(-1), name(-2));
-				bind("p3", name(-1), (List<Object>) equality.get(0));
-				bind("p4", name(-1), (List<Object>) equality.get(2));
-				apply("p5", name(-1), name(-5));
-				bind("p6", name(-1), $()/*TODO*/);
-				bind("p7", name(-1), $equality(x, x));
-				substitute("p8", equality, map(equality.get(0), equality.get(2)), indices());
-				apply("p9", name(-2), name(-1));
+				bind("rewrite", equality);
+				apply(name(-1), name(-2));
+				bind(name(-1), (List<Object>) equality.get(0));
+				bind(name(-1), (List<Object>) equality.get(2));
+				apply(name(-1), name(-5));
+				bind(name(-1), $()/*TODO*/);
+				bind(name(-1), $equality(x, x));
+				substitute(equality, map(equality.get(0), equality.get(2)), indices());
+				apply(name(-2), name(-1));
 				
 				conclude(pop());
 			}

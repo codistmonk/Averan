@@ -66,16 +66,25 @@ public final class AveranTools {
 		return result;
 	}
 	
+	public static final void suppose(final List<Object> proposition) {
+		suppose(newName(), proposition);
+	}
+	
 	public static final void suppose(final String propositionName, final List<Object> proposition) {
 		deduction().suppose(propositionName, proposition);
 	}
 	
-	public static final void conclude(final Proof proof) {
-		deduction().conclude(proof);
+	public static final void apply(final String ruleName, final String conditionName) {
+		apply(newName(), ruleName, conditionName);
 	}
 	
 	public static final void apply(final String propositionName, final String ruleName, final String conditionName) {
 		deduction().conclude(new ModusPonens(propositionName, ruleName, conditionName));
+	}
+	
+	public static final void substitute(final List<Object> target,
+			final Map<List<Object>, List<Object>> equalities, final Collection<Integer> indices) {
+		substitute(newName(), target, equalities, indices);
 	}
 	
 	public static final void substitute(final String propositionName, final List<Object> target,
@@ -83,8 +92,16 @@ public final class AveranTools {
 		deduction().conclude(new Substitution(propositionName, target, equalities, indices));
 	}
 	
+	public static final void bind(final String targetName, final List<Object> value) {
+		bind(newName(), targetName, value);
+	}
+	
 	public static final void bind(final String propositionName, final String targetName, final List<Object> value) {
 		deduction().conclude(new Binding(propositionName, targetName, value));
+	}
+	
+	public static final void conclude(final Proof proof) {
+		deduction().conclude(proof);
 	}
 	
 	public static final String name(final int index) {
@@ -93,6 +110,10 @@ public final class AveranTools {
 	
 	public static final List<Object> proposition(final int index) {
 		return deduction().getProposition(name(index));
+	}
+	
+	public static final String newName() {
+		return deduction().getProvedPropositionName() + "." + (deduction().getPropositions().size() + 1);
 	}
 	
 	public static final List<Object> $new(final String name) {
