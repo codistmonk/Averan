@@ -4,6 +4,9 @@ import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.last;
+import static net.sourceforge.aprog.tools.Tools.unchecked;
+
+import averan4.io.Simple;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -403,6 +406,32 @@ public final class AveranTools {
 	@SuppressWarnings("unchecked")
 	public static final List<Object> scope(final List<Object> block) {
 		return (List<Object>) block.get(1);
+	}
+	
+	public static final Deduction subdeduction(final String deductionName, final Runnable deductionBuilder) {
+		return deduction(new Deduction(deduction(), deductionName), deductionBuilder);
+	}
+	
+	public static final Deduction deduction(final String deductionName, final Runnable deductionBuilder) {
+		return deduction(new Deduction(null, deductionName), deductionBuilder);
+	}
+	
+	public static final Deduction deduction(final Deduction deduction, final Runnable deductionBuilder) {
+		final Deduction result = push(deduction);
+		
+		try {
+			deductionBuilder.run();
+			
+			return result.conclude();
+		} catch (final Exception exception) {
+			Simple.print(deduction(), 1);
+			
+			throw unchecked(exception);
+		} finally {
+			while (result != pop()) {
+				// NOP
+			}
+		}
 	}
 	
 }
