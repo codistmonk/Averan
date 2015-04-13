@@ -245,6 +245,66 @@ public final class AveranTools {
 		}
 	}
 	
+	public static final List<Object> checkProposition(final String name) {
+		return checkProposition(name, deduction());
+	}
+	
+	public static final List<Object> checkProposition(final String name, final Deduction context) {
+		final List<Object> result = context.getProposition(name);
+		
+		checkArgument(result != null, "Missing proposition: " + name);
+		
+		return result;
+	}
+	
+	public static final List<Object> checkRule(final String name) {
+		return checkRule(name, deduction());
+	}
+	
+	public static final List<Object> checkRule(final String name, final Deduction context) {
+		final List<Object> result = checkProposition(name, context);
+		
+		checkArgument(isRule(result), "Not a rule: " + result);
+		
+		return result;
+	}
+	
+	public static final List<Object> checkEquality(final String name) {
+		return checkEquality(name, deduction());
+	}
+	
+	public static final List<Object> checkEquality(final String name, final Deduction context) {
+		final List<Object> result = checkProposition(name, context);
+		
+		checkArgument(isEquality(result), "Not an equality: " + result);
+		
+		return result;
+	}
+	
+	public static final List<Object> checkSubstitution(final String name) {
+		return checkSubstitution(name, deduction());
+	}
+	
+	public static final List<Object> checkSubstitution(final String name, final Deduction context) {
+		final List<Object> result = checkProposition(name, context);
+		
+		checkArgument(isSubstitution(result), "Not a substitution: " + result);
+		
+		return result;
+	}
+	
+	public static final List<Object> checkBlock(final String name) {
+		return checkBlock(name, deduction());
+	}
+	
+	public static final List<Object> checkBlock(final String name, final Deduction context) {
+		final List<Object> result = checkProposition(name, context);
+		
+		checkArgument(isBlock(result), "Not a block: " + result);
+		
+		return result;
+	}
+	
 	public static final boolean isRule(final Object object) {
 		@SuppressWarnings("unchecked")
 		final List<Object> expression = cast(List.class, object);
@@ -333,7 +393,11 @@ public final class AveranTools {
 	
 	@SuppressWarnings("unchecked")
 	public static final List<Object> quantification(final List<Object> block) {
-		return (List<Object>) block.get(0);
+		final Object result = block.get(0);
+		
+		checkArgument(isQuantification(result), "Not a quantification: " + result);
+		
+		return (List<Object>) result;
 	}
 	
 	@SuppressWarnings("unchecked")

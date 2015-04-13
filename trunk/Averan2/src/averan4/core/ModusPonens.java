@@ -31,15 +31,10 @@ public final class ModusPonens extends Proof.Abstract {
 	@SuppressWarnings("unchecked")
 	@Override
 	public final List<Object> getProvedPropositionFor(final Deduction context) {
-		final List<Object> rule = context.getProposition(this.getRuleName());
+		final List<Object> rule = checkRule(this.getRuleName(), context);
+		final List<Object> expectedCondition = condition(rule);
+		final List<Object> condition = checkProposition(this.getConditionName(), context);
 		
-		checkArgument(rule != null, "Missing proposition: " + this.getRuleName());
-		checkArgument(isRule(rule), "Not a rule: " + rule);
-		
-		final List<Object> expectedCondition = (List<Object>) rule.get(0);
-		final List<Object> condition = context.getProposition(this.getConditionName());
-		
-		checkArgument(condition != null, "Missing proposition: " + this.getConditionName());
 		checkArgument(expectedCondition.equals(condition), "Expected condition: " + expectedCondition + " but was: " + condition);
 		
 		return (List<Object>) rule.get(2);
