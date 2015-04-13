@@ -43,13 +43,13 @@ public final class Standard {
 	public static final void rewriteLeft(final String targetName, final String equalityName, final int... indices) {
 		subdeduction();
 		
-		final List<Object> target = proposition(targetName);
+		final List<Object> target = checkProposition(targetName);
 		
 		// rewrite: \/P P -> \/X,Y X=Y -> \/I,Q P|X=Y@[I] = Q -> Q 
 		bind("rewriteLeft", target);
 		apply(name(-1), targetName);
 		
-		final List<Object> equality = proposition(equalityName);
+		final List<Object> equality = checkEquality(equalityName);
 		
 		bind(name(-1), left(equality), right(equality));
 		apply(name(-1), equalityName);

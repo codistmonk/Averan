@@ -28,19 +28,12 @@ public final class Binding extends Proof.Abstract {
 		return this.value;
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Override
 	public final List<Object> getProvedPropositionFor(final Deduction context) {
-		final List<Object> block = context.getProposition(this.getBlockName());
+		final List<Object> block = checkBlock(this.getBlockName(), context);
+		final List<Object> quantification = quantification(block);
 		
-		checkArgument(block != null, "Missing proposition: " + this.getBlockName());
-		checkArgument(isBlock(block), "Not a block: " + block);
-		
-		final List<Object> quantification = (List<Object>) block.get(0);
-		
-		checkArgument(isQuantification(quantification), "Not a quantification: " + quantification);
-		
-		return Substitution.substituteIn((List<Object>) block.get(1), map(quantification.get(1), this.getValue()), indices());
+		return Substitution.substituteIn(scope(block), map(variable(quantification), this.getValue()), indices());
 	}
 	
 	private static final long serialVersionUID = 5987805106367286343L;
