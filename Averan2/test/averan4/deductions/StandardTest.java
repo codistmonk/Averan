@@ -22,7 +22,7 @@ public final class StandardTest {
 	
 	@Test
 	public final void testRewriteLeft() {
-		try {
+		build(() -> {
 			supposeRewriteLeft();
 			
 			suppose($equality("a", "b"));
@@ -32,16 +32,12 @@ public final class StandardTest {
 			rewriteLeft(name(-1), name(-1));
 			
 			goal.conclude();
-		} catch (final Exception exception) {
-			Simple.print(deduction(), 1);
-			
-			throw new AssertionError("Test failed", exception);
-		}
+		});
 	}
 	
 	@Test
 	public final void testDeduceIdentity() {
-		try {
+		build(() -> {
 			supposeRewriteLeft();
 			deduceIdentity();
 			
@@ -50,16 +46,12 @@ public final class StandardTest {
 			bind("identity", $("a"));
 			
 			goal.conclude();
-		} catch (final Exception exception) {
-			Simple.print(deduction(), 1);
-			
-			throw new AssertionError("Test failed", exception);
-		}
+		});
 	}
 	
 	@Test
 	public final void testDeduceRecall() {
-		try {
+		build(() -> {
 			supposeRewriteLeft();
 			deduceIdentity();
 			deduceRecall();
@@ -71,10 +63,16 @@ public final class StandardTest {
 			bind("recall", $("a"));
 			
 			goal.conclude();
+		});
+	}
+	
+	public static final void build(final Runnable deductionBuilder) {
+		try {
+			deductionBuilder.run();
 		} catch (final Exception exception) {
 			Simple.print(deduction(), 1);
 			
-			throw new AssertionError("Test failed", exception);
+			throw unchecked(exception);
 		}
 	}
 	
