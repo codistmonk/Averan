@@ -106,6 +106,14 @@ public final class Deduction extends Proof.Abstract {
 		return this;
 	}
 	
+	public final Deduction conclude() {
+		if (this.getParent() != null) {
+			this.getParent().conclude(this);
+		}
+		
+		return this;
+	}
+	
 	public final Deduction conclude(final Proof proof) {
 		this.suppose(proof.getProvedPropositionName(), proof.getProvedPropositionFor(this));
 		this.getProofs().put(proof.getProvedPropositionName(), proof);

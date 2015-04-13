@@ -6,8 +6,8 @@ import static net.sourceforge.aprog.tools.Tools.*;
 
 import org.junit.Test;
 
+import averan4.core.Deduction;
 import averan4.core.Goal;
-import averan4.io.Simple;
 
 /**
  * @author codistmonk (creation 2015-04-13)
@@ -77,16 +77,8 @@ public final class StandardTest {
 		});
 	}
 	
-	public static final void build(final Runnable deductionBuilder) {
-		push(getCallerMethodName());
-		
-		try {
-			deductionBuilder.run();
-		} catch (final Exception exception) {
-			Simple.print(deduction(), 1);
-			
-			throw unchecked(exception);
-		}
+	public static final Deduction build(final Runnable deductionBuilder) {
+		return deduction(getCallerMethodName(), deductionBuilder);
 	}
 	
 }

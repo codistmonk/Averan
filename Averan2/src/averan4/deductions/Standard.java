@@ -39,9 +39,13 @@ public final class Standard {
 		suppose("rewrite", $forall(p, $rule(p, $forall(x, $forall(y, $rule($equality(x, y), $forall(i, $forall(q, $rule($equality($(p, GIVEN, asList($equality(x, y)), AT, i), q), q)))))))));
 	}
 	
-	@SuppressWarnings("unchecked")
 	public static final void rewrite(final String targetName, final String equalityName, final int... indices) {
-		subdeduction();
+		rewrite(newName(), targetName, equalityName, indices);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static final void rewrite(final String propositionName, final String targetName, final String equalityName, final int... indices) {
+		subdeduction(propositionName);
 		
 		final List<Object> target = checkProposition(targetName);
 		
