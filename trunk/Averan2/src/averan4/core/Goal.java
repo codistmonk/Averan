@@ -6,8 +6,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sourceforge.aprog.tools.Tools;
-
 /**
  * @author codistmonk (creation 2015-04-12)
  */
@@ -66,9 +64,10 @@ public final class Goal implements Serializable {
 			throw new IllegalStateException();
 		}
 		
-		if (!Tools.equals(this.getInitialProposition(), this.getDeduction().getProvedProposition())) {
-			throw new IllegalStateException();
-		}
+		final List<Object> provedProposition = this.getDeduction().getProvedProposition();
+		
+		checkState(areEqual(this.getInitialProposition(), provedProposition),
+				"Expected: " + this.getInitialProposition() + " but was: " + provedProposition);
 		
 		deduction().conclude(this.getDeduction());
 	}

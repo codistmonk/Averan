@@ -4,14 +4,14 @@ import static averan4.core.AveranTools.*;
 import static averan4.deductions.Standard.*;
 import static net.sourceforge.aprog.tools.Tools.*;
 
+import averan4.core.Deduction;
+import averan4.core.Goal;
+import averan4.core.Proof;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
-
-import averan4.core.Deduction;
-import averan4.core.Goal;
-import averan4.core.Proof;
 
 /**
  * @author codistmonk (creation 2015-04-13)
@@ -98,6 +98,23 @@ public final class StandardTest {
 		});
 	}
 	
+	@Test
+	public final void testJustify2() {
+		build(() -> {
+			supposeRewrite();
+			deduceIdentity();
+			deduceRecall();
+			
+			suppose($forall("a", "a"));
+			
+			final Goal goal = Goal.deduce($forall("b", "b"));
+			
+			conclude(justify(goal.getProposition()).get(0));
+			
+			goal.conclude();
+		});
+	}
+	
 	public static final List<Proof> justify(final List<Object> goal) {
 		final List<Proof> result = new ArrayList<>();
 		Deduction deduction = deduction();
@@ -109,7 +126,7 @@ public final class StandardTest {
 				final String propositionName = propositionNames.get(i);
 				final List<Object> proposition = deduction.getProposition(propositionName);
 				
-				if (goal.equals(proposition)) {
+				if (areEqual(goal, proposition)) {
 					subdeduction();
 					
 					bind("recall", goal);
