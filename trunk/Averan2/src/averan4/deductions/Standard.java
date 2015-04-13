@@ -2,9 +2,13 @@ package averan4.deductions;
 
 import static averan4.core.AveranTools.*;
 import static java.util.Arrays.asList;
+import static net.sourceforge.aprog.tools.Tools.unchecked;
 
 import java.util.Arrays;
 import java.util.List;
+
+import averan4.core.Deduction;
+import averan4.io.Simple;
 
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 
@@ -107,6 +111,32 @@ public final class Standard {
 		rewrite(name(-2), name(-1));
 		
 		conclude();
+	}
+	
+	public static final Deduction subbuild(final String deductionName, final Runnable deductionBuilder) {
+		return build(new Deduction(deduction(), deductionName), deductionBuilder);
+	}
+	
+	public static final Deduction build(final String deductionName, final Runnable deductionBuilder) {
+		return build(new Deduction(null, deductionName), deductionBuilder);
+	}
+	
+	public static final Deduction build(final Deduction deduction, final Runnable deductionBuilder) {
+		final Deduction result = push(deduction);
+		
+		try {
+			deductionBuilder.run();
+			
+			return result.conclude();
+		} catch (final Exception exception) {
+			Simple.print(deduction(), 1);
+			
+			throw unchecked(exception);
+		} finally {
+			while (result != pop()) {
+				// NOP
+			}
+		}
 	}
 	
 }
