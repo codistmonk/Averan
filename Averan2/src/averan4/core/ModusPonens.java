@@ -33,14 +33,14 @@ public final class ModusPonens extends Proof.Abstract {
 	public final List<Object> getProvedPropositionFor(final Deduction context) {
 		final List<Object> rule = context.getProposition(this.getRuleName());
 		
-		if (rule.size() != 3 || !IMPLIES.equals(rule.get(1))) {
-			throw new IllegalArgumentException();
-		}
+		checkArgument(rule != null, "Missing proposition: " + this.getRuleName());
+		checkArgument(isRule(rule), "Not a rule: " + rule);
 		
 		final List<Object> expectedCondition = (List<Object>) rule.get(0);
 		final List<Object> condition = context.getProposition(this.getConditionName());
 		
-		checkArgument(expectedCondition.equals(condition));
+		checkArgument(condition != null, "Missing proposition: " + this.getConditionName());
+		checkArgument(expectedCondition.equals(condition), "Expected condition: " + expectedCondition + " but was: " + condition);
 		
 		return (List<Object>) rule.get(2);
 	}

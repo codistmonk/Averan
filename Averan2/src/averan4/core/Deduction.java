@@ -70,7 +70,7 @@ public final class Deduction extends Proof.Abstract {
 	}
 	
 	public final String getPropositionName(final int index) {
-		checkArgument(index < 0);
+		checkArgument(index < 0, "Not negative: " + index);
 		
 		final int i = this.getPropositionNames().size() + index;
 		
@@ -135,6 +135,8 @@ public final class Deduction extends Proof.Abstract {
 	
 	@Override
 	public final List<Object> getProvedPropositionFor(final Deduction context) {
+		checkArgument(!this.getConclusionNames().isEmpty(), "Nothing to conclude");
+		
 		final List<Object> conclusion = this.getProposition(last(this.getConclusionNames()));
 		List<Object> result = conclusion;
 		

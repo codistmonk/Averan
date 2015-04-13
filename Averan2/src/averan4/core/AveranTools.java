@@ -239,9 +239,9 @@ public final class AveranTools {
         return toCollection(TreeSet::new);
     }
 	
-	public static final void checkArgument(final boolean check) {
+	public static final void checkArgument(final boolean check, final String message) {
 		if (!check) {
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException(message);
 		}
 	}
 	

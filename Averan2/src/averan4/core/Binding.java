@@ -33,11 +33,12 @@ public final class Binding extends Proof.Abstract {
 	public final List<Object> getProvedPropositionFor(final Deduction context) {
 		final List<Object> block = context.getProposition(this.getBlockName());
 		
-		checkArgument(block.size() == 2);
+		checkArgument(block != null, "Missing proposition: " + this.getBlockName());
+		checkArgument(isBlock(block), "Not a block: " + block);
 		
 		final List<Object> quantification = (List<Object>) block.get(0);
 		
-		checkArgument(quantification.size() == 2 && FORALL.equals(quantification.get(0)));
+		checkArgument(isQuantification(quantification), "Not a quantification: " + quantification);
 		
 		return Substitution.substituteIn((List<Object>) block.get(1), map(quantification.get(1), this.getValue()), indices());
 	}
