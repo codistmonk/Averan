@@ -35,7 +35,7 @@ public final class ModusPonens extends Proof.Abstract {
 		final List<Object> expectedCondition = condition(rule);
 		final List<Object> condition = checkProposition(this.getConditionName(), context);
 		
-		checkArgument(expectedCondition.equals(condition), "Expected condition: " + expectedCondition + " but was: " + condition);
+		checkArgument(areEqual(expectedCondition, condition), "Expected condition: " + expectedCondition + " but was: " + condition);
 		
 		return (List<Object>) rule.get(2);
 	}

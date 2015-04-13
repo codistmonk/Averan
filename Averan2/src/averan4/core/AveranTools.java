@@ -1,5 +1,7 @@
 package averan4.core;
 
+import static averan4.core.Substitution.substituteIn;
+import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
 import static net.sourceforge.aprog.tools.Tools.cast;
@@ -247,6 +249,12 @@ public final class AveranTools {
 		}
 	}
 	
+	public static final void checkState(final boolean check, final String message) {
+		if (!check) {
+			throw new IllegalStateException(message);
+		}
+	}
+	
 	public static final List<Object> checkProposition(final String name) {
 		return checkProposition(name, deduction());
 	}
@@ -405,6 +413,22 @@ public final class AveranTools {
 	@SuppressWarnings("unchecked")
 	public static final List<Object> scope(final List<Object> block) {
 		return (List<Object>) block.get(1);
+	}
+	
+	public static final boolean areEqual(final List<Object> expression1, final List<Object> expression2) {
+		if (expression1.equals(expression2)) {
+			return true;
+		}
+		
+		if (isBlock(expression1) && isBlock(expression2)) {
+			final List<Object> variable1 = variable(quantification(expression1));
+			final List<Object> variable2 = variable(quantification(expression2));
+			final List<Object> boundScope2 = substituteIn(scope(expression2), map(variable2, variable1), emptySet());
+			
+			return areEqual(scope(expression1), boundScope2);
+		}
+		
+		return false;
 	}
 	
 }
