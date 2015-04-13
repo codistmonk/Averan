@@ -4,7 +4,6 @@ import static averan4.core.AveranTools.*;
 import static averan4.deductions.Standard.*;
 import static net.sourceforge.aprog.tools.Tools.*;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import averan4.core.Goal;
@@ -15,21 +14,33 @@ import averan4.io.Simple;
  */
 public final class StandardTest {
 	
-	@Before
-	public final void beforeEachTest() {
-		push(getCallerMethodName());
-	}
-	
 	@Test
-	public final void testRewriteLeft() {
+	public final void testRewrite() {
 		build(() -> {
-			supposeRewriteLeft();
+			supposeRewrite();
 			
 			suppose($equality("a", "b"));
 			
 			final Goal goal = Goal.deduce($equality("b", "b"));
 			
-			rewriteLeft(name(-1), name(-1));
+			rewrite(name(-1), name(-1));
+			
+			goal.conclude();
+		});
+	}
+	
+	@Test
+	public final void testRewriteRight() {
+		build(() -> {
+			supposeRewrite();
+			deduceIdentity();
+			deduceCommutativityOfEquality();
+			
+			suppose($equality("a", "b"));
+			
+			final Goal goal = Goal.deduce($equality("a", "a"));
+			
+			rewriteRight(name(-1), name(-1));
 			
 			goal.conclude();
 		});
@@ -38,7 +49,7 @@ public final class StandardTest {
 	@Test
 	public final void testDeduceIdentity() {
 		build(() -> {
-			supposeRewriteLeft();
+			supposeRewrite();
 			deduceIdentity();
 			
 			final Goal goal = Goal.deduce($equality("a", "a"));
@@ -52,7 +63,7 @@ public final class StandardTest {
 	@Test
 	public final void testDeduceRecall() {
 		build(() -> {
-			supposeRewriteLeft();
+			supposeRewrite();
 			deduceIdentity();
 			deduceRecall();
 			
@@ -67,6 +78,8 @@ public final class StandardTest {
 	}
 	
 	public static final void build(final Runnable deductionBuilder) {
+		push(getCallerMethodName());
+		
 		try {
 			deductionBuilder.run();
 		} catch (final Exception exception) {

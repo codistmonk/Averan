@@ -23,12 +23,12 @@ public final class Standard {
 		final List<Object> x = forall("X");
 		
 		substitute(x, map());
-		rewriteLeft(name(-1), name(-1));
+		rewrite(name(-1), name(-1));
 		
 		conclude();
 	}
 	
-	public static final void supposeRewriteLeft() {
+	public static final void supposeRewrite() {
 		final List<Object> p = $new("P");
 		final List<Object> q = $new("Q");
 		final List<Object> x = $new("X");
@@ -36,17 +36,17 @@ public final class Standard {
 		final List<Object> i = $new("I");
 		
 		// \/P P -> \/X,Y X=Y -> \/I,Q P|X=Y@[I] = Q -> Q 
-		suppose("rewriteLeft", $forall(p, $rule(p, $forall(x, $forall(y, $rule($equality(x, y), $forall(i, $forall(q, $rule($equality($(p, GIVEN, asList($equality(x, y)), AT, i), q), q)))))))));
+		suppose("rewrite", $forall(p, $rule(p, $forall(x, $forall(y, $rule($equality(x, y), $forall(i, $forall(q, $rule($equality($(p, GIVEN, asList($equality(x, y)), AT, i), q), q)))))))));
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static final void rewriteLeft(final String targetName, final String equalityName, final int... indices) {
+	public static final void rewrite(final String targetName, final String equalityName, final int... indices) {
 		subdeduction();
 		
 		final List<Object> target = checkProposition(targetName);
 		
 		// rewrite: \/P P -> \/X,Y X=Y -> \/I,Q P|X=Y@[I] = Q -> Q 
-		bind("rewriteLeft", target);
+		bind("rewrite", target);
 		apply(name(-1), targetName);
 		
 		final List<Object> equality = checkEquality(equalityName);
@@ -57,7 +57,38 @@ public final class Standard {
 		bind(name(-2), indices(indices), right(proposition(-1)));
 		apply(name(-1), name(-2));
 		
-		set(conclude().getMessage(), "By left rewriting in", targetName, "using", equalityName, "at",
+		set(conclude().getMessage(), "By rewriting in", targetName, "using", equalityName, "at",
+				Arrays.stream(indices).mapToObj(Integer::valueOf).collect(toTreeSet()));
+	}
+	
+	public static final void deduceCommutativityOfEquality() {
+		subdeduction("commutativity_of_equality");
+		
+		final List<Object> x = forall("X");
+		final List<Object> y = forall("Y");
+		
+		suppose($equality(x, y));
+		bind("identity", x);
+		rewrite(name(-1), name(-2), 0);
+		
+		conclude();
+	}
+	
+	public static final void rewriteRight(final String targetName, final String equalityName, final int... indices) {
+		rewriteRight(newName(), targetName, equalityName, indices);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static final void rewriteRight(final String propositionName, final String targetName, final String equalityName, final int... indices) {
+		subdeduction(propositionName);
+		
+		final List<Object> equality = checkEquality(equalityName);
+		
+		bind("commutativity_of_equality", left(equality), right(equality));
+		apply(name(-1), equalityName);
+		rewrite(targetName, name(-1));
+		
+		set(conclude().getMessage(), "By right rewriting in", targetName, "using", equalityName, "at",
 				Arrays.stream(indices).mapToObj(Integer::valueOf).collect(toTreeSet()));
 	}
 	
@@ -69,7 +100,7 @@ public final class Standard {
 		suppose(x);
 		
 		bind("identity", x);
-		rewriteLeft(name(-2), name(-1));
+		rewrite(name(-2), name(-1));
 		
 		conclude();
 	}
