@@ -111,9 +111,11 @@ public final class AveranTools {
 		set(conclude().getMessage(), "Bind", targetName, "with", Arrays.asList(values));
 	}
 	
-	public static final <T> void set(final Collection<T> collection, @SuppressWarnings("unchecked") final T... elements) {
+	public static final <T, C extends Collection<T>> C set(final C collection, @SuppressWarnings("unchecked") final T... elements) {
 		collection.clear();
 		collection.addAll(Arrays.asList(elements));
+		
+		return collection;
 	}
 	
 	public static final void bind(final String targetName, final List<Object> value) {
