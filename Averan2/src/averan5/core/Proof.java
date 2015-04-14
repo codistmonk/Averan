@@ -10,7 +10,7 @@ public abstract interface Proof extends Serializable {
 	
 	public abstract String getProvedPropositionName();
 	
-	public abstract List<Object> getProvedPropositionFor(Deduction context);
+	public abstract Object getProvedPropositionFor(Deduction context);
 	
 	public abstract List<Object> getMessage();
 	
