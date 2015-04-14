@@ -31,8 +31,8 @@ public final class ModusPonens extends Proof.Abstract {
 	@Override
 	public final Object getProvedPropositionFor(final Deduction context) {
 		final List<Object> rule = checkRule(this.getRuleName(), context);
-		final List<Object> expectedCondition = condition(rule);
-		final List<Object> condition = checkProposition(this.getConditionName(), context);
+		final Object expectedCondition = condition(rule);
+		final Object condition = checkProposition(this.getConditionName(), context);
 		
 		checkArgument(areEqual(expectedCondition, condition), "Expected condition: " + expectedCondition + " but was: " + condition);
 		
