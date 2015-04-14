@@ -3,7 +3,6 @@ package averan5.deductions;
 import static averan5.core.AveranTools.*;
 import static averan5.deductions.Standard.*;
 import static net.sourceforge.aprog.tools.Tools.*;
-
 import averan5.core.Deduction;
 import averan5.core.Goal;
 import averan5.core.Proof;
@@ -115,6 +114,20 @@ public final class StandardTest {
 		});
 	}
 	
+	@Test
+	public final void testJustify3() {
+		build(() -> {
+			suppose($rule("a", "b"));
+			suppose($("a"));
+			
+			final Goal goal = Goal.deduce($("b"));
+			
+			conclude(justify(goal.getProposition()).get(0));
+			
+			goal.conclude();
+		});
+	}
+	
 	public static final List<Proof> justify(final Object goal) {
 		final List<Proof> result = new ArrayList<>();
 		Deduction deduction = deduction();
@@ -127,19 +140,80 @@ public final class StandardTest {
 				final Object proposition = deduction.getProposition(propositionName);
 				
 				if (areEqual(goal, proposition)) {
-					subdeduction();
+					if (proposition("recall") != null) {
+						subdeduction();
+						
+						bind("recall", goal);
+						apply(name(-1), propositionName);
+						
+						return set(result, pop());
+					}
 					
-					bind("recall", goal);
-					apply(name(-1), propositionName);
-					
-					return set(result, pop());
+					result.add(new Recall(propositionName));
 				}
+				
+				if (isRule(proposition) && areEqual(goal, conclusion(proposition))) {
+					final List<Proof> conditionJustifications = justify(condition(proposition));
+					
+					if (!conditionJustifications.isEmpty()) {
+						final Proof justification = conditionJustifications.get(0);
+						final Recall recall = cast(Recall.class, justification);
+						
+						subdeduction();
+						
+						if (recall == null) {
+							conclude(justification);
+							apply(propositionName, name(-1));
+						} else {
+							apply(propositionName, recall.getPropositionName());
+						}
+						
+						return set(result, pop());
+					}
+				}
+				
+				// \/X P
+				// \/Y Q
 			}
 			
 			deduction = deduction.getParent();
 		}
 		
 		return result;
+	}
+	
+	/**
+	 * @author codistmonk (creation 2015-04-14)
+	 */
+	public static final class Recall implements Proof {
+		
+		private final String propositionName;
+		
+		public Recall(final String propositionName) {
+			this.propositionName = propositionName;
+		}
+		
+		public final String getPropositionName() {
+			return this.propositionName;
+		}
+		
+		@Override
+		public final String getProvedPropositionName() {
+			throw new UnsupportedOperationException();
+		}
+		
+		@Override
+		public final Object getProvedPropositionFor(final Deduction context) {
+			throw new UnsupportedOperationException();
+		}
+		
+		@Override
+		public final List<Object> getMessage() {
+			throw new UnsupportedOperationException();
+		}
+		
+		private static final long serialVersionUID = 3450261358246212849L;
+		
 	}
 	
 	public static final void autoDeduce(final String propositionName, final List<Object> goal) {
