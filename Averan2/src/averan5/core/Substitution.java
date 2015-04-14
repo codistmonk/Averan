@@ -56,17 +56,17 @@ public final class Substitution extends Proof.Abstract {
 	
 	private static final long serialVersionUID = -5039934017175763847L;
 	
-	public static final List<Object> substituteIn(final Object target,
+	public static final Object substituteIn(final Object target,
 			final Map<Object, Object> equalities, final Collection<Integer> indices) {
 		return substituteIn(target, equalities, indices, new int[] { -1 });
 	}
 	
-	private static final List<Object> substituteIn(final Object target,
+	private static final Object substituteIn(final Object target,
 			final Map<Object, Object> equalities, final Collection<Integer> indices, final int[] index) {
 		final Object replacement = equalities.get(target);
 		
 		if (replacement != null && (indices.isEmpty() || indices.contains(++index[0]))) {
-			return (List<Object>) replacement;
+			return replacement;
 		}
 		
 		return list(target).stream().map(

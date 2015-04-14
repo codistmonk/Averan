@@ -421,7 +421,7 @@ public final class AveranTools {
 		if (isBlock(expression1) && isBlock(expression2)) {
 			final Object variable1 = variable(quantification(expression1));
 			final Object variable2 = variable(quantification(expression2));
-			final List<Object> boundScope2 = substituteIn(scope(expression2), map(variable2, variable1), emptySet());
+			final Object boundScope2 = substituteIn(scope(expression2), map(variable2, variable1), emptySet());
 			
 			return areEqual(scope(expression1), boundScope2);
 		}
