@@ -325,13 +325,13 @@ public final class AveranTools {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static final List<Object> condition(final List<Object> rule) {
-		return (List<Object>) rule.get(0);
+	public static final List<Object> condition(final Object rule) {
+		return (List<Object>) list(rule).get(0);
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static final List<Object> conclusion(final List<Object> rule) {
-		return (List<Object>) rule.get(2);
+	public static final List<Object> conclusion(final Object rule) {
+		return (List<Object>) list(rule).get(2);
 	}
 	
 	public static final boolean isEquality(final Object object) {
@@ -344,13 +344,13 @@ public final class AveranTools {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static final List<Object> left(final List<Object> binaryOperation) {
-		return (List<Object>) binaryOperation.get(0);
+	public static final List<Object> left(final Object binaryOperation) {
+		return (List<Object>) list(binaryOperation).get(0);
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static final List<Object> right(final List<Object> binaryOperation) {
-		return (List<Object>) binaryOperation.get(2);
+	public static final List<Object> right(final Object binaryOperation) {
+		return (List<Object>) list(binaryOperation).get(2);
 	}
 	
 	public static final boolean isSubstitution(final Object object) {
@@ -364,13 +364,13 @@ public final class AveranTools {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static final List<Object> target(final List<Object> substitution) {
-		return (List<Object>) substitution.get(0);
+	public static final List<Object> target(final Object substitution) {
+		return (List<Object>) list(substitution).get(0);
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static final List<Object> equalities(final List<Object> substitution) {
-		return (List<Object>) substitution.get(2);
+	public static final List<Object> equalities(final Object substitution) {
+		return (List<Object>) list(substitution).get(2);
 	}
 	
 	@SuppressWarnings("unchecked")
