@@ -3,6 +3,7 @@ package averan5.deductions;
 import static averan5.core.AveranTools.*;
 import static averan5.deductions.Standard.*;
 import static net.sourceforge.aprog.tools.Tools.*;
+
 import averan5.core.Deduction;
 import averan5.core.Goal;
 import averan5.core.Proof;
@@ -140,15 +141,6 @@ public final class StandardTest {
 				final Object proposition = deduction.getProposition(propositionName);
 				
 				if (areEqual(goal, proposition)) {
-					if (proposition("recall") != null) {
-						subdeduction();
-						
-						bind("recall", goal);
-						apply(name(-1), propositionName);
-						
-						return set(result, pop());
-					}
-					
 					result.add(new Recall(propositionName));
 				}
 				
@@ -198,18 +190,17 @@ public final class StandardTest {
 		}
 		
 		@Override
-		public final String getProvedPropositionName() {
-			throw new UnsupportedOperationException();
-		}
-		
-		@Override
-		public final Object getProvedPropositionFor(final Deduction context) {
-			throw new UnsupportedOperationException();
-		}
-		
-		@Override
-		public final List<Object> getMessage() {
-			throw new UnsupportedOperationException();
+		public final Deduction concludeIn(final Deduction context) {
+			push(context);
+			
+			try {
+				bind("recall", context.getProposition(this.getPropositionName()));
+				apply(name(-1), this.getPropositionName());
+			} finally {
+				pop(context);
+			}
+			
+			return context;
 		}
 		
 		private static final long serialVersionUID = 3450261358246212849L;

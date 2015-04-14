@@ -1,6 +1,7 @@
 package averan5.core;
 
 import static averan5.core.AveranTools.*;
+import static java.util.Collections.unmodifiableSet;
 import static net.sourceforge.aprog.tools.Tools.last;
 
 import java.util.ArrayList;
@@ -11,6 +12,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+
+import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2015-04-11)
@@ -115,6 +118,10 @@ public final class Deduction extends Proof.Abstract {
 	}
 	
 	public final Deduction conclude(final Proof proof) {
+		if (!PRIMITIVE_PROOFS.contains(proof.getClass())) {
+			return proof.concludeIn(this);
+		}
+		
 		this.suppose(proof.getProvedPropositionName(), proof.getProvedPropositionFor(this));
 		this.getProofs().put(proof.getProvedPropositionName(), proof);
 		
@@ -175,5 +182,9 @@ public final class Deduction extends Proof.Abstract {
 	}
 	
 	private static final long serialVersionUID = -1040410980387761070L;
+	
+	@SuppressWarnings("unchecked")
+	public static final Collection<Class<? extends Proof>> PRIMITIVE_PROOFS = unmodifiableSet(Tools.set(
+			ModusPonens.class, Substitution.class, Binding.class, Deduction.class));
 	
 }

@@ -8,11 +8,21 @@ import java.util.List;
  */
 public abstract interface Proof extends Serializable {
 	
-	public abstract String getProvedPropositionName();
+	public default String getProvedPropositionName() {
+		throw new UnsupportedOperationException();
+	}
 	
-	public abstract Object getProvedPropositionFor(Deduction context);
+	public default Object getProvedPropositionFor(final Deduction context) {
+		throw new UnsupportedOperationException();
+	}
 	
-	public abstract List<Object> getMessage();
+	public default List<Object> getMessage() {
+		throw new UnsupportedOperationException();
+	}
+	
+	public default Deduction concludeIn(final Deduction context) {
+		return context.conclude(this);
+	}
 	
 	/**
 	 * @author codistmonk (creation 2015-04-11)
