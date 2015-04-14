@@ -61,6 +61,14 @@ public final class AveranTools {
 		return stack.remove(stack.size() - 1);
 	}
 	
+	public static final Deduction pop(final Deduction deduction) {
+		while (deduction != pop()) {
+			// NOP;
+		}
+		
+		return deduction;
+	}
+	
 	public static final Deduction deduction() {
 		return last(stack);
 	}
