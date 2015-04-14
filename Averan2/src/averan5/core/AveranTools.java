@@ -66,7 +66,7 @@ public final class AveranTools {
 	}
 	
 	public static final Object forall(final String name) {
-		final List<Object> result = $new(name);
+		final Object result = $new(name);
 		
 		deduction().forall(result);
 		
@@ -162,7 +162,7 @@ public final class AveranTools {
 		return deduction().newPropositionName();
 	}
 	
-	public static final List<Object> $new(final String name) {
+	public static final Object $new(final String name) {
 		return $(new Id(name));
 	}
 	

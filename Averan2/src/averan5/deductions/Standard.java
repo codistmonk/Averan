@@ -33,11 +33,11 @@ public final class Standard {
 	}
 	
 	public static final void supposeRewrite() {
-		final List<Object> p = $new("P");
-		final List<Object> q = $new("Q");
-		final List<Object> x = $new("X");
-		final List<Object> y = $new("Y");
-		final List<Object> i = $new("I");
+		final Object p = $new("P");
+		final Object q = $new("Q");
+		final Object x = $new("X");
+		final Object y = $new("Y");
+		final Object i = $new("I");
 		
 		// \/P P -> \/X,Y X=Y -> \/I,Q P|X=Y@[I] = Q -> Q 
 		suppose("rewrite", $forall(p, $rule(p, $forall(x, $forall(y, $rule($equality(x, y), $forall(i, $forall(q, $rule($equality($(p, GIVEN, asList($equality(x, y)), AT, i), q), q)))))))));
@@ -47,7 +47,6 @@ public final class Standard {
 		rewrite(newName(), targetName, equalityName, indices);
 	}
 	
-	@SuppressWarnings("unchecked")
 	public static final void rewrite(final String propositionName, final String targetName, final String equalityName, final int... indices) {
 		subdeduction(propositionName);
 		
@@ -86,7 +85,6 @@ public final class Standard {
 		rewriteRight(newName(), targetName, equalityName, indices);
 	}
 	
-	@SuppressWarnings("unchecked")
 	public static final void rewriteRight(final String propositionName, final String targetName, final String equalityName, final int... indices) {
 		subdeduction(propositionName);
 		

@@ -164,7 +164,7 @@ public final class Deduction extends Proof.Abstract {
 		}
 		
 		{
-			final ArrayList<Object> parameters = new ArrayList<>(this.getParameters());
+			final List<Object> parameters = new ArrayList<>(this.getParameters());
 			
 			for (final ListIterator<Object> i = parameters.listIterator(parameters.size()); i.hasPrevious();) {
 				result = $forall(i.previous(), result);
