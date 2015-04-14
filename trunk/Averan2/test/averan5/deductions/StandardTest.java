@@ -124,7 +124,7 @@ public final class StandardTest {
 			
 			for (int i = propositionNames.size() - 1; 0 <= i; --i) {
 				final String propositionName = propositionNames.get(i);
-				final List<Object> proposition = deduction.getProposition(propositionName);
+				final Object proposition = deduction.getProposition(propositionName);
 				
 				if (areEqual(goal, proposition)) {
 					subdeduction();
