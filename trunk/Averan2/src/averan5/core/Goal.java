@@ -3,8 +3,6 @@ package averan5.core;
 import static averan5.core.AveranTools.*;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author codistmonk (creation 2015-04-12)
@@ -17,9 +15,9 @@ public final class Goal implements Serializable {
 	
 	private final Deduction deduction;
 	
-	public Goal(final List<Object> proposition, final Deduction context, final String deductionName) {
+	public Goal(final Object proposition, final Deduction context, final String deductionName) {
 		this.initialProposition = proposition;
-		this.proposition = new ArrayList<>(proposition);
+		this.proposition = proposition;
 		this.deduction = push(new Deduction(context, deductionName));
 	}
 	
@@ -35,7 +33,7 @@ public final class Goal implements Serializable {
 		return this.deduction;
 	}
 	
-	public final List<Object> introduce() {
+	public final Object introduce() {
 		Object result = null;
 		
 		if (isBlock(this.getProposition())) {
@@ -50,7 +48,7 @@ public final class Goal implements Serializable {
 			this.getDeduction().suppose(this.getDeduction().newPropositionName(), result);
 		}
 		
-		return (List<Object>) result;
+		return result;
 	}
 	
 	public final void intros() {
@@ -74,11 +72,11 @@ public final class Goal implements Serializable {
 	
 	private static final long serialVersionUID = -6412523746037749196L;
 	
-	public static final Goal deduce(final List<Object> proposition) {
+	public static final Goal deduce(final Object proposition) {
 		return deduce(newName(), proposition);
 	}
 	
-	public static final Goal deduce(final String propositionName, final List<Object> proposition) {
+	public static final Goal deduce(final String propositionName, final Object proposition) {
 		return new Goal(proposition, deduction(), propositionName);
 	}
 	
