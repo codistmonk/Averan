@@ -115,7 +115,7 @@ public final class StandardTest {
 		});
 	}
 	
-	public static final List<Proof> justify(final List<Object> goal) {
+	public static final List<Proof> justify(final Object goal) {
 		final List<Proof> result = new ArrayList<>();
 		Deduction deduction = deduction();
 		
