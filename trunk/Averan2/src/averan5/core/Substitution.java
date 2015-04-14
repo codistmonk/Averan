@@ -69,8 +69,12 @@ public final class Substitution extends Proof.Abstract {
 			return replacement;
 		}
 		
-		return list(target).stream().map(
-				e -> e instanceof List ? substituteIn(e, equalities, indices, index) : e).collect(toList());
+		if (target instanceof List) {
+			return list(target).stream().map(e ->
+					substituteIn(e, equalities, indices, index)).collect(toList());
+		}
+		
+		return target;
 	}
 	
 }

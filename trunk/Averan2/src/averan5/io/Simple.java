@@ -52,7 +52,7 @@ public final class Simple {
 			final Collection<Object> parameters = deduction.getParameters();
 			
 			if (!parameters.isEmpty()) {
-				output.println(prefix1 + list(FORALL).get(0) + parameters);
+				output.println(prefix1 + FORALL + parameters);
 			}
 		}
 		

@@ -29,17 +29,17 @@ public final class AveranTools {
 		throw new IllegalInstantiationException();
 	}
 	
-	public static final Object FORALL = $("∀");
+	public static final String FORALL = $("∀");
 	
-	public static final Object IMPLIES = "→";
+	public static final String IMPLIES = $("→");
 	
-	public static final Object EQUALS = $("=");
+	public static final String EQUALS = $("=");
 	
-	public static final Object GIVEN = "|";
+	public static final String GIVEN = $("|");
 	
-	public static final Object AND = ",";
+	public static final String AND = $(",");
 	
-	public static final Object AT = "@";
+	public static final String AT = $("@");
 	
 	private static final List<Deduction> stack = new ArrayList<>();
 	
@@ -168,7 +168,7 @@ public final class AveranTools {
 	
 	@SuppressWarnings("unchecked")
 	public static final <T> T $(final Object... objects) {
-		if (objects.length == 1 && objects[0] instanceof List) {
+		if (objects.length == 1) {
 			return (T) objects[0];
 		}
 		
@@ -408,9 +408,8 @@ public final class AveranTools {
 		return (List<Object>) result;
 	}
 	
-	@SuppressWarnings("unchecked")
-	public static final List<Object> scope(final Object block) {
-		return (List<Object>) list(block).get(1);
+	public static final Object scope(final Object block) {
+		return list(block).get(1);
 	}
 	
 	public static final boolean areEqual(final Object expression1, final Object expression2) {
