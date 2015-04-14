@@ -24,7 +24,7 @@ public final class Standard {
 	public static final void deduceIdentity() {
 		subdeduction("identity");
 		
-		final List<Object> x = forall("X");
+		final Object x = forall("X");
 		
 		substitute(x, map());
 		rewrite(name(-1), name(-1));
@@ -72,8 +72,8 @@ public final class Standard {
 	public static final void deduceCommutativityOfEquality() {
 		subdeduction("commutativity_of_equality");
 		
-		final List<Object> x = forall("X");
-		final List<Object> y = forall("Y");
+		final Object x = forall("X");
+		final Object y = forall("Y");
 		
 		suppose($equality(x, y));
 		bind("identity", x);
@@ -103,7 +103,7 @@ public final class Standard {
 	public static final void deduceRecall() {
 		subdeduction("recall");
 		
-		final List<Object> x = forall("X");
+		final Object x = forall("X");
 		
 		suppose(x);
 		

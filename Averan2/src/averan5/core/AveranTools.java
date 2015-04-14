@@ -65,7 +65,7 @@ public final class AveranTools {
 		return last(stack);
 	}
 	
-	public static final List<Object> forall(final String name) {
+	public static final Object forall(final String name) {
 		final List<Object> result = $new(name);
 		
 		deduction().forall(result);
@@ -150,11 +150,11 @@ public final class AveranTools {
 		return deduction().getPropositionName(index);
 	}
 	
-	public static final List<Object> proposition(final String name) {
+	public static final Object proposition(final String name) {
 		return (List<Object>) deduction().getProposition(name);
 	}
 	
-	public static final List<Object> proposition(final int index) {
+	public static final Object proposition(final int index) {
 		return (List<Object>) deduction().getProposition(name(index));
 	}
 	
