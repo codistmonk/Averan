@@ -31,15 +31,15 @@ public final class AveranTools {
 	
 	public static final Object FORALL = $("∀");
 	
-	public static final Object IMPLIES = $("→");
+	public static final Object IMPLIES = "→";
 	
 	public static final Object EQUALS = $("=");
 	
-	public static final Object GIVEN = $("|");
+	public static final Object GIVEN = "|";
 	
-	public static final Object AND = $(",");
+	public static final Object AND = ",";
 	
-	public static final Object AT = $("@");
+	public static final Object AT = "@";
 	
 	private static final List<Deduction> stack = new ArrayList<>();
 	
