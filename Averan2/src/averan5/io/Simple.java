@@ -10,8 +10,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import averan4.core.Deduction;
-import averan4.core.Proof;
+import averan5.core.Deduction;
+import averan5.core.Proof;
 
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 import net.sourceforge.aprog.tools.Tools;
@@ -49,7 +49,7 @@ public final class Simple {
 		output.println(prefix + "((Deduction of " + deduction.getProvedPropositionName() + "))");
 		
 		{
-			final Collection<List<Object>> parameters = deduction.getParameters();
+			final Collection<Object> parameters = deduction.getParameters();
 			
 			if (!parameters.isEmpty()) {
 				output.println(prefix1 + list(FORALL).get(0) + parameters);

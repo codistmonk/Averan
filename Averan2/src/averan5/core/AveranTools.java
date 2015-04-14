@@ -1,6 +1,6 @@
 package averan5.core;
 
-import static averan4.core.Substitution.substituteIn;
+import static averan5.core.Substitution.substituteIn;
 import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;

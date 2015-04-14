@@ -1,12 +1,12 @@
 package averan5.deductions;
 
-import static averan4.core.AveranTools.*;
-import static averan4.deductions.Standard.*;
+import static averan5.core.AveranTools.*;
+import static averan5.deductions.Standard.*;
 import static net.sourceforge.aprog.tools.Tools.*;
 
-import averan4.core.Deduction;
-import averan4.core.Goal;
-import averan4.core.Proof;
+import averan5.core.Deduction;
+import averan5.core.Goal;
+import averan5.core.Proof;
 
 import java.util.ArrayList;
 import java.util.List;
