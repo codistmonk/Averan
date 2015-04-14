@@ -29,17 +29,17 @@ public final class AveranTools {
 		throw new IllegalInstantiationException();
 	}
 	
-	public static final List<Object> FORALL = $("∀");
+	public static final Object FORALL = $("∀");
 	
-	public static final List<Object> IMPLIES = $("→");
+	public static final Object IMPLIES = $("→");
 	
-	public static final List<Object> EQUALS = $("=");
+	public static final Object EQUALS = $("=");
 	
-	public static final List<Object> GIVEN = $("|");
+	public static final Object GIVEN = $("|");
 	
-	public static final List<Object> AND = $(",");
+	public static final Object AND = $(",");
 	
-	public static final List<Object> AT = $("@");
+	public static final Object AT = $("@");
 	
 	private static final List<Deduction> stack = new ArrayList<>();
 	
