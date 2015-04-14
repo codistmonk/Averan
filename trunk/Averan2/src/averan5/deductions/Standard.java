@@ -1,14 +1,14 @@
 package averan5.deductions;
 
-import static averan4.core.AveranTools.*;
+import static averan5.core.AveranTools.*;
 import static java.util.Arrays.asList;
 import static net.sourceforge.aprog.tools.Tools.unchecked;
 
 import java.util.Arrays;
 import java.util.List;
 
-import averan4.core.Deduction;
-import averan4.io.Simple;
+import averan5.core.Deduction;
+import averan5.io.Simple;
 
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 
