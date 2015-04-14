@@ -5,7 +5,6 @@ import static java.util.Arrays.asList;
 import static net.sourceforge.aprog.tools.Tools.unchecked;
 
 import java.util.Arrays;
-import java.util.List;
 
 import averan5.core.Deduction;
 import averan5.io.Simple;
@@ -50,13 +49,13 @@ public final class Standard {
 	public static final void rewrite(final String propositionName, final String targetName, final String equalityName, final int... indices) {
 		subdeduction(propositionName);
 		
-		final List<Object> target = checkProposition(targetName);
+		final Object target = checkProposition(targetName);
 		
 		// rewrite: \/P P -> \/X,Y X=Y -> \/I,Q P|X=Y@[I] = Q -> Q 
 		bind("rewrite", target);
 		apply(name(-1), targetName);
 		
-		final List<Object> equality = checkEquality(equalityName);
+		final Object equality = checkEquality(equalityName);
 		
 		bind(name(-1), left(equality), right(equality));
 		apply(name(-1), equalityName);
@@ -88,7 +87,7 @@ public final class Standard {
 	public static final void rewriteRight(final String propositionName, final String targetName, final String equalityName, final int... indices) {
 		subdeduction(propositionName);
 		
-		final List<Object> equality = checkEquality(equalityName);
+		final Object equality = checkEquality(equalityName);
 		
 		bind("commutativity_of_equality", left(equality), right(equality));
 		apply(name(-1), equalityName);
