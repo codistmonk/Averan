@@ -28,16 +28,15 @@ public final class ModusPonens extends Proof.Abstract {
 		return this.conditionName;
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Override
-	public final List<Object> getProvedPropositionFor(final Deduction context) {
+	public final Object getProvedPropositionFor(final Deduction context) {
 		final List<Object> rule = checkRule(this.getRuleName(), context);
 		final List<Object> expectedCondition = condition(rule);
 		final List<Object> condition = checkProposition(this.getConditionName(), context);
 		
 		checkArgument(areEqual(expectedCondition, condition), "Expected condition: " + expectedCondition + " but was: " + condition);
 		
-		return (List<Object>) rule.get(2);
+		return rule.get(2);
 	}
 	
 	private static final long serialVersionUID = 8564800788237315329L;
