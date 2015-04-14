@@ -99,7 +99,7 @@ public final class AveranTools {
 		conclude(new Substitution(propositionName, target, equalities, indices(indices)));
 	}
 	
-	public static final void bind(final String targetName, @SuppressWarnings("unchecked") final List<Object>... values) {
+	public static final void bind(final String targetName, @SuppressWarnings("unchecked") final Object... values) {
 		subdeduction();
 		
 		final int n = values.length;
@@ -120,11 +120,11 @@ public final class AveranTools {
 		return collection;
 	}
 	
-	public static final void bind(final String targetName, final List<Object> value) {
+	public static final void bind(final String targetName, final Object value) {
 		bind(newName(), targetName, value);
 	}
 	
-	public static final void bind(final String propositionName, final String targetName, final List<Object> value) {
+	public static final void bind(final String propositionName, final String targetName, final Object value) {
 		conclude(new Binding(propositionName, targetName, value));
 	}
 	

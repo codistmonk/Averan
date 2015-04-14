@@ -15,7 +15,7 @@ import java.util.TreeSet;
  */
 public final class Substitution extends Proof.Abstract {
 	
-	private final List<Object> target;
+	private final Object target;
 	
 	private final Map<List<Object>, List<Object>> equalities;
 	
@@ -31,7 +31,7 @@ public final class Substitution extends Proof.Abstract {
 		this.getMessage().set(5, this.getIndices());
 	}
 	
-	public final List<Object> getTarget() {
+	public final Object getTarget() {
 		return this.target;
 	}
 	
@@ -56,13 +56,13 @@ public final class Substitution extends Proof.Abstract {
 	
 	private static final long serialVersionUID = -5039934017175763847L;
 	
-	public static final List<Object> substituteIn(final List<Object> target,
+	public static final List<Object> substituteIn(final Object target,
 			final Map<List<Object>, List<Object>> equalities, final Collection<Integer> indices) {
 		return substituteIn(target, equalities, indices, new int[] { -1 });
 	}
 	
 	@SuppressWarnings("unchecked")
-	private static final List<Object> substituteIn(final List<Object> target,
+	private static final List<Object> substituteIn(final Object target,
 			final Map<List<Object>, List<Object>> equalities, final Collection<Integer> indices, final int[] index) {
 		final List<Object> replacement = equalities.get(target);
 		
@@ -70,7 +70,7 @@ public final class Substitution extends Proof.Abstract {
 			return replacement;
 		}
 		
-		return target.stream().map(
+		return list(target).stream().map(
 				e -> e instanceof List ? substituteIn((List<Object>) e, equalities, indices, index) : e).collect(toList());
 	}
 	
