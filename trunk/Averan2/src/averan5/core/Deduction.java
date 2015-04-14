@@ -21,7 +21,7 @@ public final class Deduction extends Proof.Abstract {
 	
 	private final Collection<Object> parameters;
 	
-	private final Map<String, List<Object>> propositions;
+	private final Map<String, Object> propositions;
 	
 	private final List<String> propositionNames;
 	
@@ -57,7 +57,7 @@ public final class Deduction extends Proof.Abstract {
 		return this.parameters;
 	}
 	
-	public final Map<String, List<Object>> getPropositions() {
+	public final Map<String, Object> getPropositions() {
 		return this.propositions;
 	}
 	
@@ -82,7 +82,7 @@ public final class Deduction extends Proof.Abstract {
 	}
 	
 	public final List<Object> getProposition(final String propositionName) {
-		final List<Object> candidate = this.getPropositions().get(propositionName);
+		final List<Object> candidate = list(this.getPropositions().get(propositionName));
 		
 		return candidate != null || this.getParent() == null ? candidate : this.getParent().getProposition(propositionName);
 	}
