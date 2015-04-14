@@ -12,9 +12,9 @@ public final class Binding extends Proof.Abstract {
 	
 	private final String blockName;
 	
-	private final List<Object> value;
+	private final Object value;
 	
-	public Binding(final String provedPropositionName, final String blockName, final List<Object> value) {
+	public Binding(final String provedPropositionName, final String blockName, final Object value) {
 		super(provedPropositionName, Arrays.asList("By binding", blockName, "with", value));
 		this.blockName = blockName;
 		this.value = value;
@@ -24,12 +24,12 @@ public final class Binding extends Proof.Abstract {
 		return this.blockName;
 	}
 	
-	public final List<Object> getValue() {
+	public final Object getValue() {
 		return this.value;
 	}
 	
 	@Override
-	public final List<Object> getProvedPropositionFor(final Deduction context) {
+	public final Object getProvedPropositionFor(final Deduction context) {
 		final List<Object> block = checkBlock(this.getBlockName(), context);
 		final List<Object> quantification = quantification(block);
 		
