@@ -39,7 +39,9 @@ public final class Standard {
 		final Object i = $new("I");
 		
 		// \/P P -> \/X,Y X=Y -> \/I,Q P|X=Y@[I] = Q -> Q 
-		suppose("rewrite", $forall(p, $rule(p, $forall(x, $forall(y, $rule($equality(x, y), $forall(i, $forall(q, $rule($equality($(p, GIVEN, asList($equality(x, y)), AT, i), q), q)))))))));
+		suppose("rewrite", $forall(p, $rule(p,
+				$forall(x, $forall(y, $rule($equality(x, y),
+						$forall(i, $forall(q, $rule($equality($(p, GIVEN, asList($equality(x, y)), AT, i), q), q)))))))));
 	}
 	
 	public static final void rewrite(final String targetName, final String equalityName, final int... indices) {
@@ -51,7 +53,6 @@ public final class Standard {
 		
 		final Object target = checkProposition(targetName);
 		
-		// rewrite: \/P P -> \/X,Y X=Y -> \/I,Q P|X=Y@[I] = Q -> Q 
 		bind("rewrite", target);
 		apply(name(-1), targetName);
 		
