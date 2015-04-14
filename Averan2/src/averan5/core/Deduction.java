@@ -87,7 +87,7 @@ public final class Deduction extends Proof.Abstract {
 		return candidate != null || this.getParent() == null ? candidate : this.getParent().getProposition(propositionName);
 	}
 	
-	public final Deduction forall(final List<Object> parameter) {
+	public final Deduction forall(final Object parameter) {
 		if (!this.getParameters().add(parameter)) {
 			throw new IllegalArgumentException();
 		}
@@ -100,7 +100,7 @@ public final class Deduction extends Proof.Abstract {
 			throw new IllegalArgumentException();
 		}
 		
-		this.getPropositions().put(propositionName, list(proposition));
+		this.getPropositions().put(propositionName, proposition);
 		this.getPropositionNames().add(propositionName);
 		
 		return this;
