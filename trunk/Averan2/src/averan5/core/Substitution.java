@@ -17,12 +17,12 @@ public final class Substitution extends Proof.Abstract {
 	
 	private final Object target;
 	
-	private final Map<List<Object>, List<Object>> equalities;
+	private final Map<Object, Object> equalities;
 	
 	private final Collection<Integer> indices;
 	
 	public Substitution(final String provedPropositionName, final Object target,
-			final Map<List<Object>, List<Object>> equalities, final Collection<Integer> indices) {
+			final Map<Object, Object> equalities, final Collection<Integer> indices) {
 		super(provedPropositionName, Arrays.asList("By substituting in", target, "using", equalities, "at", null));
 		this.target = target;
 		this.equalities = equalities;
@@ -35,7 +35,7 @@ public final class Substitution extends Proof.Abstract {
 		return this.target;
 	}
 	
-	public final Map<List<Object>, List<Object>> getEqualities() {
+	public final Map<Object, Object> getEqualities() {
 		return this.equalities;
 	}
 	
@@ -57,21 +57,20 @@ public final class Substitution extends Proof.Abstract {
 	private static final long serialVersionUID = -5039934017175763847L;
 	
 	public static final List<Object> substituteIn(final Object target,
-			final Map<List<Object>, List<Object>> equalities, final Collection<Integer> indices) {
+			final Map<Object, Object> equalities, final Collection<Integer> indices) {
 		return substituteIn(target, equalities, indices, new int[] { -1 });
 	}
 	
-	@SuppressWarnings("unchecked")
 	private static final List<Object> substituteIn(final Object target,
-			final Map<List<Object>, List<Object>> equalities, final Collection<Integer> indices, final int[] index) {
-		final List<Object> replacement = equalities.get(target);
+			final Map<Object, Object> equalities, final Collection<Integer> indices, final int[] index) {
+		final Object replacement = equalities.get(target);
 		
 		if (replacement != null && (indices.isEmpty() || indices.contains(++index[0]))) {
-			return replacement;
+			return (List<Object>) replacement;
 		}
 		
 		return list(target).stream().map(
-				e -> e instanceof List ? substituteIn((List<Object>) e, equalities, indices, index) : e).collect(toList());
+				e -> e instanceof List ? substituteIn(e, equalities, indices, index) : e).collect(toList());
 	}
 	
 }

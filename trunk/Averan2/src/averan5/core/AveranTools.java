@@ -90,12 +90,12 @@ public final class AveranTools {
 	}
 	
 	public static final void substitute(final Object target,
-			final Map<List<Object>, List<Object>> equalities, final int... indices) {
+			final Map<Object, Object> equalities, final int... indices) {
 		substitute(newName(), target, equalities, indices);
 	}
 	
 	public static final void substitute(final String propositionName, final Object target,
-			final Map<List<Object>, List<Object>> equalities, final int... indices) {
+			final Map<Object, Object> equalities, final int... indices) {
 		conclude(new Substitution(propositionName, target, equalities, indices(indices)));
 	}
 	
