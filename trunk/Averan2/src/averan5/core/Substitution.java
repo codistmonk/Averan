@@ -44,12 +44,12 @@ public final class Substitution extends Proof.Abstract {
 	}
 	
 	@Override
-	public final List<Object> getProvedPropositionFor(final Deduction context) {
-		final List<Object> substitution = $(this.getTarget(),
+	public final Object getProvedPropositionFor(final Deduction context) {
+		final Object substitution = $(this.getTarget(),
 				GIVEN, join(AND, iterable(
 						this.getEqualities().entrySet().stream().map(e -> $equality(e.getKey(), e.getValue())))),
 				AT, new ArrayList<>(this.getIndices()));
-		final List<Object> substituted = substituteIn(this.getTarget(), this.getEqualities(), this.getIndices());
+		final Object substituted = substituteIn(this.getTarget(), this.getEqualities(), this.getIndices());
 		
 		return $equality(substitution, substituted);
 	}
