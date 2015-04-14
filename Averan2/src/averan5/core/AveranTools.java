@@ -374,8 +374,8 @@ public final class AveranTools {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static final List<Object> indices(final List<Object> substitution) {
-		return (List<Object>) substitution.get(4);
+	public static final List<Object> indices(final Object substitution) {
+		return (List<Object>) list(substitution).get(4);
 	}
 	
 	public static final boolean isQuantification(final Object object) {
@@ -388,8 +388,8 @@ public final class AveranTools {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static final List<Object> variable(final List<Object> quantitication) {
-		return (List<Object>) quantitication.get(1);
+	public static final List<Object> variable(final Object quantitication) {
+		return (List<Object>) list(quantitication).get(1);
 	}
 	
 	public static final boolean isBlock(final Object object) {
@@ -402,8 +402,8 @@ public final class AveranTools {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static final List<Object> quantification(final List<Object> block) {
-		final Object result = block.get(0);
+	public static final List<Object> quantification(final Object block) {
+		final Object result = list(block).get(0);
 		
 		checkArgument(isQuantification(result), "Not a quantification: " + result);
 		
