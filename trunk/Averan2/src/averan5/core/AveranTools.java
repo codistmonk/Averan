@@ -99,7 +99,7 @@ public final class AveranTools {
 		conclude(new Substitution(propositionName, target, equalities, indices(indices)));
 	}
 	
-	public static final void bind(final String targetName, @SuppressWarnings("unchecked") final Object... values) {
+	public static final void bind(final String targetName, final Object... values) {
 		subdeduction();
 		
 		final int n = values.length;
@@ -151,11 +151,11 @@ public final class AveranTools {
 	}
 	
 	public static final Object proposition(final String name) {
-		return (List<Object>) deduction().getProposition(name);
+		return deduction().getProposition(name);
 	}
 	
 	public static final Object proposition(final int index) {
-		return (List<Object>) deduction().getProposition(name(index));
+		return deduction().getProposition(name(index));
 	}
 	
 	public static final String newName() {
@@ -255,12 +255,12 @@ public final class AveranTools {
 		}
 	}
 	
-	public static final List<Object> checkProposition(final String name) {
+	public static final Object checkProposition(final String name) {
 		return checkProposition(name, deduction());
 	}
 	
-	public static final List<Object> checkProposition(final String name, final Deduction context) {
-		final List<Object> result = (List<Object>) context.getProposition(name);
+	public static final Object checkProposition(final String name, final Deduction context) {
+		final Object result = context.getProposition(name);
 		
 		checkArgument(result != null, "Missing proposition: " + name);
 		
@@ -271,48 +271,52 @@ public final class AveranTools {
 		return checkRule(name, deduction());
 	}
 	
+	@SuppressWarnings("unchecked")
 	public static final List<Object> checkRule(final String name, final Deduction context) {
-		final List<Object> result = checkProposition(name, context);
+		final Object result = checkProposition(name, context);
 		
 		checkArgument(isRule(result), "Not a rule: " + result);
 		
-		return result;
+		return (List<Object>) result;
 	}
 	
 	public static final List<Object> checkEquality(final String name) {
 		return checkEquality(name, deduction());
 	}
 	
+	@SuppressWarnings("unchecked")
 	public static final List<Object> checkEquality(final String name, final Deduction context) {
-		final List<Object> result = checkProposition(name, context);
+		final Object result = checkProposition(name, context);
 		
 		checkArgument(isEquality(result), "Not an equality: " + result);
 		
-		return result;
+		return (List<Object>) result;
 	}
 	
 	public static final List<Object> checkSubstitution(final String name) {
 		return checkSubstitution(name, deduction());
 	}
 	
+	@SuppressWarnings("unchecked")
 	public static final List<Object> checkSubstitution(final String name, final Deduction context) {
-		final List<Object> result = checkProposition(name, context);
+		final Object result = checkProposition(name, context);
 		
 		checkArgument(isSubstitution(result), "Not a substitution: " + result);
 		
-		return result;
+		return (List<Object>) result;
 	}
 	
 	public static final List<Object> checkBlock(final String name) {
 		return checkBlock(name, deduction());
 	}
 	
+	@SuppressWarnings("unchecked")
 	public static final List<Object> checkBlock(final String name, final Deduction context) {
-		final List<Object> result = checkProposition(name, context);
+		final Object result = checkProposition(name, context);
 		
 		checkArgument(isBlock(result), "Not a block: " + result);
 		
-		return result;
+		return (List<Object>) result;
 	}
 	
 	public static final boolean isRule(final Object object) {
@@ -324,14 +328,12 @@ public final class AveranTools {
 				&& IMPLIES.equals(expression.get(1));
 	}
 	
-	@SuppressWarnings("unchecked")
 	public static final Object condition(final Object rule) {
-		return (List<Object>) list(rule).get(0);
+		return list(rule).get(0);
 	}
 	
-	@SuppressWarnings("unchecked")
 	public static final Object conclusion(final Object rule) {
-		return (List<Object>) list(rule).get(2);
+		return list(rule).get(2);
 	}
 	
 	public static final boolean isEquality(final Object object) {
@@ -343,14 +345,12 @@ public final class AveranTools {
 				&& EQUALS.equals(expression.get(1));
 	}
 	
-	@SuppressWarnings("unchecked")
 	public static final Object left(final Object binaryOperation) {
-		return (List<Object>) list(binaryOperation).get(0);
+		return list(binaryOperation).get(0);
 	}
 	
-	@SuppressWarnings("unchecked")
 	public static final Object right(final Object binaryOperation) {
-		return (List<Object>) list(binaryOperation).get(2);
+		return list(binaryOperation).get(2);
 	}
 	
 	public static final boolean isSubstitution(final Object object) {
@@ -363,9 +363,8 @@ public final class AveranTools {
 				&& AT.equals(expression.get(3));
 	}
 	
-	@SuppressWarnings("unchecked")
 	public static final Object target(final Object substitution) {
-		return (List<Object>) list(substitution).get(0);
+		return list(substitution).get(0);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -387,9 +386,8 @@ public final class AveranTools {
 				&& FORALL.equals(expression.get(0));
 	}
 	
-	@SuppressWarnings("unchecked")
 	public static final Object variable(final Object quantitication) {
-		return (List<Object>) list(quantitication).get(1);
+		return list(quantitication).get(1);
 	}
 	
 	public static final boolean isBlock(final Object object) {
