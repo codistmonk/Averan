@@ -167,16 +167,16 @@ public final class AveranTools {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static final List<Object> $(final Object... objects) {
+	public static final <T> T $(final Object... objects) {
 		if (objects.length == 1 && objects[0] instanceof List) {
-			return (List<Object>) objects[0];
+			return (T) objects[0];
 		}
 		
 		if (objects.length <= 1) {
-			return Arrays.asList(objects);
+			return (T) Arrays.asList(objects);
 		}
 		
-		return Arrays.stream(objects).map(AveranTools::$).collect(toList());
+		return (T) Arrays.stream(objects).map(AveranTools::$).collect(toList());
 	}
 	
 	public static final List<Object> $forall(final Object variableOrName) {
