@@ -1,6 +1,6 @@
 package averan5.core;
 
-import static averan4.core.AveranTools.*;
+import static averan5.core.AveranTools.*;
 import static java.util.stream.Collectors.toList;
 
 import java.util.ArrayList;

@@ -1,6 +1,6 @@
 package averan5.core;
 
-import static averan4.core.AveranTools.*;
+import static averan5.core.AveranTools.*;
 import static net.sourceforge.aprog.tools.Tools.last;
 
 import java.util.ArrayList;
@@ -95,12 +95,12 @@ public final class Deduction extends Proof.Abstract {
 		return this;
 	}
 	
-	public final Deduction suppose(final String propositionName, final List<Object> proposition) {
+	public final Deduction suppose(final String propositionName, final Object proposition) {
 		if (this.getProposition(propositionName) != null) {
 			throw new IllegalArgumentException();
 		}
 		
-		this.getPropositions().put(propositionName, proposition);
+		this.getPropositions().put(propositionName, list(proposition));
 		this.getPropositionNames().add(propositionName);
 		
 		return this;
