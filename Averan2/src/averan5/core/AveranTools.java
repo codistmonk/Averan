@@ -151,11 +151,11 @@ public final class AveranTools {
 	}
 	
 	public static final List<Object> proposition(final String name) {
-		return deduction().getProposition(name);
+		return (List<Object>) deduction().getProposition(name);
 	}
 	
 	public static final List<Object> proposition(final int index) {
-		return deduction().getProposition(name(index));
+		return (List<Object>) deduction().getProposition(name(index));
 	}
 	
 	public static final String newName() {
@@ -260,7 +260,7 @@ public final class AveranTools {
 	}
 	
 	public static final List<Object> checkProposition(final String name, final Deduction context) {
-		final List<Object> result = context.getProposition(name);
+		final List<Object> result = (List<Object>) context.getProposition(name);
 		
 		checkArgument(result != null, "Missing proposition: " + name);
 		
@@ -411,11 +411,11 @@ public final class AveranTools {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static final List<Object> scope(final List<Object> block) {
-		return (List<Object>) block.get(1);
+	public static final List<Object> scope(final Object block) {
+		return (List<Object>) list(block).get(1);
 	}
 	
-	public static final boolean areEqual(final List<Object> expression1, final List<Object> expression2) {
+	public static final boolean areEqual(final Object expression1, final Object expression2) {
 		if (expression1.equals(expression2)) {
 			return true;
 		}

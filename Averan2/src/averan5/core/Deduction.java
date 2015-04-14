@@ -81,8 +81,8 @@ public final class Deduction extends Proof.Abstract {
 		return this.proofs;
 	}
 	
-	public final List<Object> getProposition(final String propositionName) {
-		final List<Object> candidate = list(this.getPropositions().get(propositionName));
+	public final Object getProposition(final String propositionName) {
+		final Object candidate = this.getPropositions().get(propositionName);
 		
 		return candidate != null || this.getParent() == null ? candidate : this.getParent().getProposition(propositionName);
 	}
@@ -137,16 +137,16 @@ public final class Deduction extends Proof.Abstract {
 		return result;
 	}
 	
-	public final List<Object> getProvedProposition() {
+	public final Object getProvedProposition() {
 		return this.getProvedPropositionFor(this);
 	}
 	
 	@Override
-	public final List<Object> getProvedPropositionFor(final Deduction context) {
+	public final Object getProvedPropositionFor(final Deduction context) {
 		checkArgument(!this.getConclusionNames().isEmpty(), "Nothing to conclude");
 		
-		final List<Object> conclusion = this.getProposition(last(this.getConclusionNames()));
-		List<Object> result = conclusion;
+		final Object conclusion = this.getProposition(last(this.getConclusionNames()));
+		Object result = conclusion;
 		
 		{
 			final List<String> conditionNames = this.getConditionNames();
@@ -155,11 +155,11 @@ public final class Deduction extends Proof.Abstract {
 				result = new ArrayList<>(2 * conditionNames.size() + 1);
 				
 				for (final String conditionName : conditionNames) {
-					result.add(this.getProposition(conditionName));
-					result.add(IMPLIES);
+					list(result).add(this.getProposition(conditionName));
+					list(result).add(IMPLIES);
 				}
 				
-				result.add(conclusion);
+				list(result).add(conclusion);
 			}
 		}
 		

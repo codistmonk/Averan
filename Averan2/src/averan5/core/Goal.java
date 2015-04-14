@@ -64,7 +64,7 @@ public final class Goal implements Serializable {
 			throw new IllegalStateException();
 		}
 		
-		final List<Object> provedProposition = this.getDeduction().getProvedProposition();
+		final Object provedProposition = this.getDeduction().getProvedProposition();
 		
 		checkState(areEqual(this.getInitialProposition(), provedProposition),
 				"Expected: " + this.getInitialProposition() + " but was: " + provedProposition);
