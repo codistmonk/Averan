@@ -344,12 +344,12 @@ public final class AveranTools {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static final List<Object> left(final Object binaryOperation) {
+	public static final Object left(final Object binaryOperation) {
 		return (List<Object>) list(binaryOperation).get(0);
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static final List<Object> right(final Object binaryOperation) {
+	public static final Object right(final Object binaryOperation) {
 		return (List<Object>) list(binaryOperation).get(2);
 	}
 	
@@ -364,7 +364,7 @@ public final class AveranTools {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static final List<Object> target(final Object substitution) {
+	public static final Object target(final Object substitution) {
 		return (List<Object>) list(substitution).get(0);
 	}
 	
@@ -388,7 +388,7 @@ public final class AveranTools {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static final List<Object> variable(final Object quantitication) {
+	public static final Object variable(final Object quantitication) {
 		return (List<Object>) list(quantitication).get(1);
 	}
 	
@@ -421,8 +421,8 @@ public final class AveranTools {
 		}
 		
 		if (isBlock(expression1) && isBlock(expression2)) {
-			final List<Object> variable1 = variable(quantification(expression1));
-			final List<Object> variable2 = variable(quantification(expression2));
+			final Object variable1 = variable(quantification(expression1));
+			final Object variable2 = variable(quantification(expression2));
 			final List<Object> boundScope2 = substituteIn(scope(expression2), map(variable2, variable1), emptySet());
 			
 			return areEqual(scope(expression1), boundScope2);
