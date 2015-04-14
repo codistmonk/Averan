@@ -73,11 +73,11 @@ public final class AveranTools {
 		return result;
 	}
 	
-	public static final void suppose(final List<Object> proposition) {
+	public static final void suppose(final Object proposition) {
 		suppose(newName(), proposition);
 	}
 	
-	public static final void suppose(final String propositionName, final List<Object> proposition) {
+	public static final void suppose(final String propositionName, final Object proposition) {
 		deduction().suppose(propositionName, proposition);
 	}
 	
@@ -89,12 +89,12 @@ public final class AveranTools {
 		conclude(new ModusPonens(propositionName, ruleName, conditionName));
 	}
 	
-	public static final void substitute(final List<Object> target,
+	public static final void substitute(final Object target,
 			final Map<List<Object>, List<Object>> equalities, final int... indices) {
 		substitute(newName(), target, equalities, indices);
 	}
 	
-	public static final void substitute(final String propositionName, final List<Object> target,
+	public static final void substitute(final String propositionName, final Object target,
 			final Map<List<Object>, List<Object>> equalities, final int... indices) {
 		conclude(new Substitution(propositionName, target, equalities, indices(indices)));
 	}
