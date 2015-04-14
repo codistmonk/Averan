@@ -367,14 +367,12 @@ public final class AveranTools {
 		return list(substitution).get(0);
 	}
 	
-	@SuppressWarnings("unchecked")
-	public static final List<Object> equalities(final Object substitution) {
-		return (List<Object>) list(substitution).get(2);
+	public static final Object equalities(final Object substitution) {
+		return list(substitution).get(2);
 	}
 	
-	@SuppressWarnings("unchecked")
-	public static final List<Object> indices(final Object substitution) {
-		return (List<Object>) list(substitution).get(4);
+	public static final Object indices(final Object substitution) {
+		return list(substitution).get(4);
 	}
 	
 	public static final boolean isQuantification(final Object object) {
