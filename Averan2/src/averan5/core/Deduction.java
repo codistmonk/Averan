@@ -19,7 +19,7 @@ public final class Deduction extends Proof.Abstract {
 	
 	private final Deduction parent;
 	
-	private final Collection<List<Object>> parameters;
+	private final Collection<Object> parameters;
 	
 	private final Map<String, List<Object>> propositions;
 	
@@ -53,7 +53,7 @@ public final class Deduction extends Proof.Abstract {
 		return this.parent;
 	}
 	
-	public final Collection<List<Object>> getParameters() {
+	public final Collection<Object> getParameters() {
 		return this.parameters;
 	}
 	
@@ -164,9 +164,9 @@ public final class Deduction extends Proof.Abstract {
 		}
 		
 		{
-			final ArrayList<List<Object>> parameters = new ArrayList<>(this.getParameters());
+			final ArrayList<Object> parameters = new ArrayList<>(this.getParameters());
 			
-			for (final ListIterator<List<Object>> i = parameters.listIterator(parameters.size()); i.hasPrevious();) {
+			for (final ListIterator<Object> i = parameters.listIterator(parameters.size()); i.hasPrevious();) {
 				result = $forall(i.previous(), result);
 			}
 		}
