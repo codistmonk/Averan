@@ -325,12 +325,12 @@ public final class AveranTools {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static final List<Object> condition(final Object rule) {
+	public static final Object condition(final Object rule) {
 		return (List<Object>) list(rule).get(0);
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static final List<Object> conclusion(final Object rule) {
+	public static final Object conclusion(final Object rule) {
 		return (List<Object>) list(rule).get(2);
 	}
 	

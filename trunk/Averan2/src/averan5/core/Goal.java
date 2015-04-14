@@ -11,9 +11,9 @@ import java.util.List;
  */
 public final class Goal implements Serializable {
 	
-	private final List<Object> initialProposition;
+	private final Object initialProposition;
 	
-	private List<Object> proposition;
+	private Object proposition;
 	
 	private final Deduction deduction;
 	
@@ -23,11 +23,11 @@ public final class Goal implements Serializable {
 		this.deduction = push(new Deduction(context, deductionName));
 	}
 	
-	public final List<Object> getInitialProposition() {
+	public final Object getInitialProposition() {
 		return this.initialProposition;
 	}
 	
-	public final List<Object> getProposition() {
+	public final Object getProposition() {
 		return this.proposition;
 	}
 	
@@ -36,7 +36,7 @@ public final class Goal implements Serializable {
 	}
 	
 	public final List<Object> introduce() {
-		List<Object> result = null;
+		Object result = null;
 		
 		if (isBlock(this.getProposition())) {
 			result = variable(quantification(this.getProposition()));
@@ -50,7 +50,7 @@ public final class Goal implements Serializable {
 			this.getDeduction().suppose(this.getDeduction().newPropositionName(), result);
 		}
 		
-		return result;
+		return (List<Object>) result;
 	}
 	
 	public final void intros() {
