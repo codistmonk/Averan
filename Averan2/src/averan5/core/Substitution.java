@@ -21,7 +21,7 @@ public final class Substitution extends Proof.Abstract {
 	
 	private final Collection<Integer> indices;
 	
-	public Substitution(final String provedPropositionName, final List<Object> target,
+	public Substitution(final String provedPropositionName, final Object target,
 			final Map<List<Object>, List<Object>> equalities, final Collection<Integer> indices) {
 		super(provedPropositionName, Arrays.asList("By substituting in", target, "using", equalities, "at", null));
 		this.target = target;
