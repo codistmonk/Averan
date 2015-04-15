@@ -3,12 +3,15 @@ package averan5.deductions;
 import static averan5.core.AveranTools.*;
 import static averan5.deductions.Standard.*;
 import static net.sourceforge.aprog.tools.Tools.*;
+import static org.junit.Assert.*;
+
 import averan5.core.ModusPonens;
 import averan5.core.Deduction;
 import averan5.core.Goal;
 import averan5.core.Proof;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Test;
@@ -156,6 +159,19 @@ public final class StandardTest {
 			conclude(justify(goal.getProposition()).get(0));
 			
 			goal.conclude();
+		});
+	}
+	
+	@Test
+	public final void testJustify6() {
+		build(() -> {
+			supposeRewrite();
+			deduceIdentity();
+			deduceRecall();
+			
+			final Goal goal = Goal.deduce($("b"));
+			
+			assertEquals(Collections.emptyList(), justify(goal.getProposition()));
 		});
 	}
 	
