@@ -3,7 +3,7 @@ package averan5.deductions;
 import static averan5.core.AveranTools.*;
 import static averan5.deductions.Standard.*;
 import static net.sourceforge.aprog.tools.Tools.*;
-
+import averan5.core.ModusPonens;
 import averan5.core.Deduction;
 import averan5.core.Goal;
 import averan5.core.Proof;
@@ -129,6 +129,40 @@ public final class StandardTest {
 		});
 	}
 	
+	@Test
+	public final void testJustify4() {
+		build(() -> {
+			suppose($rule("a", "b"));
+			suppose($rule("b", "c"));
+			suppose($("a"));
+			
+			final Goal goal = Goal.deduce($("c"));
+			
+			conclude(justify(goal.getProposition()).get(0));
+			
+			goal.conclude();
+		});
+	}
+	
+	@Test
+	public final void testJustify5() {
+		build(() -> {
+			suppose($rule("a", "b", "c"));
+			suppose($("a"));
+			suppose($("b"));
+			
+			final Goal goal = Goal.deduce($("c"));
+			
+			conclude(justify(goal.getProposition()).get(0));
+			
+			goal.conclude();
+		});
+	}
+	
+	public static final void abort() {
+		throw new RuntimeException("Aborted");
+	}
+	
 	public static final List<Proof> justify(final Object goal) {
 		final List<Proof> result = new ArrayList<>();
 		Deduction deduction = deduction();
@@ -144,34 +178,98 @@ public final class StandardTest {
 					result.add(new Recall(propositionName));
 				}
 				
-				if (isRule(proposition) && areEqual(goal, conclusion(proposition))) {
-					final List<Proof> conditionJustifications = justify(condition(proposition));
+				if (isRule(proposition)) {
+					final int n = implies(proposition, goal);
 					
-					if (!conditionJustifications.isEmpty()) {
-						final Proof justification = conditionJustifications.get(0);
-						final Recall recall = cast(Recall.class, justification);
+					if (0 <= n) {
+						Object tmp = proposition;
+						String tmpName = propositionName;
+						boolean ok = true;
 						
-						subdeduction();
-						
-						if (recall == null) {
-							conclude(justification);
-							apply(propositionName, name(-1));
-						} else {
-							apply(propositionName, recall.getPropositionName());
+						if (0 < n) {
+							subdeduction();
 						}
 						
-						return set(result, pop());
+						for (int j = 0; j <= n && ok; ++j) {
+							final List<Proof> conditionJustifications = justify(condition(tmp));
+							
+							if (!conditionJustifications.isEmpty()) {
+								final Proof justification = conditionJustifications.get(0);
+								final Recall recall = cast(Recall.class, justification);
+								
+								if (recall == null) {
+									subdeduction();
+									
+									conclude(justification);
+									apply(tmpName, name(-1));
+									
+									if (n == 0) {
+										return set(result, pop());
+									}
+									
+									conclude();
+								} else {
+									if (n == 0) {
+										return set(result, new ModusPonens(newName(), tmpName, recall.getPropositionName()));
+									}
+									
+									apply(tmpName, recall.getPropositionName());
+								}
+								
+								tmp = proposition(-1);
+								tmpName = name(-1);
+							} else {
+								ok = false;
+							}
+						}
+						
+						if (ok) {
+							return set(result, pop());
+						} else {
+							if (0 < n) {
+								pop();
+							}
+						}
 					}
 				}
 				
-				// \/X P
-				// \/Y Q
+				// TODO binding
 			}
 			
 			deduction = deduction.getParent();
 		}
 		
 		return result;
+	}
+	
+	public static final int implies(final Object rule, final Object goal) {
+		Object tmp = rule;
+		int result = 0;
+		
+		while (isRule(tmp)) {
+			final Object conclusion = conclusion(tmp);
+			
+			if (areEqual(goal, conclusion)) {
+				return result;
+			}
+			
+			++result;
+			tmp = conclusion;
+		}
+		
+		return -1;
+	}
+	
+	public static final void autoDeduce(final String propositionName, final List<Object> goal) {
+		// TODO
+	}
+	
+	public static final Deduction build(final Runnable deductionBuilder) {
+		return build(deductionBuilder, 2);
+	}
+	
+	public static final Deduction build(final Runnable deductionBuilder, final int debugDepth) {
+		return Standard.build(getCallerMethodName(), deductionBuilder, debugDepth);
 	}
 	
 	/**
@@ -203,16 +301,13 @@ public final class StandardTest {
 			return context;
 		}
 		
+		@Override
+		public final String toString() {
+			return "Recall " + this.getPropositionName();
+		}
+		
 		private static final long serialVersionUID = 3450261358246212849L;
 		
-	}
-	
-	public static final void autoDeduce(final String propositionName, final List<Object> goal) {
-		// TODO
-	}
-	
-	public static final Deduction build(final Runnable deductionBuilder) {
-		return Standard.build(getCallerMethodName(), deductionBuilder);
 	}
 	
 }

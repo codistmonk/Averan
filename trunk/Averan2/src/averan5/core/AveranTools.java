@@ -199,8 +199,19 @@ public final class AveranTools {
 		return $(left, EQUALS, right);
 	}
 	
-	public static final List<Object> $rule(final Object... propositions) {
-		return join(IMPLIES, Arrays.stream(propositions).map(AveranTools::$).toArray());
+	public static final Object $rule(final Object... propositions) {
+		return $rightAssociativeOperation(IMPLIES, propositions);
+	}
+	
+	public static final Object $rightAssociativeOperation(final Object operator, final Object... operands) {
+		final int n = operands.length;
+		Object result = operands[n - 1];
+		
+		for (int i = n - 2; 0 <= i; --i) {
+			result = $(operands[i], operator, result);
+		}
+		
+		return result;
 	}
 	
 	public static final List<Object> join(final Object separator, final Object... objects) {
