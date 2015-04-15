@@ -175,10 +175,6 @@ public final class StandardTest {
 		});
 	}
 	
-	public static final void abort() {
-		throw new RuntimeException("Aborted");
-	}
-	
 	public static final List<Proof> justify(final Object goal) {
 		final List<Proof> result = new ArrayList<>();
 		Deduction deduction = deduction();
