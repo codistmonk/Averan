@@ -450,4 +450,8 @@ public final class AveranTools {
 		return (List<Object>) object;
 	}
 	
+	public static final void abort() {
+		throw new RuntimeException("Aborted");
+	}
+	
 }
