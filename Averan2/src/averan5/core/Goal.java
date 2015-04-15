@@ -62,12 +62,13 @@ public final class Goal implements Serializable {
 			throw new IllegalStateException();
 		}
 		
-		final Object provedProposition = this.getDeduction().getProvedProposition();
+		final Proof proof = this.getDeduction().getPropositions().size() == 1 ? this.getDeduction().getProofs().values().iterator().next() : this.getDeduction();
+		final Object provedProposition = proof.getProvedPropositionFor(this.getDeduction().getParent());
 		
 		checkState(areEqual(this.getInitialProposition(), provedProposition),
 				"Expected: " + this.getInitialProposition() + " but was: " + provedProposition);
 		
-		deduction().conclude(this.getDeduction());
+		deduction().conclude(proof);
 	}
 	
 	private static final long serialVersionUID = -6412523746037749196L;

@@ -111,15 +111,15 @@ public final class Standard {
 		conclude();
 	}
 	
-	public static final Deduction subbuild(final String deductionName, final Runnable deductionBuilder) {
-		return build(new Deduction(deduction(), deductionName), deductionBuilder);
+	public static final Deduction subbuild(final String deductionName, final Runnable deductionBuilder, final int debugDepth) {
+		return build(new Deduction(deduction(), deductionName), deductionBuilder, debugDepth);
 	}
 	
-	public static final Deduction build(final String deductionName, final Runnable deductionBuilder) {
-		return build(new Deduction(null, deductionName), deductionBuilder);
+	public static final Deduction build(final String deductionName, final Runnable deductionBuilder, final int debugDepth) {
+		return build(new Deduction(null, deductionName), deductionBuilder, debugDepth);
 	}
 	
-	public static final Deduction build(final Deduction deduction, final Runnable deductionBuilder) {
+	public static final Deduction build(final Deduction deduction, final Runnable deductionBuilder, final int debugDepth) {
 		final Deduction result = push(deduction);
 		
 		try {
@@ -127,7 +127,7 @@ public final class Standard {
 			
 			return result.conclude();
 		} catch (final Exception exception) {
-			Simple.print(deduction(), 1);
+			Simple.print(deduction(), debugDepth);
 			
 			throw unchecked(exception);
 		} finally {
