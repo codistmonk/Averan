@@ -14,6 +14,10 @@ public final class ModusPonens extends Proof.Abstract {
 	
 	private final String conditionName;
 	
+	public ModusPonens(final String ruleName, final String conditionName) {
+		this(null, ruleName, conditionName);
+	}
+	
 	public ModusPonens(final String provedPropositionName, final String ruleName, final String conditionName) {
 		super(provedPropositionName, Arrays.asList("By applying", ruleName, "on", conditionName));
 		this.ruleName = ruleName;
