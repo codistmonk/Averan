@@ -5,6 +5,7 @@ import static averan5.deductions.Standard.*;
 import static net.sourceforge.aprog.tools.Tools.*;
 import static org.junit.Assert.*;
 
+import averan5.core.Binding;
 import averan5.core.ModusPonens;
 import averan5.core.Deduction;
 import averan5.core.Goal;
@@ -13,6 +14,7 @@ import averan5.core.Proof;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
 
@@ -175,6 +177,19 @@ public final class StandardTest {
 		});
 	}
 	
+	@Test
+	public final void testJustify7() {
+		build(() -> {
+			suppose($forall("a", "a"));
+			
+			final Goal goal = Goal.deduce($("b"));
+			
+			conclude(justify(goal.getProposition()).get(0));
+			
+			goal.conclude();
+		});
+	}
+	
 	public static final List<Proof> justify(final Object goal) {
 		final List<Proof> result = new ArrayList<>();
 		Deduction deduction = deduction();
@@ -222,7 +237,7 @@ public final class StandardTest {
 									conclude();
 								} else {
 									if (n == 0) {
-										return set(result, new ModusPonens(newName(), tmpName, recall.getPropositionName()));
+										return set(result, new ModusPonens(tmpName, recall.getPropositionName()));
 									}
 									
 									apply(tmpName, recall.getPropositionName());
@@ -245,13 +260,40 @@ public final class StandardTest {
 					}
 				}
 				
-				// TODO binding
+				if (isBlock(proposition)) {
+					final Object variable = variable(quantification(proposition));
+					final Map<Object, Object> bindings = map(variable, null);
+					
+					if (areEqual2(goal, scope(proposition), bindings)) {
+						result.add(new Binding(propositionName, bindings.get(variable)));
+					}
+				}
 			}
 			
 			deduction = deduction.getParent();
 		}
 		
 		return result;
+	}
+	
+	public static final boolean areEqual2(final Object expression1, final Object expression2, final Map<Object, Object> bindings) {
+		if (areEqual(expression1, expression2)) {
+			return true;
+		}
+		
+		if (bindings.containsKey(expression2)) {
+			final Object value = bindings.get(expression2);
+			
+			if (value == null) {
+				bindings.put(expression2, expression1);
+				
+				return true;
+			}
+			
+			return areEqual2(expression1, value, bindings);
+		}
+		
+		return false;
 	}
 	
 	public static final int implies(final Object rule, final Object goal) {

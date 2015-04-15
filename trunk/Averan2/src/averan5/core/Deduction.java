@@ -31,7 +31,7 @@ public final class Deduction extends Proof.Abstract {
 	private final Map<String, Proof> proofs;
 	
 	public Deduction(final Deduction parent) {
-		this(parent, parent == null ? "" : Integer.toString(parent.getPropositionNames().size() + 1));
+		this(parent, parent == null ? "" : null);
 	}
 	
 	public Deduction(final Deduction parent, final String provedPropositionName) {
@@ -99,9 +99,8 @@ public final class Deduction extends Proof.Abstract {
 	}
 	
 	public final Deduction suppose(final String propositionName, final Object proposition) {
-		if (this.getProposition(propositionName) != null) {
-			throw new IllegalArgumentException();
-		}
+		checkArgument(propositionName != null, "Invalid proposition name: " + propositionName);
+		checkArgument(this.getProposition(propositionName) == null, "Duplicate proposition name: " + propositionName);
 		
 		this.getPropositions().put(propositionName, proposition);
 		this.getPropositionNames().add(propositionName);
@@ -122,8 +121,14 @@ public final class Deduction extends Proof.Abstract {
 			return proof.concludeIn(this);
 		}
 		
-		this.suppose(proof.getProvedPropositionName(), proof.getProvedPropositionFor(this));
-		this.getProofs().put(proof.getProvedPropositionName(), proof);
+		String provedPropositionName = proof.getProvedPropositionName();
+		
+		if (provedPropositionName == null) {
+			provedPropositionName = this.newPropositionName();
+		}
+		
+		this.suppose(provedPropositionName, proof.getProvedPropositionFor(this));
+		this.getProofs().put(provedPropositionName, proof);
 		
 		return this;
 	}

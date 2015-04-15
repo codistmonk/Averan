@@ -90,7 +90,7 @@ public final class AveranTools {
 	}
 	
 	public static final void apply(final String ruleName, final String conditionName) {
-		apply(newName(), ruleName, conditionName);
+		apply(null, ruleName, conditionName);
 	}
 	
 	public static final void apply(final String propositionName, final String ruleName, final String conditionName) {
@@ -99,7 +99,7 @@ public final class AveranTools {
 	
 	public static final void substitute(final Object target,
 			final Map<Object, Object> equalities, final int... indices) {
-		substitute(newName(), target, equalities, indices);
+		substitute(null, target, equalities, indices);
 	}
 	
 	public static final void substitute(final String propositionName, final Object target,
@@ -129,7 +129,7 @@ public final class AveranTools {
 	}
 	
 	public static final void bind(final String targetName, final Object value) {
-		bind(newName(), targetName, value);
+		bind(null, targetName, value);
 	}
 	
 	public static final void bind(final String propositionName, final String targetName, final Object value) {

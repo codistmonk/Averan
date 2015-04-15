@@ -14,6 +14,10 @@ public final class Binding extends Proof.Abstract {
 	
 	private final Object value;
 	
+	public Binding(final String blockName, final Object value) {
+		this(null, blockName, value);
+	}
+	
 	public Binding(final String provedPropositionName, final String blockName, final Object value) {
 		super(provedPropositionName, Arrays.asList("By binding", blockName, "with", value));
 		this.blockName = blockName;
