@@ -37,7 +37,7 @@ public final class Goal implements Serializable {
 		Object result = null;
 		
 		if (isBlock(this.getProposition())) {
-			result = variable(quantification(this.getProposition()));
+			result = variable(this.getProposition());
 			this.proposition = scope(this.getProposition());
 			
 			this.getDeduction().forall(result);

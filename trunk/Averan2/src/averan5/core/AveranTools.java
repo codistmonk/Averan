@@ -403,7 +403,11 @@ public final class AveranTools {
 				&& FORALL.equals(expression.get(0));
 	}
 	
-	public static final Object variable(final Object quantitication) {
+	public static final Object variable(final Object block) {
+		return quantifiedVariable(quantification(block));
+	}
+	
+	public static final Object quantifiedVariable(final Object quantitication) {
 		return list(quantitication).get(1);
 	}
 	
@@ -435,8 +439,8 @@ public final class AveranTools {
 		}
 		
 		if (isBlock(expression1) && isBlock(expression2)) {
-			final Object variable1 = variable(quantification(expression1));
-			final Object variable2 = variable(quantification(expression2));
+			final Object variable1 = variable(expression1);
+			final Object variable2 = variable(expression2);
 			final Object boundScope2 = substituteIn(scope(expression2), map(variable2, variable1), emptySet());
 			
 			return areEqual(scope(expression1), boundScope2);

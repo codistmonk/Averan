@@ -4,17 +4,21 @@ import static averan5.core.AveranTools.*;
 import static averan5.deductions.Standard.*;
 import static net.sourceforge.aprog.tools.Tools.*;
 import static org.junit.Assert.*;
-
 import averan5.core.Binding;
 import averan5.core.ModusPonens;
 import averan5.core.Deduction;
 import averan5.core.Goal;
 import averan5.core.Proof;
 
+import java.io.Serializable;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import org.junit.Test;
 
@@ -190,6 +194,20 @@ public final class StandardTest {
 		});
 	}
 	
+	@Test
+	public final void testJustify8() {
+		build(() -> {
+			suppose($forall("b", $rule("a", "b")));
+			suppose($("a"));
+			
+			final Goal goal = Goal.deduce($("c"));
+			
+			conclude(justify(goal.getProposition()).get(0));
+			
+			goal.conclude();
+		});
+	}
+	
 	public static final List<Proof> justify(final Object goal) {
 		final List<Proof> result = new ArrayList<>();
 		Deduction deduction = deduction();
@@ -261,7 +279,7 @@ public final class StandardTest {
 				}
 				
 				if (isBlock(proposition)) {
-					final Object variable = variable(quantification(proposition));
+					final Object variable = variable(proposition);
 					final Map<Object, Object> bindings = map(variable, null);
 					
 					if (areEqual2(goal, scope(proposition), bindings)) {
@@ -314,6 +332,18 @@ public final class StandardTest {
 		return -1;
 	}
 	
+	public static final boolean canBeImplied(final Object goal, final Object proposition, final LayeredMap<Object, Object> bindings) {
+		if (areEqual(goal, proposition)) {
+			return true;
+		}
+		
+		if (isBlock(proposition)) {
+			bindings.push(new HashMap<>()).put(variable(proposition), null);
+		}
+		
+		return false;
+	}
+	
 	public static final void autoDeduce(final String propositionName, final List<Object> goal) {
 		// TODO
 	}
@@ -324,6 +354,99 @@ public final class StandardTest {
 	
 	public static final Deduction build(final Runnable deductionBuilder, final int debugDepth) {
 		return Standard.build(getCallerMethodName(), deductionBuilder, debugDepth);
+	}
+	
+	/**
+	 * @author codistmonk (creation 2015-04-17)
+	 *
+	 * @param <K>
+	 * @param <V>
+	 */
+	public static abstract interface LayeredMap<K, V> extends Serializable {
+		
+		public abstract List<Map<K, V>> getMaps();
+		
+		public default boolean isEmpty() {
+			for (final Map<K, V> map : this.getMaps()) {
+				if (!map.isEmpty()) {
+					return false;
+				}
+			}
+			
+			return true;
+		}
+		
+		public default V get(final Object key) {
+			for (final ListIterator<Map<K, V>> i = this.getMaps().listIterator(this.getDepth()); i.hasPrevious();) {
+				final Map<K, V> map = i.previous();
+				
+				if (map.containsKey(key)) {
+					return map.get(key);
+				}
+			}
+			
+			return null;
+		}
+		
+		public default V set(final K key, final V value) {
+			for (final ListIterator<Map<K, V>> i = this.getMaps().listIterator(this.getDepth()); i.hasPrevious();) {
+				final Map<K, V> map = i.previous();
+				
+				if (map.containsKey(key)) {
+					return map.put(key, value);
+				}
+			}
+			
+			return this.put(key, value);
+		}
+		
+		public default V put(final K key, final V value) {
+			return this.top().put(key, value);
+		}
+		
+		public default int getDepth() {
+			return this.getMaps().size();
+		}
+		
+		public default LayeredMap<K, V> push(final Map<K, V> map) {
+			this.getMaps().add(map);
+			
+			return this;
+		}
+		
+		public default Map<K, V> pop() {
+			return this.getMaps().remove(this.getDepth() - 1);
+		}
+		
+		public default Map<K, V> top() {
+			return last(this.getMaps());
+		}
+		
+		public default Map<K, V> toMap(final Map<K, V> result) {
+			this.getMaps().forEach(result::putAll);
+			
+			return result;
+		}
+		
+		/**
+		 * @author codistmonk (creation 2015-04-17)
+		 *
+		 * @param <K>
+		 * @param <V>
+		 */
+		public static final class Default<K, V> implements LayeredMap<K, V> {
+			
+			private final List<Map<K, V>> maps = new ArrayList<>();
+			
+			@Override
+			public final List<Map<K, V>> getMaps() {
+				return this.maps;
+			}
+			
+			private static final long serialVersionUID = 5217882640924788682L;
+			
+		}
+		
 	}
 	
 	/**
