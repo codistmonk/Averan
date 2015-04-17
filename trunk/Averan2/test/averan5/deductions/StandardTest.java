@@ -5,12 +5,12 @@ import static averan5.deductions.Standard.*;
 import static java.util.stream.Collectors.toList;
 import static net.sourceforge.aprog.tools.Tools.*;
 import static org.junit.Assert.*;
+
 import averan5.core.Binding;
 import averan5.core.ModusPonens;
 import averan5.core.Deduction;
 import averan5.core.Goal;
 import averan5.core.Proof;
-import averan5.deductions.StandardTest.ExpressionRewriter;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import net.sourceforge.aprog.tools.Pair;
 import net.sourceforge.aprog.tools.Tools;
 
 import org.junit.Test;
@@ -237,6 +236,20 @@ public final class StandardTest {
 		});
 	}
 	
+	@Test
+	public final void testJustify9() {
+		build(() -> {
+			suppose($forall("b", $rule($equality("a", "b"), "c")));
+			suppose($equality("a", "d"));
+			
+			final Goal goal = Goal.deduce($("c"));
+			
+			conclude(justify(goal.getProposition()).get(0));
+			
+			goal.conclude();
+		});
+	}
+	
 	public static final List<Proof> justify(final Object goal) {
 		final List<Proof> result = new ArrayList<>();
 		Deduction deduction = deduction();
@@ -250,12 +263,13 @@ public final class StandardTest {
 				
 				{
 					final Object wild = Wildcard.addTo(proposition);
-					final int n = canBeImplied2(goal, wild);
+					final Object trimmedGoal = goal;
+					final int n = canBeImplied2(trimmedGoal, wild);
 					
 					if (0 <= n) {
 						debugPrint();
 						debugPrint(proposition, "|-", goal);
-						debugPrint(n, Wildcard.removeFrom(wild));
+						debugPrint(n, trimConcludingQuantifications(Wildcard.removeFrom(wild)));
 					}
 				}
 				
@@ -347,6 +361,18 @@ public final class StandardTest {
 		}
 		
 		return result;
+	}
+	
+	public static final Object trimConcludingQuantifications(final Object proposition) {
+		if (isBlock(proposition)) {
+			return trimConcludingQuantifications(scope(proposition));
+		}
+		
+		if (isRule(proposition)) {
+			return $rule(condition(proposition), trimConcludingQuantifications(conclusion(proposition)));
+		}
+		
+		return proposition;
 	}
 	
 	public static final int canBeImplied2(final Object goal, final Object proposition) {
