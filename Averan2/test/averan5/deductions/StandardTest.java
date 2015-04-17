@@ -10,6 +10,7 @@ import averan5.core.ModusPonens;
 import averan5.core.Deduction;
 import averan5.core.Goal;
 import averan5.core.Proof;
+import averan5.deductions.StandardTest.ExpressionRewriter;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -19,7 +20,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
+
+import net.sourceforge.aprog.tools.Tools;
 
 import org.junit.Test;
 
@@ -588,6 +593,122 @@ public final class StandardTest {
 		}
 		
 		private static final long serialVersionUID = 3450261358246212849L;
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2015-04-17)
+	 * 
+	 * @param <V>
+	 */
+	public static abstract interface ExpressionVisitor<V> extends Serializable, Function<Object, V> {
+		
+		@SuppressWarnings("unchecked")
+		@Override
+		public default V apply(Object expression) {
+			if (expression instanceof List) {
+				return this.visit((List<Object>) expression);
+			}
+			
+			return this.visit(expression);
+		}
+		
+		public abstract V visit(Object expression);
+		
+		public default V visit(final List<Object> expression) {
+			return this.visit((Object) expression);
+		}
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2015-04-17)
+	 */
+	public static abstract interface ExpressionRewriter extends ExpressionVisitor<Object> {
+		
+		@Override
+		public default Object visit(final Object expression) {
+			return expression;
+		}
+		
+		@Override
+		public default Object visit(final List<Object> expression) {
+			return expression.stream().map(this).collect(toList());
+		}
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2015-04-17)
+	 */
+	public static final class Wildcard implements Serializable {
+		
+		private Object object;
+		
+		public final Object getObject() {
+			return this.object;
+		}
+		
+		public final Wildcard setObject(final Object object) {
+			this.object = object;
+			
+			return this;
+		}
+		
+		@Override
+		public final int hashCode() {
+			return Tools.hashCode(this.getObject());
+		}
+		
+		@Override
+		public final boolean equals(final Object object) {
+			if (this.getObject() == null) {
+				this.object = object;
+				
+				return true;
+			}
+			
+			return Tools.equals(this.getObject(), object);
+		}
+		
+		private static final long serialVersionUID = -7784368590863733909L;
+		
+		/**
+		 * @author codistmonk (creation 2015-04-17)
+		 */
+		public static final class Add implements ExpressionRewriter {
+			
+			private final Map<Object, Object> wildcards = new HashMap<>();
+			
+			@Override
+			public final Object visit(final Object expression) {
+				return this.wildcards.getOrDefault(expression, expression);
+			}
+			
+			@Override
+			public final Object visit(final List<Object> expression) {
+				if (isBlock(expression)) {
+					final Object variable = variable(expression);
+					final boolean remove = !this.wildcards.containsKey(variable);
+					final Object old = this.wildcards.put(variable, new Wildcard());
+					
+					try {
+						return ExpressionRewriter.super.visit(expression);
+					} finally {
+						if (remove) {
+							this.wildcards.remove(variable);
+						} else {
+							this.wildcards.put(variable, old);
+						}
+					}
+				}
+				
+				return ExpressionRewriter.super.visit(expression);
+			}
+			
+			private static final long serialVersionUID = 8944845022767742777L;
+			
+		}
 		
 	}
 	
