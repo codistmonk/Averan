@@ -35,9 +35,8 @@ public final class Binding extends Proof.Abstract {
 	@Override
 	public final Object getProvedPropositionFor(final Deduction context) {
 		final List<Object> block = checkBlock(this.getBlockName(), context);
-		final List<Object> quantification = quantification(block);
 		
-		return Substitution.substituteIn(scope(block), map(variable(quantification), this.getValue()), indices());
+		return Substitution.substituteIn(scope(block), map(variable(block), this.getValue()), indices());
 	}
 	
 	private static final long serialVersionUID = 5987805106367286343L;
