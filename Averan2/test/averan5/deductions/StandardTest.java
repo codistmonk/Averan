@@ -4,6 +4,7 @@ import static averan5.core.AveranTools.*;
 import static averan5.deductions.Standard.*;
 import static net.sourceforge.aprog.tools.Tools.*;
 import static org.junit.Assert.*;
+
 import averan5.core.Binding;
 import averan5.core.ModusPonens;
 import averan5.core.Deduction;
@@ -11,14 +12,12 @@ import averan5.core.Goal;
 import averan5.core.Proof;
 
 import java.io.Serializable;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.function.Supplier;
 
 import org.junit.Test;
 
@@ -219,6 +218,14 @@ public final class StandardTest {
 				final String propositionName = propositionNames.get(i);
 				final Object proposition = deduction.getProposition(propositionName);
 				
+				{
+					final LayeredMap<Object, Object> bindings = new LayeredMap.Default<>();
+					final int n = canBeImplied(goal, proposition, bindings);
+					
+					debugPrint(proposition, "|-", goal);
+					debugPrint(n, bindings.toMap(new HashMap<>()));
+				}
+				
 				if (areEqual(goal, proposition)) {
 					result.add(new Recall(propositionName));
 				}
@@ -332,16 +339,44 @@ public final class StandardTest {
 		return -1;
 	}
 	
-	public static final boolean canBeImplied(final Object goal, final Object proposition, final LayeredMap<Object, Object> bindings) {
+	public static final int canBeImplied(final Object goal, final Object proposition, final LayeredMap<Object, Object> bindings) {
 		if (areEqual(goal, proposition)) {
-			return true;
+			return 0;
 		}
+		
+		{
+			final Map<Object, Object> tmp = bindings.toMap(new HashMap<>());
+			
+			if (areEqual2(goal, proposition, tmp)) {
+				tmp.forEach(bindings::set);
+				
+				return 0;
+			}
+		}
+		
+		Object p = proposition;
 		
 		if (isBlock(proposition)) {
 			bindings.push(new HashMap<>()).put(variable(proposition), null);
+			
+			final int protoresult = canBeImplied(goal, scope(proposition), bindings);
+			
+			if (0 <= protoresult) {
+				return protoresult;
+			}
+			
+			p = scope(proposition);
 		}
 		
-		return false;
+		if (isRule(p)) {
+			final int protoresult = canBeImplied(goal, conclusion(p), bindings);
+			
+			if (0 <= protoresult) {
+				return 1 + protoresult;
+			}
+		}
+		
+		return -1;
 	}
 	
 	public static final void autoDeduce(final String propositionName, final List<Object> goal) {
