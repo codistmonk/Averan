@@ -4,7 +4,6 @@ import static averan5.core.AveranTools.*;
 import static averan5.deductions.Standard.*;
 import static net.sourceforge.aprog.tools.Tools.*;
 import static org.junit.Assert.*;
-
 import averan5.core.Binding;
 import averan5.core.ModusPonens;
 import averan5.core.Deduction;
@@ -15,6 +14,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -25,6 +25,14 @@ import org.junit.Test;
  * @author codistmonk (creation 2015-04-13)
  */
 public final class StandardTest {
+	
+	@Test
+	public final void areEqualTest() {
+		assertTrue(areEqual("a", "a"));
+		assertFalse(areEqual("a", "b"));
+		assertTrue(areEqual($forall("a", "a"), $forall("b", "b")));
+		assertTrue(areEqual($equality($forall("a", "a"), $forall("a", "a")), $equality($forall("b", "b"), $forall("b", "b"))));
+	}
 	
 	@Test
 	public final void testRewrite() {
@@ -299,6 +307,16 @@ public final class StandardTest {
 		}
 		
 		return result;
+	}
+	
+	public static final Object rewriteBound(final Object expression, final Map<Object, Object> bindings, final Iterator<Map<Object, Object>> bindingIterator) {
+		if (isBlock(expression)) {
+			
+		}
+		
+		final List<Object> list = cast(List.class, expression);
+		
+		return null;
 	}
 	
 	public static final boolean areEqual2(final Object expression1, final Object expression2, final Map<Object, Object> bindings) {

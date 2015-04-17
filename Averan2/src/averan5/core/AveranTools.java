@@ -446,6 +446,23 @@ public final class AveranTools {
 			return areEqual(scope(expression1), boundScope2);
 		}
 		
+		final List<Object> list1 = cast(List.class, expression1);
+		final List<Object> list2 = cast(List.class, expression2);
+		
+		if (list1 != null && list2 != null) {
+			final int n = list1.size();
+			
+			if (n == list2.size()) {
+				for (int i = 0; i < n; ++i) {
+					if (!areEqual(list1.get(i), list2.get(i))) {
+						return false;
+					}
+				}
+				
+				return true;
+			}
+		}
+		
 		return false;
 	}
 	
