@@ -2,6 +2,7 @@ package averan5.deductions;
 
 import static averan5.core.AveranTools.*;
 import static averan5.deductions.Standard.*;
+import static java.util.stream.Collectors.toList;
 import static net.sourceforge.aprog.tools.Tools.*;
 import static org.junit.Assert.*;
 import averan5.core.Binding;
@@ -18,6 +19,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 
@@ -28,10 +30,25 @@ public final class StandardTest {
 	
 	@Test
 	public final void areEqualTest() {
-		assertTrue(areEqual("a", "a"));
-		assertFalse(areEqual("a", "b"));
-		assertTrue(areEqual($forall("a", "a"), $forall("b", "b")));
-		assertTrue(areEqual($equality($forall("a", "a"), $forall("a", "a")), $equality($forall("b", "b"), $forall("b", "b"))));
+		{
+			assertTrue(areEqual("a", "a"));
+			assertFalse(areEqual("a", "b"));
+			assertTrue(areEqual($forall("a", "a"), $forall("b", "b")));
+			assertTrue(areEqual($equality($forall("a", "a"), $forall("a", "a")), $equality($forall("b", "b"), $forall("b", "b"))));
+			assertTrue(areEqual($forall("a", "a"), $forall("b", "a")));
+		}
+		
+		{
+			assertFalse(areEqual($new("a"), $new("a")));
+			assertFalse(areEqual($new("a"), $new("b")));
+			
+			{
+				final Object a = $new("a");
+				final Object b = $new("b");
+				
+				assertTrue(areEqual($forall(a, a), $forall(b, b)));
+			}
+		}
 	}
 	
 	@Test
@@ -230,8 +247,15 @@ public final class StandardTest {
 					final LayeredMap<Object, Object> bindings = new LayeredMap.Default<>();
 					final int n = canBeImplied(goal, proposition, bindings);
 					
-					debugPrint(proposition, "|-", goal);
-					debugPrint(n, bindings.toMap(new HashMap<>()));
+					if (0 <= n) {
+						debugPrint();
+						debugPrint(proposition, "|-", goal);
+						debugPrint(n, bindings.toMap(new HashMap<>()));
+						
+						if (!bindings.isEmpty()) {
+							debugPrint(rewriteBound(proposition, new HashMap<>(), bindings.getMaps().iterator()));
+						}
+					}
 				}
 				
 				if (areEqual(goal, proposition)) {
@@ -310,13 +334,40 @@ public final class StandardTest {
 	}
 	
 	public static final Object rewriteBound(final Object expression, final Map<Object, Object> bindings, final Iterator<Map<Object, Object>> bindingIterator) {
-		if (isBlock(expression)) {
+		{
+			final Object value = bindings.get(expression);
 			
+			if (value != null) {
+				return value;
+			}
+		}
+		
+		if (bindingIterator != null) {
+			if (isBlock(expression)) {
+				final Object variable = variable(expression);
+				final Map<Object, Object> map = bindingIterator.next();
+				final Object value = map.get(variable);
+				
+				checkArgument(map.size() == 1 && map.containsKey(variable), "Expected 1 binding for variable " + variable + " but got " + map);
+				
+				bindings.putAll(map);
+				
+				return value != null ? rewriteBound(scope(expression), bindings, bindingIterator) :
+					$forall(variable, rewriteBound(scope(expression), bindings, bindingIterator));
+			}
+			
+			if (isRule(expression)) {
+				return $rule(rewriteBound(condition(expression), bindings, null), rewriteBound(conclusion(expression), bindings, bindingIterator));
+			}
 		}
 		
 		final List<Object> list = cast(List.class, expression);
 		
-		return null;
+		if (list != null) {
+			return list.stream().map(e -> rewriteBound(e, bindings, null)).collect(toList());
+		}
+		
+		return expression;
 	}
 	
 	public static final boolean areEqual2(final Object expression1, final Object expression2, final Map<Object, Object> bindings) {
