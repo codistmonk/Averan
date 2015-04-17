@@ -20,10 +20,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
+import net.sourceforge.aprog.tools.Pair;
 import net.sourceforge.aprog.tools.Tools;
 
 import org.junit.Test;
@@ -249,13 +249,24 @@ public final class StandardTest {
 				final Object proposition = deduction.getProposition(propositionName);
 				
 				{
+					final Object wild = Wildcard.addTo(proposition);
+					final int n = canBeImplied2(goal, wild);
+					
+					if (0 <= n) {
+						debugPrint();
+						debugPrint(proposition, "|-", goal);
+						debugPrint(n, Wildcard.removeFrom(wild));
+					}
+				}
+				
+				{
 					final LayeredMap<Object, Object> bindings = new LayeredMap.Default<>();
 					final int n = canBeImplied(goal, proposition, bindings);
 					
 					if (0 <= n) {
 						debugPrint();
 						debugPrint(proposition, "|-", goal);
-						debugPrint(n, bindings.toMap(new HashMap<>()));
+//						debugPrint(n, bindings.toMap(new HashMap<>()));
 						
 						if (!bindings.isEmpty()) {
 							debugPrint(rewriteBound(proposition, new HashMap<>(), bindings.getMaps().iterator()));
@@ -336,6 +347,32 @@ public final class StandardTest {
 		}
 		
 		return result;
+	}
+	
+	public static final int canBeImplied2(final Object goal, final Object proposition) {
+		final Map<Wildcard, Object> snapshot = Wildcard.snapshot(proposition);
+		
+		if (areEqual(proposition, goal)) {
+			return 0;
+		}
+		
+		Wildcard.restore(snapshot);
+		
+		if (isBlock(proposition)) {
+			return canBeImplied2(goal, scope(proposition));
+		}
+		
+		if (isRule(proposition)) {
+			final int protoresult = canBeImplied2(goal, conclusion(proposition));
+			
+			if (0 <= protoresult) {
+				return 1 + protoresult;
+			}
+			
+			Wildcard.restore(snapshot);
+		}
+		
+		return -1;
 	}
 	
 	public static final Object rewriteBound(final Object expression, final Map<Object, Object> bindings, final Iterator<Map<Object, Object>> bindingIterator) {
@@ -602,11 +639,16 @@ public final class StandardTest {
 	 * 
 	 * @param <V>
 	 */
-	public static abstract interface ExpressionVisitor<V> extends Serializable, Function<Object, V> {
+	public static abstract interface ExpressionVisitor<V> extends Serializable, Function<Object, V>, Consumer<Object> {
+		
+		@Override
+		public default void accept(final Object expression) {
+			this.apply(expression);
+		}
 		
 		@SuppressWarnings("unchecked")
 		@Override
-		public default V apply(Object expression) {
+		public default V apply(final Object expression) {
 			if (expression instanceof List) {
 				return this.visit((List<Object>) expression);
 			}
@@ -617,6 +659,8 @@ public final class StandardTest {
 		public abstract V visit(Object expression);
 		
 		public default V visit(final List<Object> expression) {
+			expression.forEach(this);
+			
 			return this.visit((Object) expression);
 		}
 		
@@ -679,6 +723,10 @@ public final class StandardTest {
 		
 		@Override
 		public final boolean equals(final Object object) {
+			if (object instanceof Wildcard) {
+				return this == object;
+			}
+			
 			if (this.getObject() == null) {
 				this.object = object;
 				
@@ -696,6 +744,31 @@ public final class StandardTest {
 		
 		public static final Object removeFrom(final Object expression) {
 			return new Remove().apply(expression);
+		}
+		
+		public static final void restore(final Map<Wildcard, Object> snapshot) {
+			snapshot.forEach(Wildcard::setObject);
+		}
+		
+		public static final Map<Wildcard, Object> snapshot(final Object expression) {
+			return new ExpressionVisitor<Map<Wildcard, Object>>() {
+				
+				private final Map<Wildcard, Object> result = new HashMap<>();
+				
+				@Override
+				public final Map<Wildcard, Object> visit(final Object expression) {
+					final Wildcard wildcard = cast(Wildcard.class, expression);
+					
+					if (wildcard != null) {
+						this.result.putIfAbsent(wildcard, wildcard.getObject());
+					}
+					
+					return this.result;
+				}
+				
+				private static final long serialVersionUID = 416410928718755243L;
+				
+			}.apply(expression);
 		}
 		
 		/**
@@ -745,6 +818,19 @@ public final class StandardTest {
 				final Wildcard wildcard = cast(Wildcard.class, expression);
 				
 				return wildcard != null ? wildcard.getObjectOrVariable() : expression;
+			}
+			
+			@Override
+			public final Object visit(final List<Object> expression) {
+				if (isBlock(expression)) {
+					final Wildcard wildcard = cast(Wildcard.class, variable(expression));
+					
+					if (wildcard != null && wildcard.getObject() != null) {
+						return this.apply(scope(expression));
+					}
+				}
+				
+				return ExpressionRewriter.super.visit(expression);
 			}
 			
 			private static final long serialVersionUID = 2963254845866681747L;
