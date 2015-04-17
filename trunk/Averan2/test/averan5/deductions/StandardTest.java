@@ -366,6 +366,7 @@ public final class StandardTest {
 			}
 		}
 		
+		@SuppressWarnings("unchecked")
 		final List<Object> list = cast(List.class, expression);
 		
 		if (list != null) {
@@ -643,10 +644,26 @@ public final class StandardTest {
 	 */
 	public static final class Wildcard implements Serializable {
 		
+		private final Object variable;
+		
 		private Object object;
+		
+		public Wildcard(final Object variable) {
+			this.variable = variable;
+		}
+		
+		public final Object getVariable() {
+			return this.variable;
+		}
 		
 		public final Object getObject() {
 			return this.object;
+		}
+		
+		public final Object getObjectOrVariable() {
+			final Object object = this.getObject();
+			
+			return object != null ? object : this.getVariable();
 		}
 		
 		public final Wildcard setObject(final Object object) {
@@ -673,6 +690,14 @@ public final class StandardTest {
 		
 		private static final long serialVersionUID = -7784368590863733909L;
 		
+		public static final Object addTo(final Object expression) {
+			return new Add().apply(expression);
+		}
+		
+		public static final Object removeFrom(final Object expression) {
+			return new Remove().apply(expression);
+		}
+		
 		/**
 		 * @author codistmonk (creation 2015-04-17)
 		 */
@@ -690,7 +715,7 @@ public final class StandardTest {
 				if (isBlock(expression)) {
 					final Object variable = variable(expression);
 					final boolean remove = !this.wildcards.containsKey(variable);
-					final Object old = this.wildcards.put(variable, new Wildcard());
+					final Object old = this.wildcards.put(variable, new Wildcard(variable));
 					
 					try {
 						return ExpressionRewriter.super.visit(expression);
@@ -707,6 +732,22 @@ public final class StandardTest {
 			}
 			
 			private static final long serialVersionUID = 8944845022767742777L;
+			
+		}
+		
+		/**
+		 * @author codistmonk (creation 2015-04-17)
+		 */
+		public static final class Remove implements ExpressionRewriter {
+			
+			@Override
+			public final Object visit(final Object expression) {
+				final Wildcard wildcard = cast(Wildcard.class, expression);
+				
+				return wildcard != null ? wildcard.getObjectOrVariable() : expression;
+			}
+			
+			private static final long serialVersionUID = 2963254845866681747L;
 			
 		}
 		
