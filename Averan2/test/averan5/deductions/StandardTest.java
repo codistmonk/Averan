@@ -269,7 +269,7 @@ public final class StandardTest {
 					if (0 <= n) {
 						debugPrint();
 						debugPrint(proposition, "|-", goal);
-						debugPrint(n, trimConcludingQuantifications(Wildcard.removeFrom(wild)));
+						debugPrint(n, specialize(Wildcard.removeFrom(wild)));
 					}
 				}
 				
@@ -363,13 +363,13 @@ public final class StandardTest {
 		return result;
 	}
 	
-	public static final Object trimConcludingQuantifications(final Object proposition) {
+	public static final Object specialize(final Object proposition) {
 		if (isBlock(proposition)) {
-			return trimConcludingQuantifications(scope(proposition));
+			return specialize(scope(proposition));
 		}
 		
 		if (isRule(proposition)) {
-			return $rule(condition(proposition), trimConcludingQuantifications(conclusion(proposition)));
+			return $rule(condition(proposition), specialize(conclusion(proposition)));
 		}
 		
 		return proposition;
