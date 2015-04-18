@@ -219,8 +219,7 @@ public final class AveranTools {
 	}
 	
 	public static final List<Object> join(final Object separator, final Iterable<Object> objects) {
-		@SuppressWarnings("unchecked")
-		final Collection<Object> collection = cast(Collection.class, objects);
+		final Collection<?> collection = cast(Collection.class, objects);
 		final List<Object> result = collection == null ? new ArrayList<>() : new ArrayList<>(2 * collection.size() + 1);
 		final Iterator<Object> i = objects.iterator();
 		
@@ -339,8 +338,7 @@ public final class AveranTools {
 	}
 	
 	public static final boolean isRule(final Object object) {
-		@SuppressWarnings("unchecked")
-		final List<Object> expression = cast(List.class, object);
+		final List<?> expression = cast(List.class, object);
 		
 		return expression != null
 				&& expression.size() == 3
@@ -356,8 +354,7 @@ public final class AveranTools {
 	}
 	
 	public static final boolean isEquality(final Object object) {
-		@SuppressWarnings("unchecked")
-		final List<Object> expression = cast(List.class, object);
+		final List<?> expression = cast(List.class, object);
 		
 		return expression != null
 				&& expression.size() == 3
@@ -373,8 +370,7 @@ public final class AveranTools {
 	}
 	
 	public static final boolean isSubstitution(final Object object) {
-		@SuppressWarnings("unchecked")
-		final List<Object> expression = cast(List.class, object);
+		final List<?> expression = cast(List.class, object);
 		
 		return expression != null
 				&& expression.size() == 5
@@ -395,8 +391,7 @@ public final class AveranTools {
 	}
 	
 	public static final boolean isQuantification(final Object object) {
-		@SuppressWarnings("unchecked")
-		final List<Object> expression = cast(List.class, object);
+		final List<?> expression = cast(List.class, object);
 		
 		return expression != null
 				&& expression.size() == 2
@@ -412,8 +407,7 @@ public final class AveranTools {
 	}
 	
 	public static final boolean isBlock(final Object object) {
-		@SuppressWarnings("unchecked")
-		final List<Object> expression = cast(List.class, object);
+		final List<?> expression = cast(List.class, object);
 		
 		return expression != null
 				&& expression.size() == 2
@@ -446,8 +440,8 @@ public final class AveranTools {
 			return areEqual(scope(expression1), boundScope2);
 		}
 		
-		final List<Object> list1 = cast(List.class, expression1);
-		final List<Object> list2 = cast(List.class, expression2);
+		final List<?> list1 = cast(List.class, expression1);
+		final List<?> list2 = cast(List.class, expression2);
 		
 		if (list1 != null && list2 != null) {
 			final int n = list1.size();
