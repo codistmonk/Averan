@@ -1,6 +1,7 @@
 package averan5.deductions;
 
 import static averan5.core.AveranTools.*;
+import static averan5.deductions.AutoDeduce.autoDeduce;
 import static averan5.deductions.Standard.*;
 import static averan5.deductions.StandardTest.build;
 import static org.junit.Assert.*;
@@ -108,12 +109,6 @@ public final class AutoDeduceTest {
 			
 			assertTrue(autoDeduce($("c")));
 		});
-	}
-	
-	public static final boolean autoDeduce(final Object goal) {
-		fail("Not yet implemented");
-		
-		return false;
 	}
 	
 }

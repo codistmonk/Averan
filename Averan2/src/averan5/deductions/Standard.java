@@ -2,7 +2,7 @@ package averan5.deductions;
 
 import static averan5.core.AveranTools.*;
 import static java.util.Arrays.asList;
-import static net.sourceforge.aprog.tools.Tools.unchecked;
+import static net.sourceforge.aprog.tools.Tools.*;
 
 import java.util.Arrays;
 
@@ -126,10 +126,10 @@ public final class Standard {
 			deductionBuilder.run();
 			
 			return result.conclude();
-		} catch (final Exception exception) {
+		} catch (final Throwable exception) {
 			Simple.print(deduction(), debugDepth);
 			
-			throw unchecked(exception);
+			return throwUnchecked(exception);
 		} finally {
 			while (result != pop()) {
 				// NOP
