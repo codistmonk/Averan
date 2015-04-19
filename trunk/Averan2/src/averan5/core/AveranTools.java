@@ -1,7 +1,5 @@
 package averan5.core;
 
-import static averan5.core.Substitution.substituteIn;
-import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
 import static net.sourceforge.aprog.tools.Tools.cast;
@@ -425,39 +423,6 @@ public final class AveranTools {
 	
 	public static final Object scope(final Object block) {
 		return list(block).get(1);
-	}
-	
-	public static final boolean areEqual(final Object expression1, final Object expression2) {
-		if (expression1.equals(expression2)) {
-			return true;
-		}
-		
-		if (isBlock(expression1) && isBlock(expression2)) {
-			final Object variable1 = variable(expression1);
-			final Object variable2 = variable(expression2);
-			final Object boundScope2 = substituteIn(scope(expression2), map(variable2, variable1), emptySet());
-			
-			return areEqual(scope(expression1), boundScope2);
-		}
-		
-		final List<?> list1 = cast(List.class, expression1);
-		final List<?> list2 = cast(List.class, expression2);
-		
-		if (list1 != null && list2 != null) {
-			final int n = list1.size();
-			
-			if (n == list2.size()) {
-				for (int i = 0; i < n; ++i) {
-					if (!areEqual(list1.get(i), list2.get(i))) {
-						return false;
-					}
-				}
-				
-				return true;
-			}
-		}
-		
-		return false;
 	}
 	
 	@SuppressWarnings("unchecked")
