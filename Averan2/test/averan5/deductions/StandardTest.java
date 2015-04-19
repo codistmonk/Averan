@@ -732,7 +732,7 @@ public final class StandardTest {
 		
 		public abstract V visit(Object expression1, Object expression2);
 		
-		public default V visit(final List<Object> expression1, final List<Object> expression2) {
+		public default V visit(final List<?> expression1, final List<?> expression2) {
 			final int n = expression1.size();
 			
 			if (n != expression2.size()) {
@@ -754,7 +754,7 @@ public final class StandardTest {
 	public static abstract interface ExpressionCombiner extends ExpressionZipper<Object> {
 		
 		@Override
-		public default Object visit(final List<Object> expression1, final List<Object> expression2) {
+		public default Object visit(final List<?> expression1, final List<?> expression2) {
 			final int n = expression1.size();
 			
 			if (n != expression2.size()) {

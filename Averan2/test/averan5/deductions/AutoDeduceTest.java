@@ -2,9 +2,12 @@ package averan5.deductions;
 
 import static averan5.core.AveranTools.*;
 import static averan5.deductions.AutoDeduce.autoDeduce;
+import static averan5.deductions.AutoDeduce.Unify.unify;
 import static averan5.deductions.Standard.*;
 import static averan5.deductions.StandardTest.build;
 import static org.junit.Assert.*;
+
+import averan5.deductions.AutoDeduce.Unifier;
 
 import org.junit.Test;
 
@@ -12,6 +15,12 @@ import org.junit.Test;
  * @author codistmonk (creation 2015-04-18)
  */
 public final class AutoDeduceTest {
+	
+	@Test
+	public final void testUnify1() {
+		assertNotNull(unify($equality("a", "d"), $equality("a", new Unifier())));
+		assertNotNull(unify($equality("a", new Unifier()), $equality("a", "d")));
+	}
 	
 	@Test
 	public final void testJustify1() {
