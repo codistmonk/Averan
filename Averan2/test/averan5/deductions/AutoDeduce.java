@@ -33,19 +33,75 @@ public final class AutoDeduce {
 	}
 	
 	public static final boolean autoDeduce(final Object goal) {
-		final Goal g = Goal.deduce(goal);
-		
-		try {
-			g.intros();
-			
-			debugPrint(goal, justify(g.getProposition()));
-			
-			g.conclude();
-			
-			return true;
-		} catch (final Exception exception) {
+		return autoDeduce(goal, 2);
+	}
+	
+	public static final boolean autoDeduce(final Object goal, final int depth) {
+		if (depth <= 0) {
 			return false;
 		}
+		
+		final Goal g = Goal.deduce(goal);
+		
+		g.intros();
+		
+		final Pair<String, Object> justification = justify(g.getProposition());
+		
+		if (justification == null) {
+			pop();
+			
+			return false;
+		}
+		
+		debugPrint(goal, justification);
+		
+		{
+			String justificationName = justification.getFirst();
+			Object justificationProposition = justification.getSecond();
+			
+			while (!isTerminus(justificationProposition)) {
+				if (isBlock(justificationProposition)) {
+					final Unifier variable = (Unifier) variable(justificationProposition);
+					final Object value = variable.getObject();
+					
+					bind(justificationName, value != null ? value : variable);
+				} else {
+					if (!autoDeduce(condition(justificationProposition), depth - 1)) {
+						pop();
+						
+						return false;
+					}
+					
+					apply(justificationName, name(-1));
+				}
+				
+				justificationName = name(-1);
+				justificationProposition = proposition(-1);
+			}
+			
+			debugPrint(justificationName, justificationProposition);
+			
+			recall(justificationName);
+		}
+		
+		g.conclude();
+		
+		return true;
+	}
+	
+	public static final void recall(final String propositionName) {
+		if (!propositionName.equals(name(-1)) || !deduction().getProofs().containsKey(propositionName)) {
+			subdeduction();
+			{
+				bind("recall", proposition(propositionName));
+				apply(name(-1), propositionName);
+			}
+			conclude();
+		}
+	}
+	
+	public static final boolean isTerminus(final Object expression) {
+		return !isBlock(expression) && !isRule(expression);
 	}
 	
 	public static final Pair<String, Object> justify(final Object goal) {
@@ -194,6 +250,10 @@ public final class AutoDeduce {
 			this.unifiers.add(this);
 		}
 		
+		public final Object getObject() {
+			return this.object[0];
+		}
+		
 		public final void snapshotTo(final Map<Unifier, Pair<Unifier, Unifier>> snapshot) {
 			for (final Unifier unifier : this.unifiers) {
 				snapshot.computeIfAbsent(unifier, Unifier::snapshot);
@@ -205,7 +265,7 @@ public final class AutoDeduce {
 			final Unifier contents = new Unifier();
 			contents.unifiers.clear();
 			contents.unifiers.addAll(this.unifiers);
-			contents.object[0] = this.object[0];
+			contents.object[0] = this.getObject();
 			
 			return new Pair<>(structure, contents);
 		}
@@ -217,7 +277,7 @@ public final class AutoDeduce {
 			this.object = structure.object;
 			this.unifiers.clear();
 			this.unifiers.addAll(contents.unifiers);
-			this.object[0] = contents.object[0];
+			this.object[0] = contents.getObject();
 			
 			return this;
 		}
@@ -231,11 +291,11 @@ public final class AutoDeduce {
 				return false;
 			}
 			
-			final Object thisObject = this.object[0];
+			final Object thisObject = this.getObject();
 			final Unifier that = cast(this.getClass(), object);
 			
 			if (that != null) {
-				final Object thatObject = that.object[0];
+				final Object thatObject = that.getObject();
 				final boolean merge = thisObject != null && thatObject != null;
 				
 				if (merge && !thisObject.equals(thatObject)) {
@@ -275,7 +335,7 @@ public final class AutoDeduce {
 		@Override
 		public final String toString() {
 			return this.unifiers.stream().map(u -> ids.computeIfAbsent(u, k -> id.incrementAndGet())).collect(toTreeSet())
-					+ "{" + (this.object[0] != null ? this.object[0] : "") + "}";
+					+ "{" + (this.getObject() != null ? this.getObject() : "") + "}";
 		}
 		
 		private static final long serialVersionUID = 4343191681740782407L;
