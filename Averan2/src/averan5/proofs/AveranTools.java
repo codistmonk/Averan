@@ -1,4 +1,4 @@
-package averan5.core;
+package averan5.proofs;
 
 import static java.util.stream.Collectors.toList;
 import static net.sourceforge.aprog.tools.Tools.cast;

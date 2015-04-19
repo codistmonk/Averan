@@ -1,4 +1,6 @@
-package averan5.core;
+package averan5.proofs;
+
+import static net.sourceforge.aprog.tools.Tools.ignore;
 
 import java.io.Serializable;
 import java.util.List;
@@ -13,6 +15,8 @@ public abstract interface Proof extends Serializable {
 	}
 	
 	public default Object getProvedPropositionFor(final Deduction context) {
+		ignore(context);
+		
 		throw new UnsupportedOperationException();
 	}
 	
