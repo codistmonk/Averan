@@ -24,8 +24,4 @@ public final class Unify implements ExpressionCombiner {
 	
 	public static final Unify INSTANCE = new Unify();
 	
-	public static final Object unify(final Object object1, final Object object2) {
-		return INSTANCE.apply(object1, object2);
-	}
-	
 }

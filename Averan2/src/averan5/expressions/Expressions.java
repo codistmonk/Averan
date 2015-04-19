@@ -229,4 +229,8 @@ public final class Expressions {
 		return (List<Object>) object;
 	}
 	
+	public static final Object unify(final Object object1, final Object object2) {
+		return Unify.INSTANCE.apply(object1, object2);
+	}
+	
 }
