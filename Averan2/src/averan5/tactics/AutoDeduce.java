@@ -1,4 +1,4 @@
-package averan5.deductions;
+package averan5.tactics;
 
 import static averan5.deductions.Standard.recall;
 import static averan5.expressions.Unify.unify;
@@ -8,7 +8,6 @@ import averan5.expressions.ExpressionRewriter;
 import averan5.expressions.ExpressionVisitor;
 import averan5.expressions.Unifier;
 import averan5.proofs.Deduction;
-import averan5.proofs.Goal;
 
 import java.util.HashMap;
 import java.util.List;
