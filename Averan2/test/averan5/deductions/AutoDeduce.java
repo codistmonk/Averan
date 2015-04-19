@@ -54,12 +54,8 @@ public final class AutoDeduce {
 			
 			@Override
 			public final Map<Unifier, Pair<Unifier, Unifier>> visit(final Object expression) {
-				final Unifier unifier = cast(Unifier.class, expression);
-				
-				if (unifier != null) {
-					for (final Unifier u : unifier.unifiers) {
-						this.result.computeIfAbsent(u, Unifier::snapshot);
-					}
+				if (expression instanceof Unifier) {
+					((Unifier) expression).snapshotTo(this.result);
 				}
 				
 				return this.result;
@@ -116,6 +112,12 @@ public final class AutoDeduce {
 			this(new HashSet<>(), new Object[1]);
 			
 			this.unifiers.add(this);
+		}
+		
+		public final void snapshotTo(final Map<Unifier, Pair<Unifier, Unifier>> snapshot) {
+			for (final Unifier unifier : this.unifiers) {
+				snapshot.computeIfAbsent(unifier, Unifier::snapshot);
+			}
 		}
 		
 		public final Pair<Unifier, Unifier> snapshot() {
