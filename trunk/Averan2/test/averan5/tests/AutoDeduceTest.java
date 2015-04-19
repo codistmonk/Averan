@@ -2,13 +2,10 @@ package averan5.tests;
 
 import static averan5.deductions.Standard.*;
 import static averan5.expressions.Expressions.*;
-import static averan5.expressions.Unify.unify;
 import static averan5.proofs.Stack.*;
 import static averan5.tactics.AutoDeduce.autoDeduce;
 import static averan5.tests.StandardTest.build;
 import static org.junit.Assert.*;
-
-import averan5.expressions.Unifier;
 
 import org.junit.Test;
 
@@ -18,13 +15,7 @@ import org.junit.Test;
 public final class AutoDeduceTest {
 	
 	@Test
-	public final void testUnify1() {
-		assertNotNull(unify($equality("a", "d"), $equality("a", new Unifier())));
-		assertNotNull(unify($equality("a", new Unifier()), $equality("a", "d")));
-	}
-	
-	@Test
-	public final void testJustify1() {
+	public final void testAutoDeduce1() {
 		build(() -> {
 			supposeRewrite();
 			deduceIdentity();
@@ -37,7 +28,7 @@ public final class AutoDeduceTest {
 	}
 	
 	@Test
-	public final void testJustify2() {
+	public final void testAutoDeduce2() {
 		build(() -> {
 			supposeRewrite();
 			deduceIdentity();
@@ -50,7 +41,7 @@ public final class AutoDeduceTest {
 	}
 	
 	@Test
-	public final void testJustify3() {
+	public final void testAutoDeduce3() {
 		build(() -> {
 			suppose($rule("a", "b"));
 			suppose($("a"));
@@ -60,7 +51,7 @@ public final class AutoDeduceTest {
 	}
 	
 	@Test
-	public final void testJustify4() {
+	public final void testAutoDeduce4() {
 		build(() -> {
 			suppose($rule("a", "b"));
 			suppose($rule("b", "c"));
@@ -71,7 +62,7 @@ public final class AutoDeduceTest {
 	}
 	
 	@Test
-	public final void testJustify5() {
+	public final void testAutoDeduce5() {
 		build(() -> {
 			suppose($rule("a", "b", "c"));
 			suppose($("a"));
@@ -82,7 +73,7 @@ public final class AutoDeduceTest {
 	}
 	
 	@Test
-	public final void testJustify6() {
+	public final void testAutoDeduce6() {
 		build(() -> {
 			supposeRewrite();
 			deduceIdentity();
@@ -93,7 +84,7 @@ public final class AutoDeduceTest {
 	}
 	
 	@Test
-	public final void testJustify7() {
+	public final void testAutoDeduce7() {
 		build(() -> {
 			suppose($forall("a", "a"));
 			
@@ -102,7 +93,7 @@ public final class AutoDeduceTest {
 	}
 	
 	@Test
-	public final void testJustify8() {
+	public final void testAutoDeduce8() {
 		build(() -> {
 			suppose($forall("b", $rule("a", "b")));
 			suppose($("a"));
@@ -112,7 +103,7 @@ public final class AutoDeduceTest {
 	}
 	
 	@Test
-	public final void testJustify9() {
+	public final void testAutoDeduce9() {
 		build(() -> {
 			suppose($forall("b", $rule($equality("a", "b"), "c")));
 			suppose($equality("a", "d"));

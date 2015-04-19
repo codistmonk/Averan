@@ -16,29 +16,6 @@ import org.junit.Test;
  */
 public final class StandardTest {
 	
-//	@Test
-//	public final void areEqualTest() {
-//		{
-//			assertTrue(areEqual("a", "a"));
-//			assertFalse(areEqual("a", "b"));
-//			assertTrue(areEqual($forall("a", "a"), $forall("b", "b")));
-//			assertTrue(areEqual($equality($forall("a", "a"), $forall("a", "a")), $equality($forall("b", "b"), $forall("b", "b"))));
-//			assertTrue(areEqual($forall("a", "a"), $forall("b", "a")));
-//		}
-//		
-//		{
-//			assertFalse(areEqual($new("a"), $new("a")));
-//			assertFalse(areEqual($new("a"), $new("b")));
-//			
-//			{
-//				final Object a = $new("a");
-//				final Object b = $new("b");
-//				
-//				assertTrue(areEqual($forall(a, a), $forall(b, b)));
-//			}
-//		}
-//	}
-	
 	@Test
 	public final void testRewrite() {
 		build(() -> {

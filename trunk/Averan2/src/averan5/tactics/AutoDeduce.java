@@ -2,7 +2,6 @@ package averan5.tactics;
 
 import static averan5.deductions.Standard.recall;
 import static averan5.expressions.Expressions.*;
-import static averan5.expressions.Unify.unify;
 import static averan5.proofs.Stack.*;
 import static net.sourceforge.aprog.tools.Tools.*;
 
