@@ -523,11 +523,11 @@ public final class StandardTest {
 	}
 	
 	public static final Deduction build(final Runnable deductionBuilder) {
-		return build(deductionBuilder, 2);
+		return build(getCallerMethodName(), deductionBuilder, 2);
 	}
 	
-	public static final Deduction build(final Runnable deductionBuilder, final int debugDepth) {
-		return Standard.build(getCallerMethodName(), deductionBuilder, debugDepth);
+	public static final Deduction build(final String deductionName, final Runnable deductionBuilder, final int debugDepth) {
+		return Standard.build(deductionName, deductionBuilder, debugDepth);
 	}
 	
 	/**
@@ -684,7 +684,7 @@ public final class StandardTest {
 		
 		public abstract V visit(Object expression);
 		
-		public default V visit(final List<Object> expression) {
+		public default V visit(final List<?> expression) {
 			expression.forEach(this);
 			
 			return this.visit((Object) expression);
@@ -703,7 +703,7 @@ public final class StandardTest {
 		}
 		
 		@Override
-		public default Object visit(final List<Object> expression) {
+		public default Object visit(final List<?> expression) {
 			return expression.stream().map(this).collect(toList());
 		}
 		
@@ -879,7 +879,7 @@ public final class StandardTest {
 			}
 			
 			@Override
-			public final Object visit(final List<Object> expression) {
+			public final Object visit(final List<?> expression) {
 				if (isBlock(expression)) {
 					final Object variable = variable(expression);
 					final boolean remove = !this.wildcards.containsKey(variable);
@@ -916,7 +916,7 @@ public final class StandardTest {
 			}
 			
 			@Override
-			public final Object visit(final List<Object> expression) {
+			public final Object visit(final List<?> expression) {
 				if (isBlock(expression)) {
 					final Wildcard wildcard = cast(Wildcard.class, variable(expression));
 					

@@ -1,8 +1,9 @@
 package averan5.deductions;
 
-import static averan4.core.AveranTools.*;
+import static averan5.core.AveranTools.*;
+import static averan5.deductions.AutoDeduce.Unify.unify;
 import static net.sourceforge.aprog.tools.Tools.*;
-
+import averan5.core.Deduction;
 import averan5.core.Goal;
 import averan5.deductions.StandardTest.ExpressionCombiner;
 import averan5.deductions.StandardTest.ExpressionRewriter;
@@ -13,7 +14,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
+import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 import net.sourceforge.aprog.tools.Pair;
@@ -34,6 +38,8 @@ public final class AutoDeduce {
 		try {
 			g.intros();
 			
+			debugPrint(goal, justify(g.getProposition()));
+			
 			g.conclude();
 			
 			return true;
@@ -43,7 +49,39 @@ public final class AutoDeduce {
 	}
 	
 	public static final Pair<String, Object> justify(final Object goal) {
+		final Map<Unifier, Pair<Unifier, Unifier>> snapshot = snapshot(goal);
+		Deduction deduction = deduction();
+		
+		while (deduction != null) {
+			final List<String> propositionNames = deduction.getPropositionNames();
+			
+			for (final ListIterator<String> i = propositionNames.listIterator(propositionNames.size()); i.hasPrevious();) {
+				final String propositionName = i.previous();
+				final Object unifiable = unifiable(deduction.getProposition(propositionName));
+				
+				if (unify(goal, terminus(unifiable)) != null) {
+					return new Pair<>(propositionName, unifiable);
+				}
+				
+				restore(snapshot);
+			}
+			
+			deduction = deduction.getParent();
+		}
+		
 		return null;
+	}
+	
+	public static final Object terminus(final Object expression) {
+		if (isBlock(expression)) {
+			return terminus(scope(expression));
+		}
+		
+		if (isRule(expression)) {
+			return terminus(conclusion(expression));
+		}
+		
+		return expression;
 	}
 	
 	public static final Object unifiable(final Object expression) {
@@ -57,7 +95,7 @@ public final class AutoDeduce {
 			}
 			
 			@Override
-			public final Object visit(final List<Object> expression) {
+			public final Object visit(final List<?> expression) {
 				if (isBlock(expression)) {
 					final Object variable = variable(expression);
 					
@@ -79,6 +117,8 @@ public final class AutoDeduce {
 				
 				return ExpressionRewriter.super.visit(expression);
 			}
+			
+			private static final long serialVersionUID = -7683840568399205564L;
 			
 		}.apply(expression);
 	}
@@ -232,7 +272,17 @@ public final class AutoDeduce {
 			}
 		}
 		
+		@Override
+		public final String toString() {
+			return this.unifiers.stream().map(u -> ids.computeIfAbsent(u, k -> id.incrementAndGet())).collect(toTreeSet())
+					+ "{" + (this.object[0] != null ? this.object[0] : "") + "}";
+		}
+		
 		private static final long serialVersionUID = 4343191681740782407L;
+		
+		private static final  AtomicInteger id = new AtomicInteger();
+		
+		private static final Map<Unifier, Integer> ids = new WeakHashMap<>();
 		
 	}
 	
