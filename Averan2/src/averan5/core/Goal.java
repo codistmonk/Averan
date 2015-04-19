@@ -58,12 +58,15 @@ public final class Goal implements Serializable {
 	}
 	
 	public final void conclude() {
-		if (pop() != this.getDeduction()) {
+		final Deduction deduction = this.getDeduction();
+		
+		if (pop() != deduction) {
 			throw new IllegalStateException();
 		}
 		
-		final Proof proof = this.getDeduction().getPropositions().size() == 1 ? this.getDeduction().getProofs().values().iterator().next() : this.getDeduction();
-		final Object provedProposition = proof.getProvedPropositionFor(this.getDeduction().getParent());
+		final Proof proof = deduction.getParameters().isEmpty() && deduction.getPropositions().size() == 1 ?
+				deduction.getProofs().values().iterator().next() : deduction;
+		final Object provedProposition = proof.getProvedPropositionFor(deduction.getParent());
 		
 		checkState(areEqual(this.getInitialProposition(), provedProposition),
 				"Expected: " + this.getInitialProposition() + " but was: " + provedProposition);
