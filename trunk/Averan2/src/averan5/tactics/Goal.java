@@ -1,7 +1,9 @@
-package averan5.proofs;
+package averan5.tactics;
 
 import static averan5.expressions.Unify.unify;
 import static averan5.proofs.AveranTools.*;
+import averan5.proofs.Deduction;
+import averan5.proofs.Proof;
 
 import java.io.Serializable;
 
