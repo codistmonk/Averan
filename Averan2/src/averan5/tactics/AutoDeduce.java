@@ -5,12 +5,9 @@ import static averan5.expressions.Expressions.*;
 import static averan5.proofs.Stack.*;
 import static net.sourceforge.aprog.tools.Tools.*;
 
-import averan5.expressions.ExpressionRewriter;
-import averan5.expressions.ExpressionVisitor;
 import averan5.expressions.Unifier;
 import averan5.proofs.Deduction;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -54,7 +51,7 @@ public final class AutoDeduce {
 			String justificationName = justification.getFirst();
 			Object justificationProposition = justification.getSecond();
 			
-			while (!isTerminus(justificationProposition)) {
+			while (!isUltimate(justificationProposition)) {
 				if (isBlock(justificationProposition)) {
 					final Unifier variable = (Unifier) variable(justificationProposition);
 					final Object value = variable.getObject();
@@ -90,10 +87,6 @@ public final class AutoDeduce {
 		return name(-1);
 	}
 	
-	public static final boolean isTerminus(final Object expression) {
-		return !isBlock(expression) && !isRule(expression);
-	}
-	
 	public static final Pair<String, Object> justify(final Object goal) {
 		final Map<Unifier, Pair<Unifier, Unifier>> snapshot = snapshot(goal);
 		Deduction deduction = deduction();
@@ -105,7 +98,7 @@ public final class AutoDeduce {
 				final String propositionName = i.previous();
 				final Object unifiable = unifiable(deduction.getProposition(propositionName));
 				
-				if (unify(goal, terminus(unifiable)) != null) {
+				if (unify(goal, ultimate(unifiable)) != null) {
 					return new Pair<>(propositionName, unifiable);
 				}
 				
@@ -116,80 +109,6 @@ public final class AutoDeduce {
 		}
 		
 		return null;
-	}
-	
-	public static final Object terminus(final Object expression) {
-		if (isBlock(expression)) {
-			return terminus(scope(expression));
-		}
-		
-		if (isRule(expression)) {
-			return terminus(conclusion(expression));
-		}
-		
-		return expression;
-	}
-	
-	public static final Object unifiable(final Object expression) {
-		return new ExpressionRewriter() {
-			
-			private final Map<Object, Object> unifiers = new HashMap<>();
-			
-			@Override
-			public final Object visit(final Object expression) {
-				return this.unifiers.getOrDefault(expression, expression);
-			}
-			
-			@Override
-			public final Object visit(final List<?> expression) {
-				if (isBlock(expression)) {
-					final Object variable = variable(expression);
-					
-					if (!(variable instanceof Unifier)) {
-						final boolean remove = !this.unifiers.containsKey(variable);
-						final Object old = this.unifiers.put(variable, new Unifier());
-						
-						try {
-							return ExpressionRewriter.super.visit(expression);
-						} finally {
-							if (remove) {
-								this.unifiers.remove(variable);
-							} else {
-								this.unifiers.put(variable, old);
-							}
-						}
-					}
-				}
-				
-				return ExpressionRewriter.super.visit(expression);
-			}
-			
-			private static final long serialVersionUID = -7683840568399205564L;
-			
-		}.apply(expression);
-	}
-	
-	public static final void restore(final Map<Unifier, Pair<Unifier, Unifier>> snapshot) {
-		snapshot.forEach(Unifier::restore);
-	}
-	
-	public static final Map<Unifier, Pair<Unifier, Unifier>> snapshot(final Object expression) {
-		return new ExpressionVisitor<Map<Unifier, Pair<Unifier, Unifier>>>() {
-			
-			private final Map<Unifier, Pair<Unifier, Unifier>> result = new HashMap<>();
-			
-			@Override
-			public final Map<Unifier, Pair<Unifier, Unifier>> visit(final Object expression) {
-				if (expression instanceof Unifier) {
-					((Unifier) expression).snapshotTo(this.result);
-				}
-				
-				return this.result;
-			}
-			
-			private static final long serialVersionUID = -9159689594221863543L;
-			
-		}.apply(expression);
 	}
 	
 }

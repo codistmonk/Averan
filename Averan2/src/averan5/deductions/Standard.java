@@ -1,7 +1,6 @@
 package averan5.deductions;
 
 import static averan5.expressions.Expressions.*;
-import static averan5.expressions.Unifier.toTreeSet;
 import static averan5.proofs.Stack.*;
 import static java.util.Arrays.asList;
 import static net.sourceforge.aprog.tools.Tools.*;

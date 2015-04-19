@@ -1,7 +1,6 @@
 package averan5.proofs;
 
 import static averan5.expressions.Expressions.*;
-import static averan5.expressions.Unifier.lock;
 import static java.util.Collections.unmodifiableSet;
 import static net.sourceforge.aprog.tools.Tools.last;
 
