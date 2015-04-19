@@ -1,9 +1,11 @@
 package averan5.tactics;
 
 import static averan5.deductions.Standard.recall;
+import static averan5.expressions.Expressions.*;
 import static averan5.expressions.Unify.unify;
 import static averan5.proofs.AveranTools.*;
 import static net.sourceforge.aprog.tools.Tools.*;
+
 import averan5.expressions.ExpressionRewriter;
 import averan5.expressions.ExpressionVisitor;
 import averan5.expressions.Unifier;

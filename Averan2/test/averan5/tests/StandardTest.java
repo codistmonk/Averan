@@ -1,8 +1,10 @@
 package averan5.tests;
 
 import static averan5.deductions.Standard.*;
+import static averan5.expressions.Expressions.*;
 import static averan5.proofs.AveranTools.*;
 import static net.sourceforge.aprog.tools.Tools.*;
+
 import averan5.deductions.Standard;
 import averan5.proofs.Deduction;
 import averan5.tactics.Goal;
