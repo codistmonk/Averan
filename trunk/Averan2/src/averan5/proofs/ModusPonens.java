@@ -1,5 +1,6 @@
 package averan5.proofs;
 
+import static averan5.expressions.Expressions.*;
 import static averan5.expressions.Unify.unify;
 import static averan5.proofs.AveranTools.*;
 
