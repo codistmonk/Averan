@@ -1,8 +1,10 @@
 package averan5.deductions;
 
 import static averan5.core.AveranTools.*;
+import static averan5.deductions.Standard.recall;
 import static averan5.expressions.Unify.unify;
 import static net.sourceforge.aprog.tools.Tools.*;
+
 import averan5.core.Deduction;
 import averan5.core.Goal;
 import averan5.expressions.ExpressionRewriter;
@@ -86,43 +88,7 @@ public final class AutoDeduce {
 		
 		g.conclude();
 		
-		final String result = name(-1);
-		
-		//XXX UGLY...
-		deduction().getPropositions().put(result, lock(proposition(result)));
-		
-		return result;
-	}
-	
-	public static final Object lock(final Object expression) {
-		return new ExpressionRewriter() {
-			
-			@Override
-			public final Object visit(final Object expression) {
-				final Unifier unifier = cast(Unifier.class, expression);
-				final Object candidate = unifier == null ? null : unifier.getObject();
-				
-				if (candidate != null) {
-					return candidate;
-				}
-				
-				return ExpressionRewriter.super.visit(expression);
-			}
-			
-			private static final long serialVersionUID = -1945085756067374461L;
-			
-		}.apply(expression);
-	}
-	
-	public static final void recall(final String propositionName) {
-		if (!propositionName.equals(name(-1)) || !deduction().getProofs().containsKey(propositionName)) {
-			subdeduction();
-			{
-				bind("recall", proposition(propositionName));
-				apply(name(-1), propositionName);
-			}
-			conclude();
-		}
+		return name(-1);
 	}
 	
 	public static final boolean isTerminus(final Object expression) {
