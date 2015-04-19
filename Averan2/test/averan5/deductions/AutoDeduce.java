@@ -33,12 +33,12 @@ public final class AutoDeduce {
 	}
 	
 	public static final boolean autoDeduce(final Object goal) {
-		return autoDeduce(goal, 2);
+		return autoDeduce(goal, 2) != null;
 	}
 	
-	public static final boolean autoDeduce(final Object goal, final int depth) {
+	public static final String autoDeduce(final Object goal, final int depth) {
 		if (depth <= 0) {
-			return false;
+			return null;
 		}
 		
 		final Goal g = Goal.deduce(goal);
@@ -50,7 +50,7 @@ public final class AutoDeduce {
 		if (justification == null) {
 			pop();
 			
-			return false;
+			return null;
 		}
 		
 		debugPrint(goal, justification);
@@ -66,13 +66,15 @@ public final class AutoDeduce {
 					
 					bind(justificationName, value != null ? value : variable);
 				} else {
-					if (!autoDeduce(condition(justificationProposition), depth - 1)) {
+					final String conditionJustificationName = autoDeduce(condition(justificationProposition), depth - 1);
+					
+					if (conditionJustificationName == null) {
 						pop();
 						
-						return false;
+						return null;
 					}
 					
-					apply(justificationName, name(-1));
+					apply(justificationName, conditionJustificationName);
 				}
 				
 				justificationName = name(-1);
@@ -81,12 +83,18 @@ public final class AutoDeduce {
 			
 			debugPrint(justificationName, justificationProposition);
 			
+			if (deduction().getParameters().isEmpty() && deduction().getPropositions().isEmpty()) {
+				pop();
+				
+				return justificationName;
+			}
+			
 			recall(justificationName);
 		}
 		
 		g.conclude();
 		
-		return true;
+		return "";
 	}
 	
 	public static final void recall(final String propositionName) {
