@@ -1,4 +1,4 @@
-package averan5.deductions;
+package averan5.expressions;
 
 import java.io.Serializable;
 import java.util.List;

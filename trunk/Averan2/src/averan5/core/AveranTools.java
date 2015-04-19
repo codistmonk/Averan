@@ -255,10 +255,6 @@ public final class AveranTools {
 		return () -> stream.iterator();
 	}
 	
-    public static final <T> Collector<T, ?, TreeSet<T>> toTreeSet() {
-        return toCollection(TreeSet::new);
-    }
-	
 	public static final void checkArgument(final boolean check, final String message) {
 		if (!check) {
 			throw new IllegalArgumentException(message);

@@ -1,4 +1,4 @@
-package averan5.deductions;
+package averan5.expressions;
 
 import java.util.ArrayList;
 import java.util.List;
