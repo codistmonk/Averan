@@ -1,11 +1,11 @@
 package averan5.deductions;
 
-import static averan5.core.AveranTools.*;
 import static averan5.expressions.Unifier.toTreeSet;
+import static averan5.proofs.AveranTools.*;
 import static java.util.Arrays.asList;
 import static net.sourceforge.aprog.tools.Tools.*;
-import averan5.core.Deduction;
 import averan5.io.Simple;
+import averan5.proofs.Deduction;
 
 import java.util.Arrays;
 

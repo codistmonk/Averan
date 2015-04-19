@@ -1,6 +1,6 @@
 package averan5.io;
 
-import static averan5.core.AveranTools.*;
+import static averan5.proofs.AveranTools.*;
 import static java.util.Collections.nCopies;
 import static java.util.stream.Collectors.toList;
 import static net.sourceforge.aprog.tools.Tools.cast;
@@ -10,9 +10,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import averan5.core.Deduction;
-import averan5.core.Proof;
-
+import averan5.proofs.Deduction;
+import averan5.proofs.Proof;
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 import net.sourceforge.aprog.tools.Tools;
 

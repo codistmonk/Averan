@@ -1,15 +1,14 @@
 package averan5.deductions;
 
-import static averan5.core.AveranTools.*;
 import static averan5.deductions.Standard.recall;
 import static averan5.expressions.Unify.unify;
+import static averan5.proofs.AveranTools.*;
 import static net.sourceforge.aprog.tools.Tools.*;
-
-import averan5.core.Deduction;
-import averan5.core.Goal;
 import averan5.expressions.ExpressionRewriter;
 import averan5.expressions.ExpressionVisitor;
 import averan5.expressions.Unifier;
+import averan5.proofs.Deduction;
+import averan5.proofs.Goal;
 
 import java.util.HashMap;
 import java.util.List;

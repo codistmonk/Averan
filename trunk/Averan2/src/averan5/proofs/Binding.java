@@ -1,6 +1,6 @@
-package averan5.core;
+package averan5.proofs;
 
-import static averan5.core.AveranTools.*;
+import static averan5.proofs.AveranTools.*;
 
 import java.util.Arrays;
 import java.util.List;
