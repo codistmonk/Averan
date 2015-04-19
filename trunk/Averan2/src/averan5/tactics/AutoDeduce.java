@@ -53,8 +53,8 @@ public final class AutoDeduce {
 			
 			while (!isUltimate(justificationProposition)) {
 				if (isBlock(justificationProposition)) {
-					final Unifier variable = (Unifier) variable(justificationProposition);
-					final Object value = variable.getObject();
+					final Object variable = variable(justificationProposition);
+					final Object value = variable instanceof Unifier ? ((Unifier) variable).getObject() : null;
 					
 					bind(justificationName, value != null ? value : variable);
 				} else {
