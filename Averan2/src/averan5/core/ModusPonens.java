@@ -1,7 +1,7 @@
 package averan5.core;
 
 import static averan5.core.AveranTools.*;
-import static averan5.deductions.AutoDeduce.Unify.unify;
+import static averan5.deductions.Unify.unify;
 
 import java.util.Arrays;
 import java.util.List;
