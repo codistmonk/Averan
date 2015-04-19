@@ -33,7 +33,7 @@ public final class AutoDeduce {
 	}
 	
 	public static final boolean autoDeduce(final Object goal) {
-		return autoDeduce(goal, 2) != null;
+		return autoDeduce(goal, 3) != null;
 	}
 	
 	public static final String autoDeduce(final Object goal, final int depth) {
@@ -94,7 +94,7 @@ public final class AutoDeduce {
 		
 		g.conclude();
 		
-		return "";
+		return name(-1);
 	}
 	
 	public static final void recall(final String propositionName) {
