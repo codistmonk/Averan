@@ -112,4 +112,16 @@ public final class AutoDeduceTest {
 		});
 	}
 	
+	@Test
+	public final void testAutoDeduce10() {
+		build(() -> {
+			suppose($forall("a", $forall("b", $forall("c",
+					$rule($equality("a", "b"), $equality("b", "c"), $equality("a", "c"))))));
+			suppose($equality("d", "e"));
+			suppose($equality("e", "f"));
+			
+			assertTrue(autoDeduce($equality("d", "f")));
+		});
+	}
+	
 }
