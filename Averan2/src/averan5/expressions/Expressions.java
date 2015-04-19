@@ -1,15 +1,7 @@
 package averan5.expressions;
 
-import static averan5.expressions.Expressions.AT;
-import static averan5.expressions.Expressions.EQUALS;
-import static averan5.expressions.Expressions.FORALL;
-import static averan5.expressions.Expressions.GIVEN;
-import static averan5.expressions.Expressions.IMPLIES;
-import static averan5.expressions.Expressions.checkArgument;
 import static java.util.stream.Collectors.toList;
 import static net.sourceforge.aprog.tools.Tools.cast;
-import averan5.proofs.AveranTools;
-import averan5.proofs.Deduction;
 
 import java.util.ArrayList;
 import java.util.Arrays;
