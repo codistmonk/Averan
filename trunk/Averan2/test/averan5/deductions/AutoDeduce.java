@@ -1,15 +1,18 @@
 package averan5.deductions;
 
+import static averan4.core.AveranTools.*;
 import static net.sourceforge.aprog.tools.Tools.*;
 
 import averan5.core.Goal;
 import averan5.deductions.StandardTest.ExpressionCombiner;
+import averan5.deductions.StandardTest.ExpressionRewriter;
 import averan5.deductions.StandardTest.ExpressionVisitor;
 
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
@@ -41,6 +44,43 @@ public final class AutoDeduce {
 	
 	public static final Pair<String, Object> justify(final Object goal) {
 		return null;
+	}
+	
+	public static final Object unifiable(final Object expression) {
+		return new ExpressionRewriter() {
+			
+			private final Map<Object, Object> unifiers = new HashMap<>();
+			
+			@Override
+			public final Object visit(final Object expression) {
+				return this.unifiers.getOrDefault(expression, expression);
+			}
+			
+			@Override
+			public final Object visit(final List<Object> expression) {
+				if (isBlock(expression)) {
+					final Object variable = variable(expression);
+					
+					if (!(variable instanceof Unifier)) {
+						final boolean remove = !this.unifiers.containsKey(variable);
+						final Object old = this.unifiers.put(variable, new Unifier());
+						
+						try {
+							return ExpressionRewriter.super.visit(expression);
+						} finally {
+							if (remove) {
+								this.unifiers.remove(variable);
+							} else {
+								this.unifiers.put(variable, old);
+							}
+						}
+					}
+				}
+				
+				return ExpressionRewriter.super.visit(expression);
+			}
+			
+		}.apply(expression);
 	}
 	
 	public static final void restore(final Map<Unifier, Pair<Unifier, Unifier>> snapshot) {
