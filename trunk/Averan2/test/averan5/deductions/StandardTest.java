@@ -5,7 +5,6 @@ import static averan5.deductions.Standard.*;
 import static java.util.stream.Collectors.toList;
 import static net.sourceforge.aprog.tools.Tools.*;
 import static org.junit.Assert.*;
-
 import averan5.core.Binding;
 import averan5.core.ModusPonens;
 import averan5.core.Deduction;
@@ -20,6 +19,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -672,11 +673,10 @@ public final class StandardTest {
 			this.apply(expression);
 		}
 		
-		@SuppressWarnings("unchecked")
 		@Override
 		public default V apply(final Object expression) {
 			if (expression instanceof List) {
-				return this.visit((List<Object>) expression);
+				return this.visit((List<?>) expression);
 			}
 			
 			return this.visit(expression);
@@ -705,6 +705,75 @@ public final class StandardTest {
 		@Override
 		public default Object visit(final List<Object> expression) {
 			return expression.stream().map(this).collect(toList());
+		}
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2015-04-19)
+	 * 
+	 * @param <V>
+	 */
+	public static abstract interface ExpressionZipper<V> extends Serializable, BiFunction<Object, Object, V>, BiConsumer<Object, Object> {
+		
+		@Override
+		public default void accept(final Object expression1, final Object expression2) {
+			this.apply(expression1, expression2);
+		}
+		
+		@Override
+		public default V apply(final Object expression1, final Object expression2) {
+			if (expression1 instanceof List && expression2 instanceof List) {
+				return this.visit((List<?>) expression1, (List<?>) expression2);
+			}
+			
+			return this.visit(expression1, expression2);
+		}
+		
+		public abstract V visit(Object expression1, Object expression2);
+		
+		public default V visit(final List<Object> expression1, final List<Object> expression2) {
+			final int n = expression1.size();
+			
+			if (n != expression2.size()) {
+				return null;
+			}
+			
+			for (int i = 0; i < n; ++i) {
+				this.accept(expression1.get(i), expression2.get(i));
+			}
+			
+			return this.visit((Object) expression1, (Object) expression2);
+		}
+		
+	}
+	
+	/**
+	 * @author codistmonk (creation 2015-04-19)
+	 */
+	public static abstract interface ExpressionCombiner extends ExpressionZipper<Object> {
+		
+		@Override
+		public default Object visit(final List<Object> expression1, final List<Object> expression2) {
+			final int n = expression1.size();
+			
+			if (n != expression2.size()) {
+				return null;
+			}
+			
+			final List<Object> result = new ArrayList<>(n);
+			
+			for (int i = 0; i < n; ++i) {
+				final Object element = this.apply(expression1.get(i), expression2.get(i));
+				
+				if (element == null) {
+					return null;
+				}
+				
+				result.add(element);
+			}
+			
+			return result;
 		}
 		
 	}
