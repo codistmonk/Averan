@@ -1,6 +1,7 @@
 package averan5.core;
 
 import static averan5.core.AveranTools.*;
+import static averan5.expressions.Unifier.lock;
 import static java.util.Collections.unmodifiableSet;
 import static net.sourceforge.aprog.tools.Tools.last;
 
@@ -102,7 +103,7 @@ public final class Deduction extends Proof.Abstract {
 		checkArgument(propositionName != null, "Invalid proposition name: " + propositionName);
 		checkArgument(this.getProposition(propositionName) == null, "Duplicate proposition name: " + propositionName);
 		
-		this.getPropositions().put(propositionName, proposition);
+		this.getPropositions().put(propositionName, lock(proposition));
 		this.getPropositionNames().add(propositionName);
 		
 		return this;

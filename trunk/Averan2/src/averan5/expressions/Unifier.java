@@ -133,4 +133,24 @@ public final class Unifier implements Serializable {
         return toCollection(TreeSet::new);
     }
 	
+	public static final Object lock(final Object expression) {
+		return new ExpressionRewriter() {
+			
+			@Override
+			public final Object visit(final Object expression) {
+				final Unifier unifier = cast(Unifier.class, expression);
+				final Object candidate = unifier == null ? null : unifier.getObject();
+				
+				if (candidate != null) {
+					return candidate;
+				}
+				
+				return ExpressionRewriter.super.visit(expression);
+			}
+			
+			private static final long serialVersionUID = -1945085756067374461L;
+			
+		}.apply(expression);
+	}
+	
 }

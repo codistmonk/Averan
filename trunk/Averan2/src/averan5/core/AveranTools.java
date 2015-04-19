@@ -1,9 +1,10 @@
 package averan5.core;
 
-import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
 import static net.sourceforge.aprog.tools.Tools.cast;
 import static net.sourceforge.aprog.tools.Tools.last;
+
+import averan5.expressions.Id;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,8 +13,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeSet;
-import java.util.stream.Collector;
 import java.util.stream.Stream;
 
 import net.sourceforge.aprog.tools.IllegalInstantiationException;

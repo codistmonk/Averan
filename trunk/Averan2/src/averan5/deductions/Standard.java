@@ -4,7 +4,6 @@ import static averan5.core.AveranTools.*;
 import static averan5.expressions.Unifier.toTreeSet;
 import static java.util.Arrays.asList;
 import static net.sourceforge.aprog.tools.Tools.*;
-
 import averan5.core.Deduction;
 import averan5.io.Simple;
 
@@ -110,6 +109,21 @@ public final class Standard {
 		rewrite(name(-2), name(-1));
 		
 		conclude();
+	}
+	
+	public static final void recall(final String recalledPropositionName) {
+		recall(null, recalledPropositionName);
+	}
+	
+	public static final void recall(final String newPropositionName, final String recalledPropositionName) {
+		if (newPropositionName != null || !recalledPropositionName.equals(name(-1)) || !deduction().getProofs().containsKey(recalledPropositionName)) {
+			subdeduction(newPropositionName == null ? newName() : newPropositionName);
+			{
+				bind("recall", proposition(recalledPropositionName));
+				apply(name(-1), recalledPropositionName);
+			}
+			conclude();
+		}
 	}
 	
 	public static final Deduction subbuild(final String deductionName, final Runnable deductionBuilder, final int debugDepth) {
