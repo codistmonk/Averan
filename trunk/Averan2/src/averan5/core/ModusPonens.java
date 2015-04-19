@@ -1,6 +1,7 @@
 package averan5.core;
 
 import static averan5.core.AveranTools.*;
+import static averan5.deductions.AutoDeduce.Unify.unify;
 
 import java.util.Arrays;
 import java.util.List;
@@ -38,7 +39,7 @@ public final class ModusPonens extends Proof.Abstract {
 		final Object expectedCondition = condition(rule);
 		final Object condition = checkProposition(this.getConditionName(), context);
 		
-		checkArgument(areEqual(expectedCondition, condition), "Expected condition: " + expectedCondition + " but was: " + condition);
+		checkArgument(null != unify(expectedCondition, condition), "Expected condition: " + expectedCondition + " but was: " + condition);
 		
 		return rule.get(2);
 	}
