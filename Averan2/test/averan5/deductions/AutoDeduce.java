@@ -4,10 +4,13 @@ import static net.sourceforge.aprog.tools.Tools.*;
 
 import averan5.core.Goal;
 import averan5.deductions.StandardTest.ExpressionCombiner;
+import averan5.deductions.StandardTest.ExpressionVisitor;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 import net.sourceforge.aprog.tools.Pair;
@@ -40,8 +43,31 @@ public final class AutoDeduce {
 		return null;
 	}
 	
-	public static final Object unify(final Object object1, final Object object2) {
-		return Unify.INSTANCE.apply(object1, object2);
+	public static final void restore(final Map<Unifier, Pair<Unifier, Unifier>> snapshot) {
+		snapshot.forEach(Unifier::restore);
+	}
+	
+	public static final Map<Unifier, Pair<Unifier, Unifier>> snapshot(final Object expression) {
+		return new ExpressionVisitor<Map<Unifier, Pair<Unifier, Unifier>>>() {
+			
+			private final Map<Unifier, Pair<Unifier, Unifier>> result = new HashMap<>();
+			
+			@Override
+			public final Map<Unifier, Pair<Unifier, Unifier>> visit(final Object expression) {
+				final Unifier unifier = cast(Unifier.class, expression);
+				
+				if (unifier != null) {
+					for (final Unifier u : unifier.unifiers) {
+						this.result.computeIfAbsent(u, Unifier::snapshot);
+					}
+				}
+				
+				return this.result;
+			}
+			
+			private static final long serialVersionUID = -9159689594221863543L;
+			
+		}.apply(expression);
 	}
 	
 	/**
@@ -66,6 +92,10 @@ public final class AutoDeduce {
 		
 		public static final Unify INSTANCE = new Unify();
 		
+		public static final Object unify(final Object object1, final Object object2) {
+			return INSTANCE.apply(object1, object2);
+		}
+		
 	}
 	
 	/**
@@ -77,11 +107,37 @@ public final class AutoDeduce {
 		
 		private Object[] object;
 		
+		private Unifier(final Collection<Unifier> unifiers, final Object[] object) {
+			this.unifiers = unifiers;
+			this.object = object;
+		}
+		
 		public Unifier() {
-			this.unifiers = new HashSet<>();
-			this.object = new Object[1];
+			this(new HashSet<>(), new Object[1]);
 			
 			this.unifiers.add(this);
+		}
+		
+		public final Pair<Unifier, Unifier> snapshot() {
+			final Unifier structure = new Unifier(this.unifiers, this.object);
+			final Unifier contents = new Unifier();
+			contents.unifiers.clear();
+			contents.unifiers.addAll(this.unifiers);
+			contents.object[0] = this.object[0];
+			
+			return new Pair<>(structure, contents);
+		}
+		
+		public final Unifier restore(final Pair<Unifier, Unifier> snapshot) {
+			final Unifier structure = snapshot.getFirst();
+			final Unifier contents = snapshot.getSecond();
+			this.unifiers = structure.unifiers;
+			this.object = structure.object;
+			this.unifiers.clear();
+			this.unifiers.addAll(contents.unifiers);
+			this.object[0] = contents.object[0];
+			
+			return this;
 		}
 		
 		public final boolean unifies(final Object object) {
