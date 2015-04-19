@@ -1,18 +1,23 @@
 package averan5.expressions;
 
+import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
 import static net.sourceforge.aprog.tools.Tools.cast;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
+import java.util.stream.Collector;
 import java.util.stream.Stream;
 
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
+import net.sourceforge.aprog.tools.Pair;
 
 /**
  * @author codistmonk (creation 2015-04-19)
@@ -224,13 +229,115 @@ public final class Expressions {
 		return list(block).get(1);
 	}
 	
+	public static final boolean isUltimate(final Object expression) {
+		return !isBlock(expression) && !isRule(expression);
+	}
+	
+	public static final Object ultimate(final Object expression) {
+		if (isBlock(expression)) {
+			return ultimate(scope(expression));
+		}
+		
+		if (isRule(expression)) {
+			return ultimate(conclusion(expression));
+		}
+		
+		return expression;
+	}
+	
 	@SuppressWarnings("unchecked")
 	public static final List<Object> list(final Object object) {
 		return (List<Object>) object;
 	}
 	
+    public static final <T> Collector<T, ?, TreeSet<T>> toTreeSet() {
+        return toCollection(TreeSet::new);
+    }
+	
+	public static final Object unifiable(final Object expression) {
+		return new ExpressionRewriter() {
+			
+			private final Map<Object, Object> unifiers = new HashMap<>();
+			
+			@Override
+			public final Object visit(final Object expression) {
+				return this.unifiers.getOrDefault(expression, expression);
+			}
+			
+			@Override
+			public final Object visit(final List<?> expression) {
+				if (isBlock(expression)) {
+					final Object variable = variable(expression);
+					
+					if (!(variable instanceof Unifier)) {
+						final boolean remove = !this.unifiers.containsKey(variable);
+						final Object old = this.unifiers.put(variable, new Unifier());
+						
+						try {
+							return ExpressionRewriter.super.visit(expression);
+						} finally {
+							if (remove) {
+								this.unifiers.remove(variable);
+							} else {
+								this.unifiers.put(variable, old);
+							}
+						}
+					}
+				}
+				
+				return ExpressionRewriter.super.visit(expression);
+			}
+			
+			private static final long serialVersionUID = -7683840568399205564L;
+			
+		}.apply(expression);
+	}
+	
+	public static final Object lock(final Object expression) {
+		return new ExpressionRewriter() {
+			
+			@Override
+			public final Object visit(final Object expression) {
+				final Unifier unifier = cast(Unifier.class, expression);
+				final Object candidate = unifier == null ? null : unifier.getObject();
+				
+				if (candidate != null) {
+					return candidate;
+				}
+				
+				return ExpressionRewriter.super.visit(expression);
+			}
+			
+			private static final long serialVersionUID = -1945085756067374461L;
+			
+		}.apply(expression);
+	}
+	
 	public static final Object unify(final Object object1, final Object object2) {
 		return Unify.INSTANCE.apply(object1, object2);
+	}
+	
+	public static final Map<Unifier, Pair<Unifier, Unifier>> snapshot(final Object expression) {
+		return new ExpressionVisitor<Map<Unifier, Pair<Unifier, Unifier>>>() {
+			
+			private final Map<Unifier, Pair<Unifier, Unifier>> result = new HashMap<>();
+			
+			@Override
+			public final Map<Unifier, Pair<Unifier, Unifier>> visit(final Object expression) {
+				if (expression instanceof Unifier) {
+					((Unifier) expression).snapshotTo(this.result);
+				}
+				
+				return this.result;
+			}
+			
+			private static final long serialVersionUID = -9159689594221863543L;
+			
+		}.apply(expression);
+	}
+	
+	public static final void restore(final Map<Unifier, Pair<Unifier, Unifier>> snapshot) {
+		snapshot.forEach(Unifier::restore);
 	}
 	
 }
