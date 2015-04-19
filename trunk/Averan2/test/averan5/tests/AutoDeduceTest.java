@@ -16,14 +16,19 @@ public final class AutoDeduceTest {
 	
 	@Test
 	public final void testAutoDeduce1() {
-		build(() -> {
-			supposeRewrite();
-			deduceIdentity();
-			deduceRecall();
+		build(new Runnable() {
 			
-			suppose($("a"));
+			@Override
+			public final void run() {
+				supposeRewrite();
+				deduceIdentity();
+				deduceRecall();
+				
+				suppose($("a"));
+				
+				assertTrue(autoDeduce($("a")));
+			}
 			
-			assertTrue(autoDeduce($("a")));
 		});
 	}
 	

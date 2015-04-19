@@ -18,16 +18,21 @@ public final class StandardTest {
 	
 	@Test
 	public final void testRewrite() {
-		build(() -> {
-			supposeRewrite();
+		build(new Runnable() {
 			
-			suppose($equality("a", "b"));
+			@Override
+			public final void run() {
+				supposeRewrite();
+				
+				suppose($equality("a", "b"));
+				
+				final Goal goal = Goal.deduce($equality("b", "b"));
+				
+				rewrite(name(-1), name(-1));
+				
+				goal.conclude();
+			}
 			
-			final Goal goal = Goal.deduce($equality("b", "b"));
-			
-			rewrite(name(-1), name(-1));
-			
-			goal.conclude();
 		});
 	}
 	
