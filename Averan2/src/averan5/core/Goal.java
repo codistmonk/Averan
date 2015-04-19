@@ -1,6 +1,8 @@
 package averan5.core;
 
 import static averan5.core.AveranTools.*;
+import static averan5.deductions.AutoDeduce.Unify.unify;
+import averan5.deductions.AutoDeduce.Unify;
 
 import java.io.Serializable;
 
@@ -68,7 +70,7 @@ public final class Goal implements Serializable {
 				deduction.getProofs().values().iterator().next() : deduction;
 		final Object provedProposition = proof.getProvedPropositionFor(deduction.getParent());
 		
-		checkState(areEqual(this.getInitialProposition(), provedProposition),
+		checkState(null != unify(this.getInitialProposition(), provedProposition),
 				"Expected: " + this.getInitialProposition() + " but was: " + provedProposition);
 		
 		deduction().conclude(proof);
