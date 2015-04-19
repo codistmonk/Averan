@@ -1,4 +1,4 @@
-package averan5.deductions;
+package averan5.expressions;
 
 import static java.util.stream.Collectors.toList;
 

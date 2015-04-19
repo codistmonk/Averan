@@ -1,4 +1,4 @@
-package averan5.deductions;
+package averan5.expressions;
 
 import net.sourceforge.aprog.tools.Tools;
 

@@ -1,14 +1,16 @@
-package averan5.deductions;
+package averan5.expressions;
 
-import static averan5.core.AveranTools.toTreeSet;
+import static java.util.stream.Collectors.toCollection;
 import static net.sourceforge.aprog.tools.Tools.cast;
 
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.TreeSet;
 import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collector;
 
 import net.sourceforge.aprog.tools.Pair;
 import net.sourceforge.aprog.tools.Tools;
@@ -126,5 +128,9 @@ public final class Unifier implements Serializable {
 	private static final  AtomicInteger id = new AtomicInteger();
 	
 	private static final Map<Unifier, Integer> ids = new WeakHashMap<>();
+	
+    public static final <T> Collector<T, ?, TreeSet<T>> toTreeSet() {
+        return toCollection(TreeSet::new);
+    }
 	
 }

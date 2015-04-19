@@ -1,13 +1,14 @@
 package averan5.deductions;
 
 import static averan5.core.AveranTools.*;
+import static averan5.expressions.Unifier.toTreeSet;
 import static java.util.Arrays.asList;
 import static net.sourceforge.aprog.tools.Tools.*;
 
-import java.util.Arrays;
-
 import averan5.core.Deduction;
 import averan5.io.Simple;
+
+import java.util.Arrays;
 
 import net.sourceforge.aprog.tools.IllegalInstantiationException;
 

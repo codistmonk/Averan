@@ -2,10 +2,11 @@ package averan5.deductions;
 
 import static averan5.core.AveranTools.*;
 import static averan5.deductions.AutoDeduce.autoDeduce;
-import static averan5.deductions.Unify.unify;
 import static averan5.deductions.Standard.*;
 import static averan5.deductions.StandardTest.build;
+import static averan5.expressions.Unify.unify;
 import static org.junit.Assert.*;
+import averan5.expressions.Unifier;
 
 import org.junit.Test;
 
