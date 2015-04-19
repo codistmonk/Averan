@@ -14,9 +14,9 @@ import net.sourceforge.aprog.tools.IllegalInstantiationException;
 /**
  * @author codistmonk (creation 2015-04-11)
  */
-public final class AveranTools {
+public final class Stack {
 	
-	private AveranTools() {
+	private Stack() {
 		throw new IllegalInstantiationException();
 	}
 	

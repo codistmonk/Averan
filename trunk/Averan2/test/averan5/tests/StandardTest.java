@@ -2,7 +2,7 @@ package averan5.tests;
 
 import static averan5.deductions.Standard.*;
 import static averan5.expressions.Expressions.*;
-import static averan5.proofs.AveranTools.*;
+import static averan5.proofs.Stack.*;
 import static net.sourceforge.aprog.tools.Tools.*;
 
 import averan5.deductions.Standard;

@@ -1,7 +1,7 @@
 package averan5.proofs;
 
 import static averan5.expressions.Expressions.*;
-import static averan5.proofs.AveranTools.*;
+import static averan5.proofs.Stack.*;
 
 import java.util.Arrays;
 import java.util.List;
