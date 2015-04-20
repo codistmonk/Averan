@@ -65,11 +65,7 @@ public final class AutoDeduce {
 	private static final String autoApply(final Pair<String, Object> justification, final int depth) {
 		final String candidate = autoApply(justification.getFirst(), justification.getSecond(), depth);
 		
-		if (candidate == null) {
-			return null;
-		}
-		
-		if (deduction().getParameters().isEmpty() && deduction().getPropositions().isEmpty()) {
+		if (candidate == null || deduction().getParameters().isEmpty() && deduction().getPropositions().isEmpty()) {
 			pop();
 			
 			return candidate;
@@ -81,30 +77,28 @@ public final class AutoDeduce {
 	}
 	
 	private static final String autoApply(final String justificationName, final Object justificationProposition, final int depth) {
-		if (!isUltimate(justificationProposition)) {
-			debugPrint(justificationName, justificationProposition);
-			
-			if (isBlock(justificationProposition)) {
-				final Object variable = variable(justificationProposition);
-				final Object value = variable instanceof Unifier ? ((Unifier) variable).getObject() : null;
-				
-				bind(justificationName, value != null ? value : variable);
-			} else {
-				final String conditionJustificationName = autoDeduce(condition(justificationProposition), depth - 1);
-				
-				if (conditionJustificationName == null) {
-					pop();
-					
-					return null;
-				}
-				
-				apply(justificationName, conditionJustificationName);
-			}
-			
-			return autoApply(name(-1), proposition(-1), depth);
+		if (isUltimate(justificationProposition)) {
+			return justificationName;
 		}
 		
-		return justificationName;
+		debugPrint(justificationName, justificationProposition);
+		
+		if (isBlock(justificationProposition)) {
+			final Object variable = variable(justificationProposition);
+			final Object value = variable instanceof Unifier ? ((Unifier) variable).getObject() : null;
+			
+			bind(justificationName, value != null ? value : variable);
+		} else {
+			final String conditionJustificationName = autoDeduce(condition(justificationProposition), depth - 1);
+			
+			if (conditionJustificationName == null) {
+				return null;
+			}
+			
+			apply(justificationName, conditionJustificationName);
+		}
+		
+		return autoApply(name(-1), proposition(-1), depth);
 	}
 	
 	public static final Pair<String, Object> justify(final Object goal) {
