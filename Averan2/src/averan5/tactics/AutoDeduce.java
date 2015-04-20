@@ -39,7 +39,7 @@ public final class AutoDeduce {
 		
 		final Pair<String, Object> justification = justify(g.getProposition());
 		final String candidate = justification == null ? null :
-			autoApply(justification.getFirst(), justification.getSecond(), depth);
+			autoBindApply(justification.getFirst(), justification.getSecond(), depth);
 		
 		if (candidate == null || deduction().getParameters().isEmpty() && deduction().getPropositions().isEmpty()) {
 			pop();
@@ -54,29 +54,29 @@ public final class AutoDeduce {
 		return name(-1);
 	}
 	
-	private static final String autoApply(final String justificationName, final Object justificationProposition, final int depth) {
-		if (isUltimate(justificationProposition)) {
-			return justificationName;
+	public static final String autoBindApply(final String propositionName, final Object unifiableProposition, final int depth) {
+		if (isUltimate(unifiableProposition)) {
+			return propositionName;
 		}
 		
-		debugPrint(justificationName, justificationProposition);
+		debugPrint(propositionName, unifiableProposition);
 		
-		if (isBlock(justificationProposition)) {
-			final Object variable = variable(justificationProposition);
+		if (isBlock(unifiableProposition)) {
+			final Object variable = variable(unifiableProposition);
 			final Object value = variable instanceof Unifier ? ((Unifier) variable).getObject() : null;
 			
-			bind(justificationName, value != null ? value : variable);
+			bind(propositionName, value != null ? value : variable);
 		} else {
-			final String conditionJustificationName = autoDeduce(condition(justificationProposition), depth - 1);
+			final String conditionJustificationName = autoDeduce(condition(unifiableProposition), depth - 1);
 			
 			if (conditionJustificationName == null) {
 				return null;
 			}
 			
-			apply(justificationName, conditionJustificationName);
+			apply(propositionName, conditionJustificationName);
 		}
 		
-		return autoApply(name(-1), proposition(-1), depth);
+		return autoBindApply(name(-1), proposition(-1), depth);
 	}
 	
 	public static final Pair<String, Object> justify(final Object goal) {
