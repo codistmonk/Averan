@@ -40,7 +40,6 @@ public final class AutoDeduce {
 		final Pair<String, Object> justification = justify(g.getProposition());
 		
 		if (justification == null) {
-			abort();
 			pop();
 			
 			debugPrint(goal);
@@ -63,11 +62,26 @@ public final class AutoDeduce {
 		return name(-1);
 	}
 	
-	public static final String autoApply(final Pair<String, Object> justification, final int depth) {
-		String justificationName = justification.getFirst();
-		Object justificationProposition = justification.getSecond();
+	private static final String autoApply(final Pair<String, Object> justification, final int depth) {
+		final String candidate = autoApply(justification.getFirst(), justification.getSecond(), depth);
 		
-		while (!isUltimate(justificationProposition)) {
+		if (candidate == null) {
+			return null;
+		}
+		
+		if (deduction().getParameters().isEmpty() && deduction().getPropositions().isEmpty()) {
+			pop();
+			
+			return candidate;
+		}
+		
+		recall(candidate);
+		
+		return "";
+	}
+	
+	private static final String autoApply(final String justificationName, final Object justificationProposition, final int depth) {
+		if (!isUltimate(justificationProposition)) {
 			debugPrint(justificationName, justificationProposition);
 			
 			if (isBlock(justificationProposition)) {
@@ -87,19 +101,10 @@ public final class AutoDeduce {
 				apply(justificationName, conditionJustificationName);
 			}
 			
-			justificationName = name(-1);
-			justificationProposition = proposition(-1);
+			return autoApply(name(-1), proposition(-1), depth);
 		}
 		
-		if (deduction().getParameters().isEmpty() && deduction().getPropositions().isEmpty()) {
-			pop();
-			
-			return justificationName;
-		}
-		
-		recall(justificationName);
-		
-		return "";
+		return justificationName;
 	}
 	
 	public static final Pair<String, Object> justify(final Object goal) {
