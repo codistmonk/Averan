@@ -3,7 +3,7 @@ package averan5.io;
 import static averan5.expressions.Expressions.*;
 import static java.util.Collections.nCopies;
 import static java.util.stream.Collectors.toList;
-import static net.sourceforge.aprog.tools.Tools.cast;
+import static net.sourceforge.aprog.tools.Tools.*;
 
 import averan5.proofs.Deduction;
 import averan5.proofs.Proof;

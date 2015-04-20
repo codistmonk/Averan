@@ -85,7 +85,7 @@ public final class StandardTest {
 	}
 	
 	public static final Deduction build(final Runnable deductionBuilder) {
-		return build(getCallerMethodName(), deductionBuilder, 2);
+		return build(getCallerMethodName(), deductionBuilder, 3);
 	}
 	
 	public static final Deduction build(final String deductionName, final Runnable deductionBuilder, final int debugDepth) {
