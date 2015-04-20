@@ -38,29 +38,20 @@ public final class AutoDeduce {
 		g.intros();
 		
 		final Pair<String, Object> justification = justify(g.getProposition());
-		final String candidate = justification == null ? null : autoApply(justification, depth);
+		final String candidate = justification == null ? null :
+			autoApply(justification.getFirst(), justification.getSecond(), depth);
 		
-		if (candidate == null || !candidate.isEmpty()) {
+		if (candidate == null || deduction().getParameters().isEmpty() && deduction().getPropositions().isEmpty()) {
 			pop();
 			
 			return candidate;
 		}
 		
+		recall(candidate);
+		
 		g.conclude();
 		
 		return name(-1);
-	}
-	
-	private static final String autoApply(final Pair<String, Object> justification, final int depth) {
-		final String candidate = autoApply(justification.getFirst(), justification.getSecond(), depth);
-		
-		if (candidate == null || deduction().getParameters().isEmpty() && deduction().getPropositions().isEmpty()) {
-			return candidate;
-		}
-		
-		recall(candidate);
-		
-		return "";
 	}
 	
 	private static final String autoApply(final String justificationName, final Object justificationProposition, final int depth) {
