@@ -40,6 +40,7 @@ public final class AutoDeduce {
 		final Pair<String, Object> justification = justify(g.getProposition());
 		
 		if (justification == null) {
+			abort();
 			pop();
 			
 			debugPrint(goal);
@@ -47,44 +48,58 @@ public final class AutoDeduce {
 			return null;
 		}
 		
-		{
-			String justificationName = justification.getFirst();
-			Object justificationProposition = justification.getSecond();
-			
-			while (!isUltimate(justificationProposition)) {
-				if (isBlock(justificationProposition)) {
-					final Object variable = variable(justificationProposition);
-					final Object value = variable instanceof Unifier ? ((Unifier) variable).getObject() : null;
-					
-					bind(justificationName, value != null ? value : variable);
-				} else {
-					final String conditionJustificationName = autoDeduce(condition(justificationProposition), depth - 1);
-					
-					if (conditionJustificationName == null) {
-						pop();
-						
-						return null;
-					}
-					
-					apply(justificationName, conditionJustificationName);
-				}
-				
-				justificationName = name(-1);
-				justificationProposition = proposition(-1);
-			}
-			
-			if (deduction().getParameters().isEmpty() && deduction().getPropositions().isEmpty()) {
-				pop();
-				
-				return justificationName;
-			}
-			
-			recall(justificationName);
+		final String candidate = autoApply(justification, depth);
+		
+		if (candidate == null) {
+			return null;
+		}
+		
+		if (!candidate.isEmpty()) {
+			return candidate;
 		}
 		
 		g.conclude();
 		
 		return name(-1);
+	}
+	
+	public static final String autoApply(final Pair<String, Object> justification, final int depth) {
+		String justificationName = justification.getFirst();
+		Object justificationProposition = justification.getSecond();
+		
+		while (!isUltimate(justificationProposition)) {
+			debugPrint(justificationName, justificationProposition);
+			
+			if (isBlock(justificationProposition)) {
+				final Object variable = variable(justificationProposition);
+				final Object value = variable instanceof Unifier ? ((Unifier) variable).getObject() : null;
+				
+				bind(justificationName, value != null ? value : variable);
+			} else {
+				final String conditionJustificationName = autoDeduce(condition(justificationProposition), depth - 1);
+				
+				if (conditionJustificationName == null) {
+					pop();
+					
+					return null;
+				}
+				
+				apply(justificationName, conditionJustificationName);
+			}
+			
+			justificationName = name(-1);
+			justificationProposition = proposition(-1);
+		}
+		
+		if (deduction().getParameters().isEmpty() && deduction().getPropositions().isEmpty()) {
+			pop();
+			
+			return justificationName;
+		}
+		
+		recall(justificationName);
+		
+		return "";
 	}
 	
 	public static final Pair<String, Object> justify(final Object goal) {

@@ -6,6 +6,7 @@ import static averan5.proofs.Stack.*;
 import static averan5.tactics.AutoDeduce.autoDeduce;
 import static averan5.tests.StandardTest.build;
 import static org.junit.Assert.*;
+import averan5.expressions.Unifier;
 
 import org.junit.Test;
 
@@ -120,8 +121,12 @@ public final class AutoDeduceTest {
 	@Test
 	public final void testAutoDeduce10() {
 		build(() -> {
-			suppose($forall("a", $forall("b", $forall("c",
-					$rule($equality("a", "b"), $equality("b", "c"), $equality("a", "c"))))));
+			final Object a = new Unifier();
+			final Object b = new Unifier();
+			final Object c = new Unifier();
+			
+			suppose($forall(a, $forall(b, $forall(c,
+					$rule($equality(a, b), $equality(b, c), $equality(a, c))))));
 			suppose($equality("d", "e"));
 			suppose($equality("e", "f"));
 			
