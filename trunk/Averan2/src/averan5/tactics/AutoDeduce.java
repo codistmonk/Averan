@@ -4,7 +4,6 @@ import static averan5.deductions.Standard.recall;
 import static averan5.expressions.Expressions.*;
 import static averan5.proofs.Stack.*;
 import static net.sourceforge.aprog.tools.Tools.*;
-
 import averan5.expressions.Unifier;
 import averan5.proofs.Deduction;
 
@@ -25,10 +24,10 @@ public final class AutoDeduce {
 	}
 	
 	public static final boolean autoDeduce(final Object goal) {
-		return autoDeduce(goal, 3) != null;
+		return autoDeduce(goal, null, 3) != null;
 	}
 	
-	public static final String autoDeduce(final Object goal, final int depth) {
+	public static final String autoDeduce(final Object goal, final String previousJustificationName, final int depth) {
 		if (depth <= 0) {
 			return null;
 		}
@@ -37,7 +36,7 @@ public final class AutoDeduce {
 		
 		g.intros();
 		
-		final Pair<String, Object> justification = justify(g.getProposition());
+		final Pair<String, Object> justification = justify(g.getProposition(), previousJustificationName);
 		final String candidate = justification == null ? null :
 			autoBindApply(justification.getFirst(), justification.getSecond(), depth);
 		
@@ -66,20 +65,34 @@ public final class AutoDeduce {
 			final Object value = variable instanceof Unifier ? ((Unifier) variable).getObject() : null;
 			
 			bind(propositionName, value != null ? value : variable);
-		} else {
-			final String conditionJustificationName = autoDeduce(condition(unifiableProposition), depth - 1);
+			
+			return autoBindApply(name(-1), proposition(-1), depth);
+		}
+		
+		{
+			final Object condition = condition(unifiableProposition);
+			final Map<Unifier, Pair<Unifier, Unifier>> snapshot = snapshot(condition);
+			
+			String conditionJustificationName = autoDeduce(condition, null, depth - 1);
 			
 			if (conditionJustificationName == null) {
 				return null;
 			}
 			
 			apply(propositionName, conditionJustificationName);
+			
+			final String result = autoBindApply(name(-1), proposition(-1), depth);
+			
+			if (result == null) {
+				restore(snapshot);
+				// TODO retry autoDeduce(condition)
+			}
+			
+			return result;
 		}
-		
-		return autoBindApply(name(-1), proposition(-1), depth);
 	}
 	
-	public static final Pair<String, Object> justify(final Object goal) {
+	public static final Pair<String, Object> justify(final Object goal, final String previousJustificationName) {
 		final Map<Unifier, Pair<Unifier, Unifier>> snapshot = snapshot(goal);
 		Deduction deduction = deduction();
 		
