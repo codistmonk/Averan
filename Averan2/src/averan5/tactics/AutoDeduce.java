@@ -38,8 +38,11 @@ public final class AutoDeduce {
 		g.intros();
 		
 		Pair<String, Object> justification = justify(g.getProposition(), previousJustificationName, snapshot);
+		debugPrint(goal, justification);
 		final String checkpoint = name(-1);
 		String candidate = justification == null ? null : autoBindApply(justification.getFirst(), justification.getSecond(), depth);
+		
+		debugPrint(candidate);
 		
 		while (justification != null && candidate == null) {
 			restore(snapshot);
@@ -47,8 +50,6 @@ public final class AutoDeduce {
 			justification = justify(g.getProposition(), justification.getFirst(), snapshot);
 			candidate = justification == null ? null : autoBindApply(justification.getFirst(), justification.getSecond(), depth);
 		}
-		
-		debugPrint(g.getProposition(), justification, previousJustificationName);
 		
 		if (candidate == null || deduction().getParameters().isEmpty() && deduction().getPropositions().isEmpty()) {
 			pop();
@@ -58,7 +59,13 @@ public final class AutoDeduce {
 		
 		recall(candidate);
 		
-		g.conclude();
+		try {
+			g.conclude();
+		} catch (final Exception exception) {
+			exception.printStackTrace();
+			
+			return null;
+		}
 		
 		return name(-1);
 	}
@@ -88,6 +95,8 @@ public final class AutoDeduce {
 			final Object variable = variable(unifiableProposition);
 			final Object value = variable instanceof Unifier ? ((Unifier) variable).getObject() : null;
 			
+			debugPrint(variable, value);
+			
 			bind(propositionName, value != null ? value : variable);
 			
 			return autoBindApply(name(-1), proposition(-1), depth);
@@ -95,6 +104,7 @@ public final class AutoDeduce {
 		
 		{
 			final Object condition = condition(unifiableProposition);
+			debugPrint(condition);
 			final Map<Unifier, Pair<Unifier, Unifier>> snapshot = new HashMap<>();
 			final String checkpoint = name(-1);
 			String conditionJustificationName = autoDeduce(condition, null, snapshot, depth - 1);

@@ -7,6 +7,7 @@ import static averan5.tactics.AutoDeduce.autoDeduce;
 import static averan5.tests.StandardTest.build;
 import static org.junit.Assert.*;
 import averan5.expressions.Unifier;
+import net.sourceforge.aprog.tools.Tools;
 
 import org.junit.Test;
 
@@ -121,16 +122,19 @@ public final class AutoDeduceTest {
 	@Test
 	public final void testAutoDeduce10() {
 		build(() -> {
-			final Object a = new Unifier();
-			final Object b = new Unifier();
-			final Object c = new Unifier();
+			final Object a = "a";
+			final Object b = "b";
+			final Object c = "c";
 			
 			suppose($forall(a, $forall(b, $forall(c,
 					$rule($equality(a, b), $equality(b, c), $equality(a, c))))));
+			Tools.debugPrint(unifiable(proposition(-1)));
 			suppose($equality("d", "e"));
 			suppose($equality("e", "f"));
 			
 			assertTrue(autoDeduce($equality("d", "f")));
+			
+			abort();
 		});
 	}
 	

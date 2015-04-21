@@ -271,7 +271,7 @@ public final class Expressions {
 					
 					if (!(variable instanceof Unifier)) {
 						final boolean remove = !this.unifiers.containsKey(variable);
-						final Object old = this.unifiers.put(variable, new Unifier());
+						final Object old = this.unifiers.put(variable, new Unifier(variable.toString()));
 						
 						try {
 							return ExpressionRewriter.super.visit(expression);
@@ -303,6 +303,55 @@ public final class Expressions {
 				
 				if (candidate != null) {
 					return candidate;
+				}
+				
+				return ExpressionRewriter.super.visit(expression);
+			}
+			
+			private static final long serialVersionUID = -1945085756067374461L;
+			
+		}.apply(expression);
+	}
+	
+	public static final Object lock2(final Object expression) {
+		return new ExpressionRewriter() {
+			
+			private final Map<Object, Object> unifiers = new HashMap<>();
+			
+			@Override
+			public final Object visit(final Object expression) {
+				final Unifier unifier = cast(Unifier.class, expression);
+				
+				if (!this.unifiers.containsKey(unifier)) {
+					final Object candidate = unifier == null ? null : unifier.getObject();
+					
+					if (candidate != null) {
+						return candidate;
+					}
+				}
+				
+				return ExpressionRewriter.super.visit(expression);
+			}
+			
+			@Override
+			public final Object visit(final List<?> expression) {
+				if (isBlock(expression)) {
+					final Object variable = variable(expression);
+					
+					if (!(variable instanceof Unifier)) {
+						final boolean remove = !this.unifiers.containsKey(variable);
+						final Object old = this.unifiers.put(variable, new Unifier(variable.toString()));
+						
+						try {
+							return ExpressionRewriter.super.visit(expression);
+						} finally {
+							if (remove) {
+								this.unifiers.remove(variable);
+							} else {
+								this.unifiers.put(variable, old);
+							}
+						}
+					}
 				}
 				
 				return ExpressionRewriter.super.visit(expression);
