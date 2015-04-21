@@ -102,10 +102,10 @@ public final class Deduction extends Proof.Abstract {
 		checkArgument(propositionName != null, "Invalid proposition name: " + propositionName);
 		checkArgument(this.getProposition(propositionName) == null, "Duplicate proposition name: " + propositionName);
 		
-		this.getPropositions().put(propositionName, lock2(proposition));
+		this.getPropositions().put(propositionName, /*lock2*/(proposition));
 		this.getPropositionNames().add(propositionName);
 		
-		return this;
+		return this.lock();
 	}
 	
 	public final Deduction conclude() {
@@ -113,7 +113,7 @@ public final class Deduction extends Proof.Abstract {
 			this.getParent().conclude(this);
 		}
 		
-		return this;
+		return this.lock();
 	}
 	
 	public final Deduction conclude(final Proof proof) {
@@ -184,6 +184,17 @@ public final class Deduction extends Proof.Abstract {
 		}
 		
 		return result;
+	}
+	
+	@Override
+	public final Deduction lock() {
+		for (final Map.Entry<String, Object> entry : this.getPropositions().entrySet()) {
+			entry.setValue(lock2(entry.getValue()));
+		}
+		
+		this.getProofs().values().forEach(Proof::lock);
+		
+		return (Deduction) super.lock();
 	}
 	
 	private static final long serialVersionUID = -1040410980387761070L;

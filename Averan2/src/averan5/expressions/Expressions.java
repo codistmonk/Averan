@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -316,13 +317,13 @@ public final class Expressions {
 	public static final Object lock2(final Object expression) {
 		return new ExpressionRewriter() {
 			
-			private final Map<Object, Object> unifiers = new HashMap<>();
+			private final Collection<Unifier> unifiers = new HashSet<>();
 			
 			@Override
 			public final Object visit(final Object expression) {
 				final Unifier unifier = cast(Unifier.class, expression);
 				
-				if (!this.unifiers.containsKey(unifier)) {
+				if (!this.unifiers.contains(unifier)) {
 					final Object candidate = unifier == null ? null : unifier.getObject();
 					
 					if (candidate != null) {
@@ -338,17 +339,14 @@ public final class Expressions {
 				if (isBlock(expression)) {
 					final Object variable = variable(expression);
 					
-					if (!(variable instanceof Unifier)) {
-						final boolean remove = !this.unifiers.containsKey(variable);
-						final Object old = this.unifiers.put(variable, new Unifier(variable.toString()));
+					if (variable instanceof Unifier) {
+						final boolean remove = this.unifiers.add((Unifier) variable);
 						
 						try {
 							return ExpressionRewriter.super.visit(expression);
 						} finally {
 							if (remove) {
 								this.unifiers.remove(variable);
-							} else {
-								this.unifiers.put(variable, old);
 							}
 						}
 					}

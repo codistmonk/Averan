@@ -13,7 +13,7 @@ public final class Binding extends Proof.Abstract {
 	
 	private final String blockName;
 	
-	private final Object value;
+	private Object value;
 	
 	public Binding(final String blockName, final Object value) {
 		this(null, blockName, value);
@@ -38,6 +38,13 @@ public final class Binding extends Proof.Abstract {
 		final List<Object> block = list(unifiable(checkBlock(this.getBlockName(), context)));
 		
 		return Substitution.substituteIn(scope(block), map(variable(block), this.getValue()), indices());
+	}
+	
+	@Override
+	public final Binding lock() {
+		this.value = lock2(this.getValue());
+		
+		return (Binding) super.lock();
 	}
 	
 	private static final long serialVersionUID = 5987805106367286343L;

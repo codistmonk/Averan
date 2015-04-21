@@ -5,6 +5,8 @@ import static net.sourceforge.aprog.tools.Tools.ignore;
 import java.io.Serializable;
 import java.util.List;
 
+import averan5.expressions.Expressions;
+
 /**
  * @author codistmonk (creation 2015-04-11)
  */
@@ -26,6 +28,16 @@ public abstract interface Proof extends Serializable {
 	
 	public default Deduction concludeIn(final Deduction context) {
 		return context.conclude(this);
+	}
+	
+	public default Proof lock() {
+		final int n = this.getMessage().size();
+		
+		for (int i = 0; i < n; ++i) {
+			this.getMessage().set(i, Expressions.lock2(this.getMessage().get(i)));
+		}
+		
+		return this;
 	}
 	
 	/**
