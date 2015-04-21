@@ -1,6 +1,5 @@
 package averan5.expressions;
 
-import static averan5.expressions.Expressions.toTreeSet;
 import static net.sourceforge.aprog.tools.Tools.cast;
 
 import java.io.Serializable;
@@ -128,7 +127,7 @@ public final class Unifier implements Serializable {
 		}
 		
 		if (prefix == null) {
-			prefix = this.unifiers.stream().map(u -> ids.computeIfAbsent(u, k -> id.incrementAndGet())).collect(toTreeSet()).toString();
+			prefix = "$" + ids.computeIfAbsent(this.object, k -> id.incrementAndGet());
 		}
 		
 		if (debug.get() && busy.add(this)) {
@@ -146,7 +145,7 @@ public final class Unifier implements Serializable {
 	
 	private static final  AtomicInteger id = new AtomicInteger();
 	
-	private static final Map<Unifier, Integer> ids = new WeakHashMap<>();
+	private static final Map<Object, Integer> ids = new WeakHashMap<>();
 	
 	private static final Collection<Object> busy = new HashSet<>();
 	
