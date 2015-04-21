@@ -35,7 +35,7 @@ public final class ModusPonens extends Proof.Abstract {
 	
 	@Override
 	public final Object getProvedPropositionFor(final Deduction context) {
-		final List<Object> rule = checkRule(this.getRuleName(), context);
+		final List<Object> rule = list(unifiable(checkRule(this.getRuleName(), context)));
 		final Object expectedCondition = condition(rule);
 		final Object condition = checkProposition(this.getConditionName(), context);
 		

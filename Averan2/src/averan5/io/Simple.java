@@ -4,7 +4,6 @@ import static averan5.expressions.Expressions.*;
 import static java.util.Collections.nCopies;
 import static java.util.stream.Collectors.toList;
 import static net.sourceforge.aprog.tools.Tools.*;
-
 import averan5.proofs.Deduction;
 import averan5.proofs.Proof;
 
@@ -101,6 +100,7 @@ public final class Simple {
 					map.entrySet().stream().map(e -> collapse(e.getKey()) + "=" + collapse(e.getValue()))));
 		}
 		
+		@SuppressWarnings("unchecked")
 		final List<Object> expression = cast(List.class, object);
 		
 		if (expression == null) {

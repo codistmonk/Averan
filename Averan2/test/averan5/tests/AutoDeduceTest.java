@@ -7,8 +7,6 @@ import static averan5.tactics.AutoDeduce.autoDeduce;
 import static averan5.tests.StandardTest.build;
 import static org.junit.Assert.*;
 
-import net.sourceforge.aprog.tools.Tools;
-
 import org.junit.Test;
 
 /**
@@ -121,6 +119,16 @@ public final class AutoDeduceTest {
 	
 	@Test
 	public final void testAutoDeduce10() {
+		build(() -> {
+			suppose($rule($forall("b", $equality("a", "b")), "c"));
+			suppose($forall("b", $equality("a", "b")));
+			
+			assertTrue(autoDeduce($("c")));
+		});
+	}
+	
+	@Test
+	public final void testAutoDeduce11() {
 		build(() -> {
 			final Object a = "a";
 			final Object b = "b";

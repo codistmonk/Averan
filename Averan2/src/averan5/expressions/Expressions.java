@@ -262,7 +262,7 @@ public final class Expressions {
 			
 			@Override
 			public final Object visit(final Object expression) {
-				return this.unifiers.getOrDefault(expression, expression);
+				return this.unifiers.getOrDefault(expression, ExpressionRewriter.super.visit(expression));
 			}
 			
 			@Override
