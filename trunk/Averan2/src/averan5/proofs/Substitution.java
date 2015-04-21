@@ -6,6 +6,7 @@ import static java.util.stream.Collectors.toList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
@@ -15,7 +16,7 @@ import java.util.TreeSet;
  */
 public final class Substitution extends Proof.Abstract {
 	
-	private final Object target;
+	private Object target;
 	
 	private final Map<Object, Object> equalities;
 	
@@ -56,6 +57,17 @@ public final class Substitution extends Proof.Abstract {
 		final Object substituted = substituteIn(this.getTarget(), this.getEqualities(), this.getIndices());
 		
 		return $equality(substitution, substituted);
+	}
+	
+	@Override
+	public final Substitution lock() {
+		this.target = lock2(this.getTarget());
+		final Map<Object, Object> tmp = new LinkedHashMap<>(this.getEqualities());
+		
+		this.getEqualities().clear();
+		tmp.forEach((k, v) -> this.getEqualities().put(lock2(k), lock2(v)));
+		
+		return (Substitution) super.lock();
 	}
 	
 	private static final long serialVersionUID = -5039934017175763847L;

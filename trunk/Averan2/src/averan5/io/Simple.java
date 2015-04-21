@@ -93,7 +93,6 @@ public final class Simple {
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
 	public static final String collapse(final Object object) {
 		final Map<?, ?> map = cast(Map.class, object);
 		
