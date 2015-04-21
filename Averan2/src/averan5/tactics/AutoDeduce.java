@@ -7,6 +7,7 @@ import static net.sourceforge.aprog.tools.Tools.*;
 import averan5.expressions.Unifier;
 import averan5.proofs.Deduction;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -24,10 +25,10 @@ public final class AutoDeduce {
 	}
 	
 	public static final boolean autoDeduce(final Object goal) {
-		return autoDeduce(goal, null, 3) != null;
+		return autoDeduce(goal, null, new HashMap<>(), 3) != null;
 	}
 	
-	public static final String autoDeduce(final Object goal, final String previousJustificationName, final int depth) {
+	public static final String autoDeduce(final Object goal, final String previousJustificationName, final Map<Unifier, Pair<Unifier, Unifier>> snapshot, final int depth) {
 		if (depth <= 0) {
 			return null;
 		}
@@ -36,9 +37,18 @@ public final class AutoDeduce {
 		
 		g.intros();
 		
-		final Pair<String, Object> justification = justify(g.getProposition(), previousJustificationName);
-		final String candidate = justification == null ? null :
-			autoBindApply(justification.getFirst(), justification.getSecond(), depth);
+		Pair<String, Object> justification = justify(g.getProposition(), previousJustificationName, snapshot);
+		final String checkpoint = name(-1);
+		String candidate = justification == null ? null : autoBindApply(justification.getFirst(), justification.getSecond(), depth);
+		
+		while (justification != null && candidate == null) {
+			restore(snapshot);
+			removeAfter(checkpoint, deduction());
+			justification = justify(g.getProposition(), justification.getFirst(), snapshot);
+			candidate = justification == null ? null : autoBindApply(justification.getFirst(), justification.getSecond(), depth);
+		}
+		
+		debugPrint(g.getProposition(), justification, previousJustificationName);
 		
 		if (candidate == null || deduction().getParameters().isEmpty() && deduction().getPropositions().isEmpty()) {
 			pop();
@@ -53,12 +63,26 @@ public final class AutoDeduce {
 		return name(-1);
 	}
 	
+	public static final void removeAfter(final String checkpoint, final Deduction deduction) {
+		final List<String> propositionNames = deduction.getPropositionNames();
+		
+		for (final ListIterator<String> i = propositionNames.listIterator(propositionNames.size()); i.hasPrevious();) {
+			final String name = i.previous();
+			
+			if (name.equals(checkpoint)) {
+				break;
+			}
+			
+			deduction.getPropositions().remove(name);
+			deduction.getProofs().remove(name);
+			i.remove();
+		}
+	}
+	
 	public static final String autoBindApply(final String propositionName, final Object unifiableProposition, final int depth) {
 		if (isUltimate(unifiableProposition)) {
 			return propositionName;
 		}
-		
-		debugPrint(propositionName, unifiableProposition);
 		
 		if (isBlock(unifiableProposition)) {
 			final Object variable = variable(unifiableProposition);
@@ -71,43 +95,64 @@ public final class AutoDeduce {
 		
 		{
 			final Object condition = condition(unifiableProposition);
-			final Map<Unifier, Pair<Unifier, Unifier>> snapshot = snapshot(condition);
+			final Map<Unifier, Pair<Unifier, Unifier>> snapshot = new HashMap<>();
+			final String checkpoint = name(-1);
+			String conditionJustificationName = autoDeduce(condition, null, snapshot, depth - 1);
+			String result = null;
 			
-			String conditionJustificationName = autoDeduce(condition, null, depth - 1);
-			
-			if (conditionJustificationName == null) {
-				return null;
+			while (conditionJustificationName != null && result == null) {
+				apply(propositionName, conditionJustificationName);
+				result = autoBindApply(name(-1), proposition(-1), depth);
+				
+				if (result == null) {
+					restore(snapshot);
+					removeAfter(checkpoint, deduction());
+					conditionJustificationName = autoDeduce(condition, conditionJustificationName, snapshot, depth - 1);
+				}
 			}
 			
-			apply(propositionName, conditionJustificationName);
-			
-			final String result = autoBindApply(name(-1), proposition(-1), depth);
-			
-			if (result == null) {
-				restore(snapshot);
-				// TODO retry autoDeduce(condition)
-			}
-			
+//			if (conditionJustificationName == null) {
+//				return null;
+//			}
+//			
+//			apply(propositionName, conditionJustificationName);
+//			
+//			result = autoBindApply(name(-1), proposition(-1), depth);
+//			
+//			if (result == null) {
+//				restore(snapshot);
+//				// TODO retry autoDeduce(condition)
+//			}
+//			
 			return result;
 		}
 	}
 	
-	public static final Pair<String, Object> justify(final Object goal, final String previousJustificationName) {
-		final Map<Unifier, Pair<Unifier, Unifier>> snapshot = snapshot(goal);
+	public static final Pair<String, Object> justify(final Object goal, final String checkpoint, final Map<Unifier, Pair<Unifier, Unifier>> snapshot) {
 		Deduction deduction = deduction();
+		boolean checkpointReached = checkpoint == null;
 		
 		while (deduction != null) {
 			final List<String> propositionNames = deduction.getPropositionNames();
 			
 			for (final ListIterator<String> i = propositionNames.listIterator(propositionNames.size()); i.hasPrevious();) {
 				final String propositionName = i.previous();
-				final Object unifiable = unifiable(deduction.getProposition(propositionName));
 				
-				if (unify(goal, ultimate(unifiable)) != null) {
-					return new Pair<>(propositionName, unifiable);
+				if (checkpointReached) {
+					final Object unifiable = unifiable(deduction.getProposition(propositionName));
+					
+					snapshot.putAll(snapshot(goal));
+					snapshot.putAll(snapshot(unifiable));
+					
+					if (unify(goal, ultimate(unifiable)) != null) {
+						return new Pair<>(propositionName, unifiable);
+					}
+					
+					restore(snapshot);
+					snapshot.clear(); // XXX necessary?
+				} else {
+					checkpointReached = propositionName.equals(checkpoint);
 				}
-				
-				restore(snapshot);
 			}
 			
 			deduction = deduction.getParent();
