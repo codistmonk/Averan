@@ -294,7 +294,7 @@ public final class Expressions {
 		}.apply(expression);
 	}
 	
-	public static final Object lock(final Object expression) {
+	public static final Object fullLock(final Object expression) {
 		return new ExpressionRewriter() {
 			
 			@Override
@@ -314,7 +314,7 @@ public final class Expressions {
 		}.apply(expression);
 	}
 	
-	public static final Object lock2(final Object expression) {
+	public static final Object lock(final Object expression) {
 		return new ExpressionRewriter() {
 			
 			private final Collection<Unifier> unifiers = new HashSet<>();

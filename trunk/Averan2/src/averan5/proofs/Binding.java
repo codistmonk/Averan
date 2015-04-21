@@ -6,6 +6,8 @@ import static averan5.proofs.Stack.*;
 import java.util.Arrays;
 import java.util.List;
 
+import averan5.expressions.Expressions;
+
 /**
  * @author codistmonk (creation 2015-04-11)
  */
@@ -42,7 +44,7 @@ public final class Binding extends Proof.Abstract {
 	
 	@Override
 	public final Binding lock() {
-		this.value = lock2(this.getValue());
+		this.value = Expressions.lock(this.getValue());
 		
 		return (Binding) super.lock();
 	}

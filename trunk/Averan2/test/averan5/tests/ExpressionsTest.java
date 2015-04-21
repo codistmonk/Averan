@@ -31,23 +31,23 @@ public final class ExpressionsTest {
 		
 		UnifierTester.reset();
 		
-		assertEquals($forall("a", "a"), lock(unify($forall("a", "a"), $forall("a", "a"))));
-		assertEquals($forall("a", "a"), lock(unify(unifiable($forall("a", "a")), $forall("a", "a"))));
-		assertEquals($forall("a", "a"), lock(unify($forall("a", "a"), unifiable($forall("a", "a")))));
-		assertEquals($forall(u(0), u(0)), lock(unify(unifiable($forall("a", "a")), unifiable($forall("a", "a")))));
+		assertEquals($forall("a", "a"), fullLock(unify($forall("a", "a"), $forall("a", "a"))));
+		assertEquals($forall("a", "a"), fullLock(unify(unifiable($forall("a", "a")), $forall("a", "a"))));
+		assertEquals($forall("a", "a"), fullLock(unify($forall("a", "a"), unifiable($forall("a", "a")))));
+		assertEquals($forall(u(0), u(0)), fullLock(unify(unifiable($forall("a", "a")), unifiable($forall("a", "a")))));
 		
 		assertNull(unify($forall("a", "a"), $forall("b", "b")));
-		assertEquals($forall("b", "b"), lock(unify(unifiable($forall("a", "a")), $forall("b", "b"))));
-		assertEquals($forall("a", "a"), lock(unify($forall("a", "a"), unifiable($forall("b", "b")))));
-		assertEquals($forall(u(1), u(1)), lock(unify(unifiable($forall("a", "a")), unifiable($forall("b", "b")))));
+		assertEquals($forall("b", "b"), fullLock(unify(unifiable($forall("a", "a")), $forall("b", "b"))));
+		assertEquals($forall("a", "a"), fullLock(unify($forall("a", "a"), unifiable($forall("b", "b")))));
+		assertEquals($forall(u(1), u(1)), fullLock(unify(unifiable($forall("a", "a")), unifiable($forall("b", "b")))));
 		
 		assertNull(unify($forall("a", "a"), $forall("b", "a")));
 		assertNull(unify(unifiable($forall("a", "a")), $forall("b", "a")));
-		assertEquals($forall("a", "a"), lock(unify($forall("a", "a"), unifiable($forall("b", "a")))));
-		assertEquals($forall("a", "a"), lock(unify(unifiable($forall("a", "a")), unifiable($forall("b", "a")))));
+		assertEquals($forall("a", "a"), fullLock(unify($forall("a", "a"), unifiable($forall("b", "a")))));
+		assertEquals($forall("a", "a"), fullLock(unify(unifiable($forall("a", "a")), unifiable($forall("b", "a")))));
 		
-		assertEquals($equality("a", "d"), lock(unify($equality("a", "d"), $equality("a", new Unifier("b")))));
-		assertEquals($equality("a", "d"), lock(unify($equality("a", new Unifier("b")), $equality("a", "d"))));
+		assertEquals($equality("a", "d"), fullLock(unify($equality("a", "d"), $equality("a", new Unifier("b")))));
+		assertEquals($equality("a", "d"), fullLock(unify($equality("a", new Unifier("b")), $equality("a", "d"))));
 	}
 	
 	@Test
@@ -62,7 +62,7 @@ public final class ExpressionsTest {
 			final Object b = $new("b");
 			
 			assertNull(unify($forall(a, a), $forall(b, b)));
-			assertEquals($forall(u(0), u(0)), lock(unify(unifiable($forall(a, a)), unifiable($forall(b, b)))));
+			assertEquals($forall(u(0), u(0)), fullLock(unify(unifiable($forall(a, a)), unifiable($forall(b, b)))));
 		}
 	}
 	

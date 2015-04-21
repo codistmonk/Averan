@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
+import averan5.expressions.Expressions;
+
 /**
  * @author codistmonk (creation 2015-04-11)
  */
@@ -61,11 +63,11 @@ public final class Substitution extends Proof.Abstract {
 	
 	@Override
 	public final Substitution lock() {
-		this.target = lock2(this.getTarget());
+		this.target = Expressions.lock(this.getTarget());
 		final Map<Object, Object> tmp = new LinkedHashMap<>(this.getEqualities());
 		
 		this.getEqualities().clear();
-		tmp.forEach((k, v) -> this.getEqualities().put(lock2(k), lock2(v)));
+		tmp.forEach((k, v) -> this.getEqualities().put(Expressions.lock(k), Expressions.lock(v)));
 		
 		return (Substitution) super.lock();
 	}
