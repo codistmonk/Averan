@@ -6,7 +6,7 @@ import static averan5.proofs.Stack.*;
 import static averan5.tactics.AutoDeduce.autoDeduce;
 import static averan5.tests.StandardTest.build;
 import static org.junit.Assert.*;
-import averan5.expressions.Unifier;
+
 import net.sourceforge.aprog.tools.Tools;
 
 import org.junit.Test;
@@ -128,13 +128,10 @@ public final class AutoDeduceTest {
 			
 			suppose($forall(a, $forall(b, $forall(c,
 					$rule($equality(a, b), $equality(b, c), $equality(a, c))))));
-			Tools.debugPrint(unifiable(proposition(-1)));
 			suppose($equality("d", "e"));
 			suppose($equality("e", "f"));
 			
 			assertTrue(autoDeduce($equality("d", "f")));
-			
-			abort();
 		});
 	}
 	

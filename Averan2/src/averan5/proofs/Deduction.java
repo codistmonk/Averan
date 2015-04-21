@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 
+import averan5.expressions.Expressions;
 import net.sourceforge.aprog.tools.Tools;
 
 /**
@@ -189,7 +190,7 @@ public final class Deduction extends Proof.Abstract {
 	@Override
 	public final Deduction lock() {
 		for (final Map.Entry<String, Object> entry : this.getPropositions().entrySet()) {
-			entry.setValue(lock2(entry.getValue()));
+			entry.setValue(Expressions.lock(entry.getValue()));
 		}
 		
 		this.getProofs().values().forEach(Proof::lock);

@@ -34,7 +34,7 @@ public abstract interface Proof extends Serializable {
 		final int n = this.getMessage().size();
 		
 		for (int i = 0; i < n; ++i) {
-			this.getMessage().set(i, Expressions.lock2(this.getMessage().get(i)));
+			this.getMessage().set(i, Expressions.lock(this.getMessage().get(i)));
 		}
 		
 		return this;
