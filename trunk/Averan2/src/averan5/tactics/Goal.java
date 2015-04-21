@@ -2,11 +2,13 @@ package averan5.tactics;
 
 import static averan5.expressions.Expressions.*;
 import static averan5.proofs.Stack.*;
-
+import averan5.io.Simple;
 import averan5.proofs.Deduction;
 import averan5.proofs.Proof;
 
 import java.io.Serializable;
+
+import net.sourceforge.aprog.tools.Tools;
 
 /**
  * @author codistmonk (creation 2015-04-12)

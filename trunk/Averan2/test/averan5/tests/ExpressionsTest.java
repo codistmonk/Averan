@@ -46,8 +46,8 @@ public final class ExpressionsTest {
 		assertEquals($forall("a", "a"), lock(unify($forall("a", "a"), unifiable($forall("b", "a")))));
 		assertEquals($forall("a", "a"), lock(unify(unifiable($forall("a", "a")), unifiable($forall("b", "a")))));
 		
-		assertEquals($equality("a", "d"), lock(unify($equality("a", "d"), $equality("a", new Unifier()))));
-		assertEquals($equality("a", "d"), lock(unify($equality("a", new Unifier()), $equality("a", "d"))));
+		assertEquals($equality("a", "d"), lock(unify($equality("a", "d"), $equality("a", new Unifier("b")))));
+		assertEquals($equality("a", "d"), lock(unify($equality("a", new Unifier("b")), $equality("a", "d"))));
 	}
 	
 	@Test

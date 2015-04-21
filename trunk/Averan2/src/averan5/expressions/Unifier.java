@@ -7,7 +7,9 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.TreeSet;
 import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import net.sourceforge.aprog.tools.Pair;
@@ -18,17 +20,20 @@ import net.sourceforge.aprog.tools.Tools;
  */
 public final class Unifier implements Serializable {
 	
+	private final String preferredName;
+	
 	private Collection<Unifier> unifiers;
 	
 	private Object[] object;
 	
-	private Unifier(final Collection<Unifier> unifiers, final Object[] object) {
+	private Unifier(final String preferredName, final Collection<Unifier> unifiers, final Object[] object) {
+		this.preferredName = preferredName;
 		this.unifiers = unifiers;
 		this.object = object;
 	}
 	
-	public Unifier() {
-		this(new HashSet<>(), new Object[1]);
+	public Unifier(final String preferredName) {
+		this(preferredName, new HashSet<>(), new Object[1]);
 		
 		this.unifiers.add(this);
 	}
@@ -44,8 +49,8 @@ public final class Unifier implements Serializable {
 	}
 	
 	public final Pair<Unifier, Unifier> snapshot() {
-		final Unifier structure = new Unifier(this.unifiers, this.object);
-		final Unifier contents = new Unifier();
+		final Unifier structure = new Unifier(this.preferredName, this.unifiers, this.object);
+		final Unifier contents = new Unifier(null);
 		contents.unifiers.clear();
 		contents.unifiers.addAll(this.unifiers);
 		contents.object[0] = this.getObject();
@@ -117,8 +122,25 @@ public final class Unifier implements Serializable {
 	
 	@Override
 	public final String toString() {
-		return this.unifiers.stream().map(u -> ids.computeIfAbsent(u, k -> id.incrementAndGet())).collect(toTreeSet())
-				+ "{" + (this.getObject() != null ? this.getObject() : "") + "}";
+		String prefix = null;
+		
+		if (this.unifiers.size() == 1) {
+			prefix = this.unifiers.iterator().next().preferredName;
+		}
+		
+		if (prefix == null) {
+			prefix = this.unifiers.stream().map(u -> ids.computeIfAbsent(u, k -> id.incrementAndGet())).collect(toTreeSet()).toString();
+		}
+		
+		if (debug.get() && busy.add(this)) {
+			try {
+				return prefix + "{" + (this.getObject() != null ? this.getObject() : "") + "}";
+			} finally {
+				busy.remove(this);
+			}
+		}
+		
+		return prefix;
 	}
 	
 	private static final long serialVersionUID = 4343191681740782407L;
@@ -126,5 +148,9 @@ public final class Unifier implements Serializable {
 	private static final  AtomicInteger id = new AtomicInteger();
 	
 	private static final Map<Unifier, Integer> ids = new WeakHashMap<>();
+	
+	private static final Collection<Object> busy = new HashSet<>();
+	
+	public static final AtomicBoolean debug = new AtomicBoolean(false);
 	
 }

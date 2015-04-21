@@ -35,7 +35,7 @@ public final class Binding extends Proof.Abstract {
 	
 	@Override
 	public final Object getProvedPropositionFor(final Deduction context) {
-		final List<Object> block = checkBlock(this.getBlockName(), context);
+		final List<Object> block = list(unifiable(checkBlock(this.getBlockName(), context)));
 		
 		return Substitution.substituteIn(scope(block), map(variable(block), this.getValue()), indices());
 	}

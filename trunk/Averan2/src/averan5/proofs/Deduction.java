@@ -102,7 +102,7 @@ public final class Deduction extends Proof.Abstract {
 		checkArgument(propositionName != null, "Invalid proposition name: " + propositionName);
 		checkArgument(this.getProposition(propositionName) == null, "Duplicate proposition name: " + propositionName);
 		
-		this.getPropositions().put(propositionName, lock(proposition));
+		this.getPropositions().put(propositionName, lock2(proposition));
 		this.getPropositionNames().add(propositionName);
 		
 		return this;
