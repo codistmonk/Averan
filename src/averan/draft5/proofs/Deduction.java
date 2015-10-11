@@ -164,15 +164,8 @@ public final class Deduction extends Proof.Abstract {
 		{
 			final List<String> conditionNames = this.getConditionNames();
 			
-			if (!conditionNames.isEmpty()) {
-				result = new ArrayList<>(2 * conditionNames.size() + 1);
-				
-				for (final String conditionName : conditionNames) {
-					list(result).add(this.getProposition(conditionName));
-					list(result).add(IMPLIES);
-				}
-				
-				list(result).add(conclusion);
+			for (final ListIterator<String> i = conditionNames.listIterator(conditionNames.size()); i.hasPrevious();) {
+				result = $rule(this.getProposition(i.previous()), result);
 			}
 		}
 		
