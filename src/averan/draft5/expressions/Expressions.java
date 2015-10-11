@@ -62,8 +62,21 @@ public final class Expressions {
 		return $(FORALL, $(variableOrName));
 	}
 	
-	public static final List<Object> $forall(final Object variableOrName, final Object... scoped) {
-		return $($forall(variableOrName), $(scoped));
+	@SuppressWarnings("unchecked")
+	public static final List<Object> $forall(final Object... variableOrNamesFollowedByScoped) {
+		final int n = variableOrNamesFollowedByScoped.length;
+		
+		if (n == 1) {
+			return $forall(variableOrNamesFollowedByScoped[0]);
+		}
+		
+		Object result = $(variableOrNamesFollowedByScoped[n - 1]);
+		
+		for (int i = n - 2; 0 <= i; --i) {
+			result = $($forall(variableOrNamesFollowedByScoped[i]), result);
+		}
+		
+		return (List<Object>) result;
 	}
 	
 	public static final List<Object> $equality(final Object left, final Object right) {

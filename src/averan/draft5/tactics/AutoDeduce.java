@@ -27,6 +27,10 @@ public final class AutoDeduce {
 		return autoDeduce(goal, null, new HashMap<>(), 3) != null;
 	}
 	
+	public static final boolean autoDeduce(final Object goal, final int depth) {
+		return autoDeduce(goal, null, new HashMap<>(), depth) != null;
+	}
+	
 	public static final String autoDeduce(final Object goal, final String previousJustificationName, final Map<Unifier, Pair<Unifier, Unifier>> snapshot, final int depth) {
 		if (depth <= 0) {
 			return null;

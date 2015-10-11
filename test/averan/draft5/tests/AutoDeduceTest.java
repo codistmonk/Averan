@@ -134,8 +134,8 @@ public final class AutoDeduceTest {
 			final Object b = "b";
 			final Object c = "c";
 			
-			suppose($forall(a, $forall(b, $forall(c,
-					$rule($equality(a, b), $equality(b, c), $equality(a, c))))));
+			suppose($forall(a, b, c,
+					$rule($equality(a, b), $equality(b, c), $equality(a, c))));
 			suppose($equality("d", "e"));
 			suppose($equality("e", "f"));
 			
