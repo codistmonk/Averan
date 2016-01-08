@@ -24,6 +24,23 @@ public final class Simple {
 		throw new IllegalInstantiationException();
 	}
 	
+	private static String groupStart = "(";
+	
+	private static String groupEnd = "(";
+	
+	public static final synchronized String getGroupStart() {
+		return groupStart;
+	}
+	
+	public static final synchronized String getGroupEnd() {
+		return groupEnd;
+	}
+	
+	public static final synchronized void setGroupStartEnd(final String groupStart, final String groupEnd) {
+		Simple.groupStart = groupStart;
+		Simple.groupEnd = groupEnd;
+	}
+	
 	public static int print(final Deduction deduction, final int proofDepth) {
 		return print(deduction, proofDepth, System.out);
 	}
@@ -124,8 +141,8 @@ public final class Simple {
 		return protoresult;
 	}
 	
-	public static final String group(final Object object) {
-		return "(" + object + ")";
+	public static final synchronized String group(final Object object) {
+		return groupStart + object + groupEnd;
 	}
 	
 }
