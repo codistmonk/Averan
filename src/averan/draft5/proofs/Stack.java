@@ -97,7 +97,7 @@ public final class Stack {
 			bind(name(-1), values[i]);
 		}
 		
-		set(conclude().getMessage(), "Bind", targetName, "with", Arrays.asList(values));
+		set(conclude().getMessage(), "By binding", targetName, "with", Arrays.asList(values));
 	}
 	
 	public static final <T, C extends Collection<T>> C set(final C collection, @SuppressWarnings("unchecked") final T... elements) {
