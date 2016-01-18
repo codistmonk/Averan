@@ -4,6 +4,7 @@ import static averan.draft5.expressions.Expressions.*;
 import static averan.draft5.proofs.Stack.*;
 import static java.util.Arrays.asList;
 import static multij.tools.Tools.*;
+
 import averan.draft5.io.Simple;
 import averan.draft5.proofs.Deduction;
 
@@ -18,6 +19,13 @@ public final class Standard {
 	
 	private Standard() {
 		throw new IllegalInstantiationException();
+	}
+	
+	public static final void setup() {
+		supposeRewrite();
+		deduceIdentity();
+		deduceCommutativityOfEquality();
+		deduceRecall();
 	}
 	
 	public static final void deduceIdentity() {
