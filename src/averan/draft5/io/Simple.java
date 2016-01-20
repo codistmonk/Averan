@@ -28,6 +28,8 @@ public final class Simple {
 	
 	private static String groupEnd = "(";
 	
+	private static String implies = "→";
+	
 	public static final synchronized String getGroupStart() {
 		return groupStart;
 	}
@@ -39,6 +41,14 @@ public final class Simple {
 	public static final synchronized void setGroupStartEnd(final String groupStart, final String groupEnd) {
 		Simple.groupStart = groupStart;
 		Simple.groupEnd = groupEnd;
+	}
+	
+	public static final synchronized String getImplies() {
+		return implies;
+	}
+	
+	public static final synchronized void setImplies(final String implies) {
+		Simple.implies = implies;
 	}
 	
 	public static int print(final Deduction deduction, final int proofDepth) {
@@ -130,6 +140,10 @@ public final class Simple {
 		
 		if (isBlock(expression)) {
 			return group(collapse(quantification(expression)) + " " + collapse(scope(expression)));
+		}
+		
+		if (isRule(expression)) {
+			return group(collapse(condition(expression)) + getImplies() + collapse(conclusion(expression)));
 		}
 		
 		final String protoresult = Tools.join("", iterable(expression.stream().map(Simple::collapse)));
