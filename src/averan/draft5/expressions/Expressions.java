@@ -83,6 +83,16 @@ public final class Expressions {
 		return $(left, EQUALS, right);
 	}
 	
+	public static final List<Object> $list(final Object... objects) {
+		final List<Object> result = new ArrayList<>();
+		
+		for (final Object object : objects) {
+			result.add($(object));
+		}
+		
+		return result;
+	}
+	
 	public static final Object $rule(final Object... propositions) {
 		return $rightAssociativeOperation(IMPLIES, propositions);
 	}
