@@ -27,7 +27,7 @@ public final class Simple {
 	
 	private static String groupStart = "(";
 	
-	private static String groupEnd = "(";
+	private static String groupEnd = ")";
 	
 	private static String implies = "→";
 	

@@ -7,8 +7,6 @@ import static multij.tools.Tools.cast;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -18,7 +16,6 @@ import java.util.stream.Collector;
 import java.util.stream.Stream;
 
 import multij.tools.IllegalInstantiationException;
-import multij.tools.Pair;
 
 /**
  * @author codistmonk (creation 2015-04-19)

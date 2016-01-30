@@ -115,6 +115,14 @@ public final class Stack {
 		conclude(new Binding(propositionName, targetName, value));
 	}
 	
+	public static final void verifyBasicNumericProposition(final Object proposition) {
+		verifyBasicNumericProposition(newName(), proposition);
+	}
+	
+	public static final void verifyBasicNumericProposition(final String propositionName, final Object proposition) {
+		conclude(new BasicNumericVerification(propositionName, Arrays.asList("By basic numeric verification"), proposition));
+	}
+	
 	public static final void subdeduction() {
 		subdeduction(newName());
 	}
