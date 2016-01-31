@@ -17,28 +17,23 @@ public final class BasicNumericVerification extends Proof.Abstract {
 	
 	private final Object proposition;
 	
-	/**
-	 * @param provedPropositionName
-	 * @param message
-	 * @param proposition
-	 */
 	public BasicNumericVerification(final String provedPropositionName, final List<Object> message, final Object proposition) {
 		super(provedPropositionName, message);
 		this.proposition = proposition;
-		
-		final Object verification = Verifier.INSTANCE.apply(proposition);
-		
-		if (!(Boolean) verification) {
-			throw new IllegalArgumentException("Invalid: " + proposition + " verification: " + verification);
-		}
 	}
 	
 	@Override
 	public final Object getProvedPropositionFor(final Deduction context) {
+		final Object verification = Verifier.INSTANCE.apply(this.proposition);
+		
+		if (!(Boolean) verification) {
+			throw new IllegalArgumentException("Invalid: " + this.proposition + " verification: " + verification);
+		}
+		
 		return this.getProvedProposition();
 	}
 	
-	public synchronized final Object getProvedProposition() {
+	public final synchronized Object getProvedProposition() {
 		return this.proposition;
 	}
 	
