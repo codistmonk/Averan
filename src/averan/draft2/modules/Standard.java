@@ -4,6 +4,7 @@ import static averan.draft2.core.Session.*;
 import static averan.draft2.core.Session.Stack.*;
 import static averan.draft2.core.Variable.variable;
 import averan.draft2.core.*;
+import averan.draft2.core.Module;
 import averan.draft2.io.ConsoleOutput;
 import averan.draft2.io.SessionExporter;
 import multij.tools.IllegalInstantiationException;
